@@ -289,10 +289,7 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unit)
 	local tNameplate = self.tNameplates[unit:GetId()]
 	if tNameplate == nil then return end
 	
-	if GameLib.GetTargetUnit() == unit then
-		tNameplate.bIsTarget = true
-		self:UpdateNameplate(tNameplate)
-	end
+	tNameplate.bIsTarget = true
 end
 
 -----------------------------------------------------------------------------------------------
@@ -415,10 +412,6 @@ function ForgeUI_Nameplates:UpdateBars(tNameplate)
 			bShow = self.tSettings["t" ..tNameplate.unitType].bShowBarsInCombat
 		end
 		
-		if tNameplate.bIsTarget then
-			bShow = self.tSettings.tTarget.bShowBars
-		end
-		
 		local hpMax = unitOwner:GetMaxHealth()
 		if hpMax ~= nil then	
 		
@@ -427,6 +420,10 @@ function ForgeUI_Nameplates:UpdateBars(tNameplate)
 			if ((hp / hpMax) * 100) > self.tSettings["t" .. tNameplate.unitType].nHideBarsOver then
 				bShow = false
 			end
+		end
+		
+		if tNameplate.bIsTarget then
+			bShow = self.tSettings.tTarget.bShowBars
 		end
 	end
 	
@@ -723,7 +720,10 @@ function ForgeUI_Nameplates:GetUnitType(unit)
 	elseif unit:GetType() == "Mount" then
 		return "Mount"
 	elseif unit:GetType() == "Pickup" then
-		return "Pickup"
+		if string.match(unit:GetName(), self.unitPlayer:GetName()) then
+			return "Pickup"
+		end
+		return "PickupNotPlayer"
 	elseif unit:GetHealth() == nil and not unit:IsDead() then
 		return "Simple"
 	else

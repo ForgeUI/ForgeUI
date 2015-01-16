@@ -36,6 +36,7 @@ function ForgeUI_MiniMap:new(o)
 	self.settings_version = 1
 	self.tSettings = {
 		nZoomLevel = 1,
+		bShowNsew = false,
 		tMarkers = {
 			FriendlyPlayer = 	{ strName = "Friendly player", bShow = true, crObject = "FF006CFF" , strIcon = "ClientSprites:MiniMapFriendDiamond", objectType = "eObjectTypeFriendlyPlayer"},
 			HostilePlayer = 	{ strName = "Hostile player", bShow = true, crObject = "FFFF0000" , strIcon = "ClientSprites:MiniMapFriendDiamond", objectType = "eObjectTypeHostilePlayer" },
@@ -332,17 +333,20 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRestore()
 	ForgeUI.RegisterWindowPosition(self, self.wndMain, "ForgeUI_MiniMap", self.wndMovables:FindChild("Movable_MiniMap"))
 
 	self.wndMiniMap:SetZoomLevel(self.tSettings.nZoomLevel)
+	self.wndMain:FindChild("NSEW"):Show(self.tSettings.bShowNsew, true)
 	
 	-- build minimap window
 	local l_time = GameLib.GetLocalTime()
 	self.wndMain:FindChild("Clock"):SetText(string.format("%02d:%02d", l_time.nHour, l_time.nMinute))
 	self:UpdateZoneName()
 	
-	-- fill options container
-	self:FillContainer()
-	
 	self:HandleNewUnits()
 	Apollo.RegisterTimerHandler("TimeUpdateTimer", 	"OnUpdateTimer", self)
+end
+
+function ForgeUI_MiniMap:ForgeAPI_LoadOptions()
+	self.wndContainers.ForgeUI_Container:FindChild("bShowNsew"):SetCheck(self.tSettings.bShowNsew)
+	self:FillContainer()
 end
 
 function ForgeUI_MiniMap:FillContainer()
@@ -380,6 +384,12 @@ function ForgeUI_MiniMap:OnOptionsChanged( wndHandler, wndControl )
 	local strName = wndControl:GetName()
 	local strType = wndControl:GetParent():GetName()
 	local strMarker = wndControl:GetParent():GetParent():GetParent():GetData()
+	
+	if strName == "bShowNsew" then
+		self.tSettings.bShowNsew = wndControl:IsChecked()
+		self.wndMain:FindChild("NSEW"):Show(self.tSettings.bShowNsew, true)
+		return
+	end
 	
 	if strType == "CheckBox" then
 		self.tSettings.tMarkers[strMarker][strName] = wndControl:IsChecked()
