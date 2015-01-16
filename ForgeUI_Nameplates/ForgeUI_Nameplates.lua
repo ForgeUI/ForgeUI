@@ -108,7 +108,15 @@ function ForgeUI_Nameplates:new(o)
 		},
 		tUnknown = {
 			bShow = false,
-			crName = "FFFFFFFF"
+			bShowBars = false,
+			bShowBarsInCombat = false,
+			nHideBarsOver = 100,
+			bUseClassColors = false,
+			bShowCast = false,
+			bShowGuild = false,
+			crName = "FFFFFFFF",
+			crNamePvP = "FFFFFFFF",
+			crBar = "FFFFFFFF"
 		},
 		tFriendlyPlayer = {
 			bShow = true,
@@ -142,7 +150,7 @@ function ForgeUI_Nameplates:new(o)
 			bShowGuild = false,
 			crName = "FFD9544D",
 			crNamePvP = "FFFF0000",
-			crBar = "E50000"
+			crBar = "FFE50000"
 		},
 		tFriendlyPet = {
 			bShow = false,
@@ -187,8 +195,12 @@ function ForgeUI_Nameplates:new(o)
 			bShow = false,
 			crName = "FFFFFFFF",
 		},
-		tPickup  = { -- weapon for example
+		tPickup  = { -- player's weapon for example
 			bShow = true,
+			crName = "FFFFFFFF",
+		},
+		tPickupNotPlayer  = { -- weapons for example
+			bShow = false,
 			crName = "FFFFFFFF",
 		}
 	}
@@ -793,6 +805,11 @@ function ForgeUI_Nameplates:GenerateNewNameplate(unitNew)
 	}
 	
 	--if self.tSettings["t" .. tNameplate.unitType].bShow then
+		if self.tSettings["t" .. tNameplate.unitType] == nil then
+			tNameplate.unitType = "Unknown"
+			Print("Please report this text to any ForgeUI page: Unknow unitType - " .. unitNew:GetName())
+		end
+	
 		self:UpdateNameplate(tNameplate)
 		self:UpdateStyle(tNameplate)
 		
