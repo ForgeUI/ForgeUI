@@ -297,6 +297,7 @@ end
 function ForgeUI_CastBars:ForgeAPI_AfterRestore()
 	ForgeUI.RegisterWindowPosition(self, self.wndPlayerCastBar, "ForgeUI_CastBars_PlayerCastBar", self.wndMovables:FindChild("Movable_PlayerCastBar"))
 	ForgeUI.RegisterWindowPosition(self, self.wndTargetCastBar, "ForgeUI_CastBars_TargetCastBar", self.wndMovables:FindChild("Movable_TargetCastBar"))
+	ForgeUI.RegisterWindowPosition(self, self.wndTargetCastBar:FindChild("InterruptArmor"), "ForgeUI_CastBars_TargetCastBar_IA", self.wndMovables:FindChild("Movable_TargetCastBar_IA"))
 	
 	if self.tSettings.bSmoothBars == true then
 		Apollo.RegisterEventHandler("NextFrame", 	"OnNextFrame", self)
@@ -317,6 +318,7 @@ end
 function ForgeUI_CastBars:OnWindowMove( wndHandler, wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom )
 	self.wndPlayerCastBar:SetAnchorOffsets(self.wndMovables:FindChild("Movable_PlayerCastBar"):GetAnchorOffsets())
 	self.wndTargetCastBar:SetAnchorOffsets(self.wndMovables:FindChild("Movable_TargetCastBar"):GetAnchorOffsets())
+	self.wndTargetCastBar:FindChild("InterruptArmor"):SetAnchorOffsets(self.wndMovables:FindChild("Movable_TargetCastBar_IA"):GetAnchorOffsets())
 end
 
 ---------------------------------------------------------------------------------------------------

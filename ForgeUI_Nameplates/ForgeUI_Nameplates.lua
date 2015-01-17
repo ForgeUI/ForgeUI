@@ -534,7 +534,7 @@ function ForgeUI_Nameplates:UpdateAbsorb(tNameplate)
 	end
 	
 	if bShow ~= absorbBar:IsShown() then
-		absorbBar:Show(nShow, true)
+		absorbBar:Show(bShow, true)
 		self:UpdateStyle(tNameplate)
 	end
 end

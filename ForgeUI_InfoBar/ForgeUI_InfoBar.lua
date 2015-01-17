@@ -29,6 +29,14 @@ function ForgeUI_InfoBar:new(o)
 	self.tSettings = {
 	}
 
+	self.stats = {}
+	
+	self.currentXP = 0
+	self.neededXP = 0
+	self.restedXP = 0
+	self.currentPathXP = 0
+	self.neededPathXP = 0
+	
     return o
 end
 
@@ -48,10 +56,6 @@ end
 function ForgeUI_InfoBar:OnLoad()
 	self.xmlDoc = XmlDoc.CreateFromFile("ForgeUI_InfoBar.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
-end
-
-function ForgeUI_InfoBar:OnForgeButton( wndHandler, wndControl, eMouseButton )
-	ForgeUI:OnForgeUIOn()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -81,18 +85,53 @@ function ForgeUI_InfoBar:ForgeAPI_AfterRestore()
 end
 
 function ForgeUI_InfoBar:OnNextFrame()
-	local stats = GameLib.GetPlayerUnit():GetBasicStats()
-	if stats == nil then return end
-	local currentXP = GetXp()
-	local neededXP = GetXpToNextLevel()
-	local elderXP = GetPeriodicElderPoints()
-	local xpPercent = stats.nLevel == 50 and math.floor(elderXP / 10500000 * 100) or math.floor(currentXP / neededXP * 100)
+	self.stats = GameLib.GetPlayerUnit():GetBasicStats()
+	if self.stats == nil then return end
+	
+	if self.stats.nLevel == 50 then
+		self.currentXP = GetPeriodicElderPoints()
+		self.neededXP = GameLib.ElderPointsDailyMax
+	else
+		self.currentXP = GetXp() - GetXpToCurrentLevel()
+		self.neededXP = GetXpToNextLevel()
+	end
+	
+	local nCurrentLevel = PlayerPathLib.GetPathLevel()
+	local nNextLevel = math.min(30, nCurrentLevel + 1) -- TODO replace with variable
+
+	local nLastLevelXP = PlayerPathLib.GetPathXPAtLevel(nCurrentLevel)
+	self.currentPathXP =  PlayerPathLib.GetPathXP() - nLastLevelXP
+	self.neededPathXP = PlayerPathLib.GetPathXPAtLevel(nNextLevel) - nLastLevelXP
+	
 	local framesPerSecond = ForgeUI.Round(GameLib.GetFrameRate(), 0)
 	local latency = GameLib.GetLatency()
 
-	self.wndInfoBar:FindChild("Level"):SetText(xpPercent .. "%")
+	self.wndInfoBar:FindChild("Level"):SetText(ForgeUI.Round(self.currentXP / self.neededXP * 100, 1) .. "% XP")
 	self.wndInfoBar:FindChild("FPS"):SetText(framesPerSecond .. "fps")
 	self.wndInfoBar:FindChild("MS"):SetText(latency .. "ms")
+end
+
+function ForgeUI_InfoBar:OnForgeButton( wndHandler, wndControl, eMouseButton )
+	ForgeUI:OnForgeUIOn()
+end
+
+function ForgeUI_InfoBar:OnGenerateTooltip( wndHandler, wndControl, eToolTipType, x, y )
+	local xml = nil
+
+	if wndControl:GetName() == "Level" then
+		xml = XmlDoc.new()
+		xml:StartTooltip(1000)
+		if self.stats.nLevel == 50 then
+			xml:AddLine("EG: " .. math.floor(self.currentXP / 70000)) -- TODO replace with variable
+		else
+			xml:AddLine("XP: " .. ForgeUI.ShortNum(self.currentXP) .. "/" .. ForgeUI.ShortNum(self.neededXP) .. "         ", crWhite, "CRB_InterfaceMedium")
+		end
+		if self.neededPathXP ~= 0 then
+			xml:AddLine("Path XP: " .. self.currentPathXP .. "/" .. self.neededPathXP .. " (" .. ForgeUI.Round(self.currentPathXP / self.neededPathXP, 1) .. "%)", crWhite, "CRB_InterfaceMedium")
+		end
+	end
+	
+	wndControl:SetTooltipDoc(xml)
 end
 
 ---------------------------------------------------------------------------------------------------

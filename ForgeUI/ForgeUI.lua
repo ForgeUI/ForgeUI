@@ -5,8 +5,9 @@ local ForgeUI = {}
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
-VERSION = "0.2.1"
-AUTHOR = "WintyBadass"
+VERSION = "0.2.2"
+AUTHOR = "Adam Jedlička"
+AUTHOR_LONG = "Winty Badass@Jabbit"
 API_VERSION = 1
 
 -- errors
@@ -90,7 +91,7 @@ function ForgeUI:OnDocLoaded()
 	
     self.wndMain = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Form", nil, self)
 	self.wndMain:FindChild("Version"):FindChild("Text"):SetText(VERSION)
-	self.wndMain:FindChild("Author"):FindChild("Text"):SetText(AUTHOR)
+	self.wndMain:FindChild("Author"):FindChild("Text"):SetText(AUTHOR_LONG)
 	self.wndMain:Show(false, true)
 	
 	wndItemList = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ListHolder", self.wndMain:FindChild("ForgeUI_Form_ItemList"), self)

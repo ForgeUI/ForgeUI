@@ -21,9 +21,12 @@
     <Sprite Name="ForgeUI_IA" Cycle="1">
         <Frame Texture="ForgeUI\textures\ia.png" x0="0" x1="0" x2="0" x3="0" x4="179" x5="179" y0="0" y1="0" y2="0" y3="0" y4="179" y5="179" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
-    <AutoButton Name="ForgeUI_Button" Texture="ForgeUI\textures\button.png" x0="0" x1="0" x2="0" x3="1" x4="31" x5="32" y0="0" y1="0" y2="0" y3="1" y4="31" y5="32" Stretchy="1" StateBits="3" Direction="Across"/>
-    <AutoButton Name="ForgeUI_CheckBox" Texture="ForgeUI\textures\checkbox.png" x0="0" x1="0" x2="0" x3="0" x4="0" x5="32" y0="0" y1="0" y2="0" y3="0" y4="0" y5="32" Stretchy="1" StateBits="15" Direction="Across"/>
     <Sprite Name="ForgeUI_ChallangeIcon" Cycle="1">
         <Frame Texture="ForgeUI\textures\ChallangeIcon.png" x0="0" x1="0" x2="0" x3="0" x4="64" x5="64" y0="0" y1="0" y2="0" y3="0" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <AutoButton Name="ForgeUI_Button" Texture="ForgeUI\textures\button.png" x0="0" x1="0" x2="0" x3="1" x4="31" x5="32" y0="0" y1="0" y2="0" y3="1" y4="31" y5="32" Stretchy="1" StateBits="3" Direction="Across"/>
+    <AutoButton Name="ForgeUI_CheckBox" Texture="ForgeUI\textures\checkbox.png" x0="0" x1="0" x2="0" x3="0" x4="0" x5="32" y0="0" y1="0" y2="0" y3="0" y4="0" y5="32" Stretchy="1" StateBits="15" Direction="Across"/>
+    <Sprite Name="ForgeUI_IAInf" Cycle="1">
+        <Frame Texture="ForgeUI\textures\ia_inf.png" x0="0" x1="0" x2="0" x3="0" x4="179" x5="179" y0="0" y1="0" y2="0" y3="0" y4="179" y5="179" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
 </Sprites>

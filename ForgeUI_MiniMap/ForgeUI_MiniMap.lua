@@ -18,7 +18,9 @@ function ForgeUI_MiniMap:new(o)
     setmetatable(o, self)
     self.__index = self 
 
+	self.tUnits = {}
 	self.tUnitsInQueue = {}
+	self.nGroupMemberCount = 0
 
 	Apollo.RegisterEventHandler("UnitCreated", 		"OnUnitCreated", self)
 	Apollo.RegisterEventHandler("UnitDestroyed", 	"OnUnitDestroyed", self)
@@ -38,7 +40,8 @@ function ForgeUI_MiniMap:new(o)
 		nZoomLevel = 1,
 		bShowNsew = false,
 		tMarkers = {
-			FriendlyPlayer = 	{ strName = "Friendly player", bShow = true, crObject = "FF006CFF" , strIcon = "ClientSprites:MiniMapFriendDiamond", objectType = "eObjectTypeFriendlyPlayer"},
+			FriendlyPlayer = 	{ strName = "Friendly player", bShow = true, crObject = "FFFFFFFF" , strIcon = "ClientSprites:MiniMapFriendDiamond", objectType = "eObjectTypeFriendlyPlayer"},
+			PartyPlayer = 		{ strName = "Party player", bShow = true, crObject = "FF006CFF" , strIcon = "ClientSprites:MiniMapFriendDiamond", objectType = "eObjectTypeFriendlyPlayer"},
 			HostilePlayer = 	{ strName = "Hostile player", bShow = true, crObject = "FFFF0000" , strIcon = "ClientSprites:MiniMapFriendDiamond", objectType = "eObjectTypeHostilePlayer" },
 			Hostile = 			{ strName = "Hostile NPC", bShow = true, crObject = "FFFF0000" , objectType = "eObjectTypeNPC" },
 			Neutral = 			{ strName = "Neutral NPC", bShow = true, crObject = "FFFFCC00" , objectType = "eObjectTypeNPC" },
@@ -91,8 +94,10 @@ function ForgeUI_MiniMap:OnDocLoaded()
 end
 
 function ForgeUI_MiniMap:ForgeAPI_AfterRegistration()
-	Apollo.RegisterEventHandler("ZoneMapPing", 			"OnMapPing", self)
-
+	Apollo.RegisterEventHandler("ZoneMapPing", 					"OnMapPing", self)
+	Apollo.RegisterEventHandler("UnitActivationTypeChanged", 	"OnUnitChanged", self)
+	Apollo.RegisterEventHandler("UnitMiniMapMarkerChanged", 	"OnUnitChanged", self)
+	
 	Apollo.RegisterTimerHandler("PingTimer", "OnPingTimer", self)
 	Apollo.CreateTimer("PingTimer", 1, false)
 	Apollo.StopTimer("PingTimer")
@@ -121,25 +126,42 @@ function ForgeUI_MiniMap:OnUpdateTimer()
 	local l_time = GameLib.GetLocalTime()
 	self.wndMain:FindChild("Clock"):SetText(string.format("%02d:%02d", l_time.nHour, l_time.nMinute))
 	
-	local unitPlayer = GameLib.GetPlayerUnit()
-	if unitPlayer == nil then return end
-	local unitTarget = unitPlayer:GetTarget()
-	if unitTarget == nil then return end
-	
-	--local tTypes = unitTarget:GetMiniMapMarkers()
-	--for _, strType in pairs(tTypes) do
-	--	Print(strType)
-	--end
+	if self.nGroupMemberCount ~= GroupLib.GetMemberCount() then
+		self.nGroupMemberCount = GroupLib.GetMemberCount()
+		self:UpdateAllUnits()
+	end
 end
 
 function ForgeUI_MiniMap:OnUnitCreated(unit)
 	if unit == nil or not unit:IsValid() or unit == GameLib.GetPlayerUnit() then return end
 
 	self.tUnitsInQueue[unit:GetId()] = unit
+	self.tUnits[unit:GetId()] = unit
 end
 
 function ForgeUI_MiniMap:OnUnitDestroyed(unit)
 	if unit == nil or not unit:IsValid() then return end
+	
+	self.tUnits[unit:GetId()] = nil
+end
+
+function ForgeUI_MiniMap:OnUnitChanged(unit, eType)
+	if unit == nil then
+		return
+	end
+	
+	self.wndMiniMap:RemoveUnit(unit)
+	self.tUnitsInQueue[unit:GetId()] = unit
+end
+
+function ForgeUI_MiniMap:UpdateAllUnits()
+	self.wndMiniMap:RemoveAllObjects()
+	
+	for _, unit in pairs(self.tUnits) do
+		self:OnUnitCreated(unit)
+	end
+	
+	self:HandleNewUnits()
 end
 
 function ForgeUI_MiniMap:HandleNewUnits()
@@ -155,7 +177,11 @@ function ForgeUI_MiniMap:HandleNewUnits()
 			if eDispotition == Unit.CodeEnumDisposition.Hostile then
 				tTypes = { "HostilePlayer" }
 			elseif eDispotition == Unit.CodeEnumDisposition.Friendly and not unit:IsThePlayer() then
-				tTypes = { "FriendlyPlayer" }
+				if unit:IsInYourGroup() then
+					tTypes = { "PartyPlayer" }
+				else
+					tTypes = { "FriendlyPlayer" }
+				end
 			end
 		else
 			tTypes = unit:GetMiniMapMarkers()
@@ -398,6 +424,8 @@ function ForgeUI_MiniMap:OnOptionsChanged( wndHandler, wndControl )
 	if strType == "ColorBox" then
 		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings.tMarkers[strMarker], strName)
 	end
+	
+	self:UpdateAllUnits()
 end
 
 -----------------------------------------------------------------------------------------------
