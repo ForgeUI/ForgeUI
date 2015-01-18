@@ -30,8 +30,10 @@ function ForgeUI_CastBars:new(o)
 	self.settings_version = 1
 	self.tSettings = {
 		bSmoothBars = true,
+		bShowFocus = true,
 		bCenterPlayerText = false,
 		bCenterTargetText = false,
+		bCenterFocusText = false,
 		crBorder = "FF000000",
 		crBackground = "FF101010",
 		crCastBar = "FF272727",
@@ -58,9 +60,8 @@ function ForgeUI_CastBars:ForgeAPI_AfterRegistration()
 	local wnd = ForgeUI.AddItemButton(self, "Cast bars", "Container")
 	
 	self.wndPlayerCastBar = Apollo.LoadForm(self.xmlDoc, "PlayerCastBar", "FixedHudStratum", self)
-	self.wndPlayerCastBar:Show(false, true)
 	self.wndTargetCastBar = Apollo.LoadForm(self.xmlDoc, "TargetCastBar", "FixedHudStratum", self)
-	self.wndTargetCastBar:Show(false, true)
+	self.wndFocusCastBar = Apollo.LoadForm(self.xmlDoc, "FocusCastBar", "FixedHudStratum", self)
 	
 	self.wndMovables = Apollo.LoadForm(self.xmlDoc, "Movables", nil, self) 
 end
@@ -79,6 +80,17 @@ function ForgeUI_CastBars:OnNextFrame()
 	else	
 		if self.wndTargetCastBar:IsShown() then
 			self.wndTargetCastBar:Show(false, true)
+		end
+	end
+	
+	local unitFocus = unitPlayer:GetAlternateTarget()
+	if unitFocus ~= nil and unitFocus:IsValid() and self.tSettings.bShowFocus then
+		self:UpdateCastBar(unitFocus, self.wndFocusCastBar)
+		self:UpdateMoOBar(unitFocus, self.wndFocusCastBar)
+		self:UpdateInterruptArmor(unitFocus, self.wndFocusCastBar)
+	else	
+		if self.wndFocusCastBar:IsShown() then
+			self.wndFocusCastBar:Show(false, true)
 		end
 	end
 	
@@ -114,7 +126,7 @@ end
 
 function ForgeUI_CastBars:OnUpdateSpellThreshold(idSpell, nNewThreshold)
 	local unitPlayer = GameLib.GetPlayerUnit()
-	if unitPlayer == nil or not unitPlayer:IsValid() then return end
+	if unitPlayer == nil or not unitPlayer:IsValid() or self.cast == nil then return end
 	
 	local splObject = GameLib.GetSpell(idSpell)
 	local strSpellName = splObject:GetName()
@@ -131,7 +143,7 @@ end
 
 function ForgeUI_CastBars:OnClearSpellThreshold(idSpell)
 	local unitPlayer = GameLib.GetPlayerUnit()
-	if unitPlayer == nil or not unitPlayer:IsValid() then return end
+	if unitPlayer == nil or not unitPlayer:IsValid() or self.cast == nil then return end
 	
 	self.wndPlayerCastBar:Show(false, true)
 	self.wndPlayerCastBar:FindChild("TickBar"):SetProgress(0)
@@ -265,6 +277,13 @@ function ForgeUI_CastBars:UpdateStyles()
 	self.wndTargetCastBar:FindChild("CastTime"):SetTextColor(self.tSettings.crText)
 	self.wndTargetCastBar:FindChild("SpellName"):SetTextColor(self.tSettings.crText)
 	
+	self.wndFocusCastBar:FindChild("Border"):SetBGColor(self.tSettings.crBorder)
+	self.wndFocusCastBar:FindChild("Background"):SetBGColor(self.tSettings.crBackground)
+	self.wndFocusCastBar:FindChild("CastBar"):SetBarColor(self.tSettings.crCastBar)
+	self.wndFocusCastBar:FindChild("MoOBar"):SetBarColor(self.tSettings.crMooBar)
+	self.wndFocusCastBar:FindChild("CastTime"):SetTextColor(self.tSettings.crText)
+	self.wndFocusCastBar:FindChild("SpellName"):SetTextColor(self.tSettings.crText)
+	
 	if self.tSettings.bCenterTargetText then
 		self.wndTargetCastBar:FindChild("SpellName"):SetAnchorOffsets(10, 0, 0, 0)
 		self.wndTargetCastBar:FindChild("SpellName"):SetAnchorPoints(0, 0, 1, 1)
@@ -277,6 +296,20 @@ function ForgeUI_CastBars:UpdateStyles()
 		
 		self.wndTargetCastBar:FindChild("CastTime"):SetAnchorOffsets(0, -10, -10, 15)
 		self.wndTargetCastBar:FindChild("CastTime"):SetAnchorPoints(0, 0, 1, 0)
+	end
+	
+	if self.tSettings.bCenterFocusText then
+		self.wndFocusCastBar:FindChild("SpellName"):SetAnchorOffsets(10, 0, 0, 0)
+		self.wndFocusCastBar:FindChild("SpellName"):SetAnchorPoints(0, 0, 1, 1)
+		
+		self.wndFocusCastBar:FindChild("CastTime"):SetAnchorOffsets(0, 0, -10, 0)
+		self.wndFocusCastBar:FindChild("CastTime"):SetAnchorPoints(0, 0, 1, 1)
+	else
+		self.wndFocusCastBar:FindChild("SpellName"):SetAnchorOffsets(10, -10, 0, 15)
+		self.wndFocusCastBar:FindChild("SpellName"):SetAnchorPoints(0, 0, 1, 0)
+		
+		self.wndFocusCastBar:FindChild("CastTime"):SetAnchorOffsets(0, -10, -10, 15)
+		self.wndFocusCastBar:FindChild("CastTime"):SetAnchorPoints(0, 0, 1, 0)
 	end
 	
 	if self.tSettings.bCenterPlayerText then
@@ -298,6 +331,8 @@ function ForgeUI_CastBars:ForgeAPI_AfterRestore()
 	ForgeUI.RegisterWindowPosition(self, self.wndPlayerCastBar, "ForgeUI_CastBars_PlayerCastBar", self.wndMovables:FindChild("Movable_PlayerCastBar"))
 	ForgeUI.RegisterWindowPosition(self, self.wndTargetCastBar, "ForgeUI_CastBars_TargetCastBar", self.wndMovables:FindChild("Movable_TargetCastBar"))
 	ForgeUI.RegisterWindowPosition(self, self.wndTargetCastBar:FindChild("InterruptArmor"), "ForgeUI_CastBars_TargetCastBar_IA", self.wndMovables:FindChild("Movable_TargetCastBar_IA"))
+	ForgeUI.RegisterWindowPosition(self, self.wndFocusCastBar, "ForgeUI_CastBars_FocusCastBar", self.wndMovables:FindChild("Movable_FocusCastBar"))
+	ForgeUI.RegisterWindowPosition(self, self.wndFocusCastBar:FindChild("InterruptArmor"), "ForgeUI_CastBars_FocusCastBar_IA", self.wndMovables:FindChild("Movable_FocusCastBar_IA"))
 	
 	if self.tSettings.bSmoothBars == true then
 		Apollo.RegisterEventHandler("NextFrame", 	"OnNextFrame", self)
@@ -319,6 +354,8 @@ function ForgeUI_CastBars:OnWindowMove( wndHandler, wndControl, nOldLeft, nOldTo
 	self.wndPlayerCastBar:SetAnchorOffsets(self.wndMovables:FindChild("Movable_PlayerCastBar"):GetAnchorOffsets())
 	self.wndTargetCastBar:SetAnchorOffsets(self.wndMovables:FindChild("Movable_TargetCastBar"):GetAnchorOffsets())
 	self.wndTargetCastBar:FindChild("InterruptArmor"):SetAnchorOffsets(self.wndMovables:FindChild("Movable_TargetCastBar_IA"):GetAnchorOffsets())
+	self.wndFocusCastBar:SetAnchorOffsets(self.wndMovables:FindChild("Movable_FocusCastBar"):GetAnchorOffsets())
+	self.wndFocusCastBar:FindChild("InterruptArmor"):SetAnchorOffsets(self.wndMovables:FindChild("Movable_FocusCastBar_IA"):GetAnchorOffsets())
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -328,9 +365,12 @@ end
 function ForgeUI_CastBars:ForgeAPI_LoadOptions()
 	local wndContainer = self.wndContainers.Container
 	
+	wndContainer:FindChild("bShowFocus"):SetCheck(self.tSettings.bShowFocus)
+	
 	wndContainer:FindChild("bSmoothBars"):SetCheck(self.tSettings.bSmoothBars)
 	wndContainer:FindChild("bCenterPlayerText"):SetCheck(self.tSettings.bCenterPlayerText)
 	wndContainer:FindChild("bCenterTargetText"):SetCheck(self.tSettings.bCenterTargetText)
+	wndContainer:FindChild("bCenterFocusText"):SetCheck(self.tSettings.bCenterFocusText)
 	
 	ForgeUI.ColorBoxChange(self, wndContainer:FindChild("crBorder"), self.tSettings, "crBorder", true)
 	ForgeUI.ColorBoxChange(self, wndContainer:FindChild("crBackground"), self.tSettings, "crBackground", true)
