@@ -118,7 +118,7 @@ function ForgeUI_SprintDash:OnNextFrame()
 		if nDashCurr < 100 then
 			self.wndDashMeter:FindChild("Bar_A"):SetMax(unitPlayer:GetMaxResource(dashResource) / 2)
 			self.wndDashMeter:FindChild("Bar_A"):SetProgress(unitPlayer:GetResource(dashResource))
-			self.wndDashMeter:FindChild("Bar_A"):SetBarColor(ApolloColor.new(self.tSettings.crDash))
+			self.wndDashMeter:FindChild("Bar_A"):SetBarColor(ApolloColor.new(self.tSettings.crDash2))
 			
 			self.wndDashMeter:FindChild("Bar_B"):SetProgress(0)
 		elseif nDashCurr < nDashMax then

@@ -6,7 +6,7 @@ local ForgeUI = {}
 -- Constants
 -----------------------------------------------------------------------------------------------
 VERSION = "0.2.3"
-AUTHOR = "Adam Jedlička"
+AUTHOR = "Adam Jedlicka"
 AUTHOR_LONG = "Winty Badass@Jabbit"
 API_VERSION = 1
 
@@ -237,7 +237,7 @@ function ForgeUI.RegisterWindowPosition(tAddon, wnd, strName, wndMovable)
 	if wndMovable ~= nil then
 		wndMovable:SetAnchorOffsets(wnd:GetAnchorOffsets())
 		wndMovable:SetAnchorPoints(wnd:GetAnchorPoints())
-		wndMovable:SetSprite("CRB_ActionBarIconSprites:sprActionBar_OrangeBorder")
+		wndMovable:SetSprite("ForgeUI_InnerGlow")
 		wndMovable:SetBGColor("FFFF0000")
 		wndMovable:Show(true, true)
 	end
