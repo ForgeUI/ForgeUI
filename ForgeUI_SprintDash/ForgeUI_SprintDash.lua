@@ -20,10 +20,13 @@ function ForgeUI_SprintDash:new(o)
 	self.wndContainers = {}
 	
 	-- optional
+	self.settings_version = 1
     self.tSettings = {
-		sprintColor = "CCCCCC",
-		dashColor = "00AAFF",
-		dashColor2 = "0055AA"
+		bShowSprint = false,
+		bShowDash = false,
+		crSprint = "FFCCCCCC",
+		crDash = "FF00AAFF",
+		crDash2 = "FF003388"
 	}
 
     return o
@@ -72,16 +75,14 @@ end
 
 function ForgeUI_SprintDash:ForgeAPI_AfterRestore()
 	ForgeUI.RegisterWindowPosition(self, self.wndSprintMeter, "ForgeUI_SprintDash_Sprint", self.wndMovables:FindChild("Movable_SprintMeter"))
-	
 	ForgeUI.RegisterWindowPosition(self, self.wndDashMeter, "ForgeUI_SprintDash_Dash", self.wndMovables:FindChild("Movable_DashMeter"))
 
-	ForgeUI.ColorBoxChanged(self.wndContainers["Container"]:FindChild("SprintMeter_Color"), self.tSettings.sprintColor, "sprintColor")
-	ForgeUI.ColorBoxChanged(self.wndContainers["Container"]:FindChild("DashMeter_Color"), self.tSettings.dashColor, "dashColor")
-	ForgeUI.ColorBoxChanged(self.wndContainers["Container"]:FindChild("DashMeter_Color2"), self.tSettings.dashColor2, "dashColor2")
-end
-
-function ForgeUI_SprintDash:ForgeAPI_BeforeSave()
-
+	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("crSprint"), self.tSettings, "crSprint", true)
+	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("crDash"), self.tSettings, "crDash", true)
+	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("crDash2"), self.tSettings, "crDash2", true)
+	
+	self.wndContainers.Container:FindChild("bShowSprint"):SetCheck(self.tSettings.bShowSprint)
+	self.wndContainers.Container:FindChild("bShowDash"):SetCheck(self.tSettings.bShowDash)
 end
 
 -------------------------------------------------------------------------------
@@ -95,39 +96,53 @@ function ForgeUI_SprintDash:OnNextFrame()
 	local nSprintCurr = unitPlayer:GetResource(sprintResource)
 	local nSprintMax = unitPlayer:GetMaxResource(sprintResource)
 	local bSprintFull = nSprintCurr == nSprintMax or unitPlayer:IsDead()
+	local bShowSprint = not bSprintFull or self.tSettings.bShowSprint
 
-	if not bSprintFull then
+	if bShowSprint then
 		self.wndSprintMeter:FindChild("Bar"):SetMax(unitPlayer:GetMaxResource(sprintResource))
 		self.wndSprintMeter:FindChild("Bar"):SetProgress(unitPlayer:GetResource(sprintResource))
-		self.wndSprintMeter:FindChild("Bar"):SetBarColor(ApolloColor.new("ff" .. self.tSettings.sprintColor))
+		self.wndSprintMeter:FindChild("Bar"):SetBarColor(ApolloColor.new("ff" .. self.tSettings.crSprint))
 	end
 	
-	self.wndSprintMeter:Show(not bSprintFull, true)
+	if self.wndSprintMeter:IsShown() ~= bShowSprint then
+		self.wndSprintMeter:Show(bShowSprint, true)
+	end
 	
 	-- dash meter
 	local nDashCurr = unitPlayer:GetResource(dashResource)
 	local nDashMax = unitPlayer:GetMaxResource(dashResource)
 	local bDashFull = nDashCurr == nDashMax or unitPlayer:IsDead()
+	local bShowDash = not bDashFull or self.tSettings.bShowDash
 	
-	if not bDashFull then
+	if bShowDash then
 		if nDashCurr < 100 then
 			self.wndDashMeter:FindChild("Bar_A"):SetMax(unitPlayer:GetMaxResource(dashResource) / 2)
 			self.wndDashMeter:FindChild("Bar_A"):SetProgress(unitPlayer:GetResource(dashResource))
-			self.wndDashMeter:FindChild("Bar_A"):SetBarColor(ApolloColor.new("ff" .. self.tSettings.dashColor2))
+			self.wndDashMeter:FindChild("Bar_A"):SetBarColor(ApolloColor.new(self.tSettings.crDash2))
 			
 			self.wndDashMeter:FindChild("Bar_B"):SetProgress(0)
-		else
+		elseif nDashCurr < nDashMax then
 			self.wndDashMeter:FindChild("Bar_B"):SetMax(unitPlayer:GetMaxResource(dashResource) / 2)
 			self.wndDashMeter:FindChild("Bar_B"):SetProgress(unitPlayer:GetResource(dashResource) - (unitPlayer:GetMaxResource(dashResource) / 2))
-			self.wndDashMeter:FindChild("Bar_B"):SetBarColor(ApolloColor.new("ff" .. self.tSettings.dashColor2))
+			self.wndDashMeter:FindChild("Bar_B"):SetBarColor(ApolloColor.new(self.tSettings.crDash2))
 			
 			self.wndDashMeter:FindChild("Bar_A"):SetMax(unitPlayer:GetMaxResource(dashResource) / 2)
 			self.wndDashMeter:FindChild("Bar_A"):SetProgress(unitPlayer:GetMaxResource(dashResource) / 2)
-			self.wndDashMeter:FindChild("Bar_A"):SetBarColor(ApolloColor.new("ff" .. self.tSettings.dashColor))
+			self.wndDashMeter:FindChild("Bar_A"):SetBarColor(ApolloColor.new(self.tSettings.crDash))
+		else
+			self.wndDashMeter:FindChild("Bar_B"):SetMax(unitPlayer:GetMaxResource(dashResource) / 2)
+			self.wndDashMeter:FindChild("Bar_B"):SetProgress(unitPlayer:GetResource(dashResource) - (unitPlayer:GetMaxResource(dashResource) / 2))
+			self.wndDashMeter:FindChild("Bar_B"):SetBarColor(ApolloColor.new(self.tSettings.crDash))
+			
+			self.wndDashMeter:FindChild("Bar_A"):SetMax(unitPlayer:GetMaxResource(dashResource) / 2)
+			self.wndDashMeter:FindChild("Bar_A"):SetProgress(unitPlayer:GetMaxResource(dashResource) / 2)
+			self.wndDashMeter:FindChild("Bar_A"):SetBarColor(ApolloColor.new(self.tSettings.crDash))
 		end		
 	end
 	
-	self.wndDashMeter:Show(not bDashFull, true)
+	if self.wndDashMeter:IsShown() ~= bShowDash then
+		self.wndDashMeter:Show(bShowDash, true)
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -139,14 +154,20 @@ function ForgeUI_SprintDash:OnMovableMove( wndHandler, wndControl, nOldLeft, nOl
 	self.wndDashMeter:MoveToLocation(self.wndMovables:FindChild("Movable_DashMeter"):GetLocation())
 end
 
+function ForgeUI_SprintDash:OnOptionsChanged( wndHandler, wndControl )
+	local strType = wndControl:GetParent():GetName()
+	
+	if strType == "ColorBox" then
+		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings, wndControl:GetName())
+	end
+	
+	if strType == "CheckBox" then
+		self.tSettings[wndControl:GetName()] = wndControl:IsChecked()
+	end
+end
+
 ---------------------------------------------------------------------------------------------------
 -- Container Functions
 ---------------------------------------------------------------------------------------------------
 local ForgeUI_SprintDashInst = ForgeUI_SprintDash:new()
 ForgeUI_SprintDashInst:Init()
-
-function ForgeUI_SprintDash:OnEditBoxChanged( wndHandler, wndControl, strText )
-	local tmpWnd = ForgeUI.ColorBoxChanged(wndControl)
-	self.tSettings[tmpWnd:GetData()] = tmpWnd:GetText()
-end
-

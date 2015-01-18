@@ -34,6 +34,7 @@ function ForgeUI_ResourceBars:new(o)
 	-- optional
 	self.tSettings = {
 		bSmoothBars = false,
+		bPermaShow = false,
 		crBorder = "FF000000",
 		crBackground = "FF101010",
 		warrior = {
@@ -157,7 +158,7 @@ function ForgeUI_ResourceBars:OnEngineerUpdate()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 	
 	local nResource = unitPlayer:GetResource(1)
-	if unitPlayer:IsInCombat() or nResource > 0 then
+	if unitPlayer:IsInCombat() or nResource > 0 or self.tSettings.bPermaShow  then
 		self.wndResource:FindChild("ProgressBar"):SetProgress(nResource)
 		self.wndResource:FindChild("Value"):SetText(nResource)
 		
@@ -208,7 +209,7 @@ function ForgeUI_ResourceBars:OnEsperUpdate()
 	
 	local nResource = unitPlayer:GetResource(1)
 	
-	if unitPlayer:IsInCombat() or nResource > 0 then
+	if unitPlayer:IsInCombat() or nResource > 0 or self.tSettings.bPermaShow  then
 		for i = 1, self.playerMaxResource do
 			if nResource >= i then
 				self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetProgress(1)
@@ -259,7 +260,7 @@ function ForgeUI_ResourceBars:OnMedicUpdate()
 	
 	local nResource = unitPlayer:GetResource(1)
 	
-	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource then
+	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self.tSettings.bPermaShow  then
 		for i = 1, self.playerMaxResource do
 			if nResource >= i then
 				self.wndResource:FindChild("ACU" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.medic.crResource1)
@@ -323,7 +324,7 @@ function ForgeUI_ResourceBars:OnSlingerUpdate()
 	
 	local nResource = unitPlayer:GetResource(4)
 	
-	if unitPlayer:IsInCombat() or GameLib.IsSpellSurgeActive() or nResource < self.playerMaxResource then
+	if unitPlayer:IsInCombat() or GameLib.IsSpellSurgeActive() or nResource < self.playerMaxResource or self.tSettings.bPermaShow  then
 		for i = 1, 4 do
 			if nResource >= (i * 25) then
 				self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.slinger.crResource1)
@@ -377,7 +378,7 @@ function ForgeUI_ResourceBars:OnStalkerUpdate()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 	
 	local nResource = unitPlayer:GetResource(3)
-	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource then
+	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self.tSettings.bPermaShow  then
 		self.wndResource:FindChild("ProgressBar"):SetProgress(nResource)
 		self.wndResource:FindChild("Value"):SetText(nResource)
 		
@@ -415,7 +416,7 @@ function ForgeUI_ResourceBars:OnWarriorUpdate()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 	
 	local nResource = unitPlayer:GetResource(1)
-	if unitPlayer:IsInCombat() or nResource > 0 then
+	if unitPlayer:IsInCombat() or nResource > 0 or self.tSettings.bPermaShow then
 		self.wndResource:FindChild("ProgressBar"):SetProgress(nResource)
 		self.wndResource:FindChild("Value"):SetText(nResource)
 		
@@ -485,6 +486,8 @@ end
 function ForgeUI_ResourceBars:OnOptionsChanged( wndHandler, wndControl )
 	if wndControl:GetName() == "SmoothBars_CheckBox" then
 		self.tSettings.bSmoothBars = wndControl:IsChecked()
+	elseif wndControl:GetName() == "PermaShow_CheckBox" then
+		self.tSettings.bPermaShow = wndControl:IsChecked()
 	elseif wndControl:GetName() == "BorderColor_EditBox" then
 		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings, "crBorder")
 	elseif wndControl:GetName() == "BackgroundColor_EditBox" then
@@ -532,6 +535,7 @@ end
 
 function ForgeUI_ResourceBars:LoadOptions()
 	self.wndContainers.Container:FindChild("SmoothBars_CheckBox"):SetCheck(self.tSettings.bSmoothBars)
+	self.wndContainers.Container:FindChild("PermaShow_CheckBox"):SetCheck(self.tSettings.bPermaShow)
 	
 	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("BorderColor_EditBox"), self.tSettings, "crBorder", true)
 	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("BackgroundColor_EditBox"), self.tSettings, "crBackground", true)
