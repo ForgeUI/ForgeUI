@@ -64,6 +64,11 @@ function ForgeUI_UnitFrames:new(o)
 			crAbsorbValue = "FFFFFFFF"
 		},
 		tTotFrame = {
+			bShowThreat = true,
+			crThreatLow = "FF33CC33",
+			crThreatMedium = "FFFFFF00",
+			crThreatHigh = "FFFF0000",
+			crThreatTank = "FFFFFFFF",
 			crBorder = "FF000000",
 			crBackground = "FF101010",
 			crHpBar = "FF272727",
@@ -126,6 +131,7 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	self.wndTargetDebuffFrame = Apollo.LoadForm(self.xmlDoc, "TargetDebuffContainerWindow", "FixedHudStratumHigh", self)
 	
 	self.wndToTFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ToTFrame", "FixedHudStratumLow", self)
+	self.wndThreat = self.wndToTFrame:FindChild("Threat")
 	self.wndFocusFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_FocusFrame", "FixedHudStratumLow", self)
 	
 	self.wndHazardBreath = Apollo.LoadForm(self.xmlDoc, "ForgeUI_HazardBreath", "FixedHudStratumLow", self)
@@ -133,6 +139,10 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	self.wndHazardToxic = Apollo.LoadForm(self.xmlDoc, "ForgeUI_HazardToxic", "FixedHudStratumLow", self)
 	
 	self.wndMovables = Apollo.LoadForm(self.xmlDoc, "Movables", nil, self)
+	
+	if self.tSettings.tTotFrame.bShowThreat then
+		Apollo.RegisterEventHandler("TargetThreatListUpdated", "OnThreatUpdated", self)
+	end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -217,6 +227,7 @@ function ForgeUI_UnitFrames:UpdateToTFrame(unitSource)
 	if unit == nil then 
 		if self.wndToTFrame:IsShown() then
 			self.wndToTFrame:Show(false)
+			self.wndThreat:SetText("")
 		end
 		return
 	end
@@ -226,6 +237,10 @@ function ForgeUI_UnitFrames:UpdateToTFrame(unitSource)
 		self.wndToTFrame:FindChild("Name"):SetTextColor("ff" .. ForgeUI.GetSettings().classColors[tClassEnums[unit:GetClassId()]])
 	else
 		self.wndToTFrame:FindChild("Name"):SetTextColor(unit:GetNameplateColor())
+	end
+	
+	if self.tSettings.tTotFrame.bShowThreat and unitSource:GetType() == "Player"  then
+		self.wndThreat:SetText("")
 	end
 	
 	self:UpdateHPBar(unit, self.wndToTFrame)
@@ -482,6 +497,11 @@ function ForgeUI_UnitFrames:ForgeAPI_LoadOptions()
 			if wnd ~= nil then
 				wnd:SetCheck(self.tSettings[sType].bUseGradient)
 			end
+			
+			wnd = wndContainer:FindChild("bShowThreat")
+			if wnd ~= nil then
+				wnd:SetCheck(self.tSettings[sType].bShowThreat)
+			end
 		end
 	end
 end
@@ -533,6 +553,40 @@ function ForgeUI_UnitFrames:UpdateStyles()
 	self.wndFocusFrame:FindChild("HP_TextPercent"):SetTextColor(self.tSettings.tFocusFrame.crHpValue)
 end
 
+function ForgeUI_UnitFrames:OnThreatUpdated(...)
+	if self.tSettings.tTotFrame.bShowThreat ~= true then return end
+
+	if select(1, ...) ~= nil then
+		local topThreatUnit = select(1, ...)
+		local topThreatValue = select(2, ...)
+		if topThreatUnit:IsThePlayer() then
+			if select(3, ...) == nil then
+				self.wndThreat:SetText("")
+			else
+				self.wndThreat:SetText(ForgeUI.Round((select(4, ...) / topThreatValue) * 100, 1) .. "%")
+				self.wndThreat:SetTextColor(self.tSettings.tTotFrame.crThreatTank)
+			end
+		else
+			for i=3, select('#', ...), 2 do
+				local cUnit = select(i, ...)
+				local cThreat = select(i+1, ...)
+				
+				if cUnit ~= nil and cUnit:IsThePlayer() then
+					local nThreatPercentage = ForgeUI.Round((cThreat / topThreatValue) * 100, 1)
+				
+					self.wndThreat:SetText(nThreatPercentage .. "%")
+					if nThreatPercentage <= 75 then
+						self.wndThreat:SetTextColor(self.tSettings.tTotFrame.crThreatLow)
+					elseif nThreatPercentage <= 90 then
+						self.wndThreat:SetTextColor(self.tSettings.tTotFrame.crThreatMedium)
+					else
+						self.wndThreat:SetTextColor(self.tSettings.tTotFrame.crThreatHigh)
+					end
+				end
+			end
+		end
+	end
+end
 -----------------------------------------------------------------------------------------------
 -- ForgeUI_UnitFrames OnDocLoaded
 -----------------------------------------------------------------------------------------------
