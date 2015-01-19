@@ -37,6 +37,7 @@ function ForgeUI_ResourceBars:new(o)
 		bPermaShow = false,
 		crBorder = "FF000000",
 		crBackground = "FF101010",
+		crFocus = "FFFFFFFF",
 		warrior = {
 			crResource1 = "FFE53805",
 			crResource2 = "FFEF0000"
@@ -444,8 +445,11 @@ function ForgeUI_ResourceBars:UpdateFocus(unitPlayer)
 	local nMaxMana = unitPlayer:GetMaxMana()
 	
 	if nMana < nMaxMana then
-		self.wndFocus:FindChild("ProgressBar"):SetMax(nMaxMana)
-		self.wndFocus:FindChild("ProgressBar"):SetProgress(nMana)
+		local focusBar = self.wndFocus:FindChild("ProgressBar")
+	
+		focusBar:SetMax(nMaxMana)
+		focusBar:SetProgress(nMana)
+		focusBar:SetBarColor(self.tSettings.crFocus)
 		self.wndFocus:FindChild("Value"):SetText(ForgeUI.Round(nMana, 0))
 		
 		self.wndFocus:Show(true, true)
@@ -531,6 +535,10 @@ function ForgeUI_ResourceBars:OnOptionsChanged( wndHandler, wndControl )
 	elseif wndControl:GetName() == "Slinger_Color2_EditBox" then
 		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings.slinger, "crResource2")
 	end
+	
+	if wndControl:GetName() == "crFocus" then
+		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings, "crFocus")
+	end
 end
 
 function ForgeUI_ResourceBars:LoadOptions()
@@ -561,6 +569,10 @@ function ForgeUI_ResourceBars:LoadOptions()
 	-- slinger
 	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("Slinger_Color1_EditBox"), self.tSettings.slinger, "crResource1", true)
 	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("Slinger_Color2_EditBox"), self.tSettings.slinger, "crResource2", true)
+	
+	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("EsperContainer"):FindChild("crFocus"), self.tSettings, "crFocus", true)
+	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("MedicContainer"):FindChild("crFocus"), self.tSettings, "crFocus", true)
+	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("SlingerContainer"):FindChild("crFocus"), self.tSettings, "crFocus", true)
 end
 
 -----------------------------------------------------------------------------------------------
