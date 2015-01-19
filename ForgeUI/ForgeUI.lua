@@ -362,13 +362,18 @@ function ForgeUI:OnSave(eType)
 end
 
 function ForgeUI:OnRestore(eType, tData)
-	if tData.settings == nil then return end
-	tSettings = ForgeUI.CopyTable(tSettings, tData.settings)
-	tSettings_windowsPositions = ForgeUI.CopyTable(tSettings_windowsPositions, tData.windowsPositions)
+	if tData.settings ~= nil then
+		tSettings = ForgeUI.CopyTable(tSettings, tData.settings)
+	end
 	
-	if tData.addons == nil then return end
-	for name, data in pairs(tData.addons) do
-		tSettings_addons[name] = data
+	if tData.windowsPositions ~= nil then
+		tSettings_windowsPositions = ForgeUI.CopyTable(tSettings_windowsPositions, tData.windowsPositions)
+	end
+	
+	if tData.addons ~= nil then
+		for name, data in pairs(tData.addons) do
+			tSettings_addons[name] = data
+		end
 	end
 end
 
