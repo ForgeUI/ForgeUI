@@ -57,8 +57,11 @@ function ForgeUI_ResourceBars:new(o)
 			crResource2 = "FFFFE757"
 		},
 		slinger = {
+			bSurgeShadow = true,
 			crResource1 = "FFFFE757",
-			crResource2 = "FFE53805"
+			crResource2 = "FFE53805",
+			crResource3 = "FF99FF33",
+			crResource4 = "FF009900"
 		}
 	}
 	
@@ -328,10 +331,18 @@ function ForgeUI_ResourceBars:OnSlingerUpdate()
 	if unitPlayer:IsInCombat() or GameLib.IsSpellSurgeActive() or nResource < self.playerMaxResource or self.tSettings.bPermaShow  then
 		for i = 1, 4 do
 			if nResource >= (i * 25) then
-				self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.slinger.crResource1)
+				if GameLib.IsSpellSurgeActive() then
+					self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.slinger.crResource3)
+				else
+					self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.slinger.crResource1)
+				end
 				self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetProgress(25)
 			else
-				self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.slinger.crResource2)
+				if GameLib.IsSpellSurgeActive() then
+					self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.slinger.crResource4)
+				else
+					self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.slinger.crResource2)
+				end
 				self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetProgress(25 - ((i * 25) - nResource))
 			end
 		end
@@ -341,7 +352,7 @@ function ForgeUI_ResourceBars:OnSlingerUpdate()
 		self.wndResource:Show(false, true)
 	end
 	
-	if GameLib.IsSpellSurgeActive() then
+	if self.tSettings.slinger.bSurgeShadow and GameLib.IsSpellSurgeActive() then
 		self.wndResource:FindChild("SpellSurge"):Show(true, true)
 	else
 		self.wndResource:FindChild("SpellSurge"):Show(false, true)
@@ -534,6 +545,12 @@ function ForgeUI_ResourceBars:OnOptionsChanged( wndHandler, wndControl )
 		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings.slinger, "crResource1")
 	elseif wndControl:GetName() == "Slinger_Color2_EditBox" then
 		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings.slinger, "crResource2")
+	elseif wndControl:GetName() == "Slinger_Color3_EditBox" then
+		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings.slinger, "crResource3")
+	elseif wndControl:GetName() == "Slinger_Color4_EditBox" then
+		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings.slinger, "crResource4")
+	elseif wndControl:GetName() == "bSurgeShadow" then
+		self.tSettings.slinger.bSurgeShadow = wndControl:IsChecked()
 	end
 	
 	if wndControl:GetName() == "crFocus" then
@@ -569,6 +586,9 @@ function ForgeUI_ResourceBars:LoadOptions()
 	-- slinger
 	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("Slinger_Color1_EditBox"), self.tSettings.slinger, "crResource1", true)
 	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("Slinger_Color2_EditBox"), self.tSettings.slinger, "crResource2", true)
+	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("Slinger_Color3_EditBox"), self.tSettings.slinger, "crResource3", true)
+	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("Slinger_Color4_EditBox"), self.tSettings.slinger, "crResource4", true)
+	self.wndContainers.Container:FindChild("bSurgeShadow"):SetCheck(self.tSettings.slinger.bSurgeShadow)
 	
 	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("EsperContainer"):FindChild("crFocus"), self.tSettings, "crFocus", true)
 	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("MedicContainer"):FindChild("crFocus"), self.tSettings, "crFocus", true)
