@@ -197,7 +197,7 @@ function ForgeUI_PetFrames:OnPetStanceChanged()
 end
 
 function ForgeUI_PetFrames:OnPetSpawned()
-	
+	self.wndPetControl:Show(true, true)
 end
 
 ---------------------------------------------------------------------------------------------------
