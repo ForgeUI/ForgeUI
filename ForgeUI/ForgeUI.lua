@@ -100,6 +100,7 @@ function ForgeUI:OnDocLoaded()
 	wndItemContainer2 = self.wndMain:FindChild("ForgeUI_ContainerHolder2")
 
 	Apollo.RegisterSlashCommand("forgeui", "OnForgeUIcmd", self)
+	Apollo.RegisterSlashCommand("focus", "OnFocusCmd", self)
 	
 	self.wndItemButton_Home = ForgeUI.AddItemButton(self, "Home", "ForgeUI_Home")
 	self.wndItemButton_Home:GetParent():FindChild("ForgeUI_Item_Text"):SetTextFlags("DT_CENTER", true)
@@ -426,6 +427,10 @@ end
 
 function ForgeUI:OnFOrgeUIOff( wndHandler, wndControl, eMouseButton )
 	self.wndMain:Close()
+end
+
+function ForgeUI:OnFocusCmd()
+	GameLib.GetPlayerUnit():SetAlternateTarget(GameLib.GetTargetUnit())
 end
 
 ---------------------------------------------------------------------------------------------------
