@@ -470,6 +470,10 @@ function ForgeUI_Nameplates:UpdateBars(tNameplate)
 		end
 	end
 	
+	if self:UpdateCleanse(tNameplate) then
+		bShow = true
+	end
+	
 	if bShow ~= bar:IsShown() then
 		bar:Show(bShow, true)
 		self:UpdateStyle(tNameplate)
@@ -481,7 +485,6 @@ function ForgeUI_Nameplates:UpdateBars(tNameplate)
 		self:UpdateAbsorb(tNameplate)
 		self:UpdateShield(tNameplate)
 		self:UpdateMarker(tNameplate)
-		self:UpdateCleanse(tNameplate)
 	end
 end
 
@@ -591,6 +594,8 @@ function ForgeUI_Nameplates:UpdateCleanse(tNameplate)
 	if cleanse:IsShown() ~= bShow then
 		cleanse:Show(bShow, true)
 	end
+	
+	return bShow
 end
 
 -- update castbar
