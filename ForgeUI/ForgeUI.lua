@@ -87,7 +87,8 @@ end
 -----------------------------------------------------------------------------------------------
 function ForgeUI:OnDocLoaded()
 	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
-	Apollo.LoadSprites("ForgeUI_Sprite.xml", "Forge")
+	Apollo.LoadSprites("ForgeUI_Sprite.xml", "ForgeUI_Sprite")
+	Apollo.LoadSprites("ForgeUI_Icons.xml", "ForgeUI_Icons")
 	
     self.wndMain = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Form", nil, self)
 	self.wndMain:FindChild("Version"):FindChild("Text"):SetText(VERSION)

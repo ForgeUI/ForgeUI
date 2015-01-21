@@ -13,7 +13,16 @@ tClassEnums = {
 	[GameLib.CodeEnumClass.Medic]        	= "medic",
 	[GameLib.CodeEnumClass.Stalker]      	= "stalker",
 	[GameLib.CodeEnumClass.Spellslinger]	= "spellslinger"
-} 
+}
+
+local tNpcRankEnums = {
+	[Unit.CodeEnumRank.Elite] 		= "elite",
+	[Unit.CodeEnumRank.Superior] 	= "superior",
+	[Unit.CodeEnumRank.Champion] 	= "champion",
+	[Unit.CodeEnumRank.Standard] 	= "standard",
+	[Unit.CodeEnumRank.Minion] 		= "minion",
+	[Unit.CodeEnumRank.Fodder] 		= "fodder",
+}
 
 local tDispositionId = {
 	[0] = "Hostile",
@@ -57,6 +66,7 @@ function ForgeUI_Nameplates:new(o)
 		nHpBarHeight = 7,
 		nShieldBarHeight = 4,
 		bShowQuestIcons = true,
+		bShowInfo = false,
 		tTarget = {
 			bShow = true,
 			bShowBars = true,
@@ -319,6 +329,7 @@ function ForgeUI_Nameplates:UpdateNameplate(tNameplate)
 	tNameplate.unitType = self:GetUnitType(tNameplate.unitOwner)
 	
 	self:UpdateName(tNameplate)
+	self:UpdateInfo(tNameplate)
 	self:UpdateBars(tNameplate)
 	self:UpdateGuild(tNameplate)
 	self:UpdateCast(tNameplate)
@@ -375,6 +386,24 @@ function ForgeUI_Nameplates:UpdateName(tNameplate)
 	
 	if challangeIcon:IsShown() ~= bShowChalange then
 		challangeIcon:Show(bShowChalange, true)
+	end
+end
+
+-- update info
+function ForgeUI_Nameplates:UpdateInfo(tNameplate)
+	local unitOwner = tNameplate.unitOwner
+	local info = tNameplate.wnd.info
+	
+	local bShow = self.tSettings.bShowInfo
+	if bShow then
+		local info_level = tNameplate.wnd.info_level
+		local info_icon = tNameplate.wnd.info_icon
+		
+		info_level:SetText(unitOwner:GetLevel())
+	end
+	
+	if bShow ~= info:IsShown() then
+		info:Show(bShow, true)
 	end
 end
 
@@ -647,7 +676,7 @@ function ForgeUI_Nameplates:UpdateStyle(tNameplate)
 	wnd.absorbBar:SetBarColor(self.tSettings.crAbsorbBar)
 	wnd.castBar:SetBarColor(self.tSettings.crCastBar)
 	wnd.cast:FindChild("Background"):SetBGColor(self.tSettings.crBgBar)
-	wnd.marker:SetBGColor(self.tSettings.tTarget.crMarker)
+	wnd.marker:SetBGColor(self.tSettings.tTarget.crMarker) 
 	
 	tNameplate.wndNameplate:SetAnchorOffsets(-(self.tSettings.nBarWidth /2), -30, (self.tSettings.nBarWidth / 2), 0)
 	
@@ -771,18 +800,22 @@ function ForgeUI_Nameplates:GenerateNewNameplate(unitNew)
 	local tNameplate = {
 		unitOwner 		= unitNew,
 		idUnit 			= idUnit,
+		unitClassID 	= unitNew:IsACharacter() and unitNew:GetClassId() or unitNew:GetRank(),
 		unitType 		= self:GetUnitType(unitNew),
+		bIsPlayer		= unitNew:IsACharacter(),
+		eDisposition	= unitNew:GetDispositionTo(self.unitPlayer),
+		bIsImportant	= self:IsImportantNPC(unitNew),
+		
 		wndNameplate	= tmpWnd,
 		wndMeasure		= nil,
 		bOnScreen 		= wnd:IsOnScreen(),
 		bOccluded 		= wnd:IsOccluded(),
-		bSpeechBubble 	= false,
 		bIsTarget 		= false,
 		bGibbed			= false,
 		nVulnerableTime = 0,
-		eDisposition	= unitNew:GetDispositionTo(self.unitPlayer),
-		bIsImportant	= self:IsImportantNPC(unitNew),
+		
 		bShow			= false,
+		
 		wndNameplate 	= wnd,
 		wnd = {
 			name = wnd:FindChild("Name"),
@@ -800,26 +833,40 @@ function ForgeUI_Nameplates:GenerateNewNameplate(unitNew)
 			ia = wnd:FindChild("IA"),
 			iaText = wnd:FindChild("IAText"),
 			quest = wnd:FindChild("QuestIndicator"),
-			challange = wnd:FindChild("ChallangeIndicator")
+			challange = wnd:FindChild("ChallangeIndicator"),
+			info = wnd:FindChild("Info"),
+			info_icon = wnd:FindChild("Info"):FindChild("Icon"),
+			info_level = wnd:FindChild("Info"):FindChild("Level")
 		}
 	}
 	
 	--if self.tSettings["t" .. tNameplate.unitType].bShow then
-		if self.tSettings["t" .. tNameplate.unitType] == nil then
-			tNameplate.unitType = "Unknown"
-			Print("Please report this text to any ForgeUI page: Unknow unitType - " .. unitNew:GetName())
-		end
+	if self.tSettings["t" .. tNameplate.unitType] == nil then
+		tNameplate.unitType = "Unknown"
+		Print("Please report this text to any ForgeUI page: Unknow unitType - " .. unitNew:GetName())
+	end
+
+	self:InitNameplate(tNameplate)
+	self:UpdateNameplate(tNameplate)
+	self:UpdateStyle(tNameplate)
 	
-		self:UpdateNameplate(tNameplate)
-		self:UpdateStyle(tNameplate)
-		
-		self.tNameplates[unitNew:GetId()] = tNameplate
-		
-		return tNameplate
+	self.tNameplates[unitNew:GetId()] = tNameplate
+	
+	return tNameplate
 	--else
 	--	self.tHiddenNameplates[unitNew:GetId()] = tNameplate
 	--	return
 	--end
+end
+
+function ForgeUI_Nameplates:InitNameplate(tNameplate)
+	if tNameplate.bIsPlayer then
+		tNameplate.wnd.info_icon:SetSprite("ForgeUI_" .. tClassEnums[tNameplate.unitClassID] .. "_s")
+	elseif tNameplate.unitClassID ~= 6 and tNameplate.unitClassID >= 4 then
+		tNameplate.wnd.info_icon:SetSprite("ForgeUI_npc_rank_" .. tNpcRankEnums[tNameplate.unitClassID] .. "_s")
+	else
+		tNameplate.wnd.info_level:SetAnchorOffsets(0, 0, -3, 0)
+	end
 end
 
 function ForgeUI_Nameplates:IsImportantNPC(unitOwner)
@@ -887,6 +934,7 @@ function ForgeUI_Nameplates:ForgeAPI_LoadOptions()
 	self.wndContainers.Container_General:FindChild("UseOcclusion"):SetCheck(self.tSettings.bUseOcclusion )
 	self.wndContainers.Container_General:FindChild("ShowTitles"):SetCheck(self.tSettings.bShowTitles )
 	self.wndContainers.Container_General:FindChild("ShowQuestIcons"):SetCheck(self.tSettings.bShowQuestIcons )
+	self.wndContainers.Container_General:FindChild("ShowInfo"):SetCheck(self.tSettings.bShowInfo )
 
 	ForgeUI.ColorBoxChange(self, self.wndContainers.Container_General:FindChild("BgBarColor"), self.tSettings, "crBgBar", true)
 	ForgeUI.ColorBoxChange(self, self.wndContainers.Container_General:FindChild("MooBarColor"), self.tSettings, "crMooBar", true)
@@ -922,6 +970,8 @@ function ForgeUI_Nameplates:OnOptionsChanged( wndHandler, wndControl )
 		self.tSettings.bShowTitles = wndControl:IsChecked()
 	elseif wndName == "ShowQuestIcons" then
 		self.tSettings.bShowQuestIcons = wndControl:IsChecked()
+	elseif wndName == "ShowInfo" then
+		self.tSettings.bShowInfo = wndControl:IsChecked()
 	end
 	
 	if wndName == "BgBarColor" then

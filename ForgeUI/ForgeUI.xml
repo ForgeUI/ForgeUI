@@ -132,4 +132,5 @@
             </Control>
         </Control>
     </Form>
+    <SpriteFile Name="ForgeUI_Icons.xml"/>
 </Forms>
