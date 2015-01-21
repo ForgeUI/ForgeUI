@@ -43,7 +43,8 @@ function ForgeUI_ResourceBars:new(o)
 			crResource2 = "FFEF0000"
 		},
 		stalker = {
-			crResource1 = "FFD23EF4"
+			crResource1 = "FFD23EF4",
+			crResource2 = "FF620077"
 		},
 		engineer = {
 			crResource1 = "FF00AEFF",
@@ -394,6 +395,12 @@ function ForgeUI_ResourceBars:OnStalkerUpdate()
 		self.wndResource:FindChild("ProgressBar"):SetProgress(nResource)
 		self.wndResource:FindChild("Value"):SetText(nResource)
 		
+		if nResource < 35 then
+			self.wndResource:FindChild("ProgressBar"):SetBarColor(self.tSettings.stalker.crResource2)
+		else
+			self.wndResource:FindChild("ProgressBar"):SetBarColor(self.tSettings.stalker.crResource1)
+		end
+		
 		self.wndResource:Show(true, true)
 	else
 		self.wndResource:Show(false, true)
@@ -519,6 +526,8 @@ function ForgeUI_ResourceBars:OnOptionsChanged( wndHandler, wndControl )
 	-- stalker
 	if wndControl:GetName() == "Stalker_Color1_EditBox" then
 		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings.stalker, "crResource1")
+	elseif wndControl:GetName() == "Stalker_Color2_EditBox" then
+		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings.stalker, "crResource2")
 	end
 	
 	-- medic
@@ -571,6 +580,7 @@ function ForgeUI_ResourceBars:LoadOptions()
 	
 	-- stalker
 	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("Stalker_Color1_EditBox"), self.tSettings.stalker, "crResource1", true)
+	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("Stalker_Color2_EditBox"), self.tSettings.stalker, "crResource2", true)
 	
 	-- medic
 	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("Medic_Color1_EditBox"), self.tSettings.medic, "crResource1", true)
