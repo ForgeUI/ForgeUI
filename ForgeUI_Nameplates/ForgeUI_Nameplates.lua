@@ -267,7 +267,7 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRegistration()
 	
 	local wndItemButton = ForgeUI.AddItemButton(self, "Nameplates")
 	ForgeUI.AddItemListToButton(self, wndItemButton, {
-		{ strDisplayName = "General", strContainer = "Container_General" },
+		{ strDisplayName = "General", strContainer = "Container_General", bDefault = true },
 		{ strDisplayName = "Target", strContainer = "Container_Target" },
 		{ strDisplayName = "Player", strContainer = "Container_Player" },
 		{ strDisplayName = "Friendly player", strContainer = "Container_FriendlyPlayer" },
