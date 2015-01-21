@@ -136,6 +136,7 @@ function ForgeUI_Nameplates:new(o)
 			bUseClassColors = true,
 			bShowCast = false,
 			bShowGuild = false,
+			bShowCleanse = false,
 			crName = "FFFFFFFF",
 			crBar = "FF15B01A"
 		},
@@ -147,6 +148,7 @@ function ForgeUI_Nameplates:new(o)
 			bUseClassColors = true,
 			bShowCast = false,
 			bShowGuild = false,
+			bShowCleanse = false,
 			crName = "FF43C8F3",
 			crBar = "FF15B01A"
 		},
@@ -479,6 +481,7 @@ function ForgeUI_Nameplates:UpdateBars(tNameplate)
 		self:UpdateAbsorb(tNameplate)
 		self:UpdateShield(tNameplate)
 		self:UpdateMarker(tNameplate)
+		self:UpdateCleanse(tNameplate)
 	end
 end
 
@@ -565,6 +568,28 @@ function ForgeUI_Nameplates:UpdateAbsorb(tNameplate)
 	if bShow ~= absorbBar:IsShown() then
 		absorbBar:Show(bShow, true)
 		self:UpdateStyle(tNameplate)
+	end
+end
+
+-- update cleanse
+function ForgeUI_Nameplates:UpdateCleanse(tNameplate)
+	local unitOwner = tNameplate.unitOwner
+	local cleanse = tNameplate.wnd.cleanse
+	
+	local bShow = false
+	
+	if self.tSettings["t" .. tNameplate.unitType].bShowCleanse then
+		local debuffs = unitOwner:GetBuffs().arHarmful
+		
+		for _, debuff in pairs(debuffs) do
+			if debuff["splEffect"]:GetClass() == Spell.CodeEnumSpellClass.DebuffDispellable then
+				bShow = true
+			end
+		end
+	end
+	
+	if cleanse:IsShown() ~= bShow then
+		cleanse:Show(bShow, true)
 	end
 end
 
@@ -836,7 +861,8 @@ function ForgeUI_Nameplates:GenerateNewNameplate(unitNew)
 			challange = wnd:FindChild("ChallangeIndicator"),
 			info = wnd:FindChild("Info"),
 			info_icon = wnd:FindChild("Info"):FindChild("Icon"),
-			info_level = wnd:FindChild("Info"):FindChild("Level")
+			info_level = wnd:FindChild("Info"):FindChild("Level"),
+			cleanse = wnd:FindChild("Cleanse")
 		}
 	}
 	
@@ -1054,6 +1080,11 @@ function ForgeUI_Nameplates:LoadOptions_SpecificType()
 			wnd = wndContainer:FindChild("bOnlyImportantNPCs")
 			if wnd ~= nil then
 				wnd:SetCheck(self.tSettings[sType].bOnlyImportantNPCs)
+			end
+			
+			wnd = wndContainer:FindChild("bShowCleanse")
+			if wnd ~= nil then
+				wnd:SetCheck(self.tSettings[sType].bShowCleanse)
 			end
 			
 			-- color boxes
