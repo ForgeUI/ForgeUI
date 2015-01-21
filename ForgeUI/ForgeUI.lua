@@ -5,7 +5,7 @@ local ForgeUI = {}
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
-VERSION = "0.2.4"
+VERSION = "0.2.5"
 AUTHOR = "Adam Jedlicka"
 AUTHOR_LONG = "Winty Badass@Jabbit"
 API_VERSION = 1
@@ -87,7 +87,8 @@ end
 -----------------------------------------------------------------------------------------------
 function ForgeUI:OnDocLoaded()
 	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
-	Apollo.LoadSprites("ForgeUI_Sprite.xml", "Forge")
+	Apollo.LoadSprites("ForgeUI_Sprite.xml", "ForgeUI_Sprite")
+	Apollo.LoadSprites("ForgeUI_Icons.xml", "ForgeUI_Icons")
 	
     self.wndMain = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Form", nil, self)
 	self.wndMain:FindChild("Version"):FindChild("Text"):SetText(VERSION)
@@ -99,10 +100,12 @@ function ForgeUI:OnDocLoaded()
 	wndItemContainer2 = self.wndMain:FindChild("ForgeUI_ContainerHolder2")
 
 	Apollo.RegisterSlashCommand("forgeui", "OnForgeUIcmd", self)
+	Apollo.RegisterSlashCommand("focus", "OnFocusCmd", self)
 	
-	local tmpWnd = ForgeUI.AddItemButton(self, "Home", "ForgeUI_Home")
-	wndActiveItem = tmpWnd
-	self:SetActiveItem(tmpWnd)
+	self.wndItemButton_Home = ForgeUI.AddItemButton(self, "Home", "ForgeUI_Home")
+	self.wndItemButton_Home:GetParent():FindChild("ForgeUI_Item_Text"):SetTextFlags("DT_CENTER", true)
+	wndActiveItem = self.wndItemButton_Home
+	self:SetActiveItem(self.wndItemButton_Home)
 	
 	ForgeUI.AddItemButton(self, "General settings", "ForgeUI_General")
 	
@@ -189,9 +192,10 @@ function ForgeUI.AddItemListToButton(tAddon, wndButton, tItems)
 	local wndList = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_ListHolder", ForgeUIInst.wndMain:FindChild("ForgeUI_Form_ItemList"), ForgeUIInst)
 	wndList:Show(false)
 	local wndBackButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Item", wndList, ForgeUIInst):FindChild("ForgeUI_Item_Button")
-	wndBackButton:GetParent():FindChild("ForgeUI_Item_Text"):SetText("--- BACK ---")
+	wndBackButton:GetParent():FindChild("ForgeUI_Item_Text"):SetText("Home")
 	wndBackButton:GetParent():FindChild("ForgeUI_Item_Text"):SetTextFlags("DT_CENTER", true)
 	
+	local wndDefaultBtn = nil
 	for i, tItem in pairs(tItems) do
 		local wndBtn = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Item", wndList, ForgeUIInst):FindChild("ForgeUI_Item_Button")
 		wndBtn:GetParent():FindChild("ForgeUI_Item_Text"):SetText(tItem.strDisplayName)
@@ -200,17 +204,29 @@ function ForgeUI.AddItemListToButton(tAddon, wndButton, tItems)
 		wndBtn:SetData({
 			itemContainer = tAddon.wndContainers[tItem.strContainer],
 			itemList = nil
-		}) 
+		})
+		
+		if tItem.bDefault then
+			wndDefaultBtn = wndBtn
+		end
 	end
 	
 	wndBackButton:SetData({
-		itemList = wndButton:GetData().itemList
+		itemList = wndButton:GetData().itemList,
+		defaultButton = ForgeUIInst.wndItemButton_Home
 	})
+	
 	
 	wndButton:SetData({
 		itemContainer = wndButton:GetData().itemContainer,
 		itemList = wndList
 	})
+	
+	if wndDefaultBtn ~= nil then
+		local table = wndButton:GetData()
+		table.defaultButton = wndDefaultBtn
+		wndButton:SetData(table)
+	end
 	
 	wndList:ArrangeChildrenVert()
 end
@@ -413,6 +429,10 @@ function ForgeUI:OnFOrgeUIOff( wndHandler, wndControl, eMouseButton )
 	self.wndMain:Close()
 end
 
+function ForgeUI:OnFocusCmd()
+	GameLib.GetPlayerUnit():SetAlternateTarget(GameLib.GetTargetUnit())
+end
+
 ---------------------------------------------------------------------------------------------------
 -- ForgeUI_Movables Functions
 ---------------------------------------------------------------------------------------------------
@@ -501,7 +521,11 @@ function ForgeUI:SetActiveItem(wndControl)
 	else
 		wndItemList:Show(false)
 		wndItemList = wndControl:GetData().itemList
-		wndItemList:Show(true)	
+		wndItemList:Show(true)
+		
+		if wndControl:GetData().defaultButton ~= nil then
+			self:SetActiveItem(wndControl:GetData().defaultButton)
+		end
 	end
 end
 

@@ -122,7 +122,7 @@ function ForgeUI_InfoBar:OnGenerateTooltip( wndHandler, wndControl, eToolTipType
 		xml = XmlDoc.new()
 		xml:StartTooltip(1000)
 		if self.stats.nLevel == 50 then
-			xml:AddLine("EG: " .. math.floor(self.currentXP / 70000)) -- TODO replace with variable
+			xml:AddLine("EG: " .. math.floor(self.currentXP / 75000)) -- TODO replace with variable
 		else
 			xml:AddLine("XP: " .. ForgeUI.ShortNum(self.currentXP) .. "/" .. ForgeUI.ShortNum(self.neededXP) .. "         ", crWhite, "CRB_InterfaceMedium")
 		end

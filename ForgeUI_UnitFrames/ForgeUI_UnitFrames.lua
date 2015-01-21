@@ -116,7 +116,7 @@ end
 function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	local wnd = ForgeUI.AddItemButton(self, "Unit frames")
 	ForgeUI.AddItemListToButton(self, wnd, {
-		{ strDisplayName = "Player frame", strContainer = "Container_PlayerFrame" },
+		{ strDisplayName = "Player frame", strContainer = "Container_PlayerFrame", bDefault = true },
 		{ strDisplayName = "Target frame", strContainer = "Container_TargetFrame" },
 		{ strDisplayName = "ToT frame", strContainer = "Container_TotFrame" },
 		{ strDisplayName = "Focus frame", strContainer = "Container_FocusFrame" }
