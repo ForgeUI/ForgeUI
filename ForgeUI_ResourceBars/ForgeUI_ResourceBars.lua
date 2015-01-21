@@ -461,7 +461,7 @@ function ForgeUI_ResourceBars:UpdateFocus(unitPlayer)
 		focusBar:SetMax(nMaxMana)
 		focusBar:SetProgress(nMana)
 		focusBar:SetBarColor(self.tSettings.crFocus)
-		self.wndFocus:FindChild("Value"):SetText(ForgeUI.Round(nMana, 0))
+		self.wndFocus:FindChild("Value"):SetText(ForgeUI.Round(nMana, 0) .. " ( " .. ForgeUI.Round((nMana / nMaxMana) * 100, 1) .. "% )")
 		
 		self.wndFocus:Show(true, true)
 	else
