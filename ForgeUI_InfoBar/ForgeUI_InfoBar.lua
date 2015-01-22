@@ -17,7 +17,7 @@ function ForgeUI_InfoBar:new(o)
     self.__index = self 
 
      -- mandatory 
-    self.api_version = 1
+    self.api_version = 2
 	self.version = "0.1.0"
 	self.author = "WintyBadass"
 	self.strAddonName = "ForgeUI_InfoBar"

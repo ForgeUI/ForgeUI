@@ -11,7 +11,7 @@ function ForgeUI_SprintDash:new(o)
     self.__index = self 
 
     -- mandatory 
-    self.api_version = 1
+    self.api_version = 2
 	self.version = "0.1.0"
 	self.author = "WintyBadass"
 	self.strAddonName = "ForgeUI_SprintDash"
@@ -54,7 +54,7 @@ function ForgeUI_SprintDash:OnDocLoaded()
 		ForgeUI = Apollo.GetAddon("ForgeUI")
 	end
 	
-	ForgeUI.RegisterAddon(self)
+	ForgeUI.API_RegisterAddon(self)
 	
 	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnNextFrame", self)
 end
@@ -63,26 +63,16 @@ end
 -- ForgeAPI
 -------------------------------------------------------------------------------
 function ForgeUI_SprintDash:ForgeAPI_AfterRegistration()
-	ForgeUI.AddItemButton(self, "Sprint / dash meter", "Container")
+	ForgeUI.API_AddItemButton(self, "Sprint / dash meter", { strContainer = "Container" })
 
-	self.wndSprintMeter = Apollo.LoadForm(self.xmlDoc, "SprintMeter", "InWorldHudStratum", self)
-	self.wndDashMeter = Apollo.LoadForm(self.xmlDoc, "DashMeter", "InWorldHudStratumHigh", self)
-	self.wndDashMeter:FindChild("DashMeter_B"):SetSprite("ForgeUI_Sprite:ForgeUI_Border")
-	
-	-- movables
-	self.wndMovables = Apollo.LoadForm(self.xmlDoc, "Movables", nil, self)
+	self.wndSprintMeter = Apollo.LoadForm(self.xmlDoc, "SprintMeter", ForgeUI.HudStratum0, self)
+	ForgeUI.API_RegisterWindow(self, self.wndSprintMeter, "ForgeUI_SprintMeter")
+	self.wndDashMeter = Apollo.LoadForm(self.xmlDoc, "DashMeter", ForgeUI.HudStratum0, self)
+	ForgeUI.API_RegisterWindow(self, self.wndDashMeter, "ForgeUI_DashMeter")
 end
 
 function ForgeUI_SprintDash:ForgeAPI_AfterRestore()
-	ForgeUI.RegisterWindowPosition(self, self.wndSprintMeter, "ForgeUI_SprintDash_Sprint", self.wndMovables:FindChild("Movable_SprintMeter"))
-	ForgeUI.RegisterWindowPosition(self, self.wndDashMeter, "ForgeUI_SprintDash_Dash", self.wndMovables:FindChild("Movable_DashMeter"))
-
-	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("crSprint"), self.tSettings, "crSprint", true)
-	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("crDash"), self.tSettings, "crDash", true)
-	ForgeUI.ColorBoxChange(self, self.wndContainers.Container:FindChild("crDash2"), self.tSettings, "crDash2", true)
 	
-	self.wndContainers.Container:FindChild("bShowSprint"):SetCheck(self.tSettings.bShowSprint)
-	self.wndContainers.Container:FindChild("bShowDash"):SetCheck(self.tSettings.bShowDash)
 end
 
 -------------------------------------------------------------------------------
