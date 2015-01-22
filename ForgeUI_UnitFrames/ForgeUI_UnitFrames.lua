@@ -239,8 +239,12 @@ function ForgeUI_UnitFrames:UpdateToTFrame(unitSource)
 		self.wndToTFrame:FindChild("Name"):SetTextColor(unit:GetNameplateColor())
 	end
 	
-	if self.tSettings.tTotFrame.bShowThreat and unitSource:GetType() == "Player"  then
+	if self.tSettings.tTotFrame.bShowThreat and unitSource:IsACharacter() then
 		self.wndThreat:SetText("")
+	elseif self.tSettings.tTotFrame.bShowThreat and unit:IsACharacter() then
+		self.wndThreat:Show(true, true)
+	else
+		self.wndThreat:Show(false, true)
 	end
 	
 	self:UpdateHPBar(unit, self.wndToTFrame)
