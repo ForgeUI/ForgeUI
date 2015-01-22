@@ -67,6 +67,7 @@ function ForgeUI_Nameplates:new(o)
 		nShieldBarHeight = 4,
 		bShowQuestIcons = true,
 		bShowInfo = false,
+		bClickable = true,
 		tTarget = {
 			bShow = true,
 			bShowBars = true,
@@ -700,6 +701,19 @@ end
 function ForgeUI_Nameplates:UpdateStyle(tNameplate)
 	local wnd = tNameplate.wnd
 	
+	tNameplate.wnd.name:SetStyle("IgnoreMouse", not self.tSettings.bClickable)
+	tNameplate.wnd.guild:SetStyle("IgnoreMouse", not self.tSettings.bClickable)
+	tNameplate.wnd.bar:SetStyle("IgnoreMouse", not self.tSettings.bClickable)
+	if self.tSettings.bClickable then
+		tNameplate.wnd.name:AddEventHandler("MouseButtonDown", "OnNameplateClick", self)
+		tNameplate.wnd.guild:AddEventHandler("MouseButtonDown", "OnNameplateClick", self)
+		tNameplate.wnd.bar:AddEventHandler("MouseButtonDown", "OnNameplateClick", self)
+	else
+		tNameplate.wnd.name:RemoveEventHandler("MouseButtonDown")
+		tNameplate.wnd.guild:RemoveEventHandler("MouseButtonDown")
+		tNameplate.wnd.bar:RemoveEventHandler("MouseButtonDown")
+	end
+	
 	wnd.hp:FindChild("Background"):SetBGColor(self.tSettings.crBgBar)
 	wnd.shield:FindChild("Background"):SetBGColor(self.tSettings.crBgBar)
 	wnd.shieldBar:SetBarColor(self.tSettings.crShieldBar)
@@ -966,6 +980,7 @@ function ForgeUI_Nameplates:ForgeAPI_LoadOptions()
 	self.wndContainers.Container_General:FindChild("ShowTitles"):SetCheck(self.tSettings.bShowTitles )
 	self.wndContainers.Container_General:FindChild("ShowQuestIcons"):SetCheck(self.tSettings.bShowQuestIcons )
 	self.wndContainers.Container_General:FindChild("ShowInfo"):SetCheck(self.tSettings.bShowInfo )
+	self.wndContainers.Container_General:FindChild("Clickable"):SetCheck(self.tSettings.bClickable )
 
 	ForgeUI.ColorBoxChange(self, self.wndContainers.Container_General:FindChild("BgBarColor"), self.tSettings, "crBgBar", true)
 	ForgeUI.ColorBoxChange(self, self.wndContainers.Container_General:FindChild("MooBarColor"), self.tSettings, "crMooBar", true)
@@ -1003,6 +1018,8 @@ function ForgeUI_Nameplates:OnOptionsChanged( wndHandler, wndControl )
 		self.tSettings.bShowQuestIcons = wndControl:IsChecked()
 	elseif wndName == "ShowInfo" then
 		self.tSettings.bShowInfo = wndControl:IsChecked()
+	elseif wndName == "Clickable" then
+		self.tSettings.bClickable = wndControl:IsChecked()
 	end
 	
 	if wndName == "BgBarColor" then
