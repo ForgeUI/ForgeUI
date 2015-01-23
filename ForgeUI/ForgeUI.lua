@@ -22,6 +22,8 @@ local tAddons = {}
 local bCanRegisterAddons = false
 local tAddonsToRegister = {}
 
+local tStylers = {}
+
 local tRegisteredWindows = {} -- saving windows for repositioning them later
 
 -----------------------------------------------------------------------------------------------
@@ -163,6 +165,29 @@ function ForgeUI.API_RegisterAddon(tAddon)
 			tAddon:ForgeAPI_AfterRegistration() -- Forge API AfterRegistration
 		end
 		
+		-- styler registration
+		local bCanStylerBeRegistered = true
+		for _, tStyler in pairs(tStylers) do
+			if not tStyler.bRegistered then
+				for _, strAddon in pairs(tStyler.strAddons) do
+					if tAddons[strAddon] == nil then
+						bCanBeRegistered = false
+					end
+				end
+				
+				if bCanStylerBeRegistered == true then
+					tStyler.bRegistered = true
+					
+					if tStyler.tAddon.ForgeAPI_AfterStylerRegistration~= nil then
+						tStyler.tAddon:ForgeAPI_AfterStylerRegistration() -- Forge API AfterRegistration
+					end
+				end
+			end
+			
+			bCanStylerBeRegistered = false
+		end
+		-- end of styler registration
+		
 		if tSettings_addons[tAddon.strAddonName] ~= nil then
 			if tAddon.settings_version ~= nil then
 				if tAddon.settings_version == tSettings_addons[tAddon.strAddonName].settings_version then
@@ -188,6 +213,40 @@ function ForgeUI.API_RegisterAddon(tAddon)
 	end
 end
 
+-- stylers
+function ForgeUI.API_RegisterStyler(tAddon, strAddons)
+	if tStylers[tAddon.strName] ~= nil then return end
+	
+	tStylers[tAddon.strName] = {
+		tAddon = tAddon,
+		strAddons = strAddons,
+		bRegistered = false
+	}
+	
+	local bCanBeRegistered = true
+	for _, strAddon in pairs(strAddons) do
+		if tAddons[strAddon] == nil then
+			bCanBeRegistered = false
+		end
+	end
+	
+	if bCanBeRegistered == true and not tStylers[tAddon.strName].bRegistered then
+		tStylers[tAddon.strName].bRegistered = true
+		
+		if tAddon.ForgeAPI_AfterStylerRegistration~= nil then
+			tAddon:ForgeAPI_AfterStylerRegistration() -- Forge API AfterRegistration
+		end
+	end
+end
+
+function ForgeUI.API_GetAddon(strAddonName)
+	if tAddons[strAddonName] ~= nil then
+		return tAddons[strAddonName]
+	else
+		return nil
+	end
+end
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI ItemList API
 -----------------------------------------------------------------------------------------------
@@ -195,19 +254,19 @@ function ForgeUI.API_AddItemButton(tAddon, strDisplayName, tOptions)
 	local wndButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Item", ForgeUIInst.wndMainItemListHolder, ForgeUIInst):FindChild("ForgeUI_Item_Button")
 	wndButton:GetParent():FindChild("ForgeUI_Item_Text"):SetText(strDisplayName)
 	
+	local tData = {}
+	tData.parentContainer = ForgeUIInst.wndMainItemListHolder
+	
 	if tOptions == nil then
+		wndButton:SetData(tData)
+		ForgeUIInst.wndMainItemListHolder:ArrangeChildrenVert()
 		return wndButton
 	end
 	
-	local tData = {}
 	if tOptions.strContainer ~= nil then
 		tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
 		tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
 		tData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
-		tData.parentContainer = ForgeUIInst.wndMainItemListHolder
-	end
-	
-	if tOptions.tItemList ~= nil then
 	end
 	
 	wndButton:SetData(tData)
@@ -229,11 +288,13 @@ function ForgeUI:SetActiveItem(wndControl)
 	
 	for _, wndButton in pairs(data.parentContainer:GetChildren()) do
 		wndButton:FindChild("ForgeUI_Item_Text"):SetTextColor("FFFFFFFF")
-		wndButton:FindChild("ForgeUI_Item_Button"):GetData().itemContainer:Show(false, true)
+		if wndButton:FindChild("ForgeUI_Item_Button"):GetData().itemContainer ~= nil then
+			wndButton:FindChild("ForgeUI_Item_Button"):GetData().itemContainer:Show(false, true)
+		end
 	end
 	
+	wndControl:GetParent():FindChild("ForgeUI_Item_Text"):SetTextColor(self.tSettings.crMain)
 	if data.itemContainer ~= nil then
-		wndControl:GetParent():FindChild("ForgeUI_Item_Text"):SetTextColor(self.tSettings.crMain)
 		data.itemContainer:Show(true, true)
 	end
 end
