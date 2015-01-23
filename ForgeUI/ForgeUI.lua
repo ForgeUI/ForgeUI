@@ -135,6 +135,15 @@ end
 function ForgeUI:ForgeAPI_AfterRegistration()
 	ForgeUI.API_AddItemButton(self, "Home", { bDefault = true, strContainer = "ForgeUI_Home" })
 	ForgeUI.API_AddItemButton(self, "General", { strContainer = "ForgeUI_General" })
+	
+	local ForgeColor = Apollo.GetPackage("ForgeColor").tPackage
+	ForgeColor:Show(self, "FF00FF00", { fCallback = "Test"})
+	
+	--ForgeColor:TestFunction()
+end
+
+function ForgeUI:Test(color)
+	Print(color)
 end
 
 -- function ForgeUI.API_RegisterColorBox(tAddon, wndControl, tSettings, sValue, bAlpha)
