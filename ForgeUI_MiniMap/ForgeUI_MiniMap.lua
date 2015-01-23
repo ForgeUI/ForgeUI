@@ -26,7 +26,7 @@ function ForgeUI_MiniMap:new(o)
 	Apollo.RegisterEventHandler("UnitDestroyed", 	"OnUnitDestroyed", self)
 
     -- mandatory 
-    self.api_version = 1
+    self.api_version = 2
 	self.version = "0.1.0"
 	self.author = "WintyBadass"
 	self.strAddonName = "ForgeUI_MiniMap"
@@ -90,7 +90,7 @@ function ForgeUI_MiniMap:OnDocLoaded()
 		ForgeUI = Apollo.GetAddon("ForgeUI")
 	end
 	
-	ForgeUI.RegisterAddon(self)
+	ForgeUI.API_RegisterAddon(self)
 end
 
 function ForgeUI_MiniMap:ForgeAPI_AfterRegistration()
@@ -109,13 +109,12 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRegistration()
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "ForgeUI_MiniMap", "FixedHudStratumLow", self)
 	self.wndMiniMap = self.wndMain:FindChild("MiniMapWindow")
 	
+	ForgeUI.API_RegisterWindow(self, self.wndMain, "ForgeUI_Minimap", { strDisplayName = "Minimap"})
 	
 	self:CreateOverlayObjectTypes()
 	
-	self.wndMovables = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Movables", nil, self)
-	
 	-- main window
-	ForgeUI.AddItemButton(self, "Minimap", "ForgeUI_Container")
+	ForgeUI.API_AddItemButton(self, "Minimap", { strContainer = "ForgeUI_Container" })
 end
 
 function ForgeUI_MiniMap:OnUpdateTimer()
@@ -356,8 +355,6 @@ end
 
 -- restore / save
 function ForgeUI_MiniMap:ForgeAPI_AfterRestore()
-	ForgeUI.RegisterWindowPosition(self, self.wndMain, "ForgeUI_MiniMap", self.wndMovables:FindChild("Movable_MiniMap"))
-
 	self.wndMiniMap:SetZoomLevel(self.tSettings.nZoomLevel)
 	self.wndMain:FindChild("NSEW"):Show(self.tSettings.bShowNsew, true)
 	
@@ -370,26 +367,6 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRestore()
 	Apollo.RegisterTimerHandler("TimeUpdateTimer", 	"OnUpdateTimer", self)
 end
 
-function ForgeUI_MiniMap:ForgeAPI_LoadOptions()
-	self.wndContainers.ForgeUI_Container:FindChild("bShowNsew"):SetCheck(self.tSettings.bShowNsew)
-	self:FillContainer()
-end
-
-function ForgeUI_MiniMap:FillContainer()
-	local wndHolder = self.wndContainers.ForgeUI_Container:FindChild("Holder")
-	for strName,  tMarker in pairs(self.tSettings.tMarkers) do
-		local wndMarker = Apollo.LoadForm(self.xmlDoc, "ForgeUI_OptionContainer", wndHolder, self)
-		
-		wndMarker:FindChild("strName"):SetText(tMarker.strName)
-		wndMarker:FindChild("bShow"):SetCheck(tMarker.bShow)
-		wndMarker:FindChild("crObject"):SetText(string.sub(tMarker.crObject or "FFFFFFFF", 3, 8))
-		wndMarker:FindChild("crObject"):SetTextColor(tMarker.crObject or "FFFFFFFF")
-		
-		wndMarker:SetData(strName)
-	end
-	wndHolder:ArrangeChildrenVert()
-end
-
 function ForgeUI_MiniMap:ForgeAPI_BeforeSave()
 	self.tSettings.nZoomLevel = self.wndMiniMap:GetZoomLevel()
 end
@@ -400,32 +377,6 @@ end
 
 function ForgeUI_MiniMap:OnMovableMove( wndHandler, wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom )
 	self.wndMain:SetAnchorOffsets(self.wndMovables:FindChild("Movable_MiniMap"):GetAnchorOffsets())
-end
-
----------------------------------------------------------------------------------------------------
--- ForgeUI_OptionContainer Functions
----------------------------------------------------------------------------------------------------
-
-function ForgeUI_MiniMap:OnOptionsChanged( wndHandler, wndControl )
-	local strName = wndControl:GetName()
-	local strType = wndControl:GetParent():GetName()
-	local strMarker = wndControl:GetParent():GetParent():GetParent():GetData()
-	
-	if strName == "bShowNsew" then
-		self.tSettings.bShowNsew = wndControl:IsChecked()
-		self.wndMain:FindChild("NSEW"):Show(self.tSettings.bShowNsew, true)
-		return
-	end
-	
-	if strType == "CheckBox" then
-		self.tSettings.tMarkers[strMarker][strName] = wndControl:IsChecked()
-	end
-	
-	if strType == "ColorBox" then
-		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings.tMarkers[strMarker], strName)
-	end
-	
-	self:UpdateAllUnits()
 end
 
 -----------------------------------------------------------------------------------------------
