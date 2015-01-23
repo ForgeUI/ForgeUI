@@ -331,7 +331,6 @@ function ForgeUI.API_RegisterWindow(tAddon, wnd, strName, tSettings)
 	if tSettings ~= nil then
 		if tSettings.strParent ~= nil then
 			wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", _tRegisteredWindows[tAddon.strAddonName][tSettings.strParent].movable, ForgeUIInst)
-			--_tRegisteredWindows[tAddon.strAddonName][tSettings.strParent].movable:BringChildToTop(wndMovable)
 		elseif tSettings.nLevel ~= nil then
 			if tSettings.nLevel > 0 and tSettings.nLevel < 5 then
 				wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables" .. tSettings.nLevel), ForgeUIInst)
