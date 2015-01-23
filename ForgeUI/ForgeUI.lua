@@ -215,6 +215,7 @@ end
 
 -- stylers
 function ForgeUI.API_RegisterStyler(tAddon, strAddons)
+	if tAddon.strName == nil then return end
 	if tStylers[tAddon.strName] ~= nil then return end
 	
 	tStylers[tAddon.strName] = {
@@ -327,13 +328,19 @@ function ForgeUI.API_RegisterWindow(tAddon, wnd, strName, tSettings)
 	if tSettings ~= nil and tSettings.bNoMovable == true then return end
 	
 	local wndMovable
-	if tSettings ~= nil and tSettings.nLevel ~= nil then
-		if tSettings.nLevel > 0 and tSettings.nLevel < 5 then
-			wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables" .. tSettings.nLevel), ForgeUIInst)
-		else
-			wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables"), ForgeUIInst)
+	if tSettings ~= nil then
+		if tSettings.strParent ~= nil then
+			wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", _tRegisteredWindows[tAddon.strAddonName][tSettings.strParent].movable, ForgeUIInst)
+			--_tRegisteredWindows[tAddon.strAddonName][tSettings.strParent].movable:BringChildToTop(wndMovable)
+		elseif tSettings.nLevel ~= nil then
+			if tSettings.nLevel > 0 and tSettings.nLevel < 5 then
+				wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables" .. tSettings.nLevel), ForgeUIInst)
+			else
+				wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables"), ForgeUIInst)
+			end
 		end
-	else
+	end
+	if wndMovable == nil then
 		wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables"), ForgeUIInst)
 	end
 	wndMovable:SetAnchorOffsets(wnd:GetAnchorOffsets())
@@ -357,8 +364,6 @@ function ForgeUI.API_RegisterWindow(tAddon, wnd, strName, tSettings)
 		end
 	end
 	
-	wndMovable:Show(true, true)
-	
 	wndMovable:AddEventHandler("WindowMove", "OnMovableMove", ForgeUIInst)
 	
 	_tRegisteredWindows[tAddon.strAddonName][strName].movable = wndMovable
@@ -380,13 +385,9 @@ function ForgeUI:OnUnlockElements()
 	self.wndMovables:Show(true, true)
 	self:FillGrid(self.wndMovables:FindChild("Grid"))
 
-	for name, addon in pairs(tAddons) do
-		if addon.wndMovables ~= nil then
-			addon.wndMovables:Show(true, true)
-		end
-	
-		if addon.ForgeAPI_OnUnlockElements ~= nil then
-			addon:ForgeAPI_OnUnlockElements() -- Forge API OnUnlockElements
+	for _, tAddon in pairs(_tRegisteredWindows) do
+		for _, tMovable in pairs(tAddon) do
+			tMovable.movable:Show(true, true)
 		end
 	end
 end
@@ -398,13 +399,9 @@ function ForgeUI:OnLockElements()
 	self.wndMovables:Show(false, true)
 	self.wndMovables:FindChild("Grid"):DestroyAllPixies()
 
-	for _, addon in pairs(tAddons) do
-		if addon.wndMovables ~= nil then
-			addon.wndMovables:Show(false, true)
-		end
-	
-		if addon.ForgeAPI_OnLockElements ~= nil then
-			addon:ForgeAPI_OnLockElements() -- Forge API OnLockElements
+	for _, tAddon in pairs(_tRegisteredWindows) do
+		for _, tMovable in pairs(tAddon) do
+			tMovable.movable:Show(false, true)
 		end
 	end
 end
