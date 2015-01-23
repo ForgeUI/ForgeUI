@@ -140,10 +140,6 @@ function ForgeUI:ForgeAPI_AfterRegistration()
 	ForgeUI.API_AddItemButton(self, "General", { strContainer = "ForgeUI_General" })
 end
 
-function ForgeUI:Test(color)
-	Print(color)
-end
-
 function ForgeUI:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crEngineer"), self.tSettings.tClassColors, "crEngineer", false)
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crEsper"), self.tSettings.tClassColors, "crEsper", false)
@@ -205,7 +201,7 @@ function ForgeUI.API_AddItemButton(tAddon, strDisplayName, tOptions)
 	
 	local tData = {}
 	if tOptions.strContainer ~= nil then
-		tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, tAddon)
+		tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
 		tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
 		tData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
 		tData.parentContainer = ForgeUIInst.wndMainItemListHolder
@@ -390,6 +386,11 @@ end
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Window elements api
 -----------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------
+-- Color box
+-----------------------------------------------------------------------------------------------
+
 function ForgeUI.API_RegisterColorBox(tAddon, wndControl, tSettings, sValue, bAlpha, strCallback)
 	local tData = {
 		tAddon = tAddon,
@@ -400,15 +401,13 @@ function ForgeUI.API_RegisterColorBox(tAddon, wndControl, tSettings, sValue, bAl
 	}
 	
 	wndControl:SetData(tData)
-	wndControl:AddEventHandler("EditBoxChanged", "OnColorBoxChanged", ForgeUIInst)
-	wndControl:AddEventHandler("MouseButtonDown", "OnColorBoxDown", ForgeUIInst)
+	wndControl:AddEventHandler("EditBoxChanged", 	"OnColorBoxChanged", ForgeUIInst)
+	wndControl:AddEventHandler("MouseButtonDown", 	"OnColorBoxDown", ForgeUIInst)
 	
-	ForgeUI.API_ColorBoxChange(TabWindow, wndControl, tSettings, sValue, true, bAlpha)
+	ForgeUI.API_ColorBoxChange(tAddon, wndControl, tSettings, sValue, true, bAlpha)
 end
 
 function ForgeUI:OnColorBoxChanged( wndHandler, wndControl, strText )
-	Print(strText)
-
 	local tData = wndControl:GetData()
 	
 	local color = ForgeUI.API_ColorBoxChange(tData.tAddon, wndControl, tData.tSettings, tData.sValue, false, tData.bAlpha)
@@ -463,6 +462,31 @@ function ForgeUI.API_ColorBoxChange(tAddon, wndControl, tSettings, sValue, bOver
 			return "FF" .. sColor
 		end
 	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- Check box
+-----------------------------------------------------------------------------------------------
+
+function ForgeUI.API_RegisterCheckBox(tAddon, wndControl, tSettings, strValue, strCallback)
+	local tData = {
+		tAddon = tAddon,
+		tSettings = tSettings,
+		strValue = strValue,
+		strCallback = strCallback
+	}
+	
+	wndControl:SetData(tData)
+	wndControl:AddEventHandler("ButtonCheck", 	"OnChechBoxCheck", ForgeUIInst)
+	wndControl:AddEventHandler("ButtonUncheck", "OnChechBoxCheck", ForgeUIInst)
+	
+	wndControl:SetCheck(tSettings[strValue])
+end
+
+function ForgeUI:OnChechBoxCheck( wndHandler, wndControl )
+	local tData = wndControl:GetData()
+	
+	tData.tSettings[tData.strValue] = wndControl:IsChecked()
 end
 
 -----------------------------------------------------------------------------------------------

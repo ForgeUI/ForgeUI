@@ -72,7 +72,12 @@ function ForgeUI_SprintDash:ForgeAPI_AfterRegistration()
 end
 
 function ForgeUI_SprintDash:ForgeAPI_AfterRestore()
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crSprint"), self.tSettings, "crSprint", false)
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crDash"), self.tSettings, "crDash", false)
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crDash2"), self.tSettings, "crDash2", false)
 	
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bShowSprint"), self.tSettings, "bShowSprint")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bShowDash"), self.tSettings, "bShowDash")
 end
 
 -------------------------------------------------------------------------------
@@ -142,18 +147,6 @@ end
 function ForgeUI_SprintDash:OnMovableMove( wndHandler, wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom )
 	self.wndSprintMeter:MoveToLocation(self.wndMovables:FindChild("Movable_SprintMeter"):GetLocation())
 	self.wndDashMeter:MoveToLocation(self.wndMovables:FindChild("Movable_DashMeter"):GetLocation())
-end
-
-function ForgeUI_SprintDash:OnOptionsChanged( wndHandler, wndControl )
-	local strType = wndControl:GetParent():GetName()
-	
-	if strType == "ColorBox" then
-		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings, wndControl:GetName())
-	end
-	
-	if strType == "CheckBox" then
-		self.tSettings[wndControl:GetName()] = wndControl:IsChecked()
-	end
 end
 
 ---------------------------------------------------------------------------------------------------
