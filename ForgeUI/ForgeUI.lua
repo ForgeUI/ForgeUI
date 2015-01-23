@@ -1,6 +1,7 @@
 require "Window"
  
 local ForgeUI = {}
+local ForgeColor
  
 -----------------------------------------------------------------------------------------------
 -- Constants
@@ -90,6 +91,8 @@ end
 function ForgeUI:OnDocLoaded()
 	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
 	
+	ForgeColor = Apollo.GetPackage("ForgeColor").tPackage
+	
 	-- sprites
 	Apollo.LoadSprites("ForgeUI_Sprite.xml", "ForgeUI_Sprite")
 	Apollo.LoadSprites("ForgeUI_Icons.xml", "ForgeUI_Icons")
@@ -135,18 +138,12 @@ end
 function ForgeUI:ForgeAPI_AfterRegistration()
 	ForgeUI.API_AddItemButton(self, "Home", { bDefault = true, strContainer = "ForgeUI_Home" })
 	ForgeUI.API_AddItemButton(self, "General", { strContainer = "ForgeUI_General" })
-	
-	local ForgeColor = Apollo.GetPackage("ForgeColor").tPackage
-	ForgeColor:Show(self, "FF00FF00", { fCallback = "Test"})
-	
-	--ForgeColor:TestFunction()
 end
 
 function ForgeUI:Test(color)
 	Print(color)
 end
 
--- function ForgeUI.API_RegisterColorBox(tAddon, wndControl, tSettings, sValue, bAlpha)
 function ForgeUI:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crEngineer"), self.tSettings.tClassColors, "crEngineer", false)
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crEsper"), self.tSettings.tClassColors, "crEsper", false)
@@ -404,11 +401,14 @@ function ForgeUI.API_RegisterColorBox(tAddon, wndControl, tSettings, sValue, bAl
 	
 	wndControl:SetData(tData)
 	wndControl:AddEventHandler("EditBoxChanged", "OnColorBoxChanged", ForgeUIInst)
+	wndControl:AddEventHandler("MouseButtonDown", "OnColorBoxDown", ForgeUIInst)
 	
 	ForgeUI.API_ColorBoxChange(TabWindow, wndControl, tSettings, sValue, true, bAlpha)
 end
 
 function ForgeUI:OnColorBoxChanged( wndHandler, wndControl, strText )
+	Print(strText)
+
 	local tData = wndControl:GetData()
 	
 	local color = ForgeUI.API_ColorBoxChange(tData.tAddon, wndControl, tData.tSettings, tData.sValue, false, tData.bAlpha)
@@ -416,6 +416,12 @@ function ForgeUI:OnColorBoxChanged( wndHandler, wndControl, strText )
 	if tData.strCallback ~= nil and color ~= nil then
 		tData.tAddon[tData.strCallback]()
 	end
+end
+
+function ForgeUI:OnColorBoxDown( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
+	if eMouseButton ~= 1 then return end
+	
+	ForgeColor:Show(self, "FF" .. wndControl:GetText(), { wndControl = wndControl })
 end
 
 function ForgeUI.API_ColorBoxChange(tAddon, wndControl, tSettings, sValue, bOverwrite, bAlpha)

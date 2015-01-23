@@ -4,6 +4,7 @@ if APkg and (APkg.nVersion or 0) >= MINOR then return end
 
 require "Window"
 
+local ForgeUI
 local ForgeColor = APkg and APkg.tPackage or {}
 
 -----------------------------------------------------------------------------------------------
@@ -29,7 +30,8 @@ local tSavedColors = {
 	"FF001170", "FF011700", "FF000117", "FF117000", "FF343117",
 	"FF207584", "FFF5CA9E", "FF854513", "FF8B2500", "FF8B0000",
 	"FFFFFACD", "FF20B2AA", "FFCDD7F7", "FFB6FBEB", "FF311811",
-	"FF98C723", "FFD23EF4", "FF1591DB", "FFEFAB48", "FFF54F4F",
+	
+	"FF98C723", "FFD23EF4", "FF1591DB", "FFEFAB48", "FFF54F4F", "FFFFE757", -- class colors
 }
 
 local tAddon = nil
@@ -37,6 +39,7 @@ local crDefault = nil
 local fCallback = nil
 local tSettings = nil
 local strKey = nil
+local wndControl = nil
 
 function ForgeColor:Show(tAdd, crDef, tOptions)
 	if self.wndPicker == nil then
@@ -44,13 +47,31 @@ function ForgeColor:Show(tAdd, crDef, tOptions)
 		self:Init()
 	end
 	
+	tAddon = nil
+	crDefault = nil
+	fCallback = nil
+	tSettings = nil
+	strKey = nil
+	wndControl = nil
+	
 	tAddon = tAdd
 	crDefault = crDef
+	if crDefault ~= nil then
+		local h, s, v, a = self:RGBtoHSV(self:HexToRGB(crDefault, false))
+	
+		self:SetHue(h)
+		self.s = s
+		self.v = v
+		self.a = a
+		
+		self:UpdateColor()
+	end
 	
 	if tOptions ~= nil then
 		fCallback = tOptions.fCallback
 		tSettings = tOptions.tSettings
 		strKey = tOptions.strKey
+		wndControl = tOptions.wndControl
 	end
 	
 	self.wndPicker:Show(true)
@@ -65,6 +86,7 @@ function ForgeColor:Hide()
 		fCallback = nil
 		tSettings = nil
 		strKey = nil
+		wndControl = nil
 	end
 end
 
@@ -83,6 +105,10 @@ function ForgeColor:OnLoad()
 end
 
 function ForgeColor:Init()
+	if ForgeUI == nil then
+		ForgeUI = Apollo.GetAddon("ForgeUI")
+	end
+
 	self.h = 1
 	self.s = 1
 	self.v = 1
@@ -127,6 +153,16 @@ function ForgeColor:UpdateColor()
 	
 	if tAddon ~= nil and fCallback ~= nil then
 		tAddon[fCallback]("ForgeColor_callback", crNew, strKey)
+	end
+	
+	if tAddon ~= nil and wndControl ~= nil and wndControl:GetData() then
+		local tData = wndControl:GetData()
+		if tData.bAlpha then
+			wndControl:SetText(crNew)
+		else
+			wndControl:SetText(string.sub(crNew, 3, 8):upper())
+		end
+		ForgeUI.API_ColorBoxChange(tData.tAddon, wndControl, tData.tSettings, tData.sValue, false, tData.bAlpha)
 	end
 	
 	if tAddon ~= nill and tSettings ~= nil and strKey ~= nil then
@@ -215,8 +251,15 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ForgeColor:OnSavedColorDown( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
-	self.wndPicker:FindChild("ColorBox"):SetText(string.sub(wndControl:GetData(), 3, 8):upper())
-	self.wndPicker:FindChild("ColorBox"):SetTextColor(wndControl:GetData())
+	local newColor = wndControl:GetData()
+	local h, s, v, a = self:RGBtoHSV(self:HexToRGB(newColor, false))
+	
+	self:SetHue(h)
+	self.s = s
+	self.v = v
+	self.a = a
+	
+	self:UpdateColor()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -226,6 +269,21 @@ end
 function ForgeColor:RGBAToHex(r, g, b, a, bAlpha)
 	a = a or 255
 	return strformat("%02x%02x%02x%02x", a, r, g, b)
+end
+
+function ForgeColor:HexToRGB(hexa, bAlpha)
+	local color = "FFFFFFFF"
+	if bAlpha then
+		color = hexa
+	else
+		color = string.sub(hexa, 3, 8)
+	end
+
+	local r = tonumber(string.sub(color, 1, 2), 16)
+	local g = tonumber(string.sub(color, 3, 4), 16)
+	local b = tonumber(string.sub(color, 5, 6), 16)
+	
+	return r, g, b, 255
 end
 
 -----------------------------------------------------------------------------------------------
