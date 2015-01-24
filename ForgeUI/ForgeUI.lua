@@ -387,6 +387,8 @@ function ForgeUI:OnUnlockElements()
 	for _, tAddon in pairs(_tRegisteredWindows) do
 		for _, tMovable in pairs(tAddon) do
 			tMovable.movable:Show(true, true)
+			tMovable.wnd_shown = tMovable.wnd:IsShown()
+			tMovable.wnd:Show(false, true)
 		end
 	end
 end
@@ -401,6 +403,7 @@ function ForgeUI:OnLockElements()
 	for _, tAddon in pairs(_tRegisteredWindows) do
 		for _, tMovable in pairs(tAddon) do
 			tMovable.movable:Show(false, true)
+			tMovable.wnd:Show(tMovable.wnd_shown, true)
 		end
 	end
 end
@@ -466,6 +469,7 @@ end
 
 function ForgeUI:OnColorBoxChanged( wndHandler, wndControl, strText )
 	local tData = wndControl:GetData()
+	if tData == nil then return end
 	
 	local color = ForgeUI.API_ColorBoxChange(tData.tAddon, wndControl, tData.tSettings, tData.sValue, false, tData.bAlpha)
 	
@@ -546,6 +550,15 @@ end
 
 function ForgeUI:OnChechBoxCheck( wndHandler, wndControl )
 	local tData = wndControl:GetData()
+	if tData == nil then return end
+	
+	if tData.strCallback ~= nil then
+		if tData.tAddon.tStylers[tData.strCallback] ~= nil then
+			tData.tAddon.tStylers[tData.strCallback][tData.strCallback](tData.tAddon)
+		else
+			tData.tAddon[tData.strCallback](tData.tAddon)
+		end
+	end
 	
 	tData.tSettings[tData.strValue] = wndControl:IsChecked()
 end

@@ -1,15 +1,8 @@
 require "Window"
  
------------------------------------------------------------------------------------------------
--- ForgeUI_CastBars Module Definition
------------------------------------------------------------------------------------------------
 local ForgeUI
 local ForgeUI_CastBars = {} 
  
------------------------------------------------------------------------------------------------
--- Constants
------------------------------------------------------------------------------------------------
-
 -----------------------------------------------------------------------------------------------
 -- Initialization
 -----------------------------------------------------------------------------------------------
@@ -20,7 +13,7 @@ function ForgeUI_CastBars:new(o)
 
     -- mandatory 
     self.api_version = 2
-	self.version = "0.0.1"
+	self.version = "1.0.0"
 	self.author = "WintyBadass"
 	self.strAddonName = "ForgeUI_CastBars"
 	self.strDisplayName = "Unit frames"
@@ -72,7 +65,9 @@ function ForgeUI_CastBars:ForgeAPI_AfterRegistration()
 	
 	ForgeUI.API_RegisterWindow(self, self.wndPlayerCastBar, "ForgeUI_PlayerCastBar", { strDisplayName = "Player cast bar" })
 	ForgeUI.API_RegisterWindow(self, self.wndTargetCastBar, "ForgeUI_TargetCastBar", { strDisplayName = "Target cast bar" })
+	ForgeUI.API_RegisterWindow(self, self.wndTargetCastBar:FindChild("InterruptArmor"), "ForgeUI_TargetCastBar_IA", { strDisplayName = "IA", strParent = "ForgeUI_TargetCastBar", bMaintainRatio = true })
 	ForgeUI.API_RegisterWindow(self, self.wndFocusCastBar, "ForgeUI_FocusCastBar", { strDisplayName = "Focus cast bar" })
+	ForgeUI.API_RegisterWindow(self, self.wndFocusCastBar:FindChild("InterruptArmor"), "ForgeUI_FocusCastBar_IA", { strDisplayName = "IA", strParent = "ForgeUI_FocusCastBar", bMaintainRatio = true })
 end
 
 function ForgeUI_CastBars:OnNextFrame()
@@ -249,6 +244,9 @@ function ForgeUI_CastBars:UpdateInterruptArmor(unit, wnd)
 	end
 end
 
+-----------------------------------------------------------------------------------------------
+-- Styles
+-----------------------------------------------------------------------------------------------
 
 function ForgeUI_CastBars:UpdateStyles()
 	self.tStylers["UpdateStyle_PlayerCastBar"]["UpdateStyle_PlayerCastBar"](self)
@@ -356,6 +354,19 @@ function ForgeUI_CastBars:ForgeAPI_AfterRestore()
 	Apollo.RegisterEventHandler("StartSpellThreshold", 	"OnStartSpellThreshold", self)
 	Apollo.RegisterEventHandler("ClearSpellThreshold", 	"OnClearSpellThreshold", self)
 	Apollo.RegisterEventHandler("UpdateSpellThreshold", "OnUpdateSpellThreshold", self)
+	
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crBorder"), self.tSettings, "crBorder", false, "UpdateStyles" )
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crBackground"), self.tSettings, "crBackground", false, "UpdateStyles" )
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crCastBar"), self.tSettings, "crCastBar", false, "UpdateStyles" )
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crMooBar"), self.tSettings, "crMooBar", false, "UpdateStyles" )
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crDuration"), self.tSettings, "crDuration", false, "UpdateStyles" )
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crText"), self.tSettings, "crText", false, "UpdateStyles" )
+	
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bSmoothBars"), self.tSettings, "bSmoothBars")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bCenterPlayerText"), self.tSettings, "bCenterPlayerText", "UpdateStyles")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bCenterTargetText"), self.tSettings, "bCenterTargetText", "UpdateStyles")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bCenterFocusText"), self.tSettings, "bCenterFocusText", "UpdateStyles")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bShowFocus"), self.tSettings, "bShowFocus")
 	
 	self:UpdateStyles()
 end
