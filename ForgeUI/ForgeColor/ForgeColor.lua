@@ -43,7 +43,11 @@ local wndControl = nil
 
 function ForgeColor:Show(tAdd, crDef, tOptions)
 	if self.wndPicker == nil then
-		self.wndPicker = Apollo.LoadForm(self.xmlDoc, "ForgeColor_Picker", nil, self)
+		if ForgeUI == nil then
+			ForgeUI = Apollo.GetAddon("ForgeUI")
+		end
+	
+		self.wndPicker = Apollo.LoadForm(self.xmlDoc, "ForgeColor_Picker", ForgeUI.wndMain, self)
 		self:Init()
 	end
 	

@@ -44,7 +44,7 @@ function ForgeUI:new(o)
 	
 	 -- mandatory 
     self.api_version = 2
-	self.version = "0.2.5"
+	self.version = "0.3.0"
 	self.author = "WintyBadass"
 	self.strAddonName = "~ForgeUI"
 	self.strDisplayName = "ForgeUI"
@@ -115,6 +115,9 @@ function ForgeUI:OnDocLoaded()
 	self.wndMain:FindChild("Version"):FindChild("Text"):SetText(self.version)
 	self.wndMain:FindChild("Author"):FindChild("Text"):SetText(AUTHOR_LONG)
 	
+	-- addons list
+	self.wndAddons = Apollo.LoadForm(self.xmlDoc, "ForgeUI_AddonsForm", self.wndMain, self)
+	
 	-- movables
 	self.wndMovables = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Movables", nil, self)
 	
@@ -179,7 +182,7 @@ function ForgeUI.API_RegisterAddon(tAddon)
 					tStyler.bRegistered = true
 					
 					if tStyler.tAddon.ForgeAPI_AfterStylerRegistration~= nil then
-						tStyler.tAddon:ForgeAPI_AfterStylerRegistration() -- Forge API AfterRegistration
+						tStyler.tAddon:ForgeAPI_AfterStylerRegistration() -- Forge API AfterStylerRegistration
 					end
 				end
 			end
@@ -208,6 +211,13 @@ function ForgeUI.API_RegisterAddon(tAddon)
         if tAddon.ForgeAPI_LoadOptions ~= nil then
 			tAddon:ForgeAPI_LoadOptions() -- Forge API LoadOptions
 		end
+		
+		local wndAddon = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_AddonForm", ForgeUIInst.wndAddons, ForgeUIInst)
+		wndAddon:FindChild("AddonName"):SetText(tAddon.strDisplayName)
+		
+		wndAddon:SetData(tAddon)
+		
+		ForgeUIInst.wndAddons:ArrangeChildrenVert()
 	else
 		tAddonsToRegister[tAddon.strAddonName] = tAddon
 	end
@@ -246,6 +256,10 @@ function ForgeUI.API_GetAddon(strAddonName)
 	else
 		return nil
 	end
+end
+
+function ForgeUI.API_ResetAddonSettings(strAddonName)
+	
 end
 
 -----------------------------------------------------------------------------------------------
@@ -633,7 +647,7 @@ function ForgeUI:OnRestore(eType, tData)
 end
 
 -----------------------------------------------------------------------------------------------
--- ForgeUI Functions
+-- ForgeUI_Form Functions
 -----------------------------------------------------------------------------------------------
 function ForgeUI:OnForgeUIcmd(cmd, arg)
 	if cmd ~= "forgeui" then return end
@@ -669,6 +683,10 @@ end
 
 function ForgeUI:OnFocusCmd()
 	GameLib.GetPlayerUnit():SetAlternateTarget(GameLib.GetTargetUnit())
+end
+
+function ForgeUI:ShowAddons( wndHandler, wndControl, eMouseButton )
+	self.wndAddons:Show(not self.wndAddons:IsShown())
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -716,6 +734,19 @@ end
 function ForgeUI.CreateConfirmWindow(self, fCallback)
 	local wndConfirmWindow = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_ConfirmWindow", nil, ForgeUIInst)
 	wndConfirmWindow:FindChild("YesButton"):SetData(fCallback)
+end
+
+---------------------------------------------------------------------------------------------------
+-- ForgeUI_AddonForm Functions
+---------------------------------------------------------------------------------------------------
+
+function ForgeUI:AddonForm_OnMore( wndHandler, wndControl, eMouseButton )
+	wndControl:FindChild("Options"):Show(not wndControl:FindChild("Options"):IsShown())
+end
+
+function ForgeUI:AddonForm_OnReset( wndHandler, wndControl, eMouseButton )
+	local tAddon = wndControl:GetParent():GetParent():GetParent():GetParent():GetData()
+	ForgeUI.API_ResetAddonSettings(tAddon.strAddonName)
 end
 
 ---------------------------------------------------------------------------------------------------
