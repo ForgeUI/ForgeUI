@@ -470,7 +470,11 @@ function ForgeUI:OnColorBoxChanged( wndHandler, wndControl, strText )
 	local color = ForgeUI.API_ColorBoxChange(tData.tAddon, wndControl, tData.tSettings, tData.sValue, false, tData.bAlpha)
 	
 	if tData.strCallback ~= nil and color ~= nil then
-		tData.tAddon[tData.strCallback]()
+		if tData.tAddon.tStylers[tData.strCallback] ~= nil then
+			tData.tAddon.tStylers[tData.strCallback][tData.strCallback](tData.tAddon)
+		else
+			tData.tAddon[tData.strCallback](tData.tAddon)
+		end
 	end
 end
 

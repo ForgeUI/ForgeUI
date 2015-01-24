@@ -162,7 +162,8 @@ function ForgeColor:UpdateColor()
 		else
 			wndControl:SetText(string.sub(crNew, 3, 8):upper())
 		end
-		ForgeUI.API_ColorBoxChange(tData.tAddon, wndControl, tData.tSettings, tData.sValue, false, tData.bAlpha)
+		--ForgeUI.API_ColorBoxChange(tData.tAddon, wndControl, tData.tSettings, tData.sValue, false, tData.bAlpha)
+		ForgeUI["OnColorBoxChanged"]( self, wndControl, wndControl, crNew )
 	end
 	
 	if tAddon ~= nill and tSettings ~= nil and strKey ~= nil then

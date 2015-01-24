@@ -33,13 +33,5 @@
             <Control Class="ProgressBar" Text="" LAnchorPoint="0" LAnchorOffset="1" TAnchorPoint="0" TAnchorOffset="1" RAnchorPoint="1" RAnchorOffset="-1" BAnchorPoint="1" BAnchorOffset="-1" AutoSetText="0" UseValues="0" RelativeToClient="1" SetTextToProgress="0" DT_CENTER="1" DT_VCENTER="1" ProgressEmpty="" ProgressFull="BasicSprites:WhiteFill" TooltipType="OnCursor" Name="Bar_A" BGColor="ffffffff" TextColor="ffffffff" TooltipColor="" BarColor="" BRtoLT="1" VerticallyAligned="1" Tooltip="" IgnoreMouse="1"/>
         </Control>
     </Form>
-    <Form Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="0" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="Movables" Border="0" Picture="0" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="0" TooltipColor="" IgnoreMouse="1" Visible="0" Tooltip="">
-        <Control Class="Window" LAnchorPoint="0.5" LAnchorOffset="-43" TAnchorPoint="0.5" TAnchorOffset="-66" RAnchorPoint="0.5" RAnchorOffset="-38" BAnchorPoint="0.5" BAnchorOffset="19" RelativeToClient="1" Font="Default" Text="" BGColor="xkcdFireEngineRed" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="Movable_SprintMeter" TooltipColor="" IgnoreMouse="0" NoClip="1" Picture="1" NewWindowDepth="1" Sprite="CRB_ActionBarIconSprites:sprActionBar_OrangeBorder" NotRelative="0" Tooltip="" Moveable="1" Sizable="1">
-            <Event Name="WindowMove" Function="OnMovableMove"/>
-        </Control>
-        <Control Class="Window" LAnchorPoint="0.5" LAnchorOffset="-248" TAnchorPoint="0.5" TAnchorOffset="-108" RAnchorPoint="0.5" RAnchorOffset="-238" BAnchorPoint="0.5" BAnchorOffset="-23" RelativeToClient="1" Font="Default" Text="" BGColor="xkcdFireEngineRed" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="Movable_DashMeter" Border="0" Picture="1" SwallowMouseClicks="1" Moveable="1" Escapable="0" Overlapped="0" TooltipColor="" Sprite="CRB_ActionBarIconSprites:sprActionBar_OrangeBorder" Sizable="1" NoClip="1" NewWindowDepth="1">
-            <Event Name="WindowMove" Function="OnMovableMove"/>
-        </Control>
-    </Form>
     <SpriteFile Name="..\ForgeUI\ForgeUI_Sprite.xml"/>
 </Forms>
