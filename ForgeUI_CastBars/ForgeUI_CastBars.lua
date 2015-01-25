@@ -16,7 +16,7 @@ function ForgeUI_CastBars:new(o)
 	self.version = "1.0.0"
 	self.author = "WintyBadass"
 	self.strAddonName = "ForgeUI_CastBars"
-	self.strDisplayName = "Unit frames"
+	self.strDisplayName = "Cast bars"
 	
 	self.wndContainers = {}
 	

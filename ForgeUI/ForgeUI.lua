@@ -259,7 +259,11 @@ function ForgeUI.API_GetAddon(strAddonName)
 end
 
 function ForgeUI.API_ResetAddonSettings(strAddonName)
+	local tAddon = tAddons[strAddonName]
+	if tAddon == nil then return end
 	
+	tAddon.bReset = true
+	RequestReloadUI()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -620,6 +624,9 @@ function ForgeUI:OnSave(eType)
 					}
 				end
 			end
+		else
+			tAdd[addonName] = nil
+			tWindows[addonName] = nil
 		end
 	end
 	
