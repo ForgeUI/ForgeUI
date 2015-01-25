@@ -175,8 +175,8 @@ function ForgeUI_Nameplates:new(o)
 		},
 		tPlayerPet = {
 			bShow = true,
-			bShowBars = true,
-			bShowBarsInCombat = true,
+			bShowBars = false,
+			bShowBarsInCombat = false,
 			nHideBarsOver = 100,
 			bShowCast = false,
 			crName = "FFFFFFFF",

@@ -23,8 +23,8 @@ function ForgeUI_PetFrames:new(o)
     self.__index = self 
 
      -- mandatory 
-	self.api_version = 1
-	self.version = "0.0.1"
+	self.api_version = 2
+	self.version = "0.1.0"
 	self.author = "WintyBadass"
 	self.strAddonName = "ForgeUI_PetFrames"
 	self.strDisplayName = "Pet frames"
@@ -90,7 +90,7 @@ function ForgeUI_PetFrames:OnCharacterCreated()
 			ForgeUI = Apollo.GetAddon("ForgeUI")
 		end
 		
-		ForgeUI.RegisterAddon(self)
+		ForgeUI.API_RegisterAddon(self)
 	end
 end
 
@@ -102,15 +102,15 @@ function ForgeUI_PetFrames:ForgeAPI_AfterRegistration()
 	self.wndPetFrames = Apollo.LoadForm(self.xmlDoc, "ForgeUI_PetFrames", "FixedHudStratumLow", self)
 	self.wndPetControl = Apollo.LoadForm(self.xmlDoc, "ForgeUI_PetControl", "FixedHudStratumLow", self)
 	
+	ForgeUI.API_RegisterWindow(self, self.wndPetControl, "ForgeUI_PetControl", { strDisplayName = "Pet control", bSizable = false })
+	ForgeUI.API_RegisterWindow(self, self.wndPetFrames, "ForgeUI_PetFrames", { strDisplayName = "Pet frames" })
+	
 	self.strStanceName = tEngineerStances[Pet_GetStance(0)]
 	self.wndPetControl:FindChild("StanceName"):SetText(self.strStanceName)
-	
-	self.wndMovables = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Movables", nil, self)
 end
 
 function ForgeUI_PetFrames:ForgeAPI_AfterRestore()
-	ForgeUI.RegisterWindowPosition(self, self.wndPetControl, "ForgeUI_PetControl", self.wndMovables:FindChild("Movable_PetControl"))
-	ForgeUI.RegisterWindowPosition(self, self.wndPetFrames, "ForgeUI_PetFrames", self.wndMovables:FindChild("Movable_PetFrames"))
+	
 end
 
 function ForgeUI_PetFrames:UpdatePetFrames()
@@ -198,15 +198,6 @@ end
 
 function ForgeUI_PetFrames:OnPetSpawned()
 	self.wndPetControl:Show(true, true)
-end
-
----------------------------------------------------------------------------------------------------
--- ForgeUI_Movables Functions
----------------------------------------------------------------------------------------------------
-
-function ForgeUI_PetFrames:OnMovableMove( wndHandler, wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom )
-	self.wndPetControl:SetAnchorOffsets(self.wndMovables:FindChild("Movable_PetControl"):GetAnchorOffsets())
-	self.wndPetFrames:SetAnchorOffsets(self.wndMovables:FindChild("Movable_PetFrames"):GetAnchorOffsets())
 end
 
 -----------------------------------------------------------------------------------------------
