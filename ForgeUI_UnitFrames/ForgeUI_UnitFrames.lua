@@ -42,8 +42,8 @@ function ForgeUI_UnitFrames:new(o)
 		["RefreshStyle_TargetFrame"] = self, -- (unit)
 		["UpdateStyle_FocusFrame"] = self,
 		["RefreshStyle_FocusFrame"] = self, -- (unit)
-		["UpdateStyle_ToTFrame"] = self,
-		["RefreshStyle_ToTFrame"] = self, -- (unit)
+		["UpdateStyle_TotFrame"] = self,
+		["RefreshStyle_TotFrame"] = self, -- (unit)
 	}
 	
 	-- optional
@@ -145,6 +145,8 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	self.wndHazardBreath = Apollo.LoadForm(self.xmlDoc, "ForgeUI_HazardBreath", "FixedHudStratumLow", self)
 	self.wndHazardHeat = Apollo.LoadForm(self.xmlDoc, "ForgeUI_HazardHeat", "FixedHudStratumLow", self)
 	self.wndHazardToxic = Apollo.LoadForm(self.xmlDoc, "ForgeUI_HazardToxic", "FixedHudStratumLow", self)
+	
+	-- register windows
 	
 	ForgeUI.API_RegisterWindow(self, self.wndPlayerFrame, "ForgeUI_PlayerFrame", { strDisplayName = "Player frame" })
 	ForgeUI.API_RegisterWindow(self, self.wndPlayerFrame:FindChild("ShieldBar"), "ForgeUI_PlayerFrame_Shield", { strParent = "ForgeUI_PlayerFrame", strDisplayName = "Shield", crBorder = "FF0699F3" })
@@ -252,7 +254,7 @@ function ForgeUI_UnitFrames:UpdateToTFrame(unitSource)
 		return
 	end
 	
-	self.tStylers["RefreshStyle_ToTFrame"]["RefreshStyle_ToTFrame"](self, unit)
+	self.tStylers["RefreshStyle_TotFrame"]["RefreshStyle_TotFrame"](self, unit)
 	if self.tSettings.tTotFrame.bShowThreat and unitSource:GetType() == "Player"  then
 		self.wndThreat:SetText("")
 	end
@@ -410,7 +412,21 @@ function ForgeUI_UnitFrames:OnCharacterCreated()
 end
 
 function ForgeUI_UnitFrames:ForgeAPI_AfterRestore()
-	
+	for key, keyValue in pairs(self.tSettings) do
+		local type  = string.sub(key, 2, string.len(key))
+		for option, optionValue in pairs(keyValue) do
+			if string.sub(option, 1, 2) == "cr" then
+				if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil then
+					ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)), self.tSettings[key], tostring(option), false, "UpdateStyle_" .. type)
+				end
+			end
+			if string.sub(option, 1, 1) == "b" then
+				if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil then
+					ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)), self.tSettings[key], tostring(option), "UpdateStyle_" .. type)
+				end
+			end
+		end
+	end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -421,7 +437,7 @@ function ForgeUI_UnitFrames:UpdateStyles()
 	self.tStylers["UpdateStyle_PlayerFrame"]["UpdateStyle_PlayerFrame"](self)
 	self.tStylers["UpdateStyle_TargetFrame"]["UpdateStyle_TargetFrame"](self)
 	self.tStylers["UpdateStyle_FocusFrame"]["UpdateStyle_FocusFrame"](self)
-	self.tStylers["UpdateStyle_ToTFrame"]["UpdateStyle_ToTFrame"](self)
+	self.tStylers["UpdateStyle_TotFrame"]["UpdateStyle_TotFrame"](self)
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_PlayerFrame()
@@ -484,13 +500,13 @@ function ForgeUI_UnitFrames:RefreshStyle_FocusFrame(unit)
 	end
 end
 
-function ForgeUI_UnitFrames:UpdateStyle_ToTFrame()
+function ForgeUI_UnitFrames:UpdateStyle_TotFrame()
 	self.wndToTFrame:FindChild("HPBar"):SetBGColor(self.tSettings.tTotFrame.crBorder)
 	self.wndToTFrame:FindChild("Background"):SetBGColor(self.tSettings.tTotFrame.crBackground)
 	self.wndToTFrame:FindChild("HP_ProgressBar"):SetBarColor(self.tSettings.tTotFrame.crHpBar)
 end
 
-function ForgeUI_UnitFrames:RefreshStyle_ToTFrame(unit)
+function ForgeUI_UnitFrames:RefreshStyle_TotFrame(unit)
 	local _name = self.wndToTFrame:FindChild("Name")
 
 	_name:SetText(unit:GetName())
