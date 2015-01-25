@@ -126,6 +126,7 @@ function ForgeUI:OnDocLoaded()
 	self.wndItemContainer = self.wndMain:FindChild("ForgeUI_Form_ItemContainer")
 	
 	self.wndMainItemListHolder = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ListHolder", self.wndItemList, self)
+	self.wndMainItemListHolder:Show(true, true)
 
 	-- slash commands
 	Apollo.RegisterSlashCommand("forgeui", "OnForgeUIcmd", self)
@@ -288,6 +289,10 @@ function ForgeUI.API_AddItemButton(tAddon, strDisplayName, tOptions)
 		tData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
 	end
 	
+	if tOptions.bDefault ~= nil then
+		tData.bDefault = tOptions.bDefault
+	end
+	
 	wndButton:SetData(tData)
 	
 	ForgeUIInst.wndMainItemListHolder:ArrangeChildrenVert()
@@ -299,7 +304,52 @@ function ForgeUI.API_AddItemButton(tAddon, strDisplayName, tOptions)
 	return wndButton
 end
 
-function ForgeUI.API_AddListToItemButton(tAddon, wndButton, tList, tOptions)
+function ForgeUI.API_AddListItemToButton(tAddon, wndBtn, strDisplayName, tOptions)
+	local tData = wndBtn:GetData()
+	local tNewData = {}
+	
+	local wndList
+	if tData.itemList == nil then
+		wndList = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_ListHolder", ForgeUIInst.wndItemList, ForgeUI)
+		
+		local wndHomeButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Item", wndList, ForgeUIInst):FindChild("ForgeUI_Item_Button")
+		wndHomeButton:GetParent():FindChild("ForgeUI_Item_Text"):SetText("Home")
+		
+		local tHomeData = {}
+		tHomeData.parentContainer = wndList
+		tHomeData.itemList = ForgeUIInst.wndMainItemListHolder
+		
+		wndHomeButton:SetData(tHomeData)
+				
+		tData.itemList = wndList
+	else
+		wndList = tData.itemList
+	end
+	
+	local wndButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Item", wndList, ForgeUIInst):FindChild("ForgeUI_Item_Button")
+	wndButton:GetParent():FindChild("ForgeUI_Item_Text"):SetText(strDisplayName)
+	
+	tNewData.parentContainer = wndList
+	
+	if tOptions == nil then
+		wndButton:SetData(tNewData)
+		wndList:ArrangeChildrenVert()
+		return wndButton
+	end
+	
+	if tOptions.strContainer ~= nil then
+		tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
+		tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
+		tNewData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+	end
+	
+	if tOptions.bDefault ~= nil then
+		tNewData.bDefault = tOptions.bDefault
+	end
+	
+	wndButton:SetData(tNewData)
+	wndList:ArrangeChildrenVert()
+	return wndButton
 end
 
 function ForgeUI:SetActiveItem(wndControl)
@@ -312,9 +362,21 @@ function ForgeUI:SetActiveItem(wndControl)
 		end
 	end
 	
-	wndControl:GetParent():FindChild("ForgeUI_Item_Text"):SetTextColor(self.tSettings.crMain)
-	if data.itemContainer ~= nil then
-		data.itemContainer:Show(true, true)
+	if data.itemList ~= nil then
+		for _, wndList in pairs(self.wndItemList:GetChildren()) do
+			wndList:Show(false, true)
+		end
+		data.itemList:Show(true, false)
+		for _, wndButton in pairs(data.itemList:GetChildren()) do
+			if wndButton:FindChild("ForgeUI_Item_Button"):GetData().bDefault == true then
+				self:SetActiveItem(wndButton:FindChild("ForgeUI_Item_Button"))
+			end
+		end
+	else
+		wndControl:GetParent():FindChild("ForgeUI_Item_Text"):SetTextColor(self.tSettings.crMain)
+		if data.itemContainer ~= nil then
+			data.itemContainer:Show(true, true)
+		end
 	end
 end
 

@@ -125,12 +125,10 @@ end
 
 function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	local wnd = ForgeUI.API_AddItemButton(self, "Unit frames")
-	--ForgeUI.AddItemListToButton(self, wnd, {
-	--	{ strDisplayName = "Player frame", strContainer = "Container_PlayerFrame", bDefault = true },
-	--	{ strDisplayName = "Target frame", strContainer = "Container_TargetFrame" },
-	--	{ strDisplayName = "ToT frame", strContainer = "Container_TotFrame" },
-	--	{ strDisplayName = "Focus frame", strContainer = "Container_FocusFrame" }
-	--}) 
+	ForgeUI.API_AddListItemToButton(self, wnd, "Player frame", { strContainer = "Container_PlayerFrame", bDefault = true })
+	ForgeUI.API_AddListItemToButton(self, wnd, "Target frame", { strContainer = "Container_TargetFrame" })
+	ForgeUI.API_AddListItemToButton(self, wnd, "ToT frame", { strContainer = "Container_TotFrame" })
+	ForgeUI.API_AddListItemToButton(self, wnd, "Focus frame", { strContainer = "Container_FocusFrame" })
 	
 	self.wndPlayerFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_PlayerFrame", "FixedHudStratumLow", self)
 	self.wndPlayerBuffFrame = Apollo.LoadForm(self.xmlDoc, "PlayerBuffContainerWindow", "FixedHudStratumHigh", self)
@@ -151,12 +149,14 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	ForgeUI.API_RegisterWindow(self, self.wndPlayerFrame, "ForgeUI_PlayerFrame", { strDisplayName = "Player frame" })
 	ForgeUI.API_RegisterWindow(self, self.wndPlayerFrame:FindChild("ShieldBar"), "ForgeUI_PlayerFrame_Shield", { strParent = "ForgeUI_PlayerFrame", strDisplayName = "Shield", crBorder = "FF0699F3" })
 	ForgeUI.API_RegisterWindow(self, self.wndPlayerFrame:FindChild("AbsorbBar"), "ForgeUI_PlayerFrame_Absorb", { strParent = "ForgeUI_PlayerFrame", strDisplayName = "Absorb", crBorder = "FFFFC600" })
+	ForgeUI.API_RegisterWindow(self, self.wndPlayerFrame:FindChild("InterruptArmor"), "ForgeUI_PlayerFrame_IA", { strParent = "ForgeUI_PlayerFrame", strDisplayName = "IA", crBorder = "FFFFFFFF", bMaintainRatio = true })
 	ForgeUI.API_RegisterWindow(self, self.wndPlayerBuffFrame, "ForgeUI_PlayerFrame_Buffs", { strDisplayName = "Player buffs" })
 	ForgeUI.API_RegisterWindow(self, self.wndPlayerDebuffFrame, "ForgeUI_PlayerFrame_Debuffs", { strDisplayName = "Player debuffs" })
 	
 	ForgeUI.API_RegisterWindow(self, self.wndTargetFrame, "ForgeUI_TargetFrame", { strDisplayName = "Target frame" })
 	ForgeUI.API_RegisterWindow(self, self.wndTargetFrame:FindChild("ShieldBar"), "ForgeUI_TargetFrame_Shield", { strParent = "ForgeUI_TargetFrame", strDisplayName = "Shield", crBorder = "FF0699F3" })
 	ForgeUI.API_RegisterWindow(self, self.wndTargetFrame:FindChild("AbsorbBar"), "ForgeUI_TargetFrame_Absorb", { strParent = "ForgeUI_TargetFrame", strDisplayName = "Absorb", crBorder = "FFFFC600" })
+	ForgeUI.API_RegisterWindow(self, self.wndTargetFrame:FindChild("InterruptArmor"), "ForgeUI_TargetFrame_IA", { strParent = "ForgeUI_TargetFrame", strDisplayName = "IA", crBorder = "FFFFFFFF", bMaintainRatio = true })
 	ForgeUI.API_RegisterWindow(self, self.wndTargetBuffFrame, "ForgeUI_TargetFrame_Buffs", { strDisplayName = "Target buffs" })
 	ForgeUI.API_RegisterWindow(self, self.wndTargetDebuffFrame, "ForgeUI_TargetFrame_Debuffs", { strDisplayName = "Target debuffs" })
 	
