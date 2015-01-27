@@ -493,30 +493,93 @@ function ForgeUI:ForgeUI_Movables_GridCheckbox( wndHandler, wndControl, eMouseBu
 end
 
 function ForgeUI:FillGrid(wnd)
-	local nDiameter = 5
+	self.wndMovables:FindChild("Grid"):DestroyAllPixies()
+
+	local nDiameterX = self.wndMovables:FindChild("GridSize_X"):GetText()
+	local nDiameterY = self.wndMovables:FindChild("GridSize_Y"):GetText()
 
 	local nHeight = wnd:GetHeight()
 	local nWidth = wnd:GetWidth()
 	
-	for i = 0, nHeight, nDiameter do
-		wnd:AddPixie({
-			strSprite = "BlackFill",
-			loc = {
-		    	fPoints = {0,0,1,0},
-	    		nOffsets = {0,i,0,i + 1}
-			 }
-		})
+	for i = 0, nHeight / 2 , nDiameterY do
+		local j = nHeight / 2 + i
+		local k = nHeight / 2 - i
+	
+		if i == 0 then
+			wnd:AddPixie({
+				strSprite = "WhiteFill",
+				loc = {
+			    	fPoints = {0,0,1,0},
+		    		nOffsets = {0,j,0,j + 1}
+				 },
+				cr = "FFFF0000"
+			})
+		else
+			wnd:AddPixie({
+				strSprite = "WhiteFill",
+				loc = {
+			    	fPoints = {0,0,1,0},
+		    		nOffsets = {0,j,0,j + 1}
+				 },
+				cr = "FF000000"
+			})
+
+			wnd:AddPixie({
+				strSprite = "WhiteFill",
+				loc = {
+			    	fPoints = {0,0,1,0},
+		    		nOffsets = {0,k,0,k + 1}
+				 },
+				cr = "FF000000"
+			})
+		end
 	end
 	
-	for i = 0, nWidth, nDiameter do
-		wnd:AddPixie({
-			strSprite = "BlackFill",
-			loc = {
-		    	fPoints = {0,0,0,1},
-	    		nOffsets = {i,0,i + 1,0}
-			 }
-		})
+	for i = 0, nWidth / 2 , nDiameterX do
+		local j = nWidth / 2 + i
+		local k = nWidth / 2 - i
+	
+		if i == 0 then
+			wnd:AddPixie({
+				strSprite = "WhiteFill",
+				loc = {
+			    	fPoints = {0,0,0,1},
+		    		nOffsets = {j,0,j + 1,0}
+				 },
+				cr = "FFFF0000"
+			})
+		else
+			wnd:AddPixie({
+				strSprite = "WhiteFill",
+				loc = {
+			    	fPoints = {0,0,0,1},
+		    		nOffsets = {j,0,j + 1,0}
+				 },
+				cr = "FF000000"
+			})
+
+			wnd:AddPixie({
+				strSprite = "WhiteFill",
+				loc = {
+			    	fPoints = {0,0,0,1},
+		    		nOffsets = {k,0,k + 1,0}
+				 },
+				cr = "FF000000"
+			})
+		end
 	end
+end
+
+function ForgeUI:OnGridSizeButtonClick( wndHandler, wndControl, eMouseButton )
+	if wndControl:GetName() == "Plus" then
+		local nNew = wndControl:GetParent():GetText() + 1
+		wndControl:GetParent():SetText(nNew)
+	elseif wndControl:GetName() == "Minus" then
+		local nNew = wndControl:GetParent():GetText() - 1
+		if nNew < 0 then return end
+		wndControl:GetParent():SetText(nNew)
+	end
+	self:FillGrid(self.wndMovables:FindChild("Grid"))
 end
 
 function ForgeUI:OnMovablesClose( wndHandler, wndControl, eMouseButton )

@@ -50,6 +50,12 @@ function ForgeUI_Nameplates:new(o)
 	
 	self.wndContainers = {}
 	
+	self.tStylers = {
+		["LoadStyle_Nameplate"] = self, -- (tNameplate)
+		["UpdateStyle_Nameplate"] = self, -- (tNameplate)
+		["RefreshStyle_Nameplate"] = self, -- (tNameplate)
+	}
+	
 	-- optional
 	self.settings_version = 2
 	self.tSettings = {
@@ -266,6 +272,9 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRegistration()
 	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnFrame", self)
 	
 	local wndItemButton = ForgeUI.API_AddItemButton(self, "Nameplates")
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "General", { strContainer = "Container_General", bDefault = true })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Target", { strContainer = "Container_Target" })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Player", { strContainer = "Container_Player" })
 	--ForgeUI.AddItemListToButton(self, wndItemButton, {
 	--	{ strDisplayName = "General", strContainer = "Container_General", bDefault = true },
 	--	{ strDisplayName = "Target", strContainer = "Container_Target" },
@@ -323,6 +332,11 @@ function ForgeUI_Nameplates:UpdateNameplates()
 	for idx, tNameplate in _pairs(self.tNameplates) do
 		if self:UpdateNameplateVisibility(tNameplate) then
 			self:UpdateNameplate(tNameplate)
+			if tNameplate.bNeedUpdate then
+				self.tStylers["UpdateStyle_Nameplate"]["UpdateStyle_Nameplate"](self, tNameplate)
+				tNameplate.bNeedUpdate = false
+			end
+			self.tStylers["RefreshStyle_Nameplate"]["RefreshStyle_Nameplate"](self, tNameplate)
 		end
 	end
 end
@@ -437,7 +451,7 @@ function ForgeUI_Nameplates:UpdateGuild(tNameplate)
 	
 	if bShow ~= guild:IsShown() then
 		guild:Show(bShow, true)
-		self:UpdateStyle(tNameplate)
+		tNameplate.bNeedUpdate = true
 	end
 end
 
@@ -476,7 +490,6 @@ function ForgeUI_Nameplates:UpdateBars(tNameplate)
 	
 	if bShow ~= bar:IsShown() then
 		bar:Show(bShow, true)
-		self:UpdateStyle(tNameplate)
 	end
 	
 	if bShow then
@@ -518,7 +531,6 @@ function ForgeUI_Nameplates:UpdateHealth(tNameplate)
 	
 	if bShow ~= hp:IsShown() then
 		hp:Show(bShow, true)
-		self:UpdateStyle(tNameplate)
 	end
 end
 
@@ -544,7 +556,7 @@ function ForgeUI_Nameplates:UpdateShield(tNameplate)
 		
 	if bar:IsShown() ~= bShow then
 		bar:Show(bShow, true)
-		self:UpdateStyle(tNameplate)
+		tNameplate.bNeedUpdate = true
 	end
 end
 
@@ -570,7 +582,6 @@ function ForgeUI_Nameplates:UpdateAbsorb(tNameplate)
 	
 	if bShow ~= absorbBar:IsShown() then
 		absorbBar:Show(bShow, true)
-		self:UpdateStyle(tNameplate)
 	end
 end
 
@@ -693,39 +704,8 @@ end
 -- update style
 function ForgeUI_Nameplates:UpdateStyles()
 	for _, tNameplate in pairs(self.tNameplates) do
-		self:UpdateStyle(tNameplate)
-	end
-end
-
-function ForgeUI_Nameplates:UpdateStyle(tNameplate)
-	local wnd = tNameplate.wnd
-	
-	wnd.hp:FindChild("Background"):SetBGColor(self.tSettings.crBgBar)
-	wnd.shield:FindChild("Background"):SetBGColor(self.tSettings.crBgBar)
-	wnd.shieldBar:SetBarColor(self.tSettings.crShieldBar)
-	wnd.absorbBar:SetBarColor(self.tSettings.crAbsorbBar)
-	wnd.castBar:SetBarColor(self.tSettings.crCastBar)
-	wnd.cast:FindChild("Background"):SetBGColor(self.tSettings.crBgBar)
-	wnd.marker:SetBGColor(self.tSettings.tTarget.crMarker) 
-	
-	tNameplate.wndNameplate:SetAnchorOffsets(-(self.tSettings.nBarWidth /2), -30, (self.tSettings.nBarWidth / 2), 0)
-	
-	local nLeft, nTop, nRight, nBottom = wnd.bar:GetAnchorOffsets()
-	if wnd.shield:IsShown() then
-		wnd.bar:SetAnchorOffsets(nLeft, nTop, nRight, nTop + self.tSettings.nHpBarHeight + self.tSettings.nShieldBarHeight - 1)
-		wnd.hp:SetAnchorOffsets(0, 0, 0, self.tSettings.nHpBarHeight)
-		wnd.shield:SetAnchorOffsets(0, - self.tSettings.nShieldBarHeight, 0, 0)
-	else
-		wnd.bar:SetAnchorOffsets(nLeft, nTop, nRight, nTop + self.tSettings.nHpBarHeight)
-		wnd.hp:SetAnchorOffsets(0, 0, 0, self.tSettings.nHpBarHeight)
-	end
-	
-	if wnd.guild:IsShown() then
-		nLeft, nTop, nRight, nBottom = wnd.name:GetAnchorOffsets()
-		wnd.name:SetAnchorOffsets(nLeft, -15, nRight, -30)
-	else
-		nLeft, nTop, nRight, nBottom = wnd.name:GetAnchorOffsets()
-		wnd.name:SetAnchorOffsets(nLeft, 0, nRight, -15)
+		self.tStylers["LoadStyle_Nameplate"]["LoadStyle_Nameplate"](self, tNameplate)
+		self.tStylers["UpdateStyle_Nameplate"]["UpdateStyle_Nameplate"](self, tNameplate)
 	end
 end
 
@@ -845,6 +825,7 @@ function ForgeUI_Nameplates:GenerateNewNameplate(unitNew)
 		nVulnerableTime = 0,
 		
 		bShow			= false,
+		bNeedUpdate		= false,
 		
 		wndNameplate 	= wnd,
 		wnd = {
@@ -871,33 +852,19 @@ function ForgeUI_Nameplates:GenerateNewNameplate(unitNew)
 		}
 	}
 	
-	--if self.tSettings["t" .. tNameplate.unitType].bShow then
 	if self.tSettings["t" .. tNameplate.unitType] == nil then
 		tNameplate.unitType = "Unknown"
 		Print("Please report this text to any ForgeUI page: Unknow unitType - " .. unitNew:GetName())
 	end
 
-	self:InitNameplate(tNameplate)
+	self.tStylers["LoadStyle_Nameplate"]["LoadStyle_Nameplate"](self, tNameplate)
+	self.tStylers["UpdateStyle_Nameplate"]["UpdateStyle_Nameplate"](self, tNameplate)
+	
 	self:UpdateNameplate(tNameplate)
-	self:UpdateStyle(tNameplate)
 	
 	self.tNameplates[unitNew:GetId()] = tNameplate
 	
 	return tNameplate
-	--else
-	--	self.tHiddenNameplates[unitNew:GetId()] = tNameplate
-	--	return
-	--end
-end
-
-function ForgeUI_Nameplates:InitNameplate(tNameplate)
-	if tNameplate.bIsPlayer then
-		tNameplate.wnd.info_icon:SetSprite("ForgeUI_" .. tClassEnums[tNameplate.unitClassID] .. "_s")
-	elseif tNameplate.unitClassID ~= 6 and tNameplate.unitClassID >= 4 then
-		tNameplate.wnd.info_icon:SetSprite("ForgeUI_npc_rank_" .. tNpcRankEnums[tNameplate.unitClassID] .. "_s")
-	else
-		tNameplate.wnd.info_level:SetAnchorOffsets(0, 0, -3, 0)
-	end
 end
 
 function ForgeUI_Nameplates:IsImportantNPC(unitOwner)
@@ -949,6 +916,94 @@ function ForgeUI_Nameplates:OnNameplateClick( wndHandler, wndControl, eMouseButt
 	elseif wndControl:GetName() == "HPBar" or wndControl:GetName() == "ShieldBar" then
 		GameLib.SetTargetUnit(wndControl:GetParent():GetParent():GetUnit())
 	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- Settings
+-----------------------------------------------------------------------------------------------
+
+function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
+	for key, keyValue in pairs(self.tSettings) do
+		local type  = string.sub(key, 2, string.len(key))
+		
+		if true then
+			if string.sub(key, 1, 2) == "cr" then
+				if self.wndContainers["Container_General"]:FindChild(tostring(key)) ~= nil then
+					ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_General"]:FindChild(tostring(key)), self.tSettings, tostring(key), false, "UpdateStyles")
+				end
+			end
+			if string.sub(key, 1, 1) == "b" then
+				if self.wndContainers["Container_General"]:FindChild(tostring(key)) ~= nil then
+					ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_General"]:FindChild(tostring(key)), self.tSettings, tostring(key), "UpdateStyles")
+				end
+			end
+		else
+			for option, optionValue in pairs(keyValue) do
+				if string.sub(option, 1, 2) == "cr" then
+					if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil then
+						ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)), self.tSettings[key], tostring(option), false, "UpdateStyles")
+					end
+				end
+				if string.sub(option, 1, 1) == "b" then
+					if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil then
+						ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)), self.tSettings[key], tostring(option), "UpdateStyles")
+					end
+				end
+			end
+		end
+	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- Styles
+-----------------------------------------------------------------------------------------------
+
+function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
+	local wnd = tNameplate.wnd
+
+	if tNameplate.bIsPlayer then
+		tNameplate.wnd.info_icon:SetSprite("ForgeUI_" .. tClassEnums[tNameplate.unitClassID] .. "_s")
+	elseif tNameplate.unitClassID ~= 6 and tNameplate.unitClassID >= 4 then
+		tNameplate.wnd.info_icon:SetSprite("ForgeUI_npc_rank_" .. tNpcRankEnums[tNameplate.unitClassID] .. "_s")
+	else
+		tNameplate.wnd.info_level:SetAnchorOffsets(0, 0, -3, 0)
+	end
+	
+	wnd.hp:FindChild("Background"):SetBGColor(self.tSettings.crBgBar)
+	wnd.shield:FindChild("Background"):SetBGColor(self.tSettings.crBgBar)
+	wnd.shieldBar:SetBarColor(self.tSettings.crShieldBar)
+	wnd.absorbBar:SetBarColor(self.tSettings.crAbsorbBar)
+	wnd.castBar:SetBarColor(self.tSettings.crCastBar)
+	wnd.cast:FindChild("Background"):SetBGColor(self.tSettings.crBgBar)
+	wnd.marker:SetBGColor(self.tSettings.tTarget.crMarker) 
+	
+	tNameplate.wndNameplate:SetAnchorOffsets(-(self.tSettings.nBarWidth /2), -30, (self.tSettings.nBarWidth / 2), 0)
+end
+
+function ForgeUI_Nameplates:UpdateStyle_Nameplate(tNameplate)
+	local wnd = tNameplate.wnd
+
+	local nLeft, nTop, nRight, nBottom = wnd.bar:GetAnchorOffsets()
+	if wnd.shield:IsShown() then
+		wnd.bar:SetAnchorOffsets(nLeft, nTop, nRight, nTop + self.tSettings.nHpBarHeight + self.tSettings.nShieldBarHeight - 1)
+		wnd.hp:SetAnchorOffsets(0, 0, 0, self.tSettings.nHpBarHeight)
+		wnd.shield:SetAnchorOffsets(0, - self.tSettings.nShieldBarHeight, 0, 0)
+	else
+		wnd.bar:SetAnchorOffsets(nLeft, nTop, nRight, nTop + self.tSettings.nHpBarHeight)
+		wnd.hp:SetAnchorOffsets(0, 0, 0, self.tSettings.nHpBarHeight)
+	end
+	
+	if wnd.guild:IsShown() then
+		nLeft, nTop, nRight, nBottom = wnd.name:GetAnchorOffsets()
+		wnd.name:SetAnchorOffsets(nLeft, -15, nRight, -30)
+	else
+		nLeft, nTop, nRight, nBottom = wnd.name:GetAnchorOffsets()
+		wnd.name:SetAnchorOffsets(nLeft, 0, nRight, -15)
+	end
+end
+
+function ForgeUI_Nameplates:RefreshStyle_Nameplate(tNameplate)
+	
 end
 
 -----------------------------------------------------------------------------------------------
