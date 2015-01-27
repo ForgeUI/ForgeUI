@@ -488,6 +488,48 @@ function ForgeUI:OnLockElements()
 	end
 end
 
+function ForgeUI:OnMovableClick( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
+	if wndControl:GetName() == "ForgeUI_Movable" and eMouseButton == 1 then
+		local wndPrecisionWindow = wndControl:FindChild("PrecisionWindow")
+		wndPrecisionWindow:Show(not  wndPrecisionWindow:IsShown())
+		wndPrecisionWindow:FindChild("Name"):SetText(wndControl:FindChild("Text"):GetText())
+		wndPrecisionWindow:FindChild("Size_X"):SetText(wndControl:GetWidth())
+		wndPrecisionWindow:FindChild("Size_Y"):SetText(wndControl:GetHeight())
+		
+		local nLeft, nTop, nRight, nBottom = wndControl:GetAnchorOffsets()
+		wndPrecisionWindow:FindChild("Pos_X"):SetText(nLeft)
+		wndPrecisionWindow:FindChild("Pos_Y"):SetText(nTop)
+	end
+end
+
+function ForgeUI:OnMovableSizeButtonClick( wndHandler, wndControl, eMouseButton )
+	if wndControl:GetName() == "Plus" then
+		local nNew = wndControl:GetParent():GetText() + 1
+		wndControl:GetParent():SetText(nNew)
+	elseif wndControl:GetName() == "Minus" then
+		local nNew = wndControl:GetParent():GetText() - 1
+		if wndControl:GetParent():GetParent():GetName() == "Size" and nNew < 1 then return end
+		wndControl:GetParent():SetText(nNew)
+	end
+	
+	local wnd = wndControl:GetParent():GetParent():GetParent():GetParent()
+	
+	self:ResizeMovable(wnd, wnd:FindChild("Size_X"):GetText(), wnd:FindChild("Size_Y"):GetText(), wnd:FindChild("Pos_X"):GetText(), wnd:FindChild("Pos_Y"):GetText())
+	self:OnMovableMove()
+end
+
+function ForgeUI:ResizeMovable(wndMovable, nNewWidth, nNewHeight, nNewPosX, nNewPosY)
+	local nDeltaWidth = nNewWidth - wndMovable:GetWidth()
+	local nDeltaHeight = nNewHeight - wndMovable:GetHeight()
+	
+	local nLeft, nTop, nRight, nBottom = wndMovable:GetAnchorOffsets()
+	nRight = nRight + nNewPosX - nLeft
+	nBottom = nBottom + nNewPosY - nTop
+	nLeft = nNewPosX
+	nTop = nNewPosY
+	wndMovable:SetAnchorOffsets(nLeft, nTop, nRight + nDeltaWidth, nBottom + nDeltaHeight) 
+end
+
 function ForgeUI:ForgeUI_Movables_GridCheckbox( wndHandler, wndControl, eMouseButton )
 	self.wndMovables:FindChild("Grid"):Show(wndControl:IsChecked(), true)
 end
