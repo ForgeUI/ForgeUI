@@ -1,14 +1,15 @@
 require "Window"
  
 local ForgeUI = {}
+local ForgeColor
  
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
-VERSION = "0.2.6"
+
 AUTHOR = "Adam Jedlicka"
 AUTHOR_LONG = "Winty Badass@Jabbit"
-API_VERSION = 1
+API_VERSION = 2
 
 -- errors
 ERR_ADDON_REGISTERED = 0
@@ -22,33 +23,17 @@ local tAddons = {}
 local bCanRegisterAddons = false
 local tAddonsToRegister = {}
 
-local wndItemList = nil
-local wndActiveItem = nil
-local wndItemContainer = nil
-local wndItemContainer2 = nil
+local tStylers = {}
 
-local tItemList_Items = {}
 local tRegisteredWindows = {} -- saving windows for repositioning them later
 
 -----------------------------------------------------------------------------------------------
 -- Settings
 -----------------------------------------------------------------------------------------------
-local resetDefaults = false
+local bResetDefaults = false
 
 local tSettings_addons = {}
-local tSettings_windowsPositions = {}
-local tSettings = {
-	apiVersion = API_VERSION,
-	masterColor = "xkcdFireEngineRed",
-	classColors = {
-		engineer = "EFAB48",
-		esper = "1591DB",
-		medic = "FFE757",
-		spellslinger = "98C723",
-		stalker = "D23EF4",
-		warrior = "F54F4F"
-	}
-}
+local tSettings_windows = {}
 
 -----------------------------------------------------------------------------------------------
 -- Initialization
@@ -58,7 +43,28 @@ function ForgeUI:new(o)
     setmetatable(o, self)
     self.__index = self 
 	
-	self.wndContainers = {}	
+	 -- mandatory 
+    self.api_version = 2
+	self.version = "0.3.0beta"
+	self.author = "WintyBadass"
+	self.strAddonName = "~ForgeUI"
+	self.strDisplayName = "ForgeUI"
+	
+	self.wndContainers  = {}
+	
+	-- optional
+	self.settings_version = 1
+    self.tSettings = {
+		crMain = "FFFF0000",
+		tClassColors = {
+			crEngineer = "FFEFAB48",
+			crEsper = "FF1591DB",
+			crMedic = "FFFFE757",
+			crSpellslinger = "FF98C723",
+			crStalker = "FFD23EF4",
+			crWarrior = "FFF54F4F"
+		}
+	}	
 
     return o
 end
@@ -87,54 +93,73 @@ end
 -----------------------------------------------------------------------------------------------
 function ForgeUI:OnDocLoaded()
 	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
+	
+	ForgeColor = Apollo.GetPackage("ForgeColor").tPackage
+	
+	-- sprites
 	Apollo.LoadSprites("ForgeUI_Sprite.xml", "ForgeUI_Sprite")
 	Apollo.LoadSprites("ForgeUI_Icons.xml", "ForgeUI_Icons")
 	
-    self.wndMain = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Form", nil, self)
-	self.wndMain:FindChild("Version"):FindChild("Text"):SetText(VERSION)
-	self.wndMain:FindChild("Author"):FindChild("Text"):SetText(AUTHOR_LONG)
-	self.wndMain:Show(false, true)
+	-- tratums
+	self.WorldStratum0 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
+	self.WorldStratum1 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
 	
-	wndItemList = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ListHolder", self.wndMain:FindChild("ForgeUI_Form_ItemList"), self)
-	wndItemContainer = self.wndMain:FindChild("ForgeUI_ContainerHolder")
-	wndItemContainer2 = self.wndMain:FindChild("ForgeUI_ContainerHolder2")
+	self.HudStratum0 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
+	self.HudStratum1 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
+	self.HudStratum2 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
+	self.HudStratum3 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
+	self.HudStratum4 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
+	self.HudStratum5 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
+	
+	-- main window
+    self.wndMain = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Form", nil, self)
+	self.wndMain:FindChild("Version"):FindChild("Text"):SetText(self.version)
+	self.wndMain:FindChild("Author"):FindChild("Text"):SetText(AUTHOR_LONG)
+	
+	-- addons list
+	self.wndAddons = Apollo.LoadForm(self.xmlDoc, "ForgeUI_AddonsForm", self.wndMain, self)
+	
+	-- movables
+	self.wndMovables = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Movables", nil, self)
+	
+	-- item list & container
+	self.wndItemList = self.wndMain:FindChild("ForgeUI_Form_ItemList")
+	self.wndItemContainer = self.wndMain:FindChild("ForgeUI_Form_ItemContainer")
+	
+	self.wndMainItemListHolder = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ListHolder", self.wndItemList, self)
+	self.wndMainItemListHolder:Show(true, true)
 
+	-- slash commands
 	Apollo.RegisterSlashCommand("forgeui", "OnForgeUIcmd", self)
 	Apollo.RegisterSlashCommand("focus", "OnFocusCmd", self)
 	
-	self.wndItemButton_Home = ForgeUI.AddItemButton(self, "Home", "ForgeUI_Home")
-	self.wndItemButton_Home:GetParent():FindChild("ForgeUI_Item_Text"):SetTextFlags("DT_CENTER", true)
-	wndActiveItem = self.wndItemButton_Home
-	self:SetActiveItem(self.wndItemButton_Home)
-	
-	ForgeUI.AddItemButton(self, "General settings", "ForgeUI_General")
-	
-	ForgeUI.RegisterWindowPosition(self, self.wndMain, "ForgeUI_Core")
-	
-	self.wndMovables = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Movables", nil, self)
-	
 	bCanRegisterAddons = true
 	
-	for _, tAddon in pairs(tAddonsToRegister) do -- loading not registered addons
-		ForgeUI.RegisterAddon(tAddon)
-	end
+	ForgeUI.API_RegisterAddon(self)
 	
-	self:Initialize()
+	for _, tAddon in pairs(tAddonsToRegister) do -- loading not registered addons
+		ForgeUI.API_RegisterAddon(tAddon)
+	end
 end
 
-function ForgeUI:Initialize()
-	ForgeUI.ColorBoxChanged(self.wndContainers.ForgeUI_General:FindChild("ClassColor_Engineer"):FindChild("EditBox"), tSettings.classColors.engineer, "engineer")
-	ForgeUI.ColorBoxChanged(self.wndContainers.ForgeUI_General:FindChild("ClassColor_Esper"):FindChild("EditBox"), tSettings.classColors.esper, "esper")
-	ForgeUI.ColorBoxChanged(self.wndContainers.ForgeUI_General:FindChild("ClassColor_Spellslinger"):FindChild("EditBox"), tSettings.classColors.spellslinger, "spellslinger")
-	ForgeUI.ColorBoxChanged(self.wndContainers.ForgeUI_General:FindChild("ClassColor_Stalker"):FindChild("EditBox"), tSettings.classColors.stalker, "stalker")
-	ForgeUI.ColorBoxChanged(self.wndContainers.ForgeUI_General:FindChild("ClassColor_Medic"):FindChild("EditBox"), tSettings.classColors.medic, "medic")
-	ForgeUI.ColorBoxChanged(self.wndContainers.ForgeUI_General:FindChild("ClassColor_Warrior"):FindChild("EditBox"), tSettings.classColors.warrior, "warrior")
+function ForgeUI:ForgeAPI_AfterRegistration()
+	ForgeUI.API_AddItemButton(self, "Home", { bDefault = true, strContainer = "ForgeUI_Home" })
+	ForgeUI.API_AddItemButton(self, "General", { strContainer = "ForgeUI_General" })
+end
+
+function ForgeUI:ForgeAPI_AfterRestore()
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crEngineer"), self.tSettings.tClassColors, "crEngineer", false)
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crEsper"), self.tSettings.tClassColors, "crEsper", false)
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crMedic"), self.tSettings.tClassColors, "crMedic", false)
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crSpellslinger"), self.tSettings.tClassColors, "crSpellslinger", false)
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crStalker"), self.tSettings.tClassColors, "crStalker", false)
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crWarrior"), self.tSettings.tClassColors, "crWarrior", false)
 end
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI API
 -----------------------------------------------------------------------------------------------
-function ForgeUI.RegisterAddon(tAddon)
+function ForgeUI.API_RegisterAddon(tAddon)
 	if tAddons[tAddon.strAddonName] ~= nil then return ERR_ADDON_REGISTERED end
 	if tAddon.api_version ~= API_VERSION then return ERR_WRONG_API end
 	
@@ -144,6 +169,29 @@ function ForgeUI.RegisterAddon(tAddon)
 		if tAddon.ForgeAPI_AfterRegistration ~= nil then
 			tAddon:ForgeAPI_AfterRegistration() -- Forge API AfterRegistration
 		end
+		
+		-- styler registration
+		local bCanStylerBeRegistered = true
+		for _, tStyler in pairs(tStylers) do
+			if not tStyler.bRegistered then
+				for _, strAddon in pairs(tStyler.strAddons) do
+					if tAddons[strAddon] == nil then
+						bCanBeRegistered = false
+					end
+				end
+				
+				if bCanStylerBeRegistered == true then
+					tStyler.bRegistered = true
+					
+					if tStyler.tAddon.ForgeAPI_AfterStylerRegistration~= nil then
+						tStyler.tAddon:ForgeAPI_AfterStylerRegistration() -- Forge API AfterStylerRegistration
+					end
+				end
+			end
+			
+			bCanStylerBeRegistered = false
+		end
+		-- end of styler registration
 		
 		if tSettings_addons[tAddon.strAddonName] ~= nil then
 			if tAddon.settings_version ~= nil then
@@ -165,131 +213,468 @@ function ForgeUI.RegisterAddon(tAddon)
         if tAddon.ForgeAPI_LoadOptions ~= nil then
 			tAddon:ForgeAPI_LoadOptions() -- Forge API LoadOptions
 		end
+		
+		local wndAddon = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_AddonForm", ForgeUIInst.wndAddons, ForgeUIInst)
+		wndAddon:FindChild("AddonName"):SetText(tAddon.strDisplayName)
+		
+		wndAddon:SetData(tAddon)
+		
+		ForgeUIInst.wndAddons:ArrangeChildrenVert()
 	else
 		tAddonsToRegister[tAddon.strAddonName] = tAddon
 	end
 end
 
-function ForgeUI.AddItemButton(tAddon, strDisplayName, strWndContainer, tOptions)
-	local wndButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Item", wndItemList, ForgeUIInst):FindChild("ForgeUI_Item_Button")
+-- stylers
+function ForgeUI.API_RegisterStyler(tAddon, strAddons)
+	if tAddon.strName == nil then return end
+	if tStylers[tAddon.strName] ~= nil then return end
+	
+	tStylers[tAddon.strName] = {
+		tAddon = tAddon,
+		strAddons = strAddons,
+		bRegistered = false
+	}
+	
+	local bCanBeRegistered = true
+	for _, strAddon in pairs(strAddons) do
+		if tAddons[strAddon] == nil then
+			bCanBeRegistered = false
+		end
+	end
+	
+	if bCanBeRegistered == true and not tStylers[tAddon.strName].bRegistered then
+		tStylers[tAddon.strName].bRegistered = true
+		
+		if tAddon.ForgeAPI_AfterStylerRegistration~= nil then
+			tAddon:ForgeAPI_AfterStylerRegistration() -- Forge API AfterRegistration
+		end
+	end
+end
+
+function ForgeUI.API_GetAddon(strAddonName)
+	if tAddons[strAddonName] ~= nil then
+		return tAddons[strAddonName]
+	else
+		return nil
+	end
+end
+
+function ForgeUI.API_ResetAddonSettings(strAddonName)
+	local tAddon = tAddons[strAddonName]
+	if tAddon == nil then return end
+	
+	tAddon.bReset = true
+	RequestReloadUI()
+end
+
+-----------------------------------------------------------------------------------------------
+-- ForgeUI ItemList API
+-----------------------------------------------------------------------------------------------
+function ForgeUI.API_AddItemButton(tAddon, strDisplayName, tOptions)
+	local wndButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Item", ForgeUIInst.wndMainItemListHolder, ForgeUIInst):FindChild("ForgeUI_Item_Button")
 	wndButton:GetParent():FindChild("ForgeUI_Item_Text"):SetText(strDisplayName)
 	
 	local tData = {}
-	if strWndContainer ~= nil then
-		tAddon.wndContainers[strWndContainer] = Apollo.LoadForm(tAddon.xmlDoc, strWndContainer, wndItemContainer, tAddon)
-		tAddon.wndContainers[strWndContainer]:Show(false)
-		tData.itemContainer = tAddon.wndContainers[strWndContainer]
+	tData.parentContainer = ForgeUIInst.wndMainItemListHolder
+	
+	if tOptions == nil then
+		wndButton:SetData(tData)
+		ForgeUIInst.wndMainItemListHolder:ArrangeChildrenVert()
+		return wndButton
 	end
 	
-	tData.itemList = wndItemList
+	if tOptions.strContainer ~= nil then
+		tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
+		tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
+		tData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+	end
+	
+	if tOptions.bDefault ~= nil then
+		tData.bDefault = tOptions.bDefault
+	end
 	
 	wndButton:SetData(tData)
+	
+	ForgeUIInst.wndMainItemListHolder:ArrangeChildrenVert()
+	
+	if tOptions.bDefault then
+		ForgeUIInst:SetActiveItem(wndButton)
+	end
 	
 	return wndButton
 end
 
-function ForgeUI.AddItemListToButton(tAddon, wndButton, tItems)
-	local wndList = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_ListHolder", ForgeUIInst.wndMain:FindChild("ForgeUI_Form_ItemList"), ForgeUIInst)
-	wndList:Show(false)
-	local wndBackButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Item", wndList, ForgeUIInst):FindChild("ForgeUI_Item_Button")
-	wndBackButton:GetParent():FindChild("ForgeUI_Item_Text"):SetText("Home")
-	wndBackButton:GetParent():FindChild("ForgeUI_Item_Text"):SetTextFlags("DT_CENTER", true)
+function ForgeUI.API_AddListItemToButton(tAddon, wndBtn, strDisplayName, tOptions)
+	local tData = wndBtn:GetData()
+	local tNewData = {}
 	
-	local wndDefaultBtn = nil
-	for i, tItem in pairs(tItems) do
-		local wndBtn = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Item", wndList, ForgeUIInst):FindChild("ForgeUI_Item_Button")
-		wndBtn:GetParent():FindChild("ForgeUI_Item_Text"):SetText(tItem.strDisplayName)
-		tAddon.wndContainers[tItem.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tItem.strContainer, wndItemContainer, tAddon)
-		tAddon.wndContainers[tItem.strContainer]:Show(false)
-		wndBtn:SetData({
-			itemContainer = tAddon.wndContainers[tItem.strContainer],
-			itemList = nil
-		})
+	local wndList
+	if tData.itemList == nil then
+		wndList = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_ListHolder", ForgeUIInst.wndItemList, ForgeUI)
 		
-		if tItem.bDefault then
-			wndDefaultBtn = wndBtn
+		local wndHomeButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Item", wndList, ForgeUIInst):FindChild("ForgeUI_Item_Button")
+		wndHomeButton:GetParent():FindChild("ForgeUI_Item_Text"):SetText("Home")
+		
+		local tHomeData = {}
+		tHomeData.parentContainer = wndList
+		tHomeData.itemList = ForgeUIInst.wndMainItemListHolder
+		
+		wndHomeButton:SetData(tHomeData)
+				
+		tData.itemList = wndList
+	else
+		wndList = tData.itemList
+	end
+	
+	local wndButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Item", wndList, ForgeUIInst):FindChild("ForgeUI_Item_Button")
+	wndButton:GetParent():FindChild("ForgeUI_Item_Text"):SetText(strDisplayName)
+	
+	tNewData.parentContainer = wndList
+	
+	if tOptions == nil then
+		wndButton:SetData(tNewData)
+		wndList:ArrangeChildrenVert()
+		return wndButton
+	end
+	
+	if tOptions.strContainer ~= nil then
+		tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
+		tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
+		tNewData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+	end
+	
+	if tOptions.bDefault ~= nil then
+		tNewData.bDefault = tOptions.bDefault
+	end
+	
+	wndButton:SetData(tNewData)
+	wndList:ArrangeChildrenVert()
+	return wndButton
+end
+
+function ForgeUI:SetActiveItem(wndControl)
+	local data = wndControl:GetData()
+	
+	for _, wndButton in pairs(data.parentContainer:GetChildren()) do
+		wndButton:FindChild("ForgeUI_Item_Text"):SetTextColor("FFFFFFFF")
+		if wndButton:FindChild("ForgeUI_Item_Button"):GetData().itemContainer ~= nil then
+			wndButton:FindChild("ForgeUI_Item_Button"):GetData().itemContainer:Show(false, true)
 		end
 	end
 	
-	wndBackButton:SetData({
-		itemList = wndButton:GetData().itemList,
-		defaultButton = ForgeUIInst.wndItemButton_Home
-	})
-	
-	
-	wndButton:SetData({
-		itemContainer = wndButton:GetData().itemContainer,
-		itemList = wndList
-	})
-	
-	if wndDefaultBtn ~= nil then
-		local table = wndButton:GetData()
-		table.defaultButton = wndDefaultBtn
-		wndButton:SetData(table)
+	if data.itemList ~= nil then
+		for _, wndList in pairs(self.wndItemList:GetChildren()) do
+			wndList:Show(false, true)
+		end
+		data.itemList:Show(true, false)
+		for _, wndButton in pairs(data.itemList:GetChildren()) do
+			if wndButton:FindChild("ForgeUI_Item_Button"):GetData().bDefault == true then
+				self:SetActiveItem(wndButton:FindChild("ForgeUI_Item_Button"))
+			end
+		end
+	else
+		wndControl:GetParent():FindChild("ForgeUI_Item_Text"):SetTextColor(self.tSettings.crMain)
+		if data.itemContainer ~= nil then
+			data.itemContainer:Show(true, true)
+		end
 	end
-	
-	wndList:ArrangeChildrenVert()
 end
 
-function ForgeUI.RegisterWindowPosition(tAddon, wnd, strName, wndMovable)
-	tRegisteredWindows[strName] = wnd
+function ForgeUI:ItemListPressed( wndHandler, wndControl, eMouseButton )
+	self:SetActiveItem(wndControl)
+end
 
-	if tSettings_windowsPositions[strName] ~= nil then
+-----------------------------------------------------------------------------------------------
+-- ForgeUI Movables API
+-----------------------------------------------------------------------------------------------
+local _tRegisteredWindows = {}
+function ForgeUI.API_RegisterWindow(tAddon, wnd, strName, tSettings)
+	if _tRegisteredWindows[tAddon.strAddonName] == nil then
+		_tRegisteredWindows[tAddon.strAddonName] = {}
+	end
+	
+	if tSettings_windows[tAddon.strAddonName] ~= nil and tSettings_windows[tAddon.strAddonName][strName] ~= nil then
 		wnd:SetAnchorOffsets(
-			tSettings_windowsPositions[strName].left,
-			tSettings_windowsPositions[strName].top,
-			tSettings_windowsPositions[strName].right,
-			tSettings_windowsPositions[strName].bottom
+			tSettings_windows[tAddon.strAddonName][strName].left,
+			tSettings_windows[tAddon.strAddonName][strName].top,
+			tSettings_windows[tAddon.strAddonName][strName].right,
+			tSettings_windows[tAddon.strAddonName][strName].bottom
 		)
-	else
-		local nLeft, nTop, nRight, nBottom = wnd:GetAnchorOffsets()
-		tSettings_windowsPositions[strName] = {
-			left = nLeft,
-			top = nTop,
-			right = nRight,
-			bottom = nBottom
-		}
-	end
-	if wndMovable ~= nil then
-		wndMovable:SetAnchorOffsets(wnd:GetAnchorOffsets())
-		wndMovable:SetAnchorPoints(wnd:GetAnchorPoints())
-		wndMovable:SetSprite("ForgeUI_InnerGlow")
-		wndMovable:SetBGColor("FFFF0000")
-		wndMovable:Show(true, true)
-	end
-end
-
-function ForgeUI.GetSettings(arg)
-	if arg ~= nil then
-		return tSettings[arg]
-	else
-		return tSettings
-	end
-end
-
-function ForgeUI.ColorBoxChanged(wndControl, settings, data) -- deprecated
-	if settings ~= nil then
-		wndControl:SetText(settings)
-		wndControl:SetTextColor("ff" .. settings)
 	end
 	
-	if data ~= nil then
-		wndControl:SetData(data)
-	end
+	_tRegisteredWindows[tAddon.strAddonName][strName] = {}
+	_tRegisteredWindows[tAddon.strAddonName][strName].wnd = wnd
 	
-	local colorString = wndControl:GetText()
+	if tSettings ~= nil and tSettings.bNoMovable == true then return end
+	
+	local wndMovable
+	if tSettings ~= nil then
+		if tSettings.strParent ~= nil then
+			wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", _tRegisteredWindows[tAddon.strAddonName][tSettings.strParent].movable, ForgeUIInst)
+		elseif tSettings.nLevel ~= nil then
+			if tSettings.nLevel > 0 and tSettings.nLevel < 5 then
+				wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables" .. tSettings.nLevel), ForgeUIInst)
+			else
+				wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables"), ForgeUIInst)
+			end
+		end
+	end
+	if wndMovable == nil then
+		wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables"), ForgeUIInst)
+	end
+	wndMovable:SetAnchorOffsets(wnd:GetAnchorOffsets())
+	wndMovable:SetAnchorPoints(wnd:GetAnchorPoints())
+	
+	if tSettings ~= nil then
+		if tSettings.strDisplayName ~= nil then
+			wndMovable:FindChild("Text"):SetText(tSettings.strDisplayName)
+		end
 		
-	if string.len(colorString) > 6 then
-		wndControl:SetText(string.sub(colorString, 0, 6))
-	elseif string.len(colorString) == 6 then
-		wndControl:SetTextColor("FF" .. colorString)
-		settings = "FF" .. colorString
+		if tSettings.bSizable ~= nil then
+			wndMovable:SetStyle("Sizable", tSettings.bSizable)
+		end
+		
+		if tSettings.bMaintainRatio ~= nil then
+			wndMovable:SetStyle("MaintainAspectRatio", tSettings.bMaintainRatio)
+		end
+		
+		if tSettings.crBorder ~= nil then
+			wndMovable:SetBGColor(tSettings.crBorder)
+		end
 	end
 	
-	return wndControl
+	wndMovable:AddEventHandler("WindowMove", "OnMovableMove", ForgeUIInst)
+	
+	_tRegisteredWindows[tAddon.strAddonName][strName].movable = wndMovable
 end
 
-function ForgeUI.ColorBoxChange(tAddon, wndControl, tSettings, sValue, bOverwrite, bAlpha)
+function ForgeUI:OnMovableMove()
+	for strAddonName, tWindows in pairs(_tRegisteredWindows) do
+		for strWindowName, tWindow in pairs(tWindows) do
+			tWindow.wnd:SetAnchorOffsets(tWindow.movable:GetAnchorOffsets())
+		end
+	end
+end
+
+local _tMovablesSavedPositions = {}
+function ForgeUI:OnUnlockElements()
+	self.wndMain:Show(false, true)
+	self.wndMain:FindChild("ForgeUI_General_UnlockButton"):SetText("Lock elements")
+
+	self.wndMovables:Show(true, true)
+	self:FillGrid(self.wndMovables:FindChild("Grid"))
+
+	for _, tAddon in pairs(_tRegisteredWindows) do
+		for _, tMovable in pairs(tAddon) do
+			tMovable.movable:Show(true, true)
+			tMovable.wnd_shown = tMovable.wnd:IsShown()
+			tMovable.wnd:Show(false, true)
+		end
+	end
+end
+
+function ForgeUI:OnLockElements()
+	self.wndMain:Show(true, true)
+	self.wndMain:FindChild("ForgeUI_General_UnlockButton"):SetText("Unlock elements")
+
+	self.wndMovables:Show(false, true)
+	self.wndMovables:FindChild("Grid"):DestroyAllPixies()
+
+	for _, tAddon in pairs(_tRegisteredWindows) do
+		for _, tMovable in pairs(tAddon) do
+			tMovable.movable:Show(false, true)
+			tMovable.wnd:Show(tMovable.wnd_shown, true)
+		end
+	end
+end
+
+function ForgeUI:OnMovableClick( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
+	if wndControl:GetName() == "ForgeUI_Movable" and eMouseButton == 1 then
+		local wndPrecisionWindow = wndControl:FindChild("PrecisionWindow")
+		wndPrecisionWindow:Show(not  wndPrecisionWindow:IsShown())
+		wndPrecisionWindow:FindChild("Name"):SetText(wndControl:FindChild("Text"):GetText())
+		wndPrecisionWindow:FindChild("Size_X"):SetText(wndControl:GetWidth())
+		wndPrecisionWindow:FindChild("Size_Y"):SetText(wndControl:GetHeight())
+		
+		local nLeft, nTop, nRight, nBottom = wndControl:GetAnchorOffsets()
+		wndPrecisionWindow:FindChild("Pos_X"):SetText(nLeft)
+		wndPrecisionWindow:FindChild("Pos_Y"):SetText(nTop)
+	end
+end
+
+function ForgeUI:OnMovableSizeButtonClick( wndHandler, wndControl, eMouseButton )
+	if wndControl:GetName() == "Plus" then
+		local nNew = wndControl:GetParent():GetText() + 1
+		wndControl:GetParent():SetText(nNew)
+	elseif wndControl:GetName() == "Minus" then
+		local nNew = wndControl:GetParent():GetText() - 1
+		if wndControl:GetParent():GetParent():GetName() == "Size" and nNew < 1 then return end
+		wndControl:GetParent():SetText(nNew)
+	end
+	
+	local wnd = wndControl:GetParent():GetParent():GetParent():GetParent()
+	
+	self:ResizeMovable(wnd, wnd:FindChild("Size_X"):GetText(), wnd:FindChild("Size_Y"):GetText(), wnd:FindChild("Pos_X"):GetText(), wnd:FindChild("Pos_Y"):GetText())
+	self:OnMovableMove()
+end
+
+function ForgeUI:ResizeMovable(wndMovable, nNewWidth, nNewHeight, nNewPosX, nNewPosY)
+	local nDeltaWidth = nNewWidth - wndMovable:GetWidth()
+	local nDeltaHeight = nNewHeight - wndMovable:GetHeight()
+	
+	local nLeft, nTop, nRight, nBottom = wndMovable:GetAnchorOffsets()
+	nRight = nRight + nNewPosX - nLeft
+	nBottom = nBottom + nNewPosY - nTop
+	nLeft = nNewPosX
+	nTop = nNewPosY
+	wndMovable:SetAnchorOffsets(nLeft, nTop, nRight + nDeltaWidth, nBottom + nDeltaHeight) 
+end
+
+function ForgeUI:ForgeUI_Movables_GridCheckbox( wndHandler, wndControl, eMouseButton )
+	self.wndMovables:FindChild("Grid"):Show(wndControl:IsChecked(), true)
+end
+
+function ForgeUI:FillGrid(wnd)
+	self.wndMovables:FindChild("Grid"):DestroyAllPixies()
+
+	local nDiameterX = self.wndMovables:FindChild("GridSize_X"):GetText()
+	local nDiameterY = self.wndMovables:FindChild("GridSize_Y"):GetText()
+
+	local nHeight = wnd:GetHeight()
+	local nWidth = wnd:GetWidth()
+	
+	for i = 0, nHeight / 2 , nDiameterY do
+		local j = nHeight / 2 + i
+		local k = nHeight / 2 - i
+	
+		if i == 0 then
+			wnd:AddPixie({
+				strSprite = "WhiteFill",
+				loc = {
+			    	fPoints = {0,0,1,0},
+		    		nOffsets = {0,j,0,j + 1}
+				 },
+				cr = "FFFF0000"
+			})
+		else
+			wnd:AddPixie({
+				strSprite = "WhiteFill",
+				loc = {
+			    	fPoints = {0,0,1,0},
+		    		nOffsets = {0,j,0,j + 1}
+				 },
+				cr = "FF000000"
+			})
+
+			wnd:AddPixie({
+				strSprite = "WhiteFill",
+				loc = {
+			    	fPoints = {0,0,1,0},
+		    		nOffsets = {0,k,0,k + 1}
+				 },
+				cr = "FF000000"
+			})
+		end
+	end
+	
+	for i = 0, nWidth / 2 , nDiameterX do
+		local j = nWidth / 2 + i
+		local k = nWidth / 2 - i
+	
+		if i == 0 then
+			wnd:AddPixie({
+				strSprite = "WhiteFill",
+				loc = {
+			    	fPoints = {0,0,0,1},
+		    		nOffsets = {j,0,j + 1,0}
+				 },
+				cr = "FFFF0000"
+			})
+		else
+			wnd:AddPixie({
+				strSprite = "WhiteFill",
+				loc = {
+			    	fPoints = {0,0,0,1},
+		    		nOffsets = {j,0,j + 1,0}
+				 },
+				cr = "FF000000"
+			})
+
+			wnd:AddPixie({
+				strSprite = "WhiteFill",
+				loc = {
+			    	fPoints = {0,0,0,1},
+		    		nOffsets = {k,0,k + 1,0}
+				 },
+				cr = "FF000000"
+			})
+		end
+	end
+end
+
+function ForgeUI:OnGridSizeButtonClick( wndHandler, wndControl, eMouseButton )
+	if wndControl:GetName() == "Plus" then
+		local nNew = wndControl:GetParent():GetText() + 1
+		wndControl:GetParent():SetText(nNew)
+	elseif wndControl:GetName() == "Minus" then
+		local nNew = wndControl:GetParent():GetText() - 1
+		if nNew < 0 then return end
+		wndControl:GetParent():SetText(nNew)
+	end
+	self:FillGrid(self.wndMovables:FindChild("Grid"))
+end
+
+function ForgeUI:OnMovablesClose( wndHandler, wndControl, eMouseButton )
+	self:OnLockElements()
+end
+
+-----------------------------------------------------------------------------------------------
+-- ForgeUI Window elements api
+-----------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------
+-- Color box
+-----------------------------------------------------------------------------------------------
+
+function ForgeUI.API_RegisterColorBox(tAddon, wndControl, tSettings, sValue, bAlpha, strCallback)
+	local tData = {
+		tAddon = tAddon,
+		tSettings = tSettings,
+		sValue = sValue,
+		bAlpha = bAlpha,
+		strCallback = strCallback
+	}
+	
+	wndControl:SetData(tData)
+	wndControl:AddEventHandler("EditBoxChanged", 	"OnColorBoxChanged", ForgeUIInst)
+	wndControl:AddEventHandler("MouseButtonDown", 	"OnColorBoxDown", ForgeUIInst)
+	
+	ForgeUI.API_ColorBoxChange(tAddon, wndControl, tSettings, sValue, true, bAlpha)
+end
+
+function ForgeUI:OnColorBoxChanged( wndHandler, wndControl, strText )
+	local tData = wndControl:GetData()
+	if tData == nil then return end
+	
+	local color = ForgeUI.API_ColorBoxChange(tData.tAddon, wndControl, tData.tSettings, tData.sValue, false, tData.bAlpha)
+	
+	if tData.strCallback ~= nil and color ~= nil then
+		if tData.tAddon.tStylers[tData.strCallback] ~= nil then
+			tData.tAddon.tStylers[tData.strCallback][tData.strCallback](tData.tAddon)
+		else
+			tData.tAddon[tData.strCallback](tData.tAddon)
+		end
+	end
+end
+
+function ForgeUI:OnColorBoxDown( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
+	if eMouseButton ~= 1 then return end
+	
+	ForgeColor:Show(self, "FF" .. wndControl:GetText(), { wndControl = wndControl })
+end
+
+function ForgeUI.API_ColorBoxChange(tAddon, wndControl, tSettings, sValue, bOverwrite, bAlpha)
 	local sColor = "FFFFFFFF"
 	if bOverwrite then
 		if bAlpha then
@@ -316,6 +701,7 @@ function ForgeUI.ColorBoxChange(tAddon, wndControl, tSettings, sValue, bOverwrit
 			wndControl:SetText(sColor)
 			wndControl:SetTextColor(sColor)
 			tSettings[sValue] = sColor
+			return sColor
 		end
 	else
 		if string.len(sColor) > 6 then
@@ -324,7 +710,97 @@ function ForgeUI.ColorBoxChange(tAddon, wndControl, tSettings, sValue, bOverwrit
 			wndControl:SetText(sColor)
 			wndControl:SetTextColor("FF" .. sColor)
 			tSettings[sValue] = "FF" .. sColor
+			return "FF" .. sColor
 		end
+	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- Check box
+-----------------------------------------------------------------------------------------------
+
+function ForgeUI.API_RegisterCheckBox(tAddon, wndControl, tSettings, strValue, strCallback)
+	local tData = {
+		tAddon = tAddon,
+		tSettings = tSettings,
+		strValue = strValue,
+		strCallback = strCallback
+	}
+	
+	wndControl:SetData(tData)
+	wndControl:AddEventHandler("ButtonCheck", 	"OnChechBoxCheck", ForgeUIInst)
+	wndControl:AddEventHandler("ButtonUncheck", "OnChechBoxCheck", ForgeUIInst)
+	
+	wndControl:SetCheck(tSettings[strValue])
+end
+
+function ForgeUI:OnChechBoxCheck( wndHandler, wndControl )
+	local tData = wndControl:GetData()
+	if tData == nil then return end
+	
+	tData.tSettings[tData.strValue] = wndControl:IsChecked()
+	
+	if tData.strCallback ~= nil then
+		if tData.tAddon.tStylers[tData.strCallback] ~= nil then
+			tData.tAddon.tStylers[tData.strCallback][tData.strCallback](tData.tAddon)
+		else
+			tData.tAddon[tData.strCallback](tData.tAddon)
+		end
+	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- Number box
+-----------------------------------------------------------------------------------------------
+
+function ForgeUI.RegisterNumberBox(tAddon, wndControl, tSettings, strValue, tOptions, strCallback)
+	local tData = {
+		tAddon = tAddon,
+		tSettings = tSettings,
+		strValue = strValue,
+		tOptions = tOptions,
+		strCallback = strCallback
+	}
+	
+	tData.prevValue = tSettings[strValue]
+	
+	wndControl:SetData(tData)
+	wndControl:AddEventHandler("EditBoxChanged", 	"OnNumberBoxChanged", ForgeUIInst)
+	
+	wndControl:SetText(tSettings[strValue])
+end
+
+function ForgeUI:OnNumberBoxChanged( wndHandler, wndControl, strText )
+	local tData = wndControl:GetData()
+	if tData == nil then return end
+	
+	local newText = wndControl:GetText()
+	
+	if tonumber(newText) ~= nil then
+		local newNumber = tonumber(newText)
+	
+		local tOptions = tData.tOptions
+		if tOptions ~= nil then
+			if tOptions.nMin ~= nil then
+				if newNumber < tOptions.nMin then
+					newNumber = tOptions.nMin
+				end
+			end
+		end
+		
+		tData.tSettings[tData.strValue] = newNumber
+		tData.prevValue = newNumber
+		
+		if tData.strCallback ~= nil then
+			if tData.tAddon.tStylers[tData.strCallback] ~= nil then
+				tData.tAddon.tStylers[tData.strCallback][tData.strCallback](tData.tAddon)
+			else
+				tData.tAddon[tData.strCallback](tData.tAddon)
+			end
+		end
+	else
+		if wndControl:GetText() == "-" then return end
+		wndControl:SetText(tData.prevValue)
 	end
 end
 
@@ -336,12 +812,13 @@ function ForgeUI:OnSave(eType)
         return nil
     end
 
-	if resetDefaults == true then
+	if bResetDefaults == true then
 		return {}
 	end
 	
 	local tSett = {}
 	local tAdd = tSettings_addons
+	local tWindows = {}
 
 	tSett = ForgeUI.CopyTable(tSett, tSettings)
 	
@@ -357,44 +834,50 @@ function ForgeUI:OnSave(eType)
 			end
 			
 			tAdd[addonName] = ForgeUI.CopyTable(tAdd[addonName], addon.tSettings)
+			
+			tWindows[addonName] = {}
+			if _tRegisteredWindows[addonName] ~= nil then
+				for strName, tWindow in pairs(_tRegisteredWindows[addonName]) do
+					local nLeft, nTop, nRight, nBottom = tWindow.wnd:GetAnchorOffsets()
+					tWindows[addonName][strName] = {
+						left = nLeft,
+						top = nTop,
+						right = nRight,
+						bottom = nBottom
+					}
+				end
+			end
+		else
+			tAdd[addonName] = nil
+			tWindows[addonName] = nil
 		end
 	end
 	
-	for id, wnd in pairs(tSettings_windowsPositions) do -- registered windows
-		local nLeft, nTop, nRight, nBottom = tRegisteredWindows[id]:GetAnchorOffsets()
-		tSettings_windowsPositions[id] = {
-			left = nLeft,
-			top = nTop,
-			right = nRight,
-			bottom = nBottom
-		}
-	end
-
 	return {
-		windowsPositions = tSettings_windowsPositions,
-		addons = tAdd,
-		settings = tSett
+		_addons = tAdd,
+		__settings = tSett,
+		___windows = tWindows
 	}
 end
 
 function ForgeUI:OnRestore(eType, tData)
-	if tData.settings ~= nil then
-		tSettings = ForgeUI.CopyTable(tSettings, tData.settings)
+	if tData.__settings ~= nil then
+		tSettings = ForgeUI.CopyTable(tSettings, tData.__settings)
 	end
 	
-	if tData.windowsPositions ~= nil then
-		tSettings_windowsPositions = ForgeUI.CopyTable(tSettings_windowsPositions, tData.windowsPositions)
-	end
-	
-	if tData.addons ~= nil then
-		for name, data in pairs(tData.addons) do
+	if tData._addons ~= nil then
+		for name, data in pairs(tData._addons) do
 			tSettings_addons[name] = data
 		end
+	end
+	
+	if tData.___windows ~= nil then
+		tSettings_windows = ForgeUI.CopyTable(tSettings_windows, tData.___windows)
 	end
 end
 
 -----------------------------------------------------------------------------------------------
--- ForgeUI Functions
+-- ForgeUI_Form Functions
 -----------------------------------------------------------------------------------------------
 function ForgeUI:OnForgeUIcmd(cmd, arg)
 	if cmd ~= "forgeui" then return end
@@ -421,7 +904,6 @@ function ForgeUI:OnConfigure()
 end
 
 function ForgeUI:OnForgeUIOn()
-	wndItemList:ArrangeChildrenVert()
 	self.wndMain:Invoke()
 end
 
@@ -433,104 +915,8 @@ function ForgeUI:OnFocusCmd()
 	GameLib.GetPlayerUnit():SetAlternateTarget(GameLib.GetTargetUnit())
 end
 
----------------------------------------------------------------------------------------------------
--- ForgeUI_Movables Functions
----------------------------------------------------------------------------------------------------
-function ForgeUI:OnUnlockElements()
-	self.wndMain:Show(false, true)
-	self.wndMain:FindChild("ForgeUI_General_UnlockButton"):SetText("Lock elements")
-
-	self.wndMovables:Show(true, true)
-	self:FillGrid(self.wndMovables:FindChild("Grid"))
-
-	for name, addon in pairs(tAddons) do
-		if addon.wndMovables ~= nil then
-			addon.wndMovables:Show(true, true)
-		end
-	
-		if addon.ForgeAPI_OnUnlockElements ~= nil then
-			addon:ForgeAPI_OnUnlockElements() -- Forge API OnUnlockElements
-		end
-	end
-end
-
-function ForgeUI:OnLockElements()
-	self.wndMain:Show(true, true)
-	self.wndMain:FindChild("ForgeUI_General_UnlockButton"):SetText("Unlock elements")
-
-	self.wndMovables:Show(false, true)
-	self.wndMovables:FindChild("Grid"):DestroyAllPixies()
-
-	for _, addon in pairs(tAddons) do
-		if addon.wndMovables ~= nil then
-			addon.wndMovables:Show(false, true)
-		end
-	
-		if addon.ForgeAPI_OnLockElements ~= nil then
-			addon:ForgeAPI_OnLockElements() -- Forge API OnLockElements
-		end
-	end
-end
-
-function ForgeUI:ForgeUI_Movables_GridCheckbox( wndHandler, wndControl, eMouseButton )
-	self.wndMovables:FindChild("Grid"):Show(wndControl:IsChecked(), true)
-end
-
-function ForgeUI:FillGrid(wnd)
-	local nDiameter = 5
-
-	local nHeight = wnd:GetHeight()
-	local nWidth = wnd:GetWidth()
-	
-	for i = 0, nHeight, nDiameter do
-		wnd:AddPixie({
-			strSprite = "BlackFill",
-			loc = {
-		    	fPoints = {0,0,1,0},
-	    		nOffsets = {0,i,0,i + 1}
-			 }
-		})
-	end
-	
-	for i = 0, nWidth, nDiameter do
-		wnd:AddPixie({
-			strSprite = "BlackFill",
-			loc = {
-		    	fPoints = {0,0,0,1},
-	    		nOffsets = {i,0,i + 1,0}
-			 }
-		})
-	end
-end
-
-function ForgeUI:OnMovablesClose( wndHandler, wndControl, eMouseButton )
-	self:OnLockElements()
-end
-
----------------------------------------------------------------------------------------------------
--- ForgeUI_Form Functions
----------------------------------------------------------------------------------------------------
-function ForgeUI:SetActiveItem(wndControl)
-	wndItemContainer2:Show(false)
-	wndActiveItem:GetParent():FindChild("ForgeUI_Item_Text"):SetTextColor("white")
-	wndActiveItem = wndControl
-	wndControl:GetParent():FindChild("ForgeUI_Item_Text"):SetTextColor("xkcdFireEngineRed")
-	if wndControl:GetData().itemContainer ~= nil then
-		wndItemContainer2 = wndControl:GetData().itemContainer
-		wndItemContainer2:Show(true)
-	else
-		wndItemList:Show(false)
-		wndItemList = wndControl:GetData().itemList
-		wndItemList:Show(true)
-		
-		if wndControl:GetData().defaultButton ~= nil then
-			self:SetActiveItem(wndControl:GetData().defaultButton)
-		end
-	end
-end
-
-function ForgeUI:TestFunction( wndHandler, wndControl, eMouseButton )
-	ForgeUI.GenerateGradient("FFFFFF", "000000", 10, false)
+function ForgeUI:ShowAddons( wndHandler, wndControl, eMouseButton )
+	self.wndAddons:Show(not self.wndAddons:IsShown())
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -549,7 +935,7 @@ function ForgeUI:OnSaveButtonPressed( wndHandler, wndControl, eMouseButton )
 end
 
 function ForgeUI:ResetDefaults()
-	resetDefaults = true
+	bResetDefaults = true
 	RequestReloadUI()
 end
 
@@ -560,13 +946,6 @@ end
 function ForgeUI:EditBoxChanged( wndHandler, wndControl, strText )
 	local tmpWnd = ForgeUI.ColorBoxChanged(wndControl)
 	tSettings.classColors[tmpWnd:GetData()] = tmpWnd:GetText()
-end
-
----------------------------------------------------------------------------------------------------
--- ForgeUI_Item Functions
----------------------------------------------------------------------------------------------------
-function ForgeUI:ItemListPressed( wndHandler, wndControl, eMouseButton )
-	self:SetActiveItem(wndControl)
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -585,6 +964,19 @@ end
 function ForgeUI.CreateConfirmWindow(self, fCallback)
 	local wndConfirmWindow = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_ConfirmWindow", nil, ForgeUIInst)
 	wndConfirmWindow:FindChild("YesButton"):SetData(fCallback)
+end
+
+---------------------------------------------------------------------------------------------------
+-- ForgeUI_AddonForm Functions
+---------------------------------------------------------------------------------------------------
+
+function ForgeUI:AddonForm_OnMore( wndHandler, wndControl, eMouseButton )
+	wndControl:FindChild("Options"):Show(not wndControl:FindChild("Options"):IsShown())
+end
+
+function ForgeUI:AddonForm_OnReset( wndHandler, wndControl, eMouseButton )
+	local tAddon = wndControl:GetParent():GetParent():GetParent():GetParent():GetData()
+	ForgeUI.API_ResetAddonSettings(tAddon.strAddonName)
 end
 
 ---------------------------------------------------------------------------------------------------

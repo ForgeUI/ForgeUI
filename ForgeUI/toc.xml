@@ -2,4 +2,5 @@
 <Addon Author="WintyBadass" APIVersion="9" Name="ForgeUI" Description="">
     <Script Name="ForgeUI.lua"/>
     <Form Name="ForgeUI.xml"/>
+    <Script Name="ForgeColor\ForgeColor.lua"/>
 </Addon>
