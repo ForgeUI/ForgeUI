@@ -11,12 +11,12 @@ local ForgeUI_UnitFrames = {}
 -----------------------------------------------------------------------------------------------
 
 tClassEnums = {
-	[GameLib.CodeEnumClass.Warrior]      	= "warrior",
-	[GameLib.CodeEnumClass.Engineer]     	= "engineer",
-	[GameLib.CodeEnumClass.Esper]        	= "esper",
-	[GameLib.CodeEnumClass.Medic]        	= "medic",
-	[GameLib.CodeEnumClass.Stalker]      	= "stalker",
-	[GameLib.CodeEnumClass.Spellslinger]	= "spellslinger"
+	[GameLib.CodeEnumClass.Warrior]      	= "Warrior",
+	[GameLib.CodeEnumClass.Engineer]     	= "Engineer",
+	[GameLib.CodeEnumClass.Esper]        	= "Esper",
+	[GameLib.CodeEnumClass.Medic]        	= "Medic",
+	[GameLib.CodeEnumClass.Stalker]      	= "Stalker",
+	[GameLib.CodeEnumClass.Spellslinger]	= "Spellslinger"
 } 
 
 -----------------------------------------------------------------------------------------------
@@ -28,13 +28,23 @@ function ForgeUI_UnitFrames:new(o)
     self.__index = self 
 
     -- mandatory 
-    self.api_version = 1
+    self.api_version = 2
 	self.version = "0.1.0"
 	self.author = "WintyBadass"
 	self.strAddonName = "ForgeUI_UnitFrames"
 	self.strDisplayName = "Unit frames"
 	
 	self.wndContainers = {}
+	
+	self.tStylers = {
+		["UpdateStyle_PlayerFrame"] = self,
+		["UpdateStyle_TargetFrame"] = self,
+		["RefreshStyle_TargetFrame"] = self, -- (unit)
+		["UpdateStyle_FocusFrame"] = self,
+		["RefreshStyle_FocusFrame"] = self, -- (unit)
+		["UpdateStyle_TotFrame"] = self,
+		["RefreshStyle_TotFrame"] = self, -- (unit)
+	}
 	
 	-- optional
 	self.settings_version = 1
@@ -114,13 +124,11 @@ function ForgeUI_UnitFrames:OnLoad()
 end
 
 function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
-	local wnd = ForgeUI.AddItemButton(self, "Unit frames")
-	ForgeUI.AddItemListToButton(self, wnd, {
-		{ strDisplayName = "Player frame", strContainer = "Container_PlayerFrame", bDefault = true },
-		{ strDisplayName = "Target frame", strContainer = "Container_TargetFrame" },
-		{ strDisplayName = "ToT frame", strContainer = "Container_TotFrame" },
-		{ strDisplayName = "Focus frame", strContainer = "Container_FocusFrame" }
-	}) 
+	local wnd = ForgeUI.API_AddItemButton(self, "Unit frames")
+	ForgeUI.API_AddListItemToButton(self, wnd, "Player frame", { strContainer = "Container_PlayerFrame", bDefault = true })
+	ForgeUI.API_AddListItemToButton(self, wnd, "Target frame", { strContainer = "Container_TargetFrame" })
+	ForgeUI.API_AddListItemToButton(self, wnd, "ToT frame", { strContainer = "Container_TotFrame" })
+	ForgeUI.API_AddListItemToButton(self, wnd, "Focus frame", { strContainer = "Container_FocusFrame" })
 	
 	self.wndPlayerFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_PlayerFrame", "FixedHudStratumLow", self)
 	self.wndPlayerBuffFrame = Apollo.LoadForm(self.xmlDoc, "PlayerBuffContainerWindow", "FixedHudStratumHigh", self)
@@ -138,7 +146,29 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	self.wndHazardHeat = Apollo.LoadForm(self.xmlDoc, "ForgeUI_HazardHeat", "FixedHudStratumLow", self)
 	self.wndHazardToxic = Apollo.LoadForm(self.xmlDoc, "ForgeUI_HazardToxic", "FixedHudStratumLow", self)
 	
-	self.wndMovables = Apollo.LoadForm(self.xmlDoc, "Movables", nil, self)
+	-- register windows
+	
+	ForgeUI.API_RegisterWindow(self, self.wndPlayerFrame, "ForgeUI_PlayerFrame", { strDisplayName = "Player frame" })
+	ForgeUI.API_RegisterWindow(self, self.wndPlayerFrame:FindChild("ShieldBar"), "ForgeUI_PlayerFrame_Shield", { strParent = "ForgeUI_PlayerFrame", strDisplayName = "Shield", crBorder = "FF0699F3" })
+	ForgeUI.API_RegisterWindow(self, self.wndPlayerFrame:FindChild("AbsorbBar"), "ForgeUI_PlayerFrame_Absorb", { strParent = "ForgeUI_PlayerFrame", strDisplayName = "Absorb", crBorder = "FFFFC600" })
+	ForgeUI.API_RegisterWindow(self, self.wndPlayerFrame:FindChild("InterruptArmor"), "ForgeUI_PlayerFrame_IA", { strParent = "ForgeUI_PlayerFrame", strDisplayName = "IA", crBorder = "FFFFFFFF", bMaintainRatio = true })
+	ForgeUI.API_RegisterWindow(self, self.wndPlayerBuffFrame, "ForgeUI_PlayerFrame_Buffs", { strDisplayName = "Player buffs" })
+	ForgeUI.API_RegisterWindow(self, self.wndPlayerDebuffFrame, "ForgeUI_PlayerFrame_Debuffs", { strDisplayName = "Player debuffs" })
+	
+	ForgeUI.API_RegisterWindow(self, self.wndTargetFrame, "ForgeUI_TargetFrame", { strDisplayName = "Target frame" })
+	ForgeUI.API_RegisterWindow(self, self.wndTargetFrame:FindChild("ShieldBar"), "ForgeUI_TargetFrame_Shield", { strParent = "ForgeUI_TargetFrame", strDisplayName = "Shield", crBorder = "FF0699F3" })
+	ForgeUI.API_RegisterWindow(self, self.wndTargetFrame:FindChild("AbsorbBar"), "ForgeUI_TargetFrame_Absorb", { strParent = "ForgeUI_TargetFrame", strDisplayName = "Absorb", crBorder = "FFFFC600" })
+	ForgeUI.API_RegisterWindow(self, self.wndTargetFrame:FindChild("InterruptArmor"), "ForgeUI_TargetFrame_IA", { strParent = "ForgeUI_TargetFrame", strDisplayName = "IA", crBorder = "FFFFFFFF", bMaintainRatio = true })
+	ForgeUI.API_RegisterWindow(self, self.wndTargetBuffFrame, "ForgeUI_TargetFrame_Buffs", { strDisplayName = "Target buffs" })
+	ForgeUI.API_RegisterWindow(self, self.wndTargetDebuffFrame, "ForgeUI_TargetFrame_Debuffs", { strDisplayName = "Target debuffs" })
+	
+	ForgeUI.API_RegisterWindow(self, self.wndToTFrame, "ForgeUI_ToTFrame", { strDisplayName = "ToT frame" })
+	
+	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame, "ForgeUI_FocusFrame", { strDisplayName = "Focus frame" })
+	
+	ForgeUI.API_RegisterWindow(self, self.wndHazardBreath, "ForgeUI_wndHazardBreath", { strDisplayName = "Breath" })
+	ForgeUI.API_RegisterWindow(self, self.wndHazardHeat, "ForgeUI_wndHazardHeat", { strDisplayName = "Heat" })
+	ForgeUI.API_RegisterWindow(self, self.wndHazardToxic, "ForgeUI_wndHazardToxic", { strDisplayName = "Toxic" })
 	
 	if self.tSettings.tTotFrame.bShowThreat then
 		Apollo.RegisterEventHandler("TargetThreatListUpdated", "OnThreatUpdated", self)
@@ -150,8 +180,8 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ForgeUI_UnitFrames:OnNextFrame()
-	local unitPlayer = GameLib.GetPlayerUnit()
-	if unitPlayer == nil or not unitPlayer:IsValid() then return end
+	unitPlayer = GameLib.GetPlayerUnit()
+	if unitPlayer == nil or not unitPlayer then return end
 	
 	self:UpdatePlayerFrame(unitPlayer)
 	self:UpdateHazards(unitPlayer)
@@ -164,10 +194,7 @@ function ForgeUI_UnitFrames:UpdatePlayerFrame(unit)
 	else
 		self.wndPlayerFrame:FindChild("Indicator"):Show(false)
 	end
-	
-	self.wndPlayerFrame:FindChild("Name"):SetText(unit:GetName())
-	self.wndPlayerFrame:FindChild("Name"):SetTextColor("FF" .. ForgeUI.GetSettings().classColors[self.playerClass])
-	
+		
 	self:UpdateHPBar(unit, self.wndPlayerFrame, "tPlayerFrame")
 	self:UpdateShieldBar(unit, self.wndPlayerFrame)
 	self:UpdateAbsorbBar(unit, self.wndPlayerFrame)
@@ -195,12 +222,7 @@ function ForgeUI_UnitFrames:UpdateTargetFrame(unitSource)
 		return
 	end
 
-	self.wndTargetFrame:FindChild("Name"):SetText(unit:GetName())
-	if unit:GetClassId() ~= 23 then
-		self.wndTargetFrame:FindChild("Name"):SetTextColor("ff" .. ForgeUI.GetSettings().classColors[tClassEnums[unit:GetClassId()]])
-	else
-		self.wndTargetFrame:FindChild("Name"):SetTextColor(unit:GetNameplateColor())
-	end
+	self.tStylers["RefreshStyle_TargetFrame"]["RefreshStyle_TargetFrame"](self, unit)
 	
 	self:UpdateHPBar(unit, self.wndTargetFrame, "tTargetFrame")
 	self:UpdateShieldBar(unit, self.wndTargetFrame)
@@ -232,14 +254,8 @@ function ForgeUI_UnitFrames:UpdateToTFrame(unitSource)
 		return
 	end
 	
-	self.wndToTFrame:FindChild("Name"):SetText(unit:GetName())
-	if unit:GetClassId() ~= 23 then
-		self.wndToTFrame:FindChild("Name"):SetTextColor("ff" .. ForgeUI.GetSettings().classColors[tClassEnums[unit:GetClassId()]])
-	else
-		self.wndToTFrame:FindChild("Name"):SetTextColor(unit:GetNameplateColor())
-	end
-	
-	if self.tSettings.tTotFrame.bShowThreat and unitSource:IsACharacter() then
+	self.tStylers["RefreshStyle_TotFrame"]["RefreshStyle_TotFrame"](self, unit)
+	if self.tSettings.tTotFrame.bShowThreat and unitSource:GetType() == "Player"  then
 		self.wndThreat:SetText("")
 	elseif self.tSettings.tTotFrame.bShowThreat and unit:IsACharacter() then
 		self.wndThreat:Show(true, true)
@@ -265,12 +281,7 @@ function ForgeUI_UnitFrames:UpdateFocusFrame(unitSource)
 		return
 	end
 	
-	self.wndFocusFrame:FindChild("Name"):SetText(unit:GetName())
-	if unit:GetClassId() ~= 23 then
-		self.wndFocusFrame:FindChild("Name"):SetTextColor("ff" .. ForgeUI.GetSettings().classColors[tClassEnums[unit:GetClassId()]])
-	else
-		self.wndFocusFrame:FindChild("Name"):SetTextColor(unit:GetNameplateColor())
-	end
+	self.tStylers["RefreshStyle_FocusFrame"]["RefreshStyle_FocusFrame"](self, unit)
 	
 	self:UpdateHPBar(unit, self.wndFocusFrame)
 	self.wndFocusFrame:SetData(unit)
@@ -398,134 +409,48 @@ function ForgeUI_UnitFrames:OnCharacterCreated()
 		return
 	end
 	
-	local eClassId = unitPlayer:GetClassId()
-	if eClassId == GameLib.CodeEnumClass.Engineer then
-		self.playerClass = "engineer"
-	elseif eClassId == GameLib.CodeEnumClass.Esper then
-		self.playerClass = "esper"
-	elseif eClassId == GameLib.CodeEnumClass.Medic then
-		self.playerClass = "medic"
-	elseif eClassId == GameLib.CodeEnumClass.Spellslinger then
-		self.playerClass = "spellslinger"
-	elseif eClassId == GameLib.CodeEnumClass.Stalker then
-		self.playerClass = "stalker"
-	elseif eClassId == GameLib.CodeEnumClass.Warrior then
-		self.playerClass = "warrior"
-	end
+	self:UpdateStyles()
 	
 	Apollo.RegisterEventHandler("VarChange_FrameCount", 	"OnNextFrame", self)
 	Apollo.RegisterEventHandler("BreathChanged",			"OnBreathChanged", self)
 end
 
 function ForgeUI_UnitFrames:ForgeAPI_AfterRestore()
-	ForgeUI.RegisterWindowPosition(self, self.wndPlayerFrame, "ForgeUI_UnitFrames_PlayerFrame", self.wndMovables:FindChild("Movable_PlayerFrame"))
-	ForgeUI.RegisterWindowPosition(self, self.wndPlayerFrame:FindChild("ShieldBar"), "ForgeUI_UnitFrames_PlayerFrame_ShieldBar", self.wndMovables:FindChild("Movable_PlayerFrame_ShieldBar"))
-	ForgeUI.RegisterWindowPosition(self, self.wndPlayerFrame:FindChild("AbsorbBar"), "ForgeUI_UnitFrames_PlayerFrame_AbsorbBar", self.wndMovables:FindChild("Movable_PlayerFrame_AbsorbBar"))
-	ForgeUI.RegisterWindowPosition(self, self.wndPlayerFrame:FindChild("InterruptArmor"), "ForgeUI_UnitFrames_PlayerFrame_IA", self.wndMovables:FindChild("Movable_PlayerFrame_IA"))
-	
-	ForgeUI.RegisterWindowPosition(self, self.wndTargetFrame, "ForgeUI_UnitFrames_TargetFrame", self.wndMovables:FindChild("Movable_TargetFrame"))
-	ForgeUI.RegisterWindowPosition(self, self.wndTargetFrame:FindChild("ShieldBar"), "ForgeUI_UnitFrames_TargetFrame_ShieldBar", self.wndMovables:FindChild("Movable_TargetFrame_ShieldBar"))
-	ForgeUI.RegisterWindowPosition(self, self.wndTargetFrame:FindChild("AbsorbBar"), "ForgeUI_UnitFrames_TargetFrame_AbsorbBar", self.wndMovables:FindChild("Movable_TargetFrame_AbsorbBar"))
-	ForgeUI.RegisterWindowPosition(self, self.wndTargetFrame:FindChild("InterruptArmor"), "ForgeUI_UnitFrames_TargetFrame_IA", self.wndMovables:FindChild("Movable_TargetFrame_IA"))
-	
-	ForgeUI.RegisterWindowPosition(self, self.wndFocusFrame, "ForgeUI_UnitFrames_FocusFrame", self.wndMovables:FindChild("Movable_FocusFrame"))
-	
-	ForgeUI.RegisterWindowPosition(self, self.wndToTFrame, "ForgeUI_UnitFrames_ToTFrame", self.wndMovables:FindChild("Movable_ToTFrame"))
-	
-	ForgeUI.RegisterWindowPosition(self, self.wndHazardBreath, "ForgeUI_UnitFrames_Hazard_Breath", self.wndMovables:FindChild("Movable_Hazard_Breath"))
-	ForgeUI.RegisterWindowPosition(self, self.wndHazardHeat, "ForgeUI_UnitFrames_Hazard_Heat", self.wndMovables:FindChild("Movable_Hazard_Heat"))
-	ForgeUI.RegisterWindowPosition(self, self.wndHazardToxic, "ForgeUI_UnitFrames_Hazard_Toxic", self.wndMovables:FindChild("Movable_Hazard_Toxic"))
-	
-	ForgeUI.RegisterWindowPosition(self, self.wndPlayerBuffFrame, "ForgeUI_UnitFrames_PlayerBuffs", self.wndMovables:FindChild("Movable_PlayerBuffs"))
-	ForgeUI.RegisterWindowPosition(self, self.wndPlayerDebuffFrame, "ForgeUI_UnitFrames_PlayerDebuffs", self.wndMovables:FindChild("Movable_PlayerDebuffs"))
-	ForgeUI.RegisterWindowPosition(self, self.wndTargetBuffFrame, "ForgeUI_UnitFrames_TargetBuffs", self.wndMovables:FindChild("Movable_TargetBuffs"))
-	ForgeUI.RegisterWindowPosition(self, self.wndTargetDebuffFrame, "ForgeUI_UnitFrames_TargetDebuffs", self.wndMovables:FindChild("Movable_TargetDebuffs"))
-	
-	self:UpdateStyles()
-end
-
-function ForgeUI_UnitFrames:ForgeAPI_LoadOptions()
-	for _, wndContainer in pairs(self.wndContainers) do
-		if wndContainer:GetName() ~= "Container_General" then
-			local wnd
-			local sType = "t" .. string.sub(wndContainer:GetName(), 11, string.len(wndContainer:GetName()))
-			
-			wnd = wndContainer:FindChild("crBorder")
-			if wnd ~= nil then
-				ForgeUI.ColorBoxChange(self, wnd, self.tSettings[sType], "crBorder", true)
+	for key, keyValue in pairs(self.tSettings) do
+		local type  = string.sub(key, 2, string.len(key))
+		for option, optionValue in pairs(keyValue) do
+			if string.sub(option, 1, 2) == "cr" then
+				if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil then
+					ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)), self.tSettings[key], tostring(option), false, "UpdateStyle_" .. type)
+				end
 			end
-			
-			wnd = wndContainer:FindChild("crBackground")
-			if wnd ~= nil then
-				ForgeUI.ColorBoxChange(self, wnd, self.tSettings[sType], "crBackground", true)
-			end
-			
-			wnd = wndContainer:FindChild("crHpBar")
-			if wnd ~= nil then
-				ForgeUI.ColorBoxChange(self, wnd, self.tSettings[sType], "crHpBar", true)
-			end
-			
-			wnd = wndContainer:FindChild("crHpBarGradient")
-			if wnd ~= nil then
-				ForgeUI.ColorBoxChange(self, wnd, self.tSettings[sType], "crHpBarGradient", true)
-			end
-			
-			wnd = wndContainer:FindChild("crHpValue")
-			if wnd ~= nil then
-				ForgeUI.ColorBoxChange(self, wnd, self.tSettings[sType], "crHpValue", true)
-			end
-			
-			wnd = wndContainer:FindChild("crShieldBar")
-			if wnd ~= nil then
-				ForgeUI.ColorBoxChange(self, wnd, self.tSettings[sType], "crShieldBar", true)
-			end
-			
-			wnd = wndContainer:FindChild("crShieldValue")
-			if wnd ~= nil then
-				ForgeUI.ColorBoxChange(self, wnd, self.tSettings[sType], "crShieldValue", true)
-			end
-			
-			wnd = wndContainer:FindChild("crAbsorbBar")
-			if wnd ~= nil then
-				ForgeUI.ColorBoxChange(self, wnd, self.tSettings[sType], "crAbsorbBar", true)
-			end
-			
-			wnd = wndContainer:FindChild("crAbsorbValue")
-			if wnd ~= nil then
-				ForgeUI.ColorBoxChange(self, wnd, self.tSettings[sType], "crAbsorbValue", true)
-			end
-
-			-- checkboxes
-			
-			wnd = wndContainer:FindChild("bUseGradient")
-			if wnd ~= nil then
-				wnd:SetCheck(self.tSettings[sType].bUseGradient)
-			end
-			
-			wnd = wndContainer:FindChild("bShowThreat")
-			if wnd ~= nil then
-				wnd:SetCheck(self.tSettings[sType].bShowThreat)
+			if string.sub(option, 1, 1) == "b" then
+				if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil then
+					ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)), self.tSettings[key], tostring(option), "UpdateStyle_" .. type)
+				end
 			end
 		end
 	end
 end
 
-function ForgeUI_UnitFrames:OnOptionsChanged( wndHandler, wndControl )
-	local strType = wndControl:GetParent():GetName()
-	local strControlType = "t" .. string.sub(wndControl:GetParent():GetParent():GetName(), 11, string.len(wndControl:GetParent():GetParent():GetName()))
-	
-	if strType == "ColorBox" then
-		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings[strControlType], wndControl:GetName())
-	end
-	
-	if strType == "CheckBox" then
-		self.tSettings[strControlType][wndControl:GetName()] = wndControl:IsChecked()
-	end
-	
-	self:UpdateStyles()
-end
+-----------------------------------------------------------------------------------------------
+-- Styles
+-----------------------------------------------------------------------------------------------
 
 function ForgeUI_UnitFrames:UpdateStyles()
+	self.tStylers["UpdateStyle_PlayerFrame"]["UpdateStyle_PlayerFrame"](self)
+	self.tStylers["UpdateStyle_TargetFrame"]["UpdateStyle_TargetFrame"](self)
+	self.tStylers["UpdateStyle_FocusFrame"]["UpdateStyle_FocusFrame"](self)
+	self.tStylers["UpdateStyle_TotFrame"]["UpdateStyle_TotFrame"](self)
+end
+
+function ForgeUI_UnitFrames:UpdateStyle_PlayerFrame()
+	unit = GameLib.GetPlayerUnit()
+	if unit == nil then return end
+
+	self.wndPlayerFrame:FindChild("Name"):SetText(unit:GetName())
+	self.wndPlayerFrame:FindChild("Name"):SetTextColor(ForgeUI.tSettings.tClassColors["cr" .. tClassEnums[unit:GetClassId()]])
+
 	self.wndPlayerFrame:FindChild("HPBar"):SetBGColor(self.tSettings.tPlayerFrame.crBorder)
 	self.wndPlayerFrame:FindChild("Background"):SetBGColor(self.tSettings.tPlayerFrame.crBackground)
 	self.wndPlayerFrame:FindChild("HP_ProgressBar"):SetBarColor(self.tSettings.tPlayerFrame.crHpBar)
@@ -535,7 +460,9 @@ function ForgeUI_UnitFrames:UpdateStyles()
 	self.wndPlayerFrame:FindChild("Shield_TextValue"):SetTextColor(self.tSettings.tPlayerFrame.crShieldValue)
 	self.wndPlayerFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self.tSettings.tPlayerFrame.crAbsorbBar)
 	self.wndPlayerFrame:FindChild("Absorb_TextValue"):SetTextColor(self.tSettings.tPlayerFrame.crAbsorbValue)
-	
+end
+
+function ForgeUI_UnitFrames:UpdateStyle_TargetFrame()
 	self.wndTargetFrame:FindChild("HPBar"):SetBGColor(self.tSettings.tTargetFrame.crBorder)
 	self.wndTargetFrame:FindChild("Background"):SetBGColor(self.tSettings.tTargetFrame.crBackground)
 	self.wndTargetFrame:FindChild("HP_ProgressBar"):SetBarColor(self.tSettings.tTargetFrame.crHpBar)
@@ -545,17 +472,58 @@ function ForgeUI_UnitFrames:UpdateStyles()
 	self.wndTargetFrame:FindChild("Shield_TextValue"):SetTextColor(self.tSettings.tTargetFrame.crShieldValue)
 	self.wndTargetFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self.tSettings.tTargetFrame.crAbsorbBar)
 	self.wndTargetFrame:FindChild("Absorb_TextValue"):SetTextColor(self.tSettings.tTargetFrame.crAbsorbValue)
-	
-	self.wndToTFrame:FindChild("HPBar"):SetBGColor(self.tSettings.tTotFrame.crBorder)
-	self.wndToTFrame:FindChild("Background"):SetBGColor(self.tSettings.tTotFrame.crBackground)
-	self.wndToTFrame:FindChild("HP_ProgressBar"):SetBarColor(self.tSettings.tTotFrame.crHpBar)
-	
+end
+
+function ForgeUI_UnitFrames:RefreshStyle_TargetFrame(unit)
+	local _name = self.wndTargetFrame:FindChild("Name")
+
+	_name:SetText(unit:GetName())
+	if unit:GetClassId() ~= 23 then
+		_name:SetTextColor(ForgeUI.tSettings.tClassColors["cr" .. tClassEnums[unit:GetClassId()]])
+	else
+		_name:SetTextColor(unit:GetNameplateColor())
+	end
+end
+
+function ForgeUI_UnitFrames:UpdateStyle_FocusFrame()
 	self.wndFocusFrame:FindChild("HPBar"):SetBGColor(self.tSettings.tFocusFrame.crBorder)
 	self.wndFocusFrame:FindChild("Background"):SetBGColor(self.tSettings.tFocusFrame.crBackground)
 	self.wndFocusFrame:FindChild("HP_ProgressBar"):SetBarColor(self.tSettings.tFocusFrame.crHpBar)
 	self.wndFocusFrame:FindChild("HP_TextValue"):SetTextColor(self.tSettings.tFocusFrame.crHpValue)
 	self.wndFocusFrame:FindChild("HP_TextPercent"):SetTextColor(self.tSettings.tFocusFrame.crHpValue)
 end
+
+function ForgeUI_UnitFrames:RefreshStyle_FocusFrame(unit)
+	local _name = self.wndFocusFrame:FindChild("Name")
+
+	_name:SetText(unit:GetName())
+	if unit:GetClassId() ~= 23 then
+		_name:SetTextColor(ForgeUI.tSettings.tClassColors["cr" .. tClassEnums[unit:GetClassId()]])
+	else
+		_name:SetTextColor(unit:GetNameplateColor())
+	end
+end
+
+function ForgeUI_UnitFrames:UpdateStyle_TotFrame()
+	self.wndToTFrame:FindChild("HPBar"):SetBGColor(self.tSettings.tTotFrame.crBorder)
+	self.wndToTFrame:FindChild("Background"):SetBGColor(self.tSettings.tTotFrame.crBackground)
+	self.wndToTFrame:FindChild("HP_ProgressBar"):SetBarColor(self.tSettings.tTotFrame.crHpBar)
+end
+
+function ForgeUI_UnitFrames:RefreshStyle_TotFrame(unit)
+	local _name = self.wndToTFrame:FindChild("Name")
+
+	_name:SetText(unit:GetName())
+	if unit:GetClassId() ~= 23 then
+		_name:SetTextColor(ForgeUI.tSettings.tClassColors["cr" .. tClassEnums[unit:GetClassId()]])
+	else
+		_name:SetTextColor(unit:GetNameplateColor())
+	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- Threat
+-----------------------------------------------------------------------------------------------
 
 function ForgeUI_UnitFrames:OnThreatUpdated(...)
 	if self.tSettings.tTotFrame.bShowThreat ~= true then return end
@@ -601,13 +569,13 @@ function ForgeUI_UnitFrames:OnDocLoaded()
 		ForgeUI = Apollo.GetAddon("ForgeUI")
 	end
 	
-	ForgeUI.RegisterAddon(self)
+	ForgeUI.API_RegisterAddon(self)
 	
 	if GameLib.GetPlayerUnit() then
 		self:OnCharacterCreated()
 	else
 		Apollo.RegisterEventHandler("CharacterCreated", 	"OnCharacterCreated", self)
-	end 
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -640,31 +608,6 @@ end
 ---------------------------------------------------------------------------------------------------
 -- Movables Functions
 ---------------------------------------------------------------------------------------------------
-
-function ForgeUI_UnitFrames:OnMovableMove( wndHandler, wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom )
-	self.wndPlayerFrame:SetAnchorOffsets(self.wndMovables:FindChild("Movable_PlayerFrame"):GetAnchorOffsets())
-	self.wndPlayerFrame:FindChild("ShieldBar"):SetAnchorOffsets(self.wndMovables:FindChild("Movable_PlayerFrame_ShieldBar"):GetAnchorOffsets())
-	self.wndPlayerFrame:FindChild("AbsorbBar"):SetAnchorOffsets(self.wndMovables:FindChild("Movable_PlayerFrame_AbsorbBar"):GetAnchorOffsets())
-	self.wndPlayerFrame:FindChild("InterruptArmor"):SetAnchorOffsets(self.wndMovables:FindChild("Movable_PlayerFrame_IA"):GetAnchorOffsets())
-	
-	self.wndTargetFrame:SetAnchorOffsets(self.wndMovables:FindChild("Movable_TargetFrame"):GetAnchorOffsets())
-	self.wndTargetFrame:FindChild("ShieldBar"):SetAnchorOffsets(self.wndMovables:FindChild("Movable_TargetFrame_ShieldBar"):GetAnchorOffsets())
-	self.wndTargetFrame:FindChild("AbsorbBar"):SetAnchorOffsets(self.wndMovables:FindChild("Movable_TargetFrame_AbsorbBar"):GetAnchorOffsets())
-	self.wndTargetFrame:FindChild("InterruptArmor"):SetAnchorOffsets(self.wndMovables:FindChild("Movable_TargetFrame_IA"):GetAnchorOffsets())
-	
-	self.wndFocusFrame:SetAnchorOffsets(self.wndMovables:FindChild("Movable_FocusFrame"):GetAnchorOffsets())
-	
-	self.wndToTFrame:SetAnchorOffsets(self.wndMovables:FindChild("Movable_ToTFrame"):GetAnchorOffsets())
-	
-	self.wndPlayerBuffFrame:SetAnchorOffsets(self.wndMovables:FindChild("Movable_PlayerBuffs"):GetAnchorOffsets())
-	self.wndPlayerDebuffFrame:SetAnchorOffsets(self.wndMovables:FindChild("Movable_PlayerDebuffs"):GetAnchorOffsets())
-	self.wndTargetBuffFrame:SetAnchorOffsets(self.wndMovables:FindChild("Movable_TargetBuffs"):GetAnchorOffsets())
-	self.wndTargetDebuffFrame:SetAnchorOffsets(self.wndMovables:FindChild("Movable_TargetDebuffs"):GetAnchorOffsets())
-	
-	self.wndHazardBreath:SetAnchorOffsets(self.wndMovables:FindChild("Movable_Hazard_Breath"):GetAnchorOffsets())
-	self.wndHazardToxic:SetAnchorOffsets(self.wndMovables:FindChild("Movable_Hazard_Toxic"):GetAnchorOffsets())
-	self.wndHazardHeat:SetAnchorOffsets(self.wndMovables:FindChild("Movable_Hazard_Heat"):GetAnchorOffsets())
-end
 
 local ForgeUI_UnitFramesInst = ForgeUI_UnitFrames:new()
 ForgeUI_UnitFramesInst:Init()

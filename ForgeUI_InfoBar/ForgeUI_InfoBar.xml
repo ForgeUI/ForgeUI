@@ -13,9 +13,4 @@
             </Control>
         </Control>
     </Form>
-    <Form Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="ForgeUI_Movables" Border="0" Picture="0" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="0" TooltipColor="" Tooltip="" IgnoreMouse="1" NewWindowDepth="1" NoClip="1" Visible="0">
-        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="10" TAnchorPoint="0" TAnchorOffset="10" RAnchorPoint="0" RAnchorOffset="50" BAnchorPoint="0" BAnchorOffset="30" RelativeToClient="1" Font="Nameplates" Text="Info bar" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="Movable_InfoBar" TooltipColor="" Picture="1" NewWindowDepth="1" NoClip="1" TextId="" DT_CENTER="1" DT_VCENTER="1" Moveable="1" IgnoreMouse="1" Sizable="1">
-            <Event Name="WindowMove" Function="OnMovableMove"/>
-        </Control>
-    </Form>
 </Forms>
