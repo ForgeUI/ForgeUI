@@ -275,6 +275,13 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRegistration()
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "General", { strContainer = "Container_General", bDefault = true })
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Target", { strContainer = "Container_Target" })
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Player", { strContainer = "Container_Player" })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Friendly player", { strContainer = "Container_FriendlyPlayer" })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Party player", { strContainer = "Container_PartyPlayer" })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Hostile player", { strContainer = "Container_HostilePlayer" })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Friendly NPC", { strContainer = "Container_Friendly" })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Neutral NPC", { strContainer = "Container_Neutral" })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Hostile NPC", { strContainer = "Container_Hostile" })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Player pet", { strContainer = "Container_PlayerPet" })
 	--ForgeUI.AddItemListToButton(self, wndItemButton, {
 	--	{ strDisplayName = "General", strContainer = "Container_General", bDefault = true },
 	--	{ strDisplayName = "Target", strContainer = "Container_Target" },
@@ -926,7 +933,7 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 	for key, keyValue in pairs(self.tSettings) do
 		local type  = string.sub(key, 2, string.len(key))
 		
-		if true then
+		if string.sub(key, 1, 1) ~= "t" then
 			if string.sub(key, 1, 2) == "cr" then
 				if self.wndContainers["Container_General"]:FindChild(tostring(key)) ~= nil then
 					ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_General"]:FindChild(tostring(key)), self.tSettings, tostring(key), false, "UpdateStyles")
@@ -937,16 +944,28 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 					ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_General"]:FindChild(tostring(key)), self.tSettings, tostring(key), "UpdateStyles")
 				end
 			end
+			if string.sub(key, 1, 1) == "n" then
+				if self.wndContainers["Container_General"]:FindChild(tostring(key)) ~= nil then
+					ForgeUI.RegisterNumberBox(self, self.wndContainers["Container_General"]:FindChild(tostring(key)), self.tSettings, tostring(key), {}, "UpdateStyles")
+				end
+			end
 		else
 			for option, optionValue in pairs(keyValue) do
-				if string.sub(option, 1, 2) == "cr" then
-					if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil then
-						ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)), self.tSettings[key], tostring(option), false, "UpdateStyles")
+				if self.wndContainers["Container_" .. type] ~= nil then
+					if string.sub(option, 1, 2) == "cr" then
+						if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil then
+							ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)), self.tSettings[key], tostring(option), false, "UpdateStyles")
+						end
 					end
-				end
-				if string.sub(option, 1, 1) == "b" then
-					if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil then
-						ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)), self.tSettings[key], tostring(option), "UpdateStyles")
+					if string.sub(option, 1, 1) == "b" then
+						if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil then
+							ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)), self.tSettings[key], tostring(option), "UpdateStyles")
+						end
+					end
+					if string.sub(option, 1, 1) == "n" then
+						if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil then
+							ForgeUI.RegisterNumberBox(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)), self.tSettings[key], tostring(option), {}, "UpdateStyles")
+						end
 					end
 				end
 			end

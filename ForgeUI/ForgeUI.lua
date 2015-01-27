@@ -44,7 +44,7 @@ function ForgeUI:new(o)
 	
 	 -- mandatory 
     self.api_version = 2
-	self.version = "0.3.0"
+	self.version = "0.3.0beta"
 	self.author = "WintyBadass"
 	self.strAddonName = "~ForgeUI"
 	self.strDisplayName = "ForgeUI"
@@ -737,6 +737,8 @@ function ForgeUI:OnChechBoxCheck( wndHandler, wndControl )
 	local tData = wndControl:GetData()
 	if tData == nil then return end
 	
+	tData.tSettings[tData.strValue] = wndControl:IsChecked()
+	
 	if tData.strCallback ~= nil then
 		if tData.tAddon.tStylers[tData.strCallback] ~= nil then
 			tData.tAddon.tStylers[tData.strCallback][tData.strCallback](tData.tAddon)
@@ -744,8 +746,61 @@ function ForgeUI:OnChechBoxCheck( wndHandler, wndControl )
 			tData.tAddon[tData.strCallback](tData.tAddon)
 		end
 	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- Number box
+-----------------------------------------------------------------------------------------------
+
+function ForgeUI.RegisterNumberBox(tAddon, wndControl, tSettings, strValue, tOptions, strCallback)
+	local tData = {
+		tAddon = tAddon,
+		tSettings = tSettings,
+		strValue = strValue,
+		tOptions = tOptions,
+		strCallback = strCallback
+	}
 	
-	tData.tSettings[tData.strValue] = wndControl:IsChecked()
+	tData.prevValue = tSettings[strValue]
+	
+	wndControl:SetData(tData)
+	wndControl:AddEventHandler("EditBoxChanged", 	"OnNumberBoxChanged", ForgeUIInst)
+	
+	wndControl:SetText(tSettings[strValue])
+end
+
+function ForgeUI:OnNumberBoxChanged( wndHandler, wndControl, strText )
+	local tData = wndControl:GetData()
+	if tData == nil then return end
+	
+	local newText = wndControl:GetText()
+	
+	if tonumber(newText) ~= nil then
+		local newNumber = tonumber(newText)
+	
+		local tOptions = tData.tOptions
+		if tOptions ~= nil then
+			if tOptions.nMin ~= nil then
+				if newNumber < tOptions.nMin then
+					newNumber = tOptions.nMin
+				end
+			end
+		end
+		
+		tData.tSettings[tData.strValue] = newNumber
+		tData.prevValue = newNumber
+		
+		if tData.strCallback ~= nil then
+			if tData.tAddon.tStylers[tData.strCallback] ~= nil then
+				tData.tAddon.tStylers[tData.strCallback][tData.strCallback](tData.tAddon)
+			else
+				tData.tAddon[tData.strCallback](tData.tAddon)
+			end
+		end
+	else
+		if wndControl:GetText() == "-" then return end
+		wndControl:SetText(tData.prevValue)
+	end
 end
 
 -----------------------------------------------------------------------------------------------
