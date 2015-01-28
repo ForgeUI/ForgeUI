@@ -33,6 +33,12 @@ function ForgeUI_ActionBars:new(o)
 	-- optional
 	self.settings_version = 1
     self.tSettings = {
+		nSelectedMount = 0,
+		nSelectedPotion = 0,
+	}
+	
+	self.wndActionBars = {}
+	self.tActionBars = {
 		tActionBar = {
 			strName = "ActionBar",
 			strContent = "LASBar",
@@ -50,9 +56,31 @@ function ForgeUI_ActionBars:new(o)
 			crBorder = "FF000000",
 			strStyler = "LoadStyle_ActionButton",
 		},
+		tMountButton = {
+			strName = "MountButton",
+			strContent = "GCBar",
+			nContent = 26,
+			bShowHotkey = true,
+			crBorder = "FF000000",
+			strStyler = "LoadStyle_ActionButton",
+		},
+		tRecallButton = {
+			strName = "RecallButton",
+			strContent = "GCBar",
+			nContent = 18,
+			bShowHotkey = true,
+			crBorder = "FF000000",
+			strStyler = "LoadStyle_ActionButton",
+		},
+		tGadgetButton = {
+			strName = "GadgetButton",
+			strContent = "GCBar",
+			nContent = 18,
+			bShowHotkey = true,
+			crBorder = "FF000000",
+			strStyler = "LoadStyle_ActionButton",
+		},
 	}
-	
-	self.tActionBars = {}
 
     return o
 end
@@ -67,8 +95,8 @@ function ForgeUI_ActionBars:Init()
 end
 
 function ForgeUI_ActionBars:CreateBar(tOptions)
-	local wnd = self.tActionBars[tOptions.strName]
-	if self.tActionBars[tOptions.strName] == nil then
+	local wnd = self.wndActionBars[tOptions.strName]
+	if self.wndActionBars[tOptions.strName] == nil then
 		wnd = Apollo.LoadForm(self.xmlDoc, "ForgeUI_" .. tOptions.strName, ForgeUI.HudStratum3, self)
 	end
 	
@@ -100,8 +128,8 @@ function ForgeUI_ActionBars:CreateBar(tOptions)
 end
 
 function ForgeUI_ActionBars:CreateButton(tOptions)
-	local wnd = self.tActionBars[tOptions.strName]
-	if self.tActionBars[tOptions.strName] == nil then
+	local wnd = self.wndActionBars[tOptions.strName]
+	if self.wndActionBars[tOptions.strName] == nil then
 		wnd = Apollo.LoadForm(self.xmlDoc, "ForgeUI_" .. tOptions.strName, ForgeUI.HudStratum3, self)
 	end
 	
@@ -121,6 +149,7 @@ function ForgeUI_ActionBars:CreateButton(tOptions)
 end
 
 -- filling methods
+-- stances
 function ForgeUI_ActionBars:FillStances(wnd)
 	local wndPopup = wnd:FindChild("Popup")
 	local wndList = wnd:FindChild("List")
@@ -152,6 +181,160 @@ function ForgeUI_ActionBars:FillStances(wnd)
 	wndList:ArrangeChildrenVert()
 end
 
+-- mounts
+function ForgeUI_ActionBars:FillMounts(wnd)
+	local wndPopup = wnd:FindChild("Popup")
+	local wndList = wnd:FindChild("List")
+	
+	local nSize = wndList:GetWidth()
+	
+	wndList:DestroyChildren()
+
+	local tMountList = AbilityBook.GetAbilitiesList(Spell.CodeEnumSpellTag.Mount) or {}
+	local tSelectedSpellObj = nil
+
+	local nCount = 0
+	for idx, tMount in pairs(tMountList) do
+		nCount = nCount + 1
+		
+		local tSpellObject = tMount.tTiers[1].splObject
+
+		if tSpellObject:GetId() == self.tSettings.nSelectedMount then
+			tSelectedSpellObj = tSpellObject
+		end
+
+		local wndCurr = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
+		wndCurr:SetData({sType = "mount"})
+		wndCurr:FindChild("Icon"):SetSprite(tSpellObject:GetIcon())
+		wndCurr:FindChild("Button"):SetData(tSpellObject)
+
+		wndCurr:SetAnchorOffsets(0, 0, nSize, nSize)
+		
+		if Tooltip and Tooltip.GetSpellTooltipForm then
+			wndCurr:SetTooltipDoc(nil)
+			Tooltip.GetSpellTooltipForm(self, wndCurr, tSpellObject, {})
+		end
+	end
+
+	if tSelectedSpellObj == nil and #tMountList > 0 then
+		tSelectedSpellObj = tMountList[1].tTiers[1].splObject
+	end
+
+	if tSelectedSpellObj ~= nil then
+		GameLib.SetShortcutMount(tSelectedSpellObj:GetId())
+	end
+
+	local nLeft, nTop, nRight, nBottom = wndPopup:GetAnchorOffsets()
+	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize), nRight, nBottom)
+	
+	wndList:ArrangeChildrenVert()
+	
+	wnd:Show(nCount > 0, true)
+end
+
+-- recalls
+function ForgeUI_ActionBars:FillRecalls(wnd)
+	local wndPopup = wnd:FindChild("Popup")
+	local wndList = wnd:FindChild("List")
+
+	local nSize = wndList:GetWidth()
+	
+	wndList:DestroyChildren()
+	
+	local nCount = 0
+	local bHasBinds = false
+	local bHasWarplot = false
+	local guildCurr = nil
+	
+	-- todo: condense this 
+	if GameLib.HasBindPoint() == true then
+		--load recall
+		local wndBind = Apollo.LoadForm(self.xmlDoc, "RecallBtn", wndList, self)
+		wndBind:SetContentId(GameLib.CodeEnumRecallCommand.BindPoint)
+		wndBind:SetData(GameLib.CodeEnumRecallCommand.BindPoint)
+		
+		wndBind:SetAnchorOffsets(0, 0, nSize, nSize)
+		
+		bHasBinds = true
+		nCount = nCount + 1
+	end
+	
+	if HousingLib.IsResidenceOwner() == true then
+		-- load house
+		local wndHouse = Apollo.LoadForm(self.xmlDoc, "RecallBtn", wndList, self)
+		wndHouse:SetContentId(GameLib.CodeEnumRecallCommand.House)
+		wndHouse:SetData(GameLib.CodeEnumRecallCommand.House)
+		
+		wndHouse:SetAnchorOffsets(0, 0, nSize, nSize)
+
+		bHasBinds = true
+		nCount = nCount + 1		
+	end
+
+	-- Determine if this player is in a WarParty
+	for key, guildCurr in pairs(GuildLib.GetGuilds()) do
+		if guildCurr:GetType() == GuildLib.GuildType_WarParty then
+			bHasWarplot = true
+			break
+		end
+	end
+	
+	if bHasWarplot == true then
+		-- load warplot
+		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "RecallBtn", wndList, self)
+		wndWarplot:SetContentId(GameLib.CodeEnumRecallCommand.Warplot)
+		wndWarplot:SetData(GameLib.CodeEnumRecallCommand.Warplot)
+		
+		wndWarplot:SetAnchorOffsets(0, 0, nSize, nSize)
+
+		bHasBinds = true
+		nCount = nCount + 1	
+	end
+	
+	local bIllium = false
+	local bThayd = false
+	
+	for idx, tSpell in pairs(AbilityBook.GetAbilitiesList(Spell.CodeEnumSpellTag.Misc) or {}) do
+		if tSpell.bIsActive and tSpell.nId == GameLib.GetTeleportIlliumSpell():GetBaseSpellId() then
+			bIllium = true
+		end
+		if tSpell.bIsActive and tSpell.nId == GameLib.GetTeleportThaydSpell():GetBaseSpellId() then
+			bThayd = true
+		end
+	end
+	
+	if bIllium then
+		-- load capital
+		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "RecallBtn", wndList, self)
+		wndWarplot:SetContentId(GameLib.CodeEnumRecallCommand.Illium)
+		wndWarplot:SetData(GameLib.CodeEnumRecallCommand.Illium)
+		
+		wndWarplot:SetAnchorOffsets(0, 0, nSize, nSize)
+
+		bHasBinds = true
+		nCount = nCount + 1
+	end
+	
+	if bThayd then
+		-- load capital
+		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "RecallBtn", wndList, self)
+		wndWarplot:SetContentId(GameLib.CodeEnumRecallCommand.Thayd)
+		wndWarplot:SetData(GameLib.CodeEnumRecallCommand.Thayd)	
+			
+		wndWarplot:SetAnchorOffsets(0, 0, nSize, nSize)
+
+		bHasBinds = true
+		nCount = nCount + 1
+	end
+	
+	local nLeft, nTop, nRight, nBottom = wndPopup:GetAnchorOffsets()
+	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize), nRight, nBottom)
+	
+	wndList:ArrangeChildrenVert()
+	
+	wnd:Show(bHasBinds, true)
+end
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI_ActionBars Registration
 -----------------------------------------------------------------------------------------------
@@ -175,10 +358,21 @@ function ForgeUI_ActionBars:ForgeAPI_AfterRegistration()
 end
 
 function ForgeUI_ActionBars:ForgeAPI_AfterRestore()
-	self.wndActionBar = self:CreateBar(self.tSettings.tActionBar)
+	self.wndActionBar = self:CreateBar(self.tActionBars.tActionBar)
 	
-	self.wndStanceBtn = self:CreateButton(self.tSettings.tStanceButton)
+	self.wndGadgetBtn = self:CreateButton(self.tActionBars.tGadgetButton)
+	
+	self.wndStanceBtn = self:CreateButton(self.tActionBars.tStanceButton)
 	self:FillStances(self.wndStanceBtn)
+	
+	self.wndMountBtn = self:CreateButton(self.tActionBars.tMountButton)
+	self:FillMounts(self.wndMountBtn)
+	
+	self.wndRecallBtn = self:CreateButton(self.tActionBars.tRecallButton)
+	self:FillRecalls(self.wndRecallBtn)
+	
+	GameLib.SetDefaultRecallCommand(GameLib.GetDefaultRecallCommand())
+	self.wndRecallBtn:FindChild("GCBar"):SetContentId(GameLib.GetDefaultRecallCommand())
 end
 
 -----------------------------------------------------------------------------------------------
@@ -214,29 +408,24 @@ function ForgeUI_ActionBars:OnGenerateTooltip(wndControl, wndHandler, eType, arg
 	local xml = nil
 	if eType == Tooltip.TooltipGenerateType_ItemInstance then -- Doesn't need to compare to item equipped
 		Tooltip.GetItemTooltipForm(self, wndControl, arg1, {})
-		Print("A")
 	elseif eType == Tooltip.TooltipGenerateType_ItemData then -- Doesn't need to compare to item equipped
 		Tooltip.GetItemTooltipForm(self, wndControl, arg1, {})
 	elseif eType == Tooltip.TooltipGenerateType_GameCommand then
 		xml = XmlDoc.new()
 		xml:AddLine(arg2)
 		wndControl:SetTooltipDoc(xml)
-		Print("A")
 	elseif eType == Tooltip.TooltipGenerateType_Macro then
 		xml = XmlDoc.new()
 		xml:AddLine(arg1)
 		wndControl:SetTooltipDoc(xml)
-		Print("A")
 	elseif eType == Tooltip.TooltipGenerateType_Spell then
 		if Tooltip ~= nil and Tooltip.GetSpellTooltipForm ~= nil then
 			Tooltip.GetSpellTooltipForm(self, wndControl, arg1)
 		end
-		Print("A")
 	elseif eType == Tooltip.TooltipGenerateType_PetCommand then
 		xml = XmlDoc.new()
 		xml:AddLine(arg2)
 		wndControl:SetTooltipDoc(xml)
-		Print("A")
 	end
 end
 
@@ -246,6 +435,7 @@ function ForgeUI_ActionBars:OnSpellBtn( wndHandler, wndControl, eMouseButton )
 		GameLib.SetCurrentClassInnateAbilityIndex(wndHandler:GetData())
 	elseif sType == "mount" then
 		self.tSettings.nSelectedMount = wndControl:GetData():GetId()
+		GameLib.SetShortcutMount(self.tSettings.nSelectedMount)
 	elseif sType == "potion" then
 		self.tSettings.nSelectedPotion = wndControl:GetData():GetItemId()
 	elseif sType == "path" then
@@ -267,6 +457,16 @@ function ForgeUI_ActionBars:BarButton_OnMouseDown( wndHandler, wndControl, eMous
 		wndControl:FindChild("Popup"):Show(true, true)
 	end
 end
+
+function ForgeUI_ActionBars:RecallBtn_OnButtonDown( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
+	local wnd = wndControl:GetParent():GetParent():GetParent()
+	if wndControl:GetName() == "RecallBtn" and eMouseButton == 1 then
+		GameLib.SetDefaultRecallCommand(wndControl:GetData())
+		wnd:FindChild("GCBar"):SetContentId(wndControl:GetData())
+	end
+	wnd:FindChild("Popup"):Show(false, true)
+end
+
 
 ----------------------------------------------------------------------------------------------
 -- ForgeUI_ActionBars Instance
