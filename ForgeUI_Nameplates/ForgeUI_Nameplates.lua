@@ -73,7 +73,6 @@ function ForgeUI_Nameplates:new(o)
 		nShieldBarHeight = 4,
 		bShowQuestIcons = true,
 		bShowInfo = false,
-		bClickable = true,
 		tTarget = {
 			bShow = true,
 			bShowBars = true,

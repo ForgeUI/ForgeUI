@@ -257,10 +257,6 @@ function ForgeUI_UnitFrames:UpdateToTFrame(unitSource)
 	self.tStylers["RefreshStyle_TotFrame"]["RefreshStyle_TotFrame"](self, unit)
 	if self.tSettings.tTotFrame.bShowThreat and unitSource:GetType() == "Player"  then
 		self.wndThreat:SetText("")
-	elseif self.tSettings.tTotFrame.bShowThreat and unit:IsACharacter() then
-		self.wndThreat:Show(true, true)
-	else
-		self.wndThreat:Show(false, true)
 	end
 	
 	self:UpdateHPBar(unit, self.wndToTFrame)
