@@ -41,42 +41,72 @@ function ForgeUI_ActionBars:new(o)
 	self.tActionBars = {
 		tActionBar = {
 			strName = "ActionBar",
+			strDisplayName = "Action bar",
 			strContent = "LASBar",
 			nContentMin = 0,
 			nContentMax = 7,
-			bShowHotkey = true,
+			bShowHotkey = false,
+			bShowPopup = false,
 			crBorder = "FF000000",
 			strStyler = "LoadStyle_ActionBar",
 		},
 		tStanceButton = {
 			strName = "StanceButton",
+			strDisplayName = "Stance",
 			strContent = "GCBar",
 			nContent = 2,
-			bShowHotkey = true,
+			bShowHotkey = false,
+			bShowPopup = true,
 			crBorder = "FF000000",
 			strStyler = "LoadStyle_ActionButton",
 		},
 		tMountButton = {
 			strName = "MountButton",
+			strDisplayName = "Mount",
 			strContent = "GCBar",
 			nContent = 26,
-			bShowHotkey = true,
+			bShowHotkey = false,
+			bShowPopup = true,
 			crBorder = "FF000000",
 			strStyler = "LoadStyle_ActionButton",
 		},
 		tRecallButton = {
 			strName = "RecallButton",
+			strDisplayName = "Recall",
 			strContent = "GCBar",
 			nContent = 18,
-			bShowHotkey = true,
+			bShowHotkey = false,
+			bShowPopup = true,
 			crBorder = "FF000000",
 			strStyler = "LoadStyle_ActionButton",
 		},
 		tGadgetButton = {
 			strName = "GadgetButton",
+			strDisplayName = "Gadget",
 			strContent = "GCBar",
-			nContent = 18,
-			bShowHotkey = true,
+			nContent = 0,
+			bShowHotkey = false,
+			bShowPopup = false,
+			crBorder = "FF000000",
+			strStyler = "LoadStyle_ActionButton",
+		},
+		tPotionButton = {
+			strName = "PotionButton",
+			strDisplayName = "Potion",
+			strContent = "GCBar",
+			nContent = 27,
+			bShowHotkey = false,
+			bShowPopup = true,
+			crBorder = "FF000000",
+			strStyler = "LoadStyle_ActionButton",
+		},
+		tPathButton = {
+			strName = "PathButton",
+			strDisplayName = "Path",
+			strContent = "LASBar",
+			nContent = 9,
+			bShowHotkey = false,
+			bShowPopup = true,
 			crBorder = "FF000000",
 			strStyler = "LoadStyle_ActionButton",
 		},
@@ -101,7 +131,7 @@ function ForgeUI_ActionBars:CreateBar(tOptions)
 	end
 	
 	ForgeUI.API_RegisterWindow(self, wnd, tOptions.strName, { bMaintainRatio = true })
-	ForgeUI.API_RegisterWindow(self, wnd:FindChild("Holder"), tOptions.strName .. "_holder", { strParent = tOptions.strName, bInvisible = true, bMaintainRatio = true })
+	ForgeUI.API_RegisterWindow(self, wnd:FindChild("Holder"), tOptions.strName .. "_holder", { strParent = tOptions.strName, bInvisible = true, bMaintainRatio = true, strDisplayName = tOptions.strDisplayName })
 	
 	wnd:FindChild("Holder"):DestroyChildren()
 
@@ -111,13 +141,17 @@ function ForgeUI_ActionBars:CreateBar(tOptions)
 		local wndBarButton = Apollo.LoadForm(self.xmlDoc, "ForgeUI_BarButton", wnd:FindChild("Holder"), self)
 		wndBarButton:SetData(tOptions)
 		
+		if tOptions.bShowPopup then
+			wndBarButton:AddEventHandler("MouseButtonDown", "BarButton_OnMouseDown", self)
+		end
+		
 		local wndButton = Apollo.LoadForm(self.xmlDoc, tOptions.strContent, wndBarButton:FindChild("Holder"), self)
 		wndButton:SetContentId(id)
 		
 		wndBarButton:SetAnchorPoints((1 / nButtons) * i, 0, (1 / nButtons) * (i + 1), 1)
 		wndBarButton:SetAnchorOffsets(0, 0, 1, 0)
 		
-		ForgeUI.API_RegisterWindow(self, wndBarButton, tOptions.strName .. "_" .. i, { strParent = tOptions.strName .. "_holder", crBorder = "FFFFFFFF", bMaintainRatio = true })
+		ForgeUI.API_RegisterWindow(self, wndBarButton, tOptions.strName .. "_" .. i, { strParent = tOptions.strName .. "_holder", crBorder = "FFFFFFFF", bMaintainRatio = true, strDisplayName = i })
 		
 		i = i + 1
 	end
@@ -133,12 +167,16 @@ function ForgeUI_ActionBars:CreateButton(tOptions)
 		wnd = Apollo.LoadForm(self.xmlDoc, "ForgeUI_" .. tOptions.strName, ForgeUI.HudStratum3, self)
 	end
 	
-	ForgeUI.API_RegisterWindow(self, wnd, tOptions.strName, { bMaintainRatio = true })
+	ForgeUI.API_RegisterWindow(self, wnd, tOptions.strName, { bMaintainRatio = true, strDisplayName = tOptions.strDisplayName })
 	
 	wnd:DestroyChildren()
 	
 	local wndBarButton = Apollo.LoadForm(self.xmlDoc, "ForgeUI_BarButton", wnd, self)
 	wndBarButton:SetData(tOptions)
+	
+	if tOptions.bShowPopup then
+		wndBarButton:AddEventHandler("MouseButtonDown", "BarButton_OnMouseDown", self)
+	end
 	
 	local wndButton = Apollo.LoadForm(self.xmlDoc, tOptions.strContent, wndBarButton:FindChild("Holder"), self)
 	wndButton:SetContentId(tOptions.nContent)
@@ -249,10 +287,13 @@ function ForgeUI_ActionBars:FillRecalls(wnd)
 	-- todo: condense this 
 	if GameLib.HasBindPoint() == true then
 		--load recall
-		local wndBind = Apollo.LoadForm(self.xmlDoc, "RecallBtn", wndList, self)
+		local wndBind = Apollo.LoadForm(self.xmlDoc, "GCBar", wndList, self)
 		wndBind:SetContentId(GameLib.CodeEnumRecallCommand.BindPoint)
 		wndBind:SetData(GameLib.CodeEnumRecallCommand.BindPoint)
 		
+		wndBind:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)
+		
+		wndBind:SetAnchorPoints(0, 0, 0, 0)
 		wndBind:SetAnchorOffsets(0, 0, nSize, nSize)
 		
 		bHasBinds = true
@@ -261,10 +302,13 @@ function ForgeUI_ActionBars:FillRecalls(wnd)
 	
 	if HousingLib.IsResidenceOwner() == true then
 		-- load house
-		local wndHouse = Apollo.LoadForm(self.xmlDoc, "RecallBtn", wndList, self)
+		local wndHouse = Apollo.LoadForm(self.xmlDoc, "GCBar", wndList, self)
 		wndHouse:SetContentId(GameLib.CodeEnumRecallCommand.House)
 		wndHouse:SetData(GameLib.CodeEnumRecallCommand.House)
 		
+		wndHouse:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)
+		
+		wndHouse:SetAnchorPoints(0, 0, 0, 0)
 		wndHouse:SetAnchorOffsets(0, 0, nSize, nSize)
 
 		bHasBinds = true
@@ -281,10 +325,13 @@ function ForgeUI_ActionBars:FillRecalls(wnd)
 	
 	if bHasWarplot == true then
 		-- load warplot
-		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "RecallBtn", wndList, self)
+		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "GCBar", wndList, self)
 		wndWarplot:SetContentId(GameLib.CodeEnumRecallCommand.Warplot)
 		wndWarplot:SetData(GameLib.CodeEnumRecallCommand.Warplot)
 		
+		wndWarplot:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)
+		
+		wndWarplot:SetAnchorPoints(0, 0, 0, 0)
 		wndWarplot:SetAnchorOffsets(0, 0, nSize, nSize)
 
 		bHasBinds = true
@@ -305,10 +352,13 @@ function ForgeUI_ActionBars:FillRecalls(wnd)
 	
 	if bIllium then
 		-- load capital
-		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "RecallBtn", wndList, self)
+		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "GCBar", wndList, self)
 		wndWarplot:SetContentId(GameLib.CodeEnumRecallCommand.Illium)
 		wndWarplot:SetData(GameLib.CodeEnumRecallCommand.Illium)
 		
+		wndWarplot:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)
+		
+		wndWarplot:SetAnchorPoints(0, 0, 0, 0)
 		wndWarplot:SetAnchorOffsets(0, 0, nSize, nSize)
 
 		bHasBinds = true
@@ -317,10 +367,13 @@ function ForgeUI_ActionBars:FillRecalls(wnd)
 	
 	if bThayd then
 		-- load capital
-		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "RecallBtn", wndList, self)
+		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "GCBar", wndList, self)
 		wndWarplot:SetContentId(GameLib.CodeEnumRecallCommand.Thayd)
-		wndWarplot:SetData(GameLib.CodeEnumRecallCommand.Thayd)	
+		wndWarplot:SetData(GameLib.CodeEnumRecallCommand.Thayd)
+		
+		wndWarplot:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)	
 			
+		wndWarplot:SetAnchorPoints(0, 0, 0, 0)
 		wndWarplot:SetAnchorOffsets(0, 0, nSize, nSize)
 
 		bHasBinds = true
@@ -333,6 +386,99 @@ function ForgeUI_ActionBars:FillRecalls(wnd)
 	wndList:ArrangeChildrenVert()
 	
 	wnd:Show(bHasBinds, true)
+end
+
+-- potions
+function ForgeUI_ActionBars:FillPotions(wnd)
+	local unitPlayer = GameLib.GetPlayerUnit()
+	if unitPlayer == nil or not unitPlayer:IsValid() then return end
+	
+	local wndPopup = wnd:FindChild("Popup")
+	local wndList = wnd:FindChild("List")
+	
+	local nSize = wndList:GetWidth()
+	
+	wndList:DestroyChildren()
+	
+	local tItemList = unitPlayer:GetInventoryItems()
+	local tPotions = {}
+	
+	for idx, tItemData in pairs(tItemList) do
+		if tItemData and tItemData.itemInBag and tItemData.itemInBag:GetItemCategory() == 48 then--and tItemData.itemInBag:GetConsumable() == "Consumable" then
+			local itemPotion = tItemData.itemInBag
+			tPotions[itemPotion:GetItemId()] = {
+				itemObject = itemPotion,
+				nCount = itemPotion:GetStackCount()
+			}
+		end
+	end
+	
+	local nCount = 0
+	for idx, tData  in pairs(tPotions) do
+		nCount = nCount + 1
+	
+		local wndCurr = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
+		wndCurr:SetData({sType = "potion"})
+		wndCurr:FindChild("Icon"):SetSprite(tData.itemObject:GetIcon())
+		wndCurr:FindChild("Button"):SetData(tData.itemObject)
+
+		wndCurr:SetAnchorOffsets(0, 0, nSize, nSize)
+		
+		wndCurr:SetTooltipDoc(nil)
+		Tooltip.GetItemTooltipForm(self, wndCurr, tData.itemObject, {})
+	end
+
+	local nLeft, nTop, nRight, nBottom = wndPopup:GetAnchorOffsets()
+	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize), nRight, nBottom)
+	
+	wndList:ArrangeChildrenVert()
+	
+	--self.wndPotionBar:Show(nCount > 0)
+end
+
+-- path
+function ForgeUI_ActionBars:FillPath(wnd)
+	local unitPlayer = GameLib.GetPlayerUnit()
+	if unitPlayer == nil or not unitPlayer:IsValid() then return end
+
+	local tAbilities = AbilityBook.GetAbilitiesList(Spell.CodeEnumSpellTag.Path)
+	if not tAbilities then
+		return	
+	end
+
+	local wndPopup = wnd:FindChild("Popup")
+	local wndList = wnd:FindChild("List")
+	
+	local nSize = wndList:GetWidth()
+	
+	wndList:DestroyChildren()
+	
+	local nCount = 0
+	local nListHeight = 0
+	for _, tAbility in pairs(tAbilities) do
+		if tAbility.bIsActive then
+			nCount = nCount + 1
+			local spellObject = tAbility.tTiers[tAbility.nCurrentTier].splObject
+			local wndCurr = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
+			wndCurr:SetData({sType = "path"})
+			wndCurr:FindChild("Icon"):SetSprite(spellObject:GetIcon())
+			wndCurr:FindChild("Button"):SetData(tAbility.nId)
+			
+			wndCurr:SetAnchorOffsets(0, 0, nSize, nSize)
+			
+			if Tooltip and Tooltip.GetSpellTooltipForm then
+				wndCurr:SetTooltipDoc(nil)
+				Tooltip.GetSpellTooltipForm(self, wndCurr, spellObject)
+			end
+		end
+	end
+	
+	wnd:Show(nCount > 0)
+	
+	local nLeft, nTop, nRight, nBottom = wndPopup:GetAnchorOffsets()
+	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize), nRight, nBottom)
+	
+	wndList:ArrangeChildrenVert(0)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -361,6 +507,12 @@ function ForgeUI_ActionBars:ForgeAPI_AfterRestore()
 	self.wndActionBar = self:CreateBar(self.tActionBars.tActionBar)
 	
 	self.wndGadgetBtn = self:CreateButton(self.tActionBars.tGadgetButton)
+	
+	self.wndPotionBtn = self:CreateButton(self.tActionBars.tPotionButton)
+	self:FillPotions(self.wndPotionBtn)
+	
+	self.wndPathBtn = self:CreateButton(self.tActionBars.tPathButton)
+	self:FillPath(self.wndPathBtn)
 	
 	self.wndStanceBtn = self:CreateButton(self.tActionBars.tStanceButton)
 	self:FillStances(self.wndStanceBtn)
@@ -432,20 +584,25 @@ end
 function ForgeUI_ActionBars:OnSpellBtn( wndHandler, wndControl, eMouseButton )
 	local sType = wndControl:GetParent():GetData().sType
 	if sType == "stance" then
+		self.wndStanceBtn:FindChild("Popup"):Show(false, true)
 		GameLib.SetCurrentClassInnateAbilityIndex(wndHandler:GetData())
 	elseif sType == "mount" then
+		self.wndMountBtn:FindChild("Popup"):Show(false, true)
 		self.tSettings.nSelectedMount = wndControl:GetData():GetId()
 		GameLib.SetShortcutMount(self.tSettings.nSelectedMount)
 	elseif sType == "potion" then
+		self.wndPotionBtn:FindChild("Popup"):Show(false, true)
 		self.tSettings.nSelectedPotion = wndControl:GetData():GetItemId()
+		GameLib.SetShortcutPotion(wndControl:GetData():GetItemId())
 	elseif sType == "path" then
 		local tActionSet = ActionSetLib.GetCurrentActionSet()
 		
 		Event_FireGenericEvent("PathAbilityUpdated", wndControl:GetData())
-		tActionSet[knPathLASIndex] = wndControl:GetData()
+		tActionSet[10] = wndControl:GetData()
 		ActionSetLib.RequestActionSetChanges(tActionSet)
+		
+		self.wndPathBtn:FindChild("Popup"):Show(false, true)
 	end
-	wndControl:GetParent():GetParent():GetParent():Show(false, true)
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -455,12 +612,18 @@ end
 function ForgeUI_ActionBars:BarButton_OnMouseDown( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
 	if wndControl:GetName() == "ForgeUI_BarButton" and eMouseButton == 1 then
 		wndControl:FindChild("Popup"):Show(true, true)
+		
+		self:FillMounts(self.wndMountBtn)
+		self:FillStances(self.wndStanceBtn)
+		self:FillPath(self.wndPathBtn)
+		self:FillPotions(self.wndPotionBtn)
+		self:FillRecalls(self.wndRecallBtn)
 	end
 end
 
 function ForgeUI_ActionBars:RecallBtn_OnButtonDown( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
 	local wnd = wndControl:GetParent():GetParent():GetParent()
-	if wndControl:GetName() == "RecallBtn" and eMouseButton == 1 then
+	if wndControl:GetName() == "GCBar" and eMouseButton == 1 then
 		GameLib.SetDefaultRecallCommand(wndControl:GetData())
 		wnd:FindChild("GCBar"):SetContentId(wndControl:GetData())
 	end

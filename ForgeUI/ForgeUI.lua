@@ -6,6 +6,7 @@ local ForgeColor
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
+
 AUTHOR = "Adam Jedlicka"
 AUTHOR_LONG = "Winty Badass@Jabbit"
 API_VERSION = 2
@@ -440,13 +441,6 @@ function ForgeUI.API_RegisterWindow(tAddon, wnd, strName, tSettings)
 		
 		if tSettings.crBorder ~= nil then
 			wndMovable:SetBGColor(tSettings.crBorder)
-		end
-		
-		if tSettings.bInvisible then
-			wndMovable:SetStyle("IgnoreMouse", true)
-			wndMovable:SetStyle("Moveable", false)
-			wndMovable:SetStyle("Picture", false)
-			wndMovable:FindChild("Background"):SetStyle("Picture", false)
 		end
 	end
 	
