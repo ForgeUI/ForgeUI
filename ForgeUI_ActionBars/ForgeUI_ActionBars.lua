@@ -50,6 +50,29 @@ function ForgeUI_ActionBars:new(o)
 			crBorder = "FF000000",
 			strStyler = "LoadStyle_ActionBar",
 		},
+		tVehicleBar = {
+			strName = "VehicleBar",
+			strDisplayName = "Vehicle bar",
+			strContent = "RMSBar",
+			nContentMin = 0,
+			nContentMax = 5,
+			bShowHotkey = false,
+			bShowPopup = false,
+			crBorder = "FF000000",
+			strStyler = "LoadStyle_ActionBar",
+		},
+		tSideBar1 = {
+			strName = "SideBar1",
+			strDisplayName = "Side bar 1",
+			strContent = "ABar",
+			nContentMin = 11,
+			nContentMax = 18,
+			bShowHotkey = false,
+			bShowPopup = false,
+			bVertical = true,
+			crBorder = "FF000000",
+			strStyler = "LoadStyle_ActionBar",
+		},
 		tStanceButton = {
 			strName = "StanceButton",
 			strDisplayName = "Stance",
@@ -130,8 +153,8 @@ function ForgeUI_ActionBars:CreateBar(tOptions)
 		wnd = Apollo.LoadForm(self.xmlDoc, "ForgeUI_" .. tOptions.strName, ForgeUI.HudStratum3, self)
 	end
 	
-	ForgeUI.API_RegisterWindow(self, wnd, tOptions.strName, { bMaintainRatio = true })
-	ForgeUI.API_RegisterWindow(self, wnd:FindChild("Holder"), tOptions.strName .. "_holder", { strParent = tOptions.strName, bInvisible = true, bMaintainRatio = true, strDisplayName = tOptions.strDisplayName })
+	ForgeUI.API_RegisterWindow(self, wnd, tOptions.strName, { bMaintainRatio = true, strDisplayName = tOptions.strDisplayName })
+	ForgeUI.API_RegisterWindow(self, wnd:FindChild("Holder"), tOptions.strName .. "_holder", { strParent = tOptions.strName, bInvisible = true, bMaintainRatio = true })
 	
 	wnd:FindChild("Holder"):DestroyChildren()
 
@@ -148,8 +171,13 @@ function ForgeUI_ActionBars:CreateBar(tOptions)
 		local wndButton = Apollo.LoadForm(self.xmlDoc, tOptions.strContent, wndBarButton:FindChild("Holder"), self)
 		wndButton:SetContentId(id)
 		
-		wndBarButton:SetAnchorPoints((1 / nButtons) * i, 0, (1 / nButtons) * (i + 1), 1)
-		wndBarButton:SetAnchorOffsets(0, 0, 1, 0)
+		if tOptions.bVertical then
+			wndBarButton:SetAnchorPoints(0, (1 / nButtons) * i, 1, (1 / nButtons) * (i + 1))
+			--wndBarButton:SetAnchorOffsets(0, 0, 0, 100)
+		else
+			wndBarButton:SetAnchorPoints((1 / nButtons) * i, 0, (1 / nButtons) * (i + 1), 1)
+			wndBarButton:SetAnchorOffsets(0, 0, 1, 0)
+		end
 		
 		ForgeUI.API_RegisterWindow(self, wndBarButton, tOptions.strName .. "_" .. i, { strParent = tOptions.strName .. "_holder", crBorder = "FFFFFFFF", bMaintainRatio = true, strDisplayName = i })
 		
@@ -500,11 +528,12 @@ function ForgeUI_ActionBars:OnDocLoaded()
 end
 
 function ForgeUI_ActionBars:ForgeAPI_AfterRegistration()
-	
+	Apollo.RegisterEventHandler("ShowActionBarShortcut", 	"ShowShortcutBar", self)
 end
 
 function ForgeUI_ActionBars:ForgeAPI_AfterRestore()
 	self.wndActionBar = self:CreateBar(self.tActionBars.tActionBar)
+	self.wndSideBar1 = self:CreateBar(self.tActionBars.tSideBar1)
 	
 	self.wndGadgetBtn = self:CreateButton(self.tActionBars.tGadgetButton)
 	
@@ -525,6 +554,23 @@ function ForgeUI_ActionBars:ForgeAPI_AfterRestore()
 	
 	GameLib.SetDefaultRecallCommand(GameLib.GetDefaultRecallCommand())
 	self.wndRecallBtn:FindChild("GCBar"):SetContentId(GameLib.GetDefaultRecallCommand())
+end
+
+function ForgeUI_ActionBars:ShowShortcutBar(nBar, bIsVisible, nShortcuts)
+	-- 0 - vehicle bar
+	--Print(nBar .. " " .. tostring(bIsVisible) .. " " .. nShortcuts)
+	
+	if nBar == ActionSetLib.CodeEnumShortcutSet.VehicleBar then -- vehiclebar
+		self.wndActionBar:Show(not bIsVisible, true)
+		
+		if bIsVisible then
+			self.wndVehicleBar = self:CreateBar(self.tActionBars.tVehicleBar)
+		else
+			
+		then
+		
+		self.wndVehicleBar:Show(bIsVisible, true)
+	end
 end
 
 -----------------------------------------------------------------------------------------------

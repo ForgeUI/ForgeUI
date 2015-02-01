@@ -442,6 +442,14 @@ function ForgeUI.API_RegisterWindow(tAddon, wnd, strName, tSettings)
 		if tSettings.crBorder ~= nil then
 			wndMovable:SetBGColor(tSettings.crBorder)
 		end
+		
+		if tSettings.bInvisible then
+			wndMovable:SetStyle("IgnoreMouse", true)
+			wndMovable:SetStyle("Moveable", false)
+			wndMovable:SetStyle("Picture", false)
+			wndMovable:FindChild("Background"):SetStyle("Picture", false)
+			wndMovable:SetName("ForgeUI_Movable_Invisible")
+		end
 	end
 	
 	wndMovable:AddEventHandler("WindowMove", "OnMovableMove", ForgeUIInst)
