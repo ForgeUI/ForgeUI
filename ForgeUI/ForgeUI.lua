@@ -412,6 +412,7 @@ function ForgeUI.API_RegisterWindow(tAddon, wnd, strName, tSettings)
 	if tSettings ~= nil then
 		if tSettings.strParent ~= nil then
 			wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", _tRegisteredWindows[tAddon.strAddonName][tSettings.strParent].movable, ForgeUIInst)
+			_tRegisteredWindows[tAddon.strAddonName][strName].strParent = tSettings.strParent
 		elseif tSettings.nLevel ~= nil then
 			if tSettings.nLevel > 0 and tSettings.nLevel < 5 then
 				wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables" .. tSettings.nLevel), ForgeUIInst)
@@ -455,6 +456,24 @@ function ForgeUI.API_RegisterWindow(tAddon, wnd, strName, tSettings)
 	wndMovable:AddEventHandler("WindowMove", "OnMovableMove", ForgeUIInst)
 	
 	_tRegisteredWindows[tAddon.strAddonName][strName].movable = wndMovable
+end
+
+function ForgeUI.API_UnRegisterWindow(tAddon, strName)
+	for strAddonName, tAddon in pairs(_tRegisteredWindows) do
+		for name, tMovable in pairs(tAddon) do
+			if name == strName then
+				tMovable.movable:DestroyChildren()
+				tMovable.movable:Destroy()
+				_tRegisteredWindows[strAddonName][name] = nil
+			end
+			
+			if tMovable.strParent == strName then
+				tMovable.movable:DestroyChildren()
+				tMovable.movable:Destroy()
+				tAddon[name] = nil
+			end
+		end
+	end
 end
 
 function ForgeUI:OnMovableMove()

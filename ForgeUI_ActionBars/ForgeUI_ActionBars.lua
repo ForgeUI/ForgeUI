@@ -35,6 +35,16 @@ function ForgeUI_ActionBars:new(o)
     self.tSettings = {
 		nSelectedMount = 0,
 		nSelectedPotion = 0,
+		tSideBar1 = {
+			bShow = true,
+			bVertical = true,
+			nButtons = 12,
+		},
+		tSideBar2 = {
+			bShow = false,
+			bVertical = true,
+			nButtons = 12,
+		}
 	}
 	
 	self.wndActionBars = {}
@@ -65,8 +75,19 @@ function ForgeUI_ActionBars:new(o)
 			strName = "SideBar1",
 			strDisplayName = "Side bar 1",
 			strContent = "ABar",
-			nContentMin = 11,
-			nContentMax = 18,
+			nContentMin = 12,
+			nContentMax = 23,
+			bShowHotkey = false,
+			bShowPopup = false,
+			crBorder = "FF000000",
+			strStyler = "LoadStyle_ActionBar",
+		},
+		tSideBar2 = {
+			strName = "SideBar2",
+			strDisplayName = "Side bar 2",
+			strContent = "ABar",
+			nContentMin = 24,
+			nContentMax = 35,
 			bShowHotkey = false,
 			bShowPopup = false,
 			bVertical = true,
@@ -149,37 +170,58 @@ end
 
 function ForgeUI_ActionBars:CreateBar(tOptions)
 	local wnd = self.wndActionBars[tOptions.strName]
-	if self.wndActionBars[tOptions.strName] == nil then
+	if wnd == nil then
 		wnd = Apollo.LoadForm(self.xmlDoc, "ForgeUI_" .. tOptions.strName, ForgeUI.HudStratum3, self)
+		self.wndActionBars[tOptions.strName] = wnd
+	end
+	
+	wnd:FindChild("Holder"):DestroyChildren()
+	
+	local tSettings = self.tSettings["t" .. tOptions.strName]
+	if tSettings ~= nil then
+		if not tSettings.bShow then return end
 	end
 	
 	ForgeUI.API_RegisterWindow(self, wnd, tOptions.strName, { bMaintainRatio = true, strDisplayName = tOptions.strDisplayName })
 	ForgeUI.API_RegisterWindow(self, wnd:FindChild("Holder"), tOptions.strName .. "_holder", { strParent = tOptions.strName, bInvisible = true, bMaintainRatio = true })
-	
-	wnd:FindChild("Holder"):DestroyChildren()
+
+	if tSettings ~= nil and tSettings.bVertical then
+		if wnd:GetWidth() > wnd:GetHeight() then
+			local nLeft, nTop, nRight, nBottom = wnd:GetAnchorOffsets()
+			wnd:SetAnchorOffsets(nLeft, nTop, nLeft + wnd:GetHeight(), nTop + wnd:GetWidth())
+		end
+	elseif tSettings ~= nil and not tSettings.bVertical then
+		if wnd:GetHeight() > wnd:GetWidth() then
+			local nLeft, nTop, nRight, nBottom = wnd:GetAnchorOffsets()
+			wnd:SetAnchorOffsets(nLeft, nTop, nLeft + wnd:GetHeight(), nTop + wnd:GetWidth())
+		end
+	end
 
 	local nButtons = tOptions.nContentMax - tOptions.nContentMin + 1
 	local i = 0
 	for id = tOptions.nContentMin, tOptions.nContentMax do
-		local wndBarButton = Apollo.LoadForm(self.xmlDoc, "ForgeUI_BarButton", wnd:FindChild("Holder"), self)
-		wndBarButton:SetData(tOptions)
-		
-		if tOptions.bShowPopup then
-			wndBarButton:AddEventHandler("MouseButtonDown", "BarButton_OnMouseDown", self)
-		end
-		
-		local wndButton = Apollo.LoadForm(self.xmlDoc, tOptions.strContent, wndBarButton:FindChild("Holder"), self)
-		wndButton:SetContentId(id)
-		
-		if tOptions.bVertical then
-			wndBarButton:SetAnchorPoints(0, (1 / nButtons) * i, 1, (1 / nButtons) * (i + 1))
-			--wndBarButton:SetAnchorOffsets(0, 0, 0, 100)
+		if tSettings ~= nil and i >= tSettings.nButtons then
 		else
-			wndBarButton:SetAnchorPoints((1 / nButtons) * i, 0, (1 / nButtons) * (i + 1), 1)
-			wndBarButton:SetAnchorOffsets(0, 0, 1, 0)
+			local wndBarButton = Apollo.LoadForm(self.xmlDoc, "ForgeUI_BarButton", wnd:FindChild("Holder"), self)
+			wndBarButton:SetData(tOptions)
+			
+			if tOptions.bShowPopup then
+				wndBarButton:AddEventHandler("MouseButtonDown", "BarButton_OnMouseDown", self)
+			end
+			
+			local wndButton = Apollo.LoadForm(self.xmlDoc, tOptions.strContent, wndBarButton:FindChild("Holder"), self)
+			wndButton:SetContentId(id)
+			
+			if tSettings ~= nil and tSettings.bVertical then
+				wndBarButton:SetAnchorPoints(0, (1 / nButtons) * i, 1, (1 / nButtons) * (i + 1))
+				wndBarButton:SetAnchorOffsets(0, 0, 0, 1)
+			else
+				wndBarButton:SetAnchorPoints((1 / nButtons) * i, 0, (1 / nButtons) * (i + 1), 1)
+				wndBarButton:SetAnchorOffsets(0, 0, 1, 0)
+			end
+			
+			ForgeUI.API_RegisterWindow(self, wndBarButton, tOptions.strName .. "_" .. i, { strParent = tOptions.strName .. "_holder", crBorder = "FFFFFFFF", bMaintainRatio = true, strDisplayName = i })
 		end
-		
-		ForgeUI.API_RegisterWindow(self, wndBarButton, tOptions.strName .. "_" .. i, { strParent = tOptions.strName .. "_holder", crBorder = "FFFFFFFF", bMaintainRatio = true, strDisplayName = i })
 		
 		i = i + 1
 	end
@@ -191,13 +233,14 @@ end
 
 function ForgeUI_ActionBars:CreateButton(tOptions)
 	local wnd = self.wndActionBars[tOptions.strName]
-	if self.wndActionBars[tOptions.strName] == nil then
+	if wnd == nil then
 		wnd = Apollo.LoadForm(self.xmlDoc, "ForgeUI_" .. tOptions.strName, ForgeUI.HudStratum3, self)
+		self.wndActionBars[tOptions.strName] = wnd
 	end
 	
-	ForgeUI.API_RegisterWindow(self, wnd, tOptions.strName, { bMaintainRatio = true, strDisplayName = tOptions.strDisplayName })
-	
 	wnd:DestroyChildren()
+	
+	ForgeUI.API_RegisterWindow(self, wnd, tOptions.strName, { bMaintainRatio = true, strDisplayName = tOptions.strDisplayName })
 	
 	local wndBarButton = Apollo.LoadForm(self.xmlDoc, "ForgeUI_BarButton", wnd, self)
 	wndBarButton:SetData(tOptions)
@@ -528,12 +571,27 @@ function ForgeUI_ActionBars:OnDocLoaded()
 end
 
 function ForgeUI_ActionBars:ForgeAPI_AfterRegistration()
+	ForgeUI.API_AddItemButton(self, "Action bars", { strContainer = "ForgeUI_General" })
+
 	Apollo.RegisterEventHandler("ShowActionBarShortcut", 	"ShowShortcutBar", self)
 end
 
 function ForgeUI_ActionBars:ForgeAPI_AfterRestore()
+	self:CreateBars()
+	
+	GameLib.SetDefaultRecallCommand(GameLib.GetDefaultRecallCommand())
+	self.wndRecallBtn:FindChild("GCBar"):SetContentId(GameLib.GetDefaultRecallCommand())
+	
+	-- settings
+	
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_General"]:FindChild("SideBar1"):FindChild("bShow"), self.tSettings.tSideBar1, "bShow", "CreateBars")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_General"]:FindChild("SideBar1"):FindChild("bVertical"), self.tSettings.tSideBar1, "bVertical", "CreateBars")
+end
+
+function ForgeUI_ActionBars:CreateBars()
 	self.wndActionBar = self:CreateBar(self.tActionBars.tActionBar)
 	self.wndSideBar1 = self:CreateBar(self.tActionBars.tSideBar1)
+	self.wndSideBar2 = self:CreateBar(self.tActionBars.tSideBar2)
 	
 	self.wndGadgetBtn = self:CreateButton(self.tActionBars.tGadgetButton)
 	
@@ -551,9 +609,6 @@ function ForgeUI_ActionBars:ForgeAPI_AfterRestore()
 	
 	self.wndRecallBtn = self:CreateButton(self.tActionBars.tRecallButton)
 	self:FillRecalls(self.wndRecallBtn)
-	
-	GameLib.SetDefaultRecallCommand(GameLib.GetDefaultRecallCommand())
-	self.wndRecallBtn:FindChild("GCBar"):SetContentId(GameLib.GetDefaultRecallCommand())
 end
 
 function ForgeUI_ActionBars:ShowShortcutBar(nBar, bIsVisible, nShortcuts)
@@ -565,11 +620,11 @@ function ForgeUI_ActionBars:ShowShortcutBar(nBar, bIsVisible, nShortcuts)
 		
 		if bIsVisible then
 			self.wndVehicleBar = self:CreateBar(self.tActionBars.tVehicleBar)
-		else
-			
-		then
-		
-		self.wndVehicleBar:Show(bIsVisible, true)
+			self.wndVehicleBar:Show(bIsVisible, true)
+		elseif self.wndVehicleBar ~= nil then
+			self.wndVehicleBar:Show(bIsVisible, true)
+			self.wndVehicleBar:Destroy()
+		end
 	end
 end
 
