@@ -35,6 +35,7 @@ function ForgeUI_ActionBars:new(o)
     self.tSettings = {
 		nSelectedMount = 0,
 		nSelectedPotion = 0,
+		bShowHotkeys = true,
 		tSideBar1 = {
 			bShow = true,
 			bVertical = true,
@@ -66,6 +67,17 @@ function ForgeUI_ActionBars:new(o)
 			strContent = "RMSBar",
 			nContentMin = 0,
 			nContentMax = 5,
+			bShowHotkey = false,
+			bShowPopup = false,
+			crBorder = "FF000000",
+			strStyler = "LoadStyle_ActionBar",
+		},
+		tSpellBar = {
+			strName = "SpellBar",
+			strDisplayName = "Spell bar",
+			strContent = "SBar",
+			nContentMin = 84,
+			nContentMax = 91,
 			bShowHotkey = false,
 			bShowPopup = false,
 			crBorder = "FF000000",
@@ -571,7 +583,10 @@ function ForgeUI_ActionBars:OnDocLoaded()
 end
 
 function ForgeUI_ActionBars:ForgeAPI_AfterRegistration()
-	ForgeUI.API_AddItemButton(self, "Action bars", { strContainer = "ForgeUI_General" })
+	local wndBtn = ForgeUI.API_AddItemButton(self, "Action bars")
+	ForgeUI.API_AddListItemToButton(self, wndBtn, "General", { strContainer = "ForgeUI_General", bDefault = true })
+	ForgeUI.API_AddListItemToButton(self, wndBtn, "Side bar 1", { strContainer = "ForgeUI_Secondary1" })
+	ForgeUI.API_AddListItemToButton(self, wndBtn, "Side bar 2", { strContainer = "ForgeUI_Secondary2" })
 
 	Apollo.RegisterEventHandler("ShowActionBarShortcut", 	"ShowShortcutBar", self)
 end
@@ -584,8 +599,11 @@ function ForgeUI_ActionBars:ForgeAPI_AfterRestore()
 	
 	-- settings
 	
-	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_General"]:FindChild("SideBar1"):FindChild("bShow"), self.tSettings.tSideBar1, "bShow", "CreateBars")
-	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_General"]:FindChild("SideBar1"):FindChild("bVertical"), self.tSettings.tSideBar1, "bVertical", "CreateBars")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_General"]:FindChild("bShowHotkeys"), self.tSettings, "bShowHotkeys", "CreateBars")
+	
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_Secondary1"]:FindChild("bShow"), self.tSettings.tSideBar1, "bShow", "CreateBars")
+	
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_Secondary2"]:FindChild("bShow"), self.tSettings.tSideBar2, "bShow", "CreateBars")
 end
 
 function ForgeUI_ActionBars:CreateBars()
@@ -612,9 +630,6 @@ function ForgeUI_ActionBars:CreateBars()
 end
 
 function ForgeUI_ActionBars:ShowShortcutBar(nBar, bIsVisible, nShortcuts)
-	-- 0 - vehicle bar
-	--Print(nBar .. " " .. tostring(bIsVisible) .. " " .. nShortcuts)
-	
 	if nBar == ActionSetLib.CodeEnumShortcutSet.VehicleBar then -- vehiclebar
 		self.wndActionBar:Show(not bIsVisible, true)
 		
@@ -623,7 +638,15 @@ function ForgeUI_ActionBars:ShowShortcutBar(nBar, bIsVisible, nShortcuts)
 			self.wndVehicleBar:Show(bIsVisible, true)
 		elseif self.wndVehicleBar ~= nil then
 			self.wndVehicleBar:Show(bIsVisible, true)
-			self.wndVehicleBar:Destroy()
+		end
+	end
+	
+	if nBar == ActionSetLib.CodeEnumShortcutSet.FloatingSpellBar then -- spellbar
+		if bIsVisible then
+			self.wndSpellBar = self:CreateBar(self.tActionBars.tSpellBar)
+			self.wndSpellBar:Show(bIsVisible, true)
+		elseif self.wndSpellBar ~= nil then
+			self.wndSpellBar:Show(bIsVisible, true)
 		end
 	end
 end
@@ -634,8 +657,7 @@ end
 function ForgeUI_ActionBars:LoadStyle_ActionBar(wnd, tOptions)
 	for strName, wndBarButton in pairs(wnd:FindChild("Holder"):GetChildren()) do
 		wndBarButton:SetBGColor(tOptions.crBorder)
-		wndBarButton:FindChild("Hotkey"):SetBGColor(tOptions.crBorder)
-		wndBarButton:FindChild("Hotkey"):Show(tOptions.bShowHotkey)
+		wndBarButton:FindChild(tOptions.strContent):SetStyleEx("DrawHotkey", self.tSettings.bShowHotkeys)
 		wndBarButton:FindChild(tOptions.strContent):SetStyle("NoClip", tOptions.bShowHotkey)
 		
 		wndBarButton:FindChild("Popup"):SetBGColor(tOptions.crBorder)
@@ -646,8 +668,7 @@ function ForgeUI_ActionBars:LoadStyle_ActionButton(wnd, tOptions)
 	local wndBarButton = wnd:FindChild("ForgeUI_BarButton")
 
 	wndBarButton:SetBGColor(tOptions.crBorder)
-	wndBarButton:FindChild("Hotkey"):SetBGColor(tOptions.crBorder)
-	wndBarButton:FindChild("Hotkey"):Show(tOptions.bShowHotkey)
+	wndBarButton:FindChild(tOptions.strContent):SetStyleEx("DrawHotkey", self.tSettings.bShowHotkeys)
 	wndBarButton:FindChild(tOptions.strContent):SetStyle("NoClip", tOptions.bShowHotkey)
 	
 	wndBarButton:FindChild("Popup"):SetBGColor(tOptions.crBorder)
