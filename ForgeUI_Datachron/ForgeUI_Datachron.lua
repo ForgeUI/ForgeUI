@@ -31,7 +31,7 @@ function ForgeUI_Datachron:new(o)
 	self.__index = self
 
 	-- mandatory 
-    self.api_version = 1
+    self.api_version = 2
 	self.version = "0.1.0"
 	self.author = "WintyBadass"
 	self.strAddonName = "ForgeUI_Datachron"
@@ -73,7 +73,7 @@ function ForgeUI_Datachron:OnDocumentReady()
 		ForgeUI = Apollo.GetAddon("ForgeUI")
 	end
 	
-	ForgeUI.RegisterAddon(self)
+	ForgeUI.API_RegisterAddon(self)
 end
 
 function ForgeUI_Datachron:ForgeAPI_AfterRegistration()
@@ -108,7 +108,7 @@ function ForgeUI_Datachron:ForgeAPI_AfterRegistration()
 	g_wndDatachron 			= Apollo.LoadForm(self.xmlDoc, "ForgeUI_Datachron", "FixedHudStratum", self) -- Do not rename. This is global and used by other forms as a parent.
 	g_wndDatachron:Show(false, true)
 	
-	self.wndMovables = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Movables", nil, self)
+	ForgeUI.API_RegisterWindow(self, g_wndDatachron, "ForgeUI_Datachron", { strDisplayName = "Datachron" })
 
 	self.wndMinimized 		= Apollo.LoadForm(self.xmlDoc, "MinimizedState", "FixedHudStratum", self)
 	self.wndZoneNameMin	 	= self.wndMinimized:FindChild("ZoneNameMin")
@@ -144,10 +144,6 @@ function ForgeUI_Datachron:ForgeAPI_AfterRegistration()
 	self:ProcessDatachronState()
 
 	Event_FireGenericEvent("Datachron_LoadPvPContent")
-end
-
-function ForgeUI_Datachron:ForgeAPI_AfterRestore()
-	ForgeUI.RegisterWindowPosition(self, g_wndDatachron, "ForgeUI_Datachron", self.wndMovables:FindChild("Movable_Datachron"))
 end
 
 function ForgeUI_Datachron:SetPath()
@@ -690,18 +686,6 @@ function ForgeUI_Datachron:OnDatachronOn()
 	else
 		self:OnRestoreDatachron()
 	end
-end
-
----------------------------------------------------------------------------------------------------
--- End Call System
----------------------------------------------------------------------------------------------------
-
----------------------------------------------------------------------------------------------------
--- ForgeUI_Movables Functions
----------------------------------------------------------------------------------------------------
-
-function ForgeUI_Datachron:OnMovableMove( wndHandler, wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom )
-	g_wndDatachron:SetAnchorOffsets(self.wndMovables:FindChild("Movable_Datachron"):GetAnchorOffsets())
 end
 
 ---------------------------------------------------------------------------------------------------

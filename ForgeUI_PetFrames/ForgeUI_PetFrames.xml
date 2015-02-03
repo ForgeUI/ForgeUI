@@ -63,12 +63,4 @@
             <Event Name="MouseButtonDown" Function="OnFrameClick"/>
         </Control>
     </Form>
-    <Form Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="ForgeUI_Movables" Border="0" Picture="0" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="0" TooltipColor="" NewWindowDepth="1" IgnoreMouse="1" Visible="0">
-        <Control Class="Window" LAnchorPoint="0.5" LAnchorOffset="-648" TAnchorPoint="0" TAnchorOffset="60" RAnchorPoint="0.5" RAnchorOffset="-423" BAnchorPoint="1" BAnchorOffset="-669" RelativeToClient="1" Font="Nameplates" Text="Pet control" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="Movable_PetControl" Border="0" Picture="1" SwallowMouseClicks="1" Moveable="1" Escapable="0" Overlapped="0" TooltipColor="" TextId="" DT_CENTER="1" DT_VCENTER="1" NewWindowDepth="1">
-            <Event Name="WindowMove" Function="OnMovableMove"/>
-        </Control>
-        <Control Class="Window" LAnchorPoint="0.3" LAnchorOffset="-347" TAnchorPoint="0.75" TAnchorOffset="-562" RAnchorPoint="0.3" RAnchorOffset="-122" BAnchorPoint="0.75" BAnchorOffset="-461" RelativeToClient="1" Font="Nameplates" Text="Pet frames" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="Movable_PetFrames" Border="0" Picture="1" SwallowMouseClicks="1" Moveable="1" Escapable="0" Overlapped="0" TooltipColor="" TextId="" DT_CENTER="1" DT_VCENTER="1" NewWindowDepth="1" Sizable="1">
-            <Event Name="WindowMove" Function="OnMovableMove"/>
-        </Control>
-    </Form>
 </Forms>

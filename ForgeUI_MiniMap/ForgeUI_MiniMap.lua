@@ -26,13 +26,17 @@ function ForgeUI_MiniMap:new(o)
 	Apollo.RegisterEventHandler("UnitDestroyed", 	"OnUnitDestroyed", self)
 
     -- mandatory 
-    self.api_version = 1
+    self.api_version = 2
 	self.version = "0.1.0"
 	self.author = "WintyBadass"
 	self.strAddonName = "ForgeUI_MiniMap"
 	self.strDisplayName = "MiniMap"
 	
 	self.wndContainers = {}
+	
+	self.tStylers = {
+		["LoadStyle_Minimap"] = self,
+	}
 	
 	-- optional
 	self.settings_version = 1
@@ -45,17 +49,17 @@ function ForgeUI_MiniMap:new(o)
 			HostilePlayer = 	{ strName = "Hostile player", bShow = true, crObject = "FFFF0000" , strIcon = "ClientSprites:MiniMapFriendDiamond", objectType = "eObjectTypeHostilePlayer" },
 			Hostile = 			{ strName = "Hostile NPC", bShow = true, crObject = "FFFF0000" , objectType = "eObjectTypeNPC" },
 			Neutral = 			{ strName = "Neutral NPC", bShow = true, crObject = "FFFFCC00" , objectType = "eObjectTypeNPC" },
-			InstancePortal = 	{ strName = "Instance portal", bShow = false, strIcon = "IconSprites:Icon_MapNode_Map_Portal", objectType = "eObjectTypeNPC" },
-			Vendor = 			{ strName = "Vendor", bShow = false, strIcon = "IconSprites:Icon_MapNode_Map_Vendor", objectType = "eObjectTypeVendor" },
-			Dye	= 				{ strName = "Dye", bShow = false, strIcon = "IconSprites:Icon_MapNode_Map_DyeSpecialist", objectType = "eObjectTypeVendor" },
-			Mail = 				{ strName = "Mail", bShow = false, strIcon = "IconSprites:Icon_MapNode_Map_Mailbox", objectType = "eObjectTypeOthers" },
-			FlightPath = 		{ strName = "Flight path", bShow = true, strIcon = "IconSprites:Icon_MapNode_Map_Taxi", objectType = "eObjectTypeOthers" },
-			Mining = 			{ strName = "Mining", bShow = false, strIcon = "IconSprites:Icon_MapNode_Map_Node_Mining", objectType = "eObjectTypeHarvest" },
-			Relic = 			{ strName = "Relic hunting", bShow = false, strIcon = "IconSprites:Icon_MapNode_Map_Node_Relic", objectType = "eObjectTypeHarvest" },
-			Harvest = 			{ strName = "Harvesting", bShow = false, strIcon = "IconSprites:Icon_MapNode_Map_Node_Plant", objectType = "eObjectTypeHarvest" },
-			Survivalist = 		{ strName = "Survivalist", bShow = false, strIcon = "IconSprites:Icon_MapNode_Map_Node_Tree", objectType = "eObjectTypeHarvest" },
-			QuestNewDaily = 	{ strName = "Daily quest", bShow = true, strIcon = "IconSprites:Icon_MapNode_Map_Quest", objectType = "eObjectTypeQuest" },
-			QuestNew = 			{ strName = "Quest", bShow = true, strIcon = "IconSprites:Icon_MapNode_Map_Quest", objectType = "eObjectTypeQuest" }
+			InstancePortal = 	{ strName = "Instance portal", bShow = false, crObject = "FFFFFFFF", strIcon = "IconSprites:Icon_MapNode_Map_Portal", objectType = "eObjectTypeNPC" },
+			Vendor = 			{ strName = "Vendor", bShow = false, crObject = "FFFFFFFF", strIcon = "IconSprites:Icon_MapNode_Map_Vendor", objectType = "eObjectTypeVendor" },
+			Dye	= 				{ strName = "Dye", bShow = false, crObject = "FFFFFFFF", strIcon = "IconSprites:Icon_MapNode_Map_DyeSpecialist", objectType = "eObjectTypeVendor" },
+			Mail = 				{ strName = "Mail", bShow = false, crObject = "FFFFFFFF", strIcon = "IconSprites:Icon_MapNode_Map_Mailbox", objectType = "eObjectTypeOthers" },
+			FlightPath = 		{ strName = "Flight path", bShow = true, crObject = "FFFFFFFF", strIcon = "IconSprites:Icon_MapNode_Map_Taxi", objectType = "eObjectTypeOthers" },
+			Mining = 			{ strName = "Mining", bShow = false, crObject = "FFFFFFFF", strIcon = "IconSprites:Icon_MapNode_Map_Node_Mining", objectType = "eObjectTypeHarvest" },
+			Relic = 			{ strName = "Relic hunting", bShow = false, crObject = "FFFFFFFF", strIcon = "IconSprites:Icon_MapNode_Map_Node_Relic", objectType = "eObjectTypeHarvest" },
+			Harvest = 			{ strName = "Harvesting", bShow = false, crObject = "FFFFFFFF", strIcon = "IconSprites:Icon_MapNode_Map_Node_Plant", objectType = "eObjectTypeHarvest" },
+			Survivalist = 		{ strName = "Survivalist", bShow = false, crObject = "FFFFFFFF", strIcon = "IconSprites:Icon_MapNode_Map_Node_Tree", objectType = "eObjectTypeHarvest" },
+			QuestNewDaily = 	{ strName = "Daily quest", bShow = true, crObject = "FFFFFFFF", strIcon = "IconSprites:Icon_MapNode_Map_Quest", objectType = "eObjectTypeQuest" },
+			QuestNew = 			{ strName = "Quest", bShow = true, crObject = "FFFFFFFF", strIcon = "IconSprites:Icon_MapNode_Map_Quest", objectType = "eObjectTypeQuest" }
 		}
 	}
 	
@@ -90,7 +94,7 @@ function ForgeUI_MiniMap:OnDocLoaded()
 		ForgeUI = Apollo.GetAddon("ForgeUI")
 	end
 	
-	ForgeUI.RegisterAddon(self)
+	ForgeUI.API_RegisterAddon(self)
 end
 
 function ForgeUI_MiniMap:ForgeAPI_AfterRegistration()
@@ -109,13 +113,20 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRegistration()
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "ForgeUI_MiniMap", "FixedHudStratumLow", self)
 	self.wndMiniMap = self.wndMain:FindChild("MiniMapWindow")
 	
+	ForgeUI.API_RegisterWindow(self, self.wndMain, "ForgeUI_Minimap", { strDisplayName = "Minimap"})
 	
 	self:CreateOverlayObjectTypes()
 	
-	self.wndMovables = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Movables", nil, self)
-	
 	-- main window
-	ForgeUI.AddItemButton(self, "Minimap", "ForgeUI_Container")
+	ForgeUI.API_AddItemButton(self, "Minimap", { strContainer = "ForgeUI_Container" })
+	
+	-- build minimap window
+	local l_time = GameLib.GetLocalTime()
+	self.wndMain:FindChild("Clock"):SetText(string.format("%02d:%02d", l_time.nHour, l_time.nMinute))
+	self:UpdateZoneName()
+	
+	self:HandleNewUnits()
+	Apollo.RegisterTimerHandler("TimeUpdateTimer", 	"OnUpdateTimer", self)
 end
 
 function ForgeUI_MiniMap:OnUpdateTimer()
@@ -356,76 +367,32 @@ end
 
 -- restore / save
 function ForgeUI_MiniMap:ForgeAPI_AfterRestore()
-	ForgeUI.RegisterWindowPosition(self, self.wndMain, "ForgeUI_MiniMap", self.wndMovables:FindChild("Movable_MiniMap"))
-
 	self.wndMiniMap:SetZoomLevel(self.tSettings.nZoomLevel)
 	self.wndMain:FindChild("NSEW"):Show(self.tSettings.bShowNsew, true)
 	
-	-- build minimap window
-	local l_time = GameLib.GetLocalTime()
-	self.wndMain:FindChild("Clock"):SetText(string.format("%02d:%02d", l_time.nHour, l_time.nMinute))
-	self:UpdateZoneName()
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.ForgeUI_Container:FindChild("bShowNsew"), self.tSettings, "bShowNsew", "LoadStyle_Minimap")
 	
-	self:HandleNewUnits()
-	Apollo.RegisterTimerHandler("TimeUpdateTimer", 	"OnUpdateTimer", self)
-end
-
-function ForgeUI_MiniMap:ForgeAPI_LoadOptions()
-	self.wndContainers.ForgeUI_Container:FindChild("bShowNsew"):SetCheck(self.tSettings.bShowNsew)
-	self:FillContainer()
-end
-
-function ForgeUI_MiniMap:FillContainer()
 	local wndHolder = self.wndContainers.ForgeUI_Container:FindChild("Holder")
 	for strName,  tMarker in pairs(self.tSettings.tMarkers) do
-		local wndMarker = Apollo.LoadForm(self.xmlDoc, "ForgeUI_OptionContainer", wndHolder, self)
+		local wndMarker = Apollo.LoadForm(self.xmlDoc, "ForgeUI_OptionContainer", wndHolder, ForgeUI.ForgeUIInst)
 		
 		wndMarker:FindChild("strName"):SetText(tMarker.strName)
-		wndMarker:FindChild("bShow"):SetCheck(tMarker.bShow)
-		wndMarker:FindChild("crObject"):SetText(string.sub(tMarker.crObject or "FFFFFFFF", 3, 8))
-		wndMarker:FindChild("crObject"):SetTextColor(tMarker.crObject or "FFFFFFFF")
+		ForgeUI.API_RegisterCheckBox(self, wndMarker:FindChild("bShow"), self.tSettings.tMarkers[strName], "bShow", "UpdateAllUnits")
+		ForgeUI.API_RegisterColorBox(self, wndMarker:FindChild("crObject"), self.tSettings.tMarkers[strName], "crObject", false, "UpdateAllUnits")
 		
 		wndMarker:SetData(strName)
 	end
 	wndHolder:ArrangeChildrenVert()
+	
+	self.tStylers["LoadStyle_Minimap"]["LoadStyle_Minimap"](self)
+	self:UpdateAllUnits()
 end
 
 function ForgeUI_MiniMap:ForgeAPI_BeforeSave()
 	self.tSettings.nZoomLevel = self.wndMiniMap:GetZoomLevel()
 end
-
----------------------------------------------------------------------------------------------------
--- ForgeUI_Movables Functions
----------------------------------------------------------------------------------------------------
-
-function ForgeUI_MiniMap:OnMovableMove( wndHandler, wndControl, nOldLeft, nOldTop, nOldRight, nOldBottom )
-	self.wndMain:SetAnchorOffsets(self.wndMovables:FindChild("Movable_MiniMap"):GetAnchorOffsets())
-end
-
----------------------------------------------------------------------------------------------------
--- ForgeUI_OptionContainer Functions
----------------------------------------------------------------------------------------------------
-
-function ForgeUI_MiniMap:OnOptionsChanged( wndHandler, wndControl )
-	local strName = wndControl:GetName()
-	local strType = wndControl:GetParent():GetName()
-	local strMarker = wndControl:GetParent():GetParent():GetParent():GetData()
-	
-	if strName == "bShowNsew" then
-		self.tSettings.bShowNsew = wndControl:IsChecked()
-		self.wndMain:FindChild("NSEW"):Show(self.tSettings.bShowNsew, true)
-		return
-	end
-	
-	if strType == "CheckBox" then
-		self.tSettings.tMarkers[strMarker][strName] = wndControl:IsChecked()
-	end
-	
-	if strType == "ColorBox" then
-		ForgeUI.ColorBoxChange(self, wndControl, self.tSettings.tMarkers[strMarker], strName)
-	end
-	
-	self:UpdateAllUnits()
+function ForgeUI_MiniMap:LoadStyle_Minimap()
+	self.wndMain:FindChild("NSEW"):Show(self.tSettings.bShowNsew, true)
 end
 
 -----------------------------------------------------------------------------------------------
