@@ -888,14 +888,14 @@ function ForgeUI:OnSave(eType)
 end
 
 function ForgeUI:OnRestore(eType, tData)
-	if tData.__settings ~= nil then
-		tSettings = ForgeUI.CopyTable(tSettings, tData.__settings)
-	end
-	
 	if tData._addons ~= nil then
 		for name, data in pairs(tData._addons) do
 			tSettings_addons[name] = data
 		end
+	end
+
+	if tData.__settings ~= nil then
+		tSettings = ForgeUI.CopyTable(tSettings, tData.__settings)
 	end
 	
 	if tData.___windows ~= nil then
