@@ -450,7 +450,7 @@ end
 
 function ForgeUI_UnitFrames:UpdateStyle_PlayerFrame()
 	unit = GameLib.GetPlayerUnit()
-	if unit == nil then return end
+	if not unit or not self.wndPlayerFrame then return end
 
 	self.wndPlayerFrame:FindChild("Name"):SetText(unit:GetName())
 	self.wndPlayerFrame:FindChild("Name"):SetTextColor(ForgeUI.tSettings.tClassColors["cr" .. tClassEnums[unit:GetClassId()]])

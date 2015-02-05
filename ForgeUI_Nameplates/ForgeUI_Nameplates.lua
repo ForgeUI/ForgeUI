@@ -998,6 +998,20 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	wnd.marker:SetBGColor(self.tSettings.tTarget.crMarker) 
 	
 	tNameplate.wndNameplate:SetAnchorOffsets(-(self.tSettings.nBarWidth /2), -30, (self.tSettings.nBarWidth / 2), 0)
+	
+	if self.tSettings.bClickable then
+		wnd.bar:AddEventHandler("MouseButtonDown", "OnNameplateClick", self)
+		wnd.name:AddEventHandler("MouseButtonDown", "OnNameplateClick", self)
+		wnd.guild:AddEventHandler("MouseButtonDown", "OnNameplateClick", self)
+	else
+		wnd.bar:RemoveEventHandler("MouseButtonDown", "OnNameplateClick", self)
+		wnd.name:RemoveEventHandler("MouseButtonDown", "OnNameplateClick", self)
+		wnd.guild:RemoveEventHandler("MouseButtonDown", "OnNameplateClick", self)
+	end
+	
+	wnd.bar:SetStyle("IgnoreMouse", not self.tSettings.bClickable)
+	wnd.name:SetStyle("IgnoreMouse", not self.tSettings.bClickable)
+	wnd.guild:SetStyle("IgnoreMouse", not self.tSettings.bClickable)
 end
 
 function ForgeUI_Nameplates:UpdateStyle_Nameplate(tNameplate)
@@ -1015,10 +1029,10 @@ function ForgeUI_Nameplates:UpdateStyle_Nameplate(tNameplate)
 	
 	if wnd.guild:IsShown() then
 		nLeft, nTop, nRight, nBottom = wnd.name:GetAnchorOffsets()
-		wnd.name:SetAnchorOffsets(nLeft, -15, nRight, -30)
+		wnd.name:SetAnchorOffsets(nLeft, -12, nRight, -30)
 	else
 		nLeft, nTop, nRight, nBottom = wnd.name:GetAnchorOffsets()
-		wnd.name:SetAnchorOffsets(nLeft, 0, nRight, -15)
+		wnd.name:SetAnchorOffsets(nLeft, 0, nRight, -12)
 	end
 end
 
