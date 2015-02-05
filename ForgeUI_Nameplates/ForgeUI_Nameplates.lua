@@ -71,6 +71,7 @@ function ForgeUI_Nameplates:new(o)
 		nBarWidth = 100,
 		nHpBarHeight = 7,
 		nShieldBarHeight = 4,
+		nAbsorbBarHeight = 9,
 		bShowQuestIcons = true,
 		bShowInfo = false,
 		bClickable = true,
@@ -998,6 +999,7 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	wnd.marker:SetBGColor(self.tSettings.tTarget.crMarker) 
 	
 	tNameplate.wndNameplate:SetAnchorOffsets(-(self.tSettings.nBarWidth /2), -30, (self.tSettings.nBarWidth / 2), 0)
+	wnd.absorbBar:SetAnchorOffsets(1, 1, -1, self.tSettings.nAbsorbBarHeight)
 	
 	if self.tSettings.bClickable then
 		wnd.bar:AddEventHandler("MouseButtonDown", "OnNameplateClick", self)
