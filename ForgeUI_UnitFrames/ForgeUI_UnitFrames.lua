@@ -74,7 +74,7 @@ function ForgeUI_UnitFrames:new(o)
 			crAbsorbValue = "FFFFFFFF"
 		},
 		tTotFrame = {
-			bShowThreat = true,
+			bShowThreat = false,
 			crThreatLow = "FF33CC33",
 			crThreatMedium = "FFFFFF00",
 			crThreatHigh = "FFFF0000",
@@ -165,6 +165,7 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	ForgeUI.API_RegisterWindow(self, self.wndToTFrame, "ForgeUI_ToTFrame", { strDisplayName = "ToT frame" })
 	
 	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame, "ForgeUI_FocusFrame", { strDisplayName = "Focus frame" })
+	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame:FindChild("InterruptArmor"), "ForgeUI_FocusFrame_IA", { strParent = "ForgeUI_FocusFrame", strDisplayName = "IA", crBorder = "FFFFFFFF", bMaintainRatio = true })
 	
 	ForgeUI.API_RegisterWindow(self, self.wndHazardBreath, "ForgeUI_wndHazardBreath", { strDisplayName = "Breath" })
 	ForgeUI.API_RegisterWindow(self, self.wndHazardHeat, "ForgeUI_wndHazardHeat", { strDisplayName = "Heat" })
@@ -264,6 +265,7 @@ function ForgeUI_UnitFrames:UpdateToTFrame(unitSource)
 	end
 	
 	self:UpdateHPBar(unit, self.wndToTFrame)
+	
 	self.wndToTFrame:SetData(unit)
 	if not self.wndToTFrame:IsShown() then
 		self.wndToTFrame:Show(true)
@@ -284,6 +286,8 @@ function ForgeUI_UnitFrames:UpdateFocusFrame(unitSource)
 	self.tStylers["RefreshStyle_FocusFrame"]["RefreshStyle_FocusFrame"](self, unit)
 	
 	self:UpdateHPBar(unit, self.wndFocusFrame)
+	self:UpdateInterruptArmor(unit, self.wndFocusFrame)
+	
 	self.wndFocusFrame:SetData(unit)
 	if not self.wndFocusFrame:IsShown() then
 		self.wndFocusFrame:Show(true)
