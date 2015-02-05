@@ -311,11 +311,12 @@ function ForgeUI_ActionBars:FillMounts(wnd)
 	
 	wndList:DestroyChildren()
 
-	local tMountList = AbilityBook.GetAbilitiesList(Spell.CodeEnumSpellTag.Mount) or {}
+	local tMountList = AbilityBook.GetAbilitiesList(Spell.CodeEnumSpellTag.Mount)
 	local tSelectedSpellObj = nil
 
 	local nCount = 0
 	for idx, tMount in pairs(tMountList) do
+	
 		nCount = nCount + 1
 		
 		local tSpellObject = tMount.tTiers[1].splObject
@@ -510,13 +511,15 @@ function ForgeUI_ActionBars:FillPotions(wnd)
 		wndCurr:SetTooltipDoc(nil)
 		Tooltip.GetItemTooltipForm(self, wndCurr, tData.itemObject, {})
 	end
+	
+	GameLib.SetShortcutPotion(self.tSettings.nSelectedPotion)
 
 	local nLeft, nTop, nRight, nBottom = wndPopup:GetAnchorOffsets()
 	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize), nRight, nBottom)
 	
 	wndList:ArrangeChildrenVert()
 	
-	--self.wndPotionBar:Show(nCount > 0)
+	self.wndPotionBtn:Show(nCount > 0)
 end
 
 -- path
@@ -592,11 +595,6 @@ function ForgeUI_ActionBars:ForgeAPI_AfterRegistration()
 end
 
 function ForgeUI_ActionBars:ForgeAPI_AfterRestore()
-	self:CreateBars()
-	
-	GameLib.SetDefaultRecallCommand(GameLib.GetDefaultRecallCommand())
-	self.wndRecallBtn:FindChild("GCBar"):SetContentId(GameLib.GetDefaultRecallCommand())
-	
 	-- settings
 	
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_General"]:FindChild("bShowHotkeys"), self.tSettings, "bShowHotkeys", "CreateBars")
@@ -604,6 +602,25 @@ function ForgeUI_ActionBars:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_Secondary1"]:FindChild("bShow"), self.tSettings.tSideBar1, "bShow", "CreateBars")
 	
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_Secondary2"]:FindChild("bShow"), self.tSettings.tSideBar2, "bShow", "CreateBars")
+	
+	if GameLib.GetPlayerUnit() then
+		self:OnCharacterCreated()
+	else
+		Apollo.RegisterEventHandler("CharacterCreated", 	"OnCharacterCreated", self)
+	end
+end
+
+function ForgeUI_ActionBars:OnCharacterCreated()
+	self.timer = ApolloTimer.Create(1.0, true, "OnTimer", self)
+end
+
+function ForgeUI_ActionBars:OnTimer()
+	self:CreateBars()
+	
+	GameLib.SetDefaultRecallCommand(GameLib.GetDefaultRecallCommand())
+	self.wndRecallBtn:FindChild("GCBar"):SetContentId(GameLib.GetDefaultRecallCommand())
+	
+	self.timer:Stop()
 end
 
 function ForgeUI_ActionBars:CreateBars()
