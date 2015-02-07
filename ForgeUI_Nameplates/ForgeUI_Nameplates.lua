@@ -76,6 +76,7 @@ function ForgeUI_Nameplates:new(o)
 		bShowInfo = false,
 		bClickable = true,
 		bAlwaysShowQuests = true,
+		bReposition = false,
 		tTarget = {
 			bShow = true,
 			bShowBars = true,
@@ -679,6 +680,10 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 	tNameplate.bOnScreen = wndNameplate:IsOnScreen()
 	tNameplate.bOccluded = wndNameplate:IsOccluded()
 	
+	if self.tSettings.bReposition and tNameplate.unitType == "Hostile" and not tNameplate.bOnScreen or tNameplate.bRepositioned then
+		self:Reposition(tNameplate)
+	end
+	
 	local bInRange = false
 	
 	local bVisible = tNameplate.bOnScreen
@@ -697,6 +702,24 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 	end
 	
 	return bVisible
+end
+
+function ForgeUI_Nameplates:Reposition(tNameplate)
+	if tNameplate.wndReposition:IsOnScreen() and tNameplate.bRepositioned then
+		tNameplate.bRepositioned = false
+		
+		tNameplate.wndReposition:SetUnit(tNameplate.unitOwner, 0)
+		tNameplate.wndNameplate:SetUnit(tNameplate.unitOwner, 1)
+		
+		tNameplate.bOnScreen = true
+	elseif tNameplate.wndReposition:IsOnScreen() and not tNameplate.bRepositioned then
+		tNameplate.bRepositioned = true
+		
+		tNameplate.wndReposition:SetUnit(tNameplate.unitOwner, 1)
+		tNameplate.wndNameplate:SetUnit(tNameplate.unitOwner, 0)
+		
+		tNameplate.bOnScreen = true
+	end
 end
 
 -- update style
@@ -803,8 +826,10 @@ end
 
 function ForgeUI_Nameplates:GenerateNewNameplate(unitNew)
 	local wnd = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Nameplate", "InWorldHudStratum", self)
+	local wndReposition = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Reposition", "InWorldHudStratum", self)
 	
 	wnd:SetUnit(unitNew, 1)
+	wndReposition:SetUnit(unitNew, 0)
 	
 	local tNameplate = {
 		unitOwner 		= unitNew,
@@ -827,6 +852,7 @@ function ForgeUI_Nameplates:GenerateNewNameplate(unitNew)
 		bNeedUpdate		= false,
 		
 		wndNameplate 	= wnd,
+		wndReposition	= wndReposition,
 		wnd = {
 			name = wnd:FindChild("Name"),
 			guild = wnd:FindChild("Guild"),
