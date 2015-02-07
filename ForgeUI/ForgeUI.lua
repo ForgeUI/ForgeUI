@@ -45,7 +45,7 @@ function ForgeUI:new(o)
 	
 	 -- mandatory 
     self.api_version = 2
-	self.version = "0.3.0"
+	self.version = "0.3.1"
 	self.author = "WintyBadass"
 	self.strAddonName = "~ForgeUI"
 	self.strDisplayName = "ForgeUI"
