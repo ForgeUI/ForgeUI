@@ -394,9 +394,9 @@ function ForgeUI_Nameplates:UpdateName(tNameplate)
 		end
 	end
 	
+	tNameplate.bShowQuest = bShowQuest and self.tSettings.bAlwaysShowQuests
 	if questIcon:IsShown() ~= bShowQuest then
 		questIcon:Show(bShowQuest, true)
-		tNameplate.bShowQuest = bShowQuest and self.tSettings.bAlwaysShowQuests
 	end
 end
 
@@ -704,6 +704,7 @@ function ForgeUI_Nameplates:UpdateStyles()
 	for _, tNameplate in pairs(self.tNameplates) do
 		self.tStylers["LoadStyle_Nameplate"]["LoadStyle_Nameplate"](self, tNameplate)
 		self.tStylers["UpdateStyle_Nameplate"]["UpdateStyle_Nameplate"](self, tNameplate)
+		self:UpdateNameplate(tNameplate)
 	end
 end
 
