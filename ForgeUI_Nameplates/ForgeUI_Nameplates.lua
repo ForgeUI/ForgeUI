@@ -75,6 +75,8 @@ function ForgeUI_Nameplates:new(o)
 		bShowQuestIcons = true,
 		bShowInfo = false,
 		bClickable = true,
+		bAlwaysShowQuests = false,
+		bReposition = false,
 		tTarget = {
 			bShow = true,
 			bShowBars = true,
@@ -284,18 +286,6 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRegistration()
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Neutral NPC", { strContainer = "Container_Neutral" })
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Hostile NPC", { strContainer = "Container_Hostile" })
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Player pet", { strContainer = "Container_PlayerPet" })
-	--ForgeUI.AddItemListToButton(self, wndItemButton, {
-	--	{ strDisplayName = "General", strContainer = "Container_General", bDefault = true },
-	--	{ strDisplayName = "Target", strContainer = "Container_Target" },
-	--	{ strDisplayName = "Player", strContainer = "Container_Player" },
-	--	{ strDisplayName = "Friendly player", strContainer = "Container_FriendlyPlayer" },
-	--	{ strDisplayName = "Party player", strContainer = "Container_PartyPlayer" },
-	--	{ strDisplayName = "Hostile player", strContainer = "Container_HostilePlayer" },
-	--	{ strDisplayName = "Friendly NPC", strContainer = "Container_Friendly" },
-	--	{ strDisplayName = "Neutral NPC", strContainer = "Container_Neutral" },
-	--	{ strDisplayName = "Hostile NPC", strContainer = "Container_Hostile" },
-	--	{ strDisplayName = "Player pet", strContainer = "Container_PlayerPet" }
-	--})
 end
 
 -----------------------------------------------------------------------------------------------
@@ -390,7 +380,7 @@ function ForgeUI_Nameplates:UpdateName(tNameplate)
 	local challangeIcon = tNameplate.wnd.challange
 	local bShowQuest = false
 	local bShowChalange = false
-	if self.tSettings.bShowQuestIcons then
+	if self.tSettings.bShowQuestIcons or self.tSettings.bAlwaysShowQuests then
 		local tRewardInfo = tNameplate.unitOwner:GetRewardInfo()
 		if tRewardInfo == nil then return end
 		
@@ -400,17 +390,14 @@ function ForgeUI_Nameplates:UpdateName(tNameplate)
 			end
 			
 			if reward.strType == "Challange" then
-				bShowChalange = true
+				bShowQuest = true
 			end
 		end
 	end
 	
+	tNameplate.bShowQuest = bShowQuest and self.tSettings.bAlwaysShowQuests
 	if questIcon:IsShown() ~= bShowQuest then
 		questIcon:Show(bShowQuest, true)
-	end
-	
-	if challangeIcon:IsShown() ~= bShowChalange then
-		challangeIcon:Show(bShowChalange, true)
 	end
 end
 
@@ -693,9 +680,16 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 	tNameplate.bOnScreen = wndNameplate:IsOnScreen()
 	tNameplate.bOccluded = wndNameplate:IsOccluded()
 	
+	if self.tSettings.bReposition and tNameplate.unitType == "Hostile" and not tNameplate.bOnScreen or tNameplate.bRepositioned then
+		self:Reposition(tNameplate)
+	end
+	
+	local bInRange = false
+	
 	local bVisible = tNameplate.bOnScreen
-	if bVisible then bVisible = self.tSettings["t" .. tNameplate.unitType].bShow end
+	if bVisible then bVisible = self.tSettings["t" .. tNameplate.unitType].bShow or tNameplate.bShowQuest end
 	if bVisible then bVisible = self:IsNameplateInRange(tNameplate) end
+	
 	if bVisible and self.tSettings.tFriendly.bOnlyImportantNPCs and tNameplate.unitType == "Friendly" then bVisible = tNameplate.bIsImportant end
 	if bVisible and self.tSettings.bUseOcclusion then bVisible = not tNameplate.bOccluded end
 	if bVisible then bVisible = not unitOwner:IsDead() end
@@ -710,11 +704,30 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 	return bVisible
 end
 
+function ForgeUI_Nameplates:Reposition(tNameplate)
+	if tNameplate.wndReposition:IsOnScreen() and tNameplate.bRepositioned then
+		tNameplate.bRepositioned = false
+		
+		tNameplate.wndReposition:SetUnit(tNameplate.unitOwner, 0)
+		tNameplate.wndNameplate:SetUnit(tNameplate.unitOwner, 1)
+		
+		tNameplate.bOnScreen = true
+	elseif tNameplate.wndReposition:IsOnScreen() and not tNameplate.bRepositioned then
+		tNameplate.bRepositioned = true
+		
+		tNameplate.wndReposition:SetUnit(tNameplate.unitOwner, 1)
+		tNameplate.wndNameplate:SetUnit(tNameplate.unitOwner, 0)
+		
+		tNameplate.bOnScreen = true
+	end
+end
+
 -- update style
 function ForgeUI_Nameplates:UpdateStyles()
 	for _, tNameplate in pairs(self.tNameplates) do
 		self.tStylers["LoadStyle_Nameplate"]["LoadStyle_Nameplate"](self, tNameplate)
 		self.tStylers["UpdateStyle_Nameplate"]["UpdateStyle_Nameplate"](self, tNameplate)
+		self:UpdateNameplate(tNameplate)
 	end
 end
 
@@ -813,8 +826,10 @@ end
 
 function ForgeUI_Nameplates:GenerateNewNameplate(unitNew)
 	local wnd = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Nameplate", "InWorldHudStratum", self)
+	local wndReposition = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Reposition", "InWorldHudStratum", self)
 	
 	wnd:SetUnit(unitNew, 1)
+	wndReposition:SetUnit(unitNew, 0)
 	
 	local tNameplate = {
 		unitOwner 		= unitNew,
@@ -837,6 +852,7 @@ function ForgeUI_Nameplates:GenerateNewNameplate(unitNew)
 		bNeedUpdate		= false,
 		
 		wndNameplate 	= wnd,
+		wndReposition	= wndReposition,
 		wnd = {
 			name = wnd:FindChild("Name"),
 			guild = wnd:FindChild("Guild"),
@@ -1031,7 +1047,7 @@ function ForgeUI_Nameplates:UpdateStyle_Nameplate(tNameplate)
 	
 	if wnd.guild:IsShown() then
 		nLeft, nTop, nRight, nBottom = wnd.name:GetAnchorOffsets()
-		wnd.name:SetAnchorOffsets(nLeft, -12, nRight, -30)
+		wnd.name:SetAnchorOffsets(nLeft, -15, nRight, -27)
 	else
 		nLeft, nTop, nRight, nBottom = wnd.name:GetAnchorOffsets()
 		wnd.name:SetAnchorOffsets(nLeft, 0, nRight, -12)
