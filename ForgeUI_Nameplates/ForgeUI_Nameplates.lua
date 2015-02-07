@@ -75,7 +75,7 @@ function ForgeUI_Nameplates:new(o)
 		bShowQuestIcons = true,
 		bShowInfo = false,
 		bClickable = true,
-		bAlwaysShowQuests = true,
+		bAlwaysShowQuests = false,
 		bReposition = false,
 		tTarget = {
 			bShow = true,
