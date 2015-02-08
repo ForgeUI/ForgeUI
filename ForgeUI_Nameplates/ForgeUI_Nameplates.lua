@@ -964,7 +964,7 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 			end
 			if string.sub(key, 1, 1) == "n" then
 				if self.wndContainers["Container_General"]:FindChild(tostring(key)) ~= nil then
-					ForgeUI.RegisterNumberBox(self, self.wndContainers["Container_General"]:FindChild(tostring(key)), self.tSettings, tostring(key), {}, "UpdateStyles")
+					ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container_General"]:FindChild(tostring(key)), self.tSettings, tostring(key), {}, "UpdateStyles")
 				end
 			end
 		else
@@ -982,7 +982,7 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 					end
 					if string.sub(option, 1, 1) == "n" then
 						if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil then
-							ForgeUI.RegisterNumberBox(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)), self.tSettings[key], tostring(option), {}, "UpdateStyles")
+							ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)), self.tSettings[key], tostring(option), {}, "UpdateStyles")
 						end
 					end
 				end

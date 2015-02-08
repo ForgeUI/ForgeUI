@@ -780,7 +780,7 @@ end
 -- Number box
 -----------------------------------------------------------------------------------------------
 
-function ForgeUI.RegisterNumberBox(tAddon, wndControl, tSettings, strValue, tOptions, strCallback)
+function ForgeUI.API_RegisterNumberBox(tAddon, wndControl, tSettings, strValue, tOptions, strCallback)
 	local tData = {
 		tAddon = tAddon,
 		tSettings = tSettings,
