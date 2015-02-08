@@ -56,6 +56,7 @@ function ForgeUI:new(o)
 	self.settings_version = 1
     self.tSettings = {
 		crMain = "FFFF0000",
+		crTest = "FFFFFFFF",
 		tClassColors = {
 			crEngineer = "FFEFAB48",
 			crEsper = "FF1591DB",
@@ -154,6 +155,8 @@ function ForgeUI:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crSpellslinger"), self.tSettings.tClassColors, "crSpellslinger", false)
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crStalker"), self.tSettings.tClassColors, "crStalker", false)
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crWarrior"), self.tSettings.tClassColors, "crWarrior", false)
+	
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_Home:FindChild("TextColorBox"), self.tSettings, "crTest")
 end
 
 -----------------------------------------------------------------------------------------------
