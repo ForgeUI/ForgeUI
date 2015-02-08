@@ -37,6 +37,8 @@ function ForgeUI_CastBars:new(o)
 		crBorder = "FF000000",
 		crBackground = "FF101010",
 		crCastBar = "FF272727",
+		crCastBarTarget = "FF272727",
+		crCastBarFocus = "FF272727",
 		crMooBar = "FFBC00BB",
 		crDuration = "FFFFCC00",
 		crText = "FFFFFFFF"
@@ -281,7 +283,7 @@ end
 function ForgeUI_CastBars:UpdateStyle_TargetCastBar()
 	self.wndTargetCastBar:FindChild("Border"):SetBGColor(self.tSettings.crBorder)
 	self.wndTargetCastBar:FindChild("Background"):SetBGColor(self.tSettings.crBackground)
-	self.wndTargetCastBar:FindChild("CastBar"):SetBarColor(self.tSettings.crCastBar)
+	self.wndTargetCastBar:FindChild("CastBar"):SetBarColor(self.tSettings.crCastBarTarget)
 	self.wndTargetCastBar:FindChild("MoOBar"):SetBarColor(self.tSettings.crMooBar)
 	self.wndTargetCastBar:FindChild("CastTime"):SetTextColor(self.tSettings.crText)
 	self.wndTargetCastBar:FindChild("SpellName"):SetTextColor(self.tSettings.crText)
@@ -304,7 +306,7 @@ end
 function ForgeUI_CastBars:UpdateStyle_FocusCastBar()
 	self.wndFocusCastBar:FindChild("Border"):SetBGColor(self.tSettings.crBorder)
 	self.wndFocusCastBar:FindChild("Background"):SetBGColor(self.tSettings.crBackground)
-	self.wndFocusCastBar:FindChild("CastBar"):SetBarColor(self.tSettings.crCastBar)
+	self.wndFocusCastBar:FindChild("CastBar"):SetBarColor(self.tSettings.crCastBarFocus)
 	self.wndFocusCastBar:FindChild("MoOBar"):SetBarColor(self.tSettings.crMooBar)
 	self.wndFocusCastBar:FindChild("CastTime"):SetTextColor(self.tSettings.crText)
 	self.wndFocusCastBar:FindChild("SpellName"):SetTextColor(self.tSettings.crText)
@@ -358,6 +360,8 @@ function ForgeUI_CastBars:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crBorder"), self.tSettings, "crBorder", false, "UpdateStyles" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crBackground"), self.tSettings, "crBackground", false, "UpdateStyles" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crCastBar"), self.tSettings, "crCastBar", false, "UpdateStyles" )
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crCastBarTarget"), self.tSettings, "crCastBarTarget", false, "UpdateStyles" )
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crCastBarFocus"), self.tSettings, "crCastBarFocus", false, "UpdateStyles" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crMooBar"), self.tSettings, "crMooBar", false, "UpdateStyles" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crDuration"), self.tSettings, "crDuration", false, "UpdateStyles" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crText"), self.tSettings, "crText", false, "UpdateStyles" )

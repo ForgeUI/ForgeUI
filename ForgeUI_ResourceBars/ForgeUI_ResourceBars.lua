@@ -55,17 +55,20 @@ function ForgeUI_ResourceBars:new(o)
 		crBorder = "FF000000",
 		crBackground = "FF101010",
 		crFocus = "FFFFFFFF",
+		bCenterText = false,
 		warrior = {
 			crResource1 = "FFE53805",
 			crResource2 = "FFEF0000"
 		},
 		stalker = {
 			crResource1 = "FFD23EF4",
-			crResource2 = "FF620077"
+			crResource2 = "FF620077",
+			nBreakpoint = 35
 		},
 		engineer = {
 			crResource1 = "FF00AEFF",
-			crResource2 = "FFFFB000"
+			crResource2 = "FFFFB000",
+			bShowBars = false
 		},
 		esper = {
 			crResource1 = "FF1591DB"
@@ -167,6 +170,9 @@ function ForgeUI_ResourceBars:OnEngineerCreated(unitPlayer)
 	-- register options
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Engineer_Color1_EditBox"), self.tSettings.engineer, "crResource1", false, "LoadStyle_ResourceBar_Engineer" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Engineer_Color2_EditBox"), self.tSettings.engineer, "crResource2", false, "LoadStyle_ResourceBar_Engineer" )
+	
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("EngineerContainer"):FindChild("bCenterText"), self.tSettings, "bCenterText", "LoadStyles")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("EngineerContainer"):FindChild("bShowBars"), self.tSettings.engineer, "bShowBars", "LoadStyles")
 	
 	ForgeUI.API_RegisterWindow(self, self.wndResource, "ForgeUI_ResourceBar", { nLevel = 3, strDisplayName = "Resource bar" })
 	
@@ -366,6 +372,10 @@ function ForgeUI_ResourceBars:OnStalkerCreated(unitPlayer)
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Stalker_Color1_EditBox"), self.tSettings.stalker, "crResource1", false, "LoadStyle_ResourceBar_Stalker" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Stalker_Color2_EditBox"), self.tSettings.stalker, "crResource2", false, "LoadStyle_ResourceBar_Stalker" )
 	
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("StalkerContainer"):FindChild("bCenterText"), self.tSettings, "bCenterText", "LoadStyles")
+	
+	ForgeUI.API_RegisterNumberBox(self, self.wndContainers.Container:FindChild("Stalker_ResourceBreakpoint"), self.tSettings.stalker, "nBreakpoint", { nMin = 0 })
+	
 	ForgeUI.API_RegisterWindow(self, self.wndResource, "ForgeUI_ResourceBar", { nLevel = 3, strDisplayName = "Resource bar" })
 	
 	self.tStylers["LoadStyle_ResourceBar_Stalker"]["LoadStyle_ResourceBar_Stalker"](self)
@@ -410,6 +420,8 @@ function ForgeUI_ResourceBars:OnWarriorCreated(unitPlayer)
 	-- register options
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Warrior_Color1_EditBox"), self.tSettings.warrior, "crResource1", false, "LoadStyle_ResourceBar_Warrior" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Warrior_Color2_EditBox"), self.tSettings.warrior, "crResource2", false, "LoadStyle_ResourceBar_Warrior" )
+	
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("WarriorContainer"):FindChild("bCenterText"), self.tSettings, "bCenterText", "LoadStyles")
 	
 	ForgeUI.API_RegisterWindow(self, self.wndResource, "ForgeUI_ResourceBar", { nLevel = 3, strDisplayName = "Resource bar" })
 	
@@ -477,6 +489,15 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Engineer()
 	self.wndResource:FindChild("Border"):SetBGColor(self.tSettings.crBorder)
 	self.wndResource:FindChild("Background"):SetBGColor(self.tSettings.crBackground)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
+	
+	if self.tSettings.bCenterText then
+		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, 0, 0, 0)
+	else
+		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, -5, 0, 0)
+	end
+	self.wndResource:FindChild("Value"):SetTextFlags("DT_VCENTER", self.tSettings.bCenterText)
+	
+	self.wndResource:FindChild("Bars"):Show(self.tSettings.engineer.bShowBars, true)
 end
 
 function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Engineer(unitPlayer, nResource)
@@ -582,13 +603,20 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Stalker()
 	self.wndResource:FindChild("Border"):SetBGColor(self.tSettings.crBorder)
 	self.wndResource:FindChild("Background"):SetBGColor(self.tSettings.crBackground)
 	self.wndResource:FindChild("ProgressBar"):SetBarColor(self.tSettings.stalker.crResource1)
+	
+	if self.tSettings.bCenterText then
+		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, 0, 0, 0)
+	else
+		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, -5, 0, 0)
+	end
+	self.wndResource:FindChild("Value"):SetTextFlags("DT_VCENTER", self.tSettings.bCenterText)
 end
 
 function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Stalker(unitPlayer, nResource)
 	self.wndResource:FindChild("ProgressBar"):SetProgress(nResource)
 	self.wndResource:FindChild("Value"):SetText(nResource)
 	
-	if nResource < 35 then
+	if nResource < self.tSettings.stalker.nBreakpoint then
 		self.wndResource:FindChild("ProgressBar"):SetBarColor(self.tSettings.stalker.crResource2)
 	else
 		self.wndResource:FindChild("ProgressBar"):SetBarColor(self.tSettings.stalker.crResource1)
@@ -600,6 +628,14 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Warrior()
 	self.wndResource:FindChild("Border"):SetBGColor(self.tSettings.crBorder)
 	self.wndResource:FindChild("Background"):SetBGColor(self.tSettings.crBackground)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
+	
+	
+	if self.tSettings.bCenterText then
+		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, 0, 0, 0)
+	else
+		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, -5, 0, 0)
+	end
+	self.wndResource:FindChild("Value"):SetTextFlags("DT_VCENTER", self.tSettings.bCenterText)
 end
 
 function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Warrior(unitPlayer, nResource)

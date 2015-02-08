@@ -75,7 +75,7 @@ function ForgeUI_InfoBar:ForgeAPI_AfterRegistration()
 	self.unitPlayer = GameLib.GetPlayerUnit()
 
 	self.wndInfoBar = Apollo.LoadForm(self.xmlDoc, "ForgeUI_InfoBar", "FixedHudStratumLow", self)
-	ForgeUI.API_RegisterWindow(self, self.wndInfoBar, "ForgeUI_InfoBar", { strDisplayName = "Info bar", bSizable = false })
+	ForgeUI.API_RegisterWindow(self, self.wndInfoBar, "ForgeUI_InfoBar", { strDisplayName = "Info bar" })
 	
 	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnNextFrame", self)
 end
@@ -84,6 +84,7 @@ function ForgeUI_InfoBar:OnNextFrame()
 	self.stats = GameLib.GetPlayerUnit():GetBasicStats()
 	if self.stats == nil then return end
 	
+	self.restedXP = GetRestXp()
 	if self.stats.nLevel == 50 then
 		self.currentXP = GetPeriodicElderPoints()
 		self.neededXP = GameLib.ElderPointsDailyMax
@@ -92,10 +93,10 @@ function ForgeUI_InfoBar:OnNextFrame()
 		self.neededXP = GetXpToNextLevel()
 	end
 	
-	local nCurrentLevel = PlayerPathLib.GetPathLevel()
-	local nNextLevel = math.min(30, nCurrentLevel + 1) -- TODO replace with variable
+	self.nCurrentPathLevel = PlayerPathLib.GetPathLevel()
+	local nNextLevel = math.min(30, self.nCurrentPathLevel + 1) -- TODO replace with variable
 
-	local nLastLevelXP = PlayerPathLib.GetPathXPAtLevel(nCurrentLevel)
+	local nLastLevelXP = PlayerPathLib.GetPathXPAtLevel(self.nCurrentPathLevel)
 	self.currentPathXP =  PlayerPathLib.GetPathXP() - nLastLevelXP
 	self.neededPathXP = PlayerPathLib.GetPathXPAtLevel(nNextLevel) - nLastLevelXP
 	
@@ -120,10 +121,10 @@ function ForgeUI_InfoBar:OnGenerateTooltip( wndHandler, wndControl, eToolTipType
 		if self.stats.nLevel == 50 then
 			xml:AddLine("EG: " .. math.floor(self.currentXP / 75000)) -- TODO replace with variable
 		else
-			xml:AddLine("XP: " .. ForgeUI.ShortNum(self.currentXP) .. "/" .. ForgeUI.ShortNum(self.neededXP) .. "         ", crWhite, "CRB_InterfaceMedium")
+			xml:AddLine("XP: " .. ForgeUI.ShortNum(self.currentXP) .. "/" .. ForgeUI.ShortNum(self.neededXP) .. " - rested: " .. ForgeUI.ShortNum(self.restedXP) , crWhite, "CRB_InterfaceMedium")
 		end
 		if self.neededPathXP ~= 0 then
-			xml:AddLine("Path XP: " .. self.currentPathXP .. "/" .. self.neededPathXP .. " (" .. ForgeUI.Round(self.currentPathXP / self.neededPathXP, 1) .. "%)", crWhite, "CRB_InterfaceMedium")
+			xml:AddLine("Path XP: " .. self.currentPathXP .. "/" .. self.neededPathXP .. " (" .. ForgeUI.Round(self.currentPathXP / self.neededPathXP, 1) .. "%) - " .. self.nCurrentPathLevel .. "lvl", crWhite, "CRB_InterfaceMedium")
 		end
 	end
 	
