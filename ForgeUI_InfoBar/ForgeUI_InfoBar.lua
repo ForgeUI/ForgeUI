@@ -84,6 +84,7 @@ function ForgeUI_InfoBar:OnNextFrame()
 	self.stats = GameLib.GetPlayerUnit():GetBasicStats()
 	if self.stats == nil then return end
 	
+	self.restedXP = GetRestXp()
 	if self.stats.nLevel == 50 then
 		self.currentXP = GetPeriodicElderPoints()
 		self.neededXP = GameLib.ElderPointsDailyMax
@@ -120,7 +121,7 @@ function ForgeUI_InfoBar:OnGenerateTooltip( wndHandler, wndControl, eToolTipType
 		if self.stats.nLevel == 50 then
 			xml:AddLine("EG: " .. math.floor(self.currentXP / 75000)) -- TODO replace with variable
 		else
-			xml:AddLine("XP: " .. ForgeUI.ShortNum(self.currentXP) .. "/" .. ForgeUI.ShortNum(self.neededXP), crWhite, "CRB_InterfaceMedium")
+			xml:AddLine("XP: " .. ForgeUI.ShortNum(self.currentXP) .. "/" .. ForgeUI.ShortNum(self.neededXP) .. " - rested: " .. ForgeUI.ShortNum(self.restedXP) , crWhite, "CRB_InterfaceMedium")
 		end
 		if self.neededPathXP ~= 0 then
 			xml:AddLine("Path XP: " .. self.currentPathXP .. "/" .. self.neededPathXP .. " (" .. ForgeUI.Round(self.currentPathXP / self.neededPathXP, 1) .. "%) - " .. self.nCurrentPathLevel .. "lvl", crWhite, "CRB_InterfaceMedium")
