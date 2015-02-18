@@ -30,6 +30,7 @@ function ForgeUI_CastBars:new(o)
 	self.settings_version = 1
 	self.tSettings = {
 		bSmoothBars = true,
+		bShowTarget = true,
 		bShowFocus = true,
 		bCenterPlayerText = false,
 		bCenterTargetText = false,
@@ -79,7 +80,7 @@ function ForgeUI_CastBars:OnNextFrame()
 	self:UpdateCastBar(unitPlayer, self.wndPlayerCastBar)
 	
 	local unitTarget = unitPlayer:GetTarget()
-	if unitTarget ~= nil and unitTarget:IsValid() then
+	if unitTarget ~= nil and unitTarget:IsValid() and self.tSettings.bShowTarget then
 		self:UpdateCastBar(unitTarget, self.wndTargetCastBar)
 		self:UpdateMoOBar(unitTarget, self.wndTargetCastBar)
 		self:UpdateInterruptArmor(unitTarget, self.wndTargetCastBar)
@@ -371,6 +372,7 @@ function ForgeUI_CastBars:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bCenterTargetText"), self.tSettings, "bCenterTargetText", "UpdateStyles")
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bCenterFocusText"), self.tSettings, "bCenterFocusText", "UpdateStyles")
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bShowFocus"), self.tSettings, "bShowFocus")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bShowTarget"), self.tSettings, "bShowTarget")
 	
 	self:UpdateStyles()
 end
