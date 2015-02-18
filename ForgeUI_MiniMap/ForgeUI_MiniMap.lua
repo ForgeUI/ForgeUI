@@ -90,6 +90,8 @@ end
 function ForgeUI_MiniMap:OnDocLoaded()
 	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
 	
+	Apollo.LoadSprites("SquareMapTextures_NoCompass.xml")
+	
 	if ForgeUI == nil then -- forgeui loaded
 		ForgeUI = Apollo.GetAddon("ForgeUI")
 	end
@@ -127,6 +129,8 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRegistration()
 	
 	self:HandleNewUnits()
 	Apollo.RegisterTimerHandler("TimeUpdateTimer", 	"OnUpdateTimer", self)
+	
+	Apollo.LoadSprites("SquareMapTextures_NoCompass.xml")
 end
 
 function ForgeUI_MiniMap:OnUpdateTimer()

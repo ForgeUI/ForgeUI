@@ -89,6 +89,8 @@ function ForgeUI_UnitFrames:new(o)
 			crAbsorbValue = "FFFFFFFF"
 		},
 		tFocusFrame = {
+			bShowShieldBar = true,
+			bShowAbsorbBar = true,
 			crBorder = "FF000000",
 			crBackground = "FF101010",
 			crHpBar = "FF272727",
@@ -165,6 +167,8 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	ForgeUI.API_RegisterWindow(self, self.wndToTFrame, "ForgeUI_ToTFrame", { strDisplayName = "ToT frame" })
 	
 	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame, "ForgeUI_FocusFrame", { strDisplayName = "Focus frame" })
+	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame:FindChild("ShieldBar"), "ForgeUI_FocusFrame_Shield", { strParent = "ForgeUI_FocusFrame", strDisplayName = "Shield", crBorder = "FF0699F3" })
+	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame:FindChild("AbsorbBar"), "ForgeUI_FocusFrame_Absorb", { strParent = "ForgeUI_FocusFrame", strDisplayName = "Absorb", crBorder = "FFFFC600" })
 	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame:FindChild("InterruptArmor"), "ForgeUI_FocusFrame_IA", { strParent = "ForgeUI_FocusFrame", strDisplayName = "IA", crBorder = "FFFFFFFF", bMaintainRatio = true })
 	
 	ForgeUI.API_RegisterWindow(self, self.wndHazardBreath, "ForgeUI_wndHazardBreath", { strDisplayName = "Breath" })
@@ -287,6 +291,12 @@ function ForgeUI_UnitFrames:UpdateFocusFrame(unitSource)
 	
 	self:UpdateHPBar(unit, self.wndFocusFrame)
 	self:UpdateInterruptArmor(unit, self.wndFocusFrame)
+	if self.tSettings.tFocusFrame.bShowShieldBar then
+		self:UpdateShieldBar(unit, self.wndFocusFrame)
+	end
+	if self.tSettings.tFocusFrame.bShowAbsorbBar then
+		self:UpdateAbsorbBar(unit, self.wndFocusFrame)
+	end
 	
 	self.wndFocusFrame:SetData(unit)
 	if not self.wndFocusFrame:IsShown() then
@@ -495,6 +505,13 @@ function ForgeUI_UnitFrames:UpdateStyle_FocusFrame()
 	self.wndFocusFrame:FindChild("HP_ProgressBar"):SetBarColor(self.tSettings.tFocusFrame.crHpBar)
 	self.wndFocusFrame:FindChild("HP_TextValue"):SetTextColor(self.tSettings.tFocusFrame.crHpValue)
 	self.wndFocusFrame:FindChild("HP_TextPercent"):SetTextColor(self.tSettings.tFocusFrame.crHpValue)
+	self.wndFocusFrame:FindChild("Shield_ProgressBar"):SetBarColor(self.tSettings.tFocusFrame.crShieldBar)
+	self.wndFocusFrame:FindChild("Shield_TextValue"):SetTextColor(self.tSettings.tFocusFrame.crShieldValue)
+	self.wndFocusFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self.tSettings.tFocusFrame.crAbsorbBar)
+	self.wndFocusFrame:FindChild("Absorb_TextValue"):SetTextColor(self.tSettings.tFocusFrame.crAbsorbValue)
+	
+	self.wndFocusFrame:FindChild("ShieldBar"):Show(self.tSettings.tFocusFrame.bShowShieldBar, true)
+	self.wndFocusFrame:FindChild("AbsorbBar"):Show(self.tSettings.tFocusFrame.bShowAbsorbBar, true)
 end
 
 function ForgeUI_UnitFrames:RefreshStyle_FocusFrame(unit)
