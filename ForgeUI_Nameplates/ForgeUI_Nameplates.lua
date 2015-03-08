@@ -102,6 +102,7 @@ function ForgeUI_Nameplates:new(o)
 			nHideBarsOver = 100,
 			bShowCast = true,
 			bShowGuild = false,
+			bShowAggro = false,
 			crName = "FFD9544D",
 			crBar = "FFE50000"
 		},
@@ -494,6 +495,7 @@ function ForgeUI_Nameplates:UpdateBars(tNameplate)
 		self:UpdateAbsorb(tNameplate)
 		self:UpdateShield(tNameplate)
 		self:UpdateMarker(tNameplate)
+		self:UpdateAggro(tNameplate)
 	end
 end
 
@@ -671,6 +673,20 @@ function ForgeUI_Nameplates:UpdateArmor(tNameplate)
 	end
 end
 
+function ForgeUI_Nameplates:UpdateAggro(tNameplate)
+	local unitOwner = tNameplate.unitOwner
+	local aggro = tNameplate.wnd.aggro
+
+	local bShow = false
+
+	if unitOwner:IsInCombat() and self.tSettings["t" .. tNameplate.unitType].bShowAggro then
+		bShow = not unitOwner:GetTarget():IsThePlayer()
+	end
+	
+	if bShow ~= aggro:IsShown() then
+		aggro:Show(bShow, true)
+	end
+end
 
 -- visibility check
 function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
@@ -873,7 +889,8 @@ function ForgeUI_Nameplates:GenerateNewNameplate(unitNew)
 			info = wnd:FindChild("Info"),
 			info_icon = wnd:FindChild("Info"):FindChild("Icon"),
 			info_level = wnd:FindChild("Info"):FindChild("Level"),
-			cleanse = wnd:FindChild("Cleanse")
+			cleanse = wnd:FindChild("Cleanse"),
+			aggro = wnd:FindChild("Aggro")
 		}
 	}
 	
