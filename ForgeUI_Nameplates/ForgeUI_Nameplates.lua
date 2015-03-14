@@ -711,8 +711,11 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 	tNameplate.bOnScreen = wndNameplate:IsOnScreen()
 	tNameplate.bOccluded = wndNameplate:IsOccluded()
 	
-	if self.tSettings.bReposition and tNameplate.unitType == "Hostile" and not tNameplate.bOnScreen or tNameplate.bRepositioned then
-		self:Reposition(tNameplate)
+	if self.tSettings.bReposition and tNameplate.unitType == "Hostile" then
+		local nX, nY = wndNameplate:GetPos()
+		if nY < 0 or tNameplate.bRepositioned then
+			self:Reposition(tNameplate)
+		end
 	end
 	
 	local bInRange = false
@@ -736,14 +739,15 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 end
 
 function ForgeUI_Nameplates:Reposition(tNameplate)
-	if tNameplate.wndReposition:IsOnScreen() and tNameplate.bRepositioned then
+	local nX, nY = tNameplate.wndReposition:GetPos()
+	if nY > 0 and tNameplate.bRepositioned then
 		tNameplate.bRepositioned = false
 		
 		tNameplate.wndReposition:SetUnit(tNameplate.unitOwner, 0)
 		tNameplate.wndNameplate:SetUnit(tNameplate.unitOwner, 1)
 		
 		tNameplate.bOnScreen = true
-	elseif tNameplate.wndReposition:IsOnScreen() and not tNameplate.bRepositioned then
+	elseif not tNameplate.bRepositioned then
 		tNameplate.bRepositioned = true
 		
 		tNameplate.wndReposition:SetUnit(tNameplate.unitOwner, 1)
