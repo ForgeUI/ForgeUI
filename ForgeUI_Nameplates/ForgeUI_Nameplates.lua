@@ -100,8 +100,10 @@ function ForgeUI_Nameplates:new(o)
 			bShowBars = false,
 			bShowBarsInCombat = true,
 			nHideBarsOver = 100,
+			nHpThresHold = 0,
 			bShowCast = true,
 			bShowGuild = false,
+			bShowAggro = false,
 			crName = "FFD9544D",
 			crBar = "FFE50000"
 		},
@@ -167,6 +169,7 @@ function ForgeUI_Nameplates:new(o)
 			bShowBars = true,
 			bShowBarsInCombat = true,
 			nHideBarsOver = 100,
+			nHpThresHold = 0,
 			bUseClassColors = true,
 			bShowCast = true,
 			bShowGuild = false,
@@ -494,6 +497,7 @@ function ForgeUI_Nameplates:UpdateBars(tNameplate)
 		self:UpdateAbsorb(tNameplate)
 		self:UpdateShield(tNameplate)
 		self:UpdateMarker(tNameplate)
+		self:UpdateAggro(tNameplate)
 	end
 end
 
@@ -509,16 +513,26 @@ function ForgeUI_Nameplates:UpdateHealth(tNameplate)
 	
 	if maxHp ~= nil and maxHp > 0 then
 		progressBar:SetMax(maxHp)
-		progressBar:SetProgress(unitOwner:GetHealth())
+		local currHp = unitOwner:GetHealth()
+		progressBar:SetProgress(currHp)
 		
 		local nTime = unitOwner:GetCCStateTimeRemaining(Unit.CodeEnumCCState.Vulnerability)
 		if nTime > 0 then
 			progressBar:SetBarColor(self.tSettings.crMooBar)
 		else
-			if unitOwner:GetType() == "Player" and self.tSettings["t" .. tNameplate.unitType].bUseClassColors then
-				progressBar:SetBarColor(ForgeUI.tSettings.tClassColors["cr" .. tClassEnums[unitOwner:GetClassId()]])
+			local hpThresHold = self.tSettings["t" .. tNameplate.unitType].nHpThresHold
+			if hpThresHold ~= nil and (currHp / maxHp) * 100 < hpThresHold then
+				if unitOwner:GetType() == "Player" and self.tSettings["t" .. tNameplate.unitType].bUseClassColors then
+					progressBar:SetBarColor(ForgeUI.GenerateGradient(ForgeUI.tSettings.tClassColors["cr" .. tClassEnums[unitOwner:GetClassId()]], "FFFFFFFF", 10, 5, true))
+				else
+					progressBar:SetBarColor(ForgeUI.GenerateGradient(self.tSettings["t" .. tNameplate.unitType].crBar, "FFFFFFFF", 10, 5, true))
+				end
 			else
-				progressBar:SetBarColor(self.tSettings["t" .. tNameplate.unitType].crBar)
+				if unitOwner:GetType() == "Player" and self.tSettings["t" .. tNameplate.unitType].bUseClassColors then
+					progressBar:SetBarColor(ForgeUI.tSettings.tClassColors["cr" .. tClassEnums[unitOwner:GetClassId()]])
+				else
+					progressBar:SetBarColor(self.tSettings["t" .. tNameplate.unitType].crBar)
+				end
 			end
 		end
 		
@@ -671,6 +685,23 @@ function ForgeUI_Nameplates:UpdateArmor(tNameplate)
 	end
 end
 
+function ForgeUI_Nameplates:UpdateAggro(tNameplate)
+	local unitOwner = tNameplate.unitOwner
+	local aggro = tNameplate.wnd.aggro
+
+	local bShow = false
+
+	if unitOwner:IsInCombat() and self.tSettings["t" .. tNameplate.unitType].bShowAggro then
+		local unitTarget = unitOwner:GetTarget()
+		if unitTarget ~= nil then
+			bShow = not unitOwner:GetTarget():IsThePlayer()
+		end
+	end
+	
+	if bShow ~= aggro:IsShown() then
+		aggro:Show(bShow, true)
+	end
+end
 
 -- visibility check
 function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
@@ -680,8 +711,11 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 	tNameplate.bOnScreen = wndNameplate:IsOnScreen()
 	tNameplate.bOccluded = wndNameplate:IsOccluded()
 	
-	if self.tSettings.bReposition and tNameplate.unitType == "Hostile" and not tNameplate.bOnScreen or tNameplate.bRepositioned then
-		self:Reposition(tNameplate)
+	if self.tSettings.bReposition and tNameplate.unitType == "Hostile" then
+		local nX, nY = wndNameplate:GetPos()
+		if nY < 0 or tNameplate.bRepositioned then
+			self:Reposition(tNameplate)
+		end
 	end
 	
 	local bInRange = false
@@ -705,14 +739,15 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 end
 
 function ForgeUI_Nameplates:Reposition(tNameplate)
-	if tNameplate.wndReposition:IsOnScreen() and tNameplate.bRepositioned then
+	local nX, nY = tNameplate.wndReposition:GetPos()
+	if nY > 0 and tNameplate.bRepositioned then
 		tNameplate.bRepositioned = false
 		
 		tNameplate.wndReposition:SetUnit(tNameplate.unitOwner, 0)
 		tNameplate.wndNameplate:SetUnit(tNameplate.unitOwner, 1)
 		
 		tNameplate.bOnScreen = true
-	elseif tNameplate.wndReposition:IsOnScreen() and not tNameplate.bRepositioned then
+	elseif not tNameplate.bRepositioned then
 		tNameplate.bRepositioned = true
 		
 		tNameplate.wndReposition:SetUnit(tNameplate.unitOwner, 1)
@@ -873,7 +908,8 @@ function ForgeUI_Nameplates:GenerateNewNameplate(unitNew)
 			info = wnd:FindChild("Info"),
 			info_icon = wnd:FindChild("Info"):FindChild("Icon"),
 			info_level = wnd:FindChild("Info"):FindChild("Level"),
-			cleanse = wnd:FindChild("Cleanse")
+			cleanse = wnd:FindChild("Cleanse"),
+			aggro = wnd:FindChild("Aggro")
 		}
 	}
 	
