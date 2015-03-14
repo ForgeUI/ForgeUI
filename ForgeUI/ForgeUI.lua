@@ -45,7 +45,7 @@ function ForgeUI:new(o)
 	
 	 -- mandatory 
     self.api_version = 2
-	self.version = "0.3.4"
+	self.version = "0.3.5"
 	self.author = "WintyBadass"
 	self.strAddonName = "~ForgeUI"
 	self.strDisplayName = "ForgeUI"
@@ -141,6 +141,18 @@ function ForgeUI:OnDocLoaded()
 	for _, tAddon in pairs(tAddonsToRegister) do -- loading not registered addons
 		ForgeUI.API_RegisterAddon(tAddon)
 	end
+	
+	local tInterface = Apollo.GetAddon("Interface")
+	if tInterface == nil then
+		ForgeUI.ShowWarning("Addon 'Interface' is turned off which may cause errors. Please turn it on.")
+	end
+	tInterface = nil
+	
+	local tHazards = Apollo.GetAddon("Hazards")
+	if tHazards == nil then
+		ForgeUI.ShowWarning("Addon 'Hazards' is turned off which may cause errors. Please turn it on.")
+	end
+	tHazards = nil
 end
 
 function ForgeUI:ForgeAPI_AfterRegistration()
@@ -1007,6 +1019,21 @@ end
 function ForgeUI:AddonForm_OnReset( wndHandler, wndControl, eMouseButton )
 	local tAddon = wndControl:GetParent():GetParent():GetParent():GetParent():GetData()
 	ForgeUI.API_ResetAddonSettings(tAddon.strAddonName)
+end
+
+---------------------------------------------------------------------------------------------------
+-- ForgeUI_WarningWindow Functions
+---------------------------------------------------------------------------------------------------
+
+function ForgeUI.ShowWarning(strText)
+	local wnd = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_WarningWindow", nil, ForgeUIInst)
+	wnd:FindChild("Text"):SetText(strText)
+end
+
+function ForgeUI:ForgeUI_WarningWindow( wndHandler, wndControl, eMouseButton )
+	local wnd = wndControl:GetParent()
+	wnd:Show(false, false)
+	wnd:Destroy()
 end
 
 ---------------------------------------------------------------------------------------------------
