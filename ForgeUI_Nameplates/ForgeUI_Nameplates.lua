@@ -100,6 +100,7 @@ function ForgeUI_Nameplates:new(o)
 			bShowBars = false,
 			bShowBarsInCombat = true,
 			nHideBarsOver = 100,
+			nHpThresHold = 0,
 			bShowCast = true,
 			bShowGuild = false,
 			bShowAggro = false,
@@ -168,6 +169,7 @@ function ForgeUI_Nameplates:new(o)
 			bShowBars = true,
 			bShowBarsInCombat = true,
 			nHideBarsOver = 100,
+			nHpThresHold = 0,
 			bUseClassColors = true,
 			bShowCast = true,
 			bShowGuild = false,
@@ -511,16 +513,26 @@ function ForgeUI_Nameplates:UpdateHealth(tNameplate)
 	
 	if maxHp ~= nil and maxHp > 0 then
 		progressBar:SetMax(maxHp)
-		progressBar:SetProgress(unitOwner:GetHealth())
+		local currHp = unitOwner:GetHealth()
+		progressBar:SetProgress(currHp)
 		
 		local nTime = unitOwner:GetCCStateTimeRemaining(Unit.CodeEnumCCState.Vulnerability)
 		if nTime > 0 then
 			progressBar:SetBarColor(self.tSettings.crMooBar)
 		else
-			if unitOwner:GetType() == "Player" and self.tSettings["t" .. tNameplate.unitType].bUseClassColors then
-				progressBar:SetBarColor(ForgeUI.tSettings.tClassColors["cr" .. tClassEnums[unitOwner:GetClassId()]])
+			local hpThresHold = self.tSettings["t" .. tNameplate.unitType].nHpThresHold
+			if hpThresHold ~= nil and (currHp / maxHp) * 100 < hpThresHold then
+				if unitOwner:GetType() == "Player" and self.tSettings["t" .. tNameplate.unitType].bUseClassColors then
+					progressBar:SetBarColor(ForgeUI.GenerateGradient(ForgeUI.tSettings.tClassColors["cr" .. tClassEnums[unitOwner:GetClassId()]], "FFFFFFFF", 10, 5, true))
+				else
+					progressBar:SetBarColor(ForgeUI.GenerateGradient(self.tSettings["t" .. tNameplate.unitType].crBar, "FFFFFFFF", 10, 5, true))
+				end
 			else
-				progressBar:SetBarColor(self.tSettings["t" .. tNameplate.unitType].crBar)
+				if unitOwner:GetType() == "Player" and self.tSettings["t" .. tNameplate.unitType].bUseClassColors then
+					progressBar:SetBarColor(ForgeUI.tSettings.tClassColors["cr" .. tClassEnums[unitOwner:GetClassId()]])
+				else
+					progressBar:SetBarColor(self.tSettings["t" .. tNameplate.unitType].crBar)
+				end
 			end
 		end
 		
