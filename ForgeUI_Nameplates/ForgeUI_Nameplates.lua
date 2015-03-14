@@ -680,7 +680,10 @@ function ForgeUI_Nameplates:UpdateAggro(tNameplate)
 	local bShow = false
 
 	if unitOwner:IsInCombat() and self.tSettings["t" .. tNameplate.unitType].bShowAggro then
-		bShow = not unitOwner:GetTarget():IsThePlayer()
+		local unitTarget = unitOwner:GetTarget()
+		if unitTarget ~= nil then
+			bShow = not unitOwner:GetTarget():IsThePlayer()
+		end
 	end
 	
 	if bShow ~= aggro:IsShown() then

@@ -738,6 +738,7 @@ function ForgeUI_ActionBars:OnSpellBtn( wndHandler, wndControl, eMouseButton )
 		
 		Event_FireGenericEvent("PathAbilityUpdated", wndControl:GetData())
 		tActionSet[10] = wndControl:GetData()
+		Print(wndControl:GetData())
 		ActionSetLib.RequestActionSetChanges(tActionSet)
 		
 		self.wndPathBtn:FindChild("Popup"):Show(false, true)
