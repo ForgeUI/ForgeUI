@@ -382,9 +382,13 @@ function ForgeUI_Nameplates:UpdateName(tNameplate)
 	
 	local bShow = false
 	if not self.tSettings["t" .. tNameplate.unitType].bShowNames and not unitOwner:IsInCombat() or not self.tSettings["t" .. tNameplate.unitType].bShowNamesInCombat and unitOwner:IsInCombat() then
-		bShow = false	
+		if name:IsShown() ~= false then
+			name:Show(false, true)
+		end	
 	else
-		bShow = true	
+		if name:IsShown() ~= true then
+			name:Show(true, true)
+		end	
 	
 		local newName = ""
 		if self.tSettings.bShowTitles then
@@ -430,10 +434,6 @@ function ForgeUI_Nameplates:UpdateName(tNameplate)
 		if questIcon:IsShown() ~= bShowQuest then
 			questIcon:Show(bShowQuest, true)
 		end
-	end
-	
-	if name:IsShown() ~= bShow then
-		name:Show(bShow, true)
 	end
 end
 
