@@ -86,6 +86,8 @@ function ForgeUI_Nameplates:new(o)
 		},
 		tPlayer = {
 			bShow = false,
+			bShowNames = false,
+			bShowNamesInCombat = false,
 			bShowBars = false,
 			bShowBarsInCombat = false,
 			nHideBarsOver = 100,
@@ -97,6 +99,8 @@ function ForgeUI_Nameplates:new(o)
 		},
 		tHostile = {
 			bShow = true,
+			bShowNames = true,
+			bShowNamesInCombat = true,
 			bShowBars = false,
 			bShowBarsInCombat = true,
 			nHideBarsOver = 100,
@@ -109,6 +113,8 @@ function ForgeUI_Nameplates:new(o)
 		},
 		tNeutral = {
 			bShow = true,
+			bShowNames = true,
+			bShowNamesInCombat = true,
 			bShowBars = false,
 			bShowBarsInCombat = true,
 			nHideBarsOver = 100,
@@ -120,6 +126,8 @@ function ForgeUI_Nameplates:new(o)
 		tFriendly = {
 			bShow = true,
 			bOnlyImportantNPCs = true,
+			bShowNames = true,
+			bShowNamesInCombat = true,
 			bShowBars = false,
 			bShowBarsInCombat = true,
 			nHideBarsOver = 100,
@@ -130,6 +138,8 @@ function ForgeUI_Nameplates:new(o)
 		},
 		tUnknown = {
 			bShow = false,
+			bShowNames = false,
+			bShowNamesInCombat = false,
 			bShowBars = false,
 			bShowBarsInCombat = false,
 			nHideBarsOver = 100,
@@ -142,6 +152,8 @@ function ForgeUI_Nameplates:new(o)
 		},
 		tFriendlyPlayer = {
 			bShow = true,
+			bShowNames = true,
+			bShowNamesInCombat = true,
 			bShowBars = true,
 			bShowBarsInCombat = true,
 			nHideBarsOver = 100,
@@ -154,6 +166,8 @@ function ForgeUI_Nameplates:new(o)
 		},
 		tPartyPlayer = {
 			bShow = true,
+			bShowNames = true,
+			bShowNamesInCombat = true,
 			bShowBars = true,
 			bShowBarsInCombat = true,
 			nHideBarsOver = 100,
@@ -166,6 +180,8 @@ function ForgeUI_Nameplates:new(o)
 		},
 		tHostilePlayer = {
 			bShow = true,
+			bShowNames = true,
+			bShowNamesInCombat = true,
 			bShowBars = true,
 			bShowBarsInCombat = true,
 			nHideBarsOver = 100,
@@ -179,6 +195,8 @@ function ForgeUI_Nameplates:new(o)
 		},
 		tFriendlyPet = {
 			bShow = false,
+			bShowNames = false,
+			bShowNamesInCombat = false,
 			bShowBars = false,
 			bShowBarsInCombat = false,
 			nHideBarsOver = 100,
@@ -188,6 +206,8 @@ function ForgeUI_Nameplates:new(o)
 		},
 		tPlayerPet = {
 			bShow = true,
+			bShowNames = true,
+			bShowNamesInCombat = true,
 			bShowBars = false,
 			bShowBarsInCombat = false,
 			nHideBarsOver = 100,
@@ -197,6 +217,8 @@ function ForgeUI_Nameplates:new(o)
 		},
 		tHostilePet = {
 			bShow = false,
+			bShowNames = false,
+			bShowNamesInCombat = false,
 			bShowBars = false,
 			bShowBarsInCombat = false,
 			nHideBarsOver = 100,
@@ -358,49 +380,60 @@ function ForgeUI_Nameplates:UpdateName(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 	local name = tNameplate.wnd.name
 	
-	local newName = ""
-	if self.tSettings.bShowTitles then
-		newName = unitOwner:GetTitleOrName()
+	local bShow = false
+	if not self.tSettings["t" .. tNameplate.unitType].bShowNames and not unitOwner:IsInCombat() or not self.tSettings["t" .. tNameplate.unitType].bShowNamesInCombat and unitOwner:IsInCombat() then
+		if name:IsShown() ~= false then
+			name:Show(false, true)
+		end	
 	else
-		newName = unitOwner:GetName()
-	end
+		if name:IsShown() ~= true then
+			name:Show(true, true)
+		end	
 	
-	if newName ~= name:GetText() then
-		name:SetText(newName)
+		local newName = ""
+		if self.tSettings.bShowTitles then
+			newName = unitOwner:GetTitleOrName()
+		else
+			newName = unitOwner:GetName()
+		end
 		
-		local nNameWidth = Apollo.GetTextWidth("Nameplates", newName .. " ")
-		local nLeft, nTop, nRight, nBottom = name:GetAnchorOffsets()
-		name:SetAnchorOffsets(- (nNameWidth / 2), nTop, (nNameWidth / 2), nBottom)
-	end
-	
-	if unitOwner:IsPvpFlagged() and self.tSettings["t" .. tNameplate.unitType].crNamePvP ~= nil then
-		name:SetTextColor(self.tSettings["t" .. tNameplate.unitType].crNamePvP)
-	else
-		name:SetTextColor(self.tSettings["t" .. tNameplate.unitType].crName)
-	end
-	
-	local questIcon = tNameplate.wnd.quest
-	local challangeIcon = tNameplate.wnd.challange
-	local bShowQuest = false
-	local bShowChalange = false
-	if self.tSettings.bShowQuestIcons or self.tSettings.bAlwaysShowQuests then
-		local tRewardInfo = tNameplate.unitOwner:GetRewardInfo()
-		if tRewardInfo == nil then return end
-		
-		for _, reward in _pairs(tRewardInfo) do
-			if reward.strType == "Quest" or reward.strType == "PublicEvent" then
-				bShowQuest = true
-			end
+		if newName ~= name:GetText() then
+			name:SetText(newName)
 			
-			if reward.strType == "Challange" then
-				bShowQuest = true
+			local nNameWidth = Apollo.GetTextWidth("Nameplates", newName .. " ")
+			local nLeft, nTop, nRight, nBottom = name:GetAnchorOffsets()
+			name:SetAnchorOffsets(- (nNameWidth / 2), nTop, (nNameWidth / 2), nBottom)
+		end
+		
+		if unitOwner:IsPvpFlagged() and self.tSettings["t" .. tNameplate.unitType].crNamePvP ~= nil then
+			name:SetTextColor(self.tSettings["t" .. tNameplate.unitType].crNamePvP)
+		else
+			name:SetTextColor(self.tSettings["t" .. tNameplate.unitType].crName)
+		end
+		
+		local questIcon = tNameplate.wnd.quest
+		local challangeIcon = tNameplate.wnd.challange
+		local bShowQuest = false
+		local bShowChalange = false
+		if self.tSettings.bShowQuestIcons or self.tSettings.bAlwaysShowQuests then
+			local tRewardInfo = tNameplate.unitOwner:GetRewardInfo()
+			if tRewardInfo == nil then return end
+			
+			for _, reward in _pairs(tRewardInfo) do
+				if reward.strType == "Quest" or reward.strType == "PublicEvent" then
+					bShowQuest = true
+				end
+				
+				if reward.strType == "Challange" then
+					bShowQuest = true
+				end
 			end
 		end
-	end
-	
-	tNameplate.bShowQuest = bShowQuest and self.tSettings.bAlwaysShowQuests
-	if questIcon:IsShown() ~= bShowQuest then
-		questIcon:Show(bShowQuest, true)
+		
+		tNameplate.bShowQuest = bShowQuest and self.tSettings.bAlwaysShowQuests
+		if questIcon:IsShown() ~= bShowQuest then
+			questIcon:Show(bShowQuest, true)
+		end
 	end
 end
 
