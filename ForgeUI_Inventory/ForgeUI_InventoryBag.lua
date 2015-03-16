@@ -280,6 +280,9 @@ function InventoryBag:OnDocumentReady()
 	end
 
 	self.wndMainBagWindow = self.wndMain:FindChild("MainBagWindow")
+	
+	self.wndMainBagWindow:SetNewItemOverlaySprite("ForgeUI_Border")
+	
 	self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self.nSortItemType])
 	self.wndMainBagWindow:SetSort(self.bShouldSortItems)
 	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortOff"):SetCheck(not self.bShouldSortItems)
