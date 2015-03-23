@@ -53,7 +53,6 @@ function ForgeUI_Nameplates:new(o)
 	self.tStylers = {
 		["LoadStyle_Nameplate"] = self, -- (tNameplate)
 		["UpdateStyle_Nameplate"] = self, -- (tNameplate)
-		["RefreshStyle_Nameplate"] = self, -- (tNameplate)
 	}
 	
 	-- optional
@@ -227,18 +226,22 @@ function ForgeUI_Nameplates:new(o)
 			crBar = "FFFFFFFF"
 		},
 		tCollectible = {
+			bEnable = false,
 			bShow = false,
 			crName = "FFFFFFFF",
 		},
 		tPinataLoot = {
+			bEnable = false,
 			bShow = false,
 			crName = "FFFFFFFF",
 		},
 		tMount = {
+			bEnable = false,
 			bShow = false,
 			crName = "FFFFFFFF",
 		},
 		tSimple = {
+			bEnable = false,
 			bShow = false,
 			crName = "FFFFFFFF",
 		},
@@ -360,7 +363,6 @@ function ForgeUI_Nameplates:UpdateNameplates()
 				self.tStylers["UpdateStyle_Nameplate"]["UpdateStyle_Nameplate"](self, tNameplate)
 				tNameplate.bNeedUpdate = false
 			end
-			self.tStylers["RefreshStyle_Nameplate"]["RefreshStyle_Nameplate"](self, tNameplate)
 		end
 	end
 end
@@ -744,7 +746,7 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 	tNameplate.bOnScreen = wndNameplate:IsOnScreen()
 	tNameplate.bOccluded = wndNameplate:IsOccluded()
 	
-	if self.tSettings.bReposition and tNameplate.unitType == "Hostile" then
+	if self.tSettings.bReposition then
 		local nX, nY = wndNameplate:GetPos()
 		if nY < 0 or tNameplate.bRepositioned then
 			self:Reposition(tNameplate)
@@ -893,6 +895,8 @@ function ForgeUI_Nameplates:AddNewUnits()
 end
 
 function ForgeUI_Nameplates:GenerateNewNameplate(unitNew)
+	if self.tSettings["t" .. self:GetUnitType(unitNew)].bEnable == false then return end
+	
 	local wnd = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Nameplate", "InWorldHudStratum", self)
 	local wndReposition = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Reposition", "InWorldHudStratum", self)
 	
@@ -1121,10 +1125,6 @@ function ForgeUI_Nameplates:UpdateStyle_Nameplate(tNameplate)
 		nLeft, nTop, nRight, nBottom = wnd.name:GetAnchorOffsets()
 		wnd.name:SetAnchorOffsets(nLeft, 0, nRight, -12)
 	end
-end
-
-function ForgeUI_Nameplates:RefreshStyle_Nameplate(tNameplate)
-	
 end
 
 -----------------------------------------------------------------------------------------------
