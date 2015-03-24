@@ -181,7 +181,7 @@ function ForgeUI_Inventory:ForgeAPI_AfterRegistration()
 	Apollo.RegisterEventHandler("InterfaceMenu_ToggleInventory", 			"OnToggleVisibility", self) -- TODO: The datachron attachment needs to be brought over
 	Apollo.RegisterEventHandler("GuildBank_ShowPersonalInventory", 			"OnToggleVisibilityAlways", self)
 
-	Apollo.RegisterEventHandler("PersonaUpdateCharacterStats", 				"UpdateBagSlotItems", self) -- using this for bag changes
+	Apollo.RegisterEventHandler("PlayerEquippedItemChanged", 				"UpdateBagSlotItems", self) -- using this for bag changes
 	Apollo.RegisterEventHandler("PlayerPathMissionUpdate", 					"OnQuestObjectiveUpdated", self) -- route to same event
 	Apollo.RegisterEventHandler("QuestObjectiveUpdated", 					"OnQuestObjectiveUpdated", self)
 	Apollo.RegisterEventHandler("PlayerPathRefresh", 						"OnQuestObjectiveUpdated", self) -- route to same event
@@ -377,28 +377,31 @@ function ForgeUI_Inventory:OnPlayerCurrencyChanged()
 end
 
 function ForgeUI_Inventory:UpdateBagSlotItems() -- update our bag display
-	local strEmptyBag = Apollo.GetString("Inventory_EmptySlot")
 	local nOldBagCount = self.nEquippedBagCount -- record the old count
 
 	self.nEquippedBagCount = 0	-- reset
 
 	for idx = 1, knMaxBags do
-		local itemBag = self.wndMain:FindChild("MainBagWindow"):GetBagItem(idx)
+		local itemBag = self.wndMainBagWindow:GetBagItem(idx)
 		local wndCtrl = self.wndMain:FindChild("BagBtn"..idx)
-		if itemBag then
-			self.tBagCounts[idx]:SetText("+" .. itemBag:GetBagSlots())
-			wndCtrl:FindChild("RemoveBagIcon"):Show(true)
-			wndCtrl:FindChild("RemoveBagIcon"):SetData(itemBag)
-			self.nEquippedBagCount = self.nEquippedBagCount + 1
-			Tooltip.GetItemTooltipForm(self, self.wndMain:FindChild("BagBtn"..idx), itemBag, {bPrimary = true, bSelling = false, itemCompare = itemEquipped})
-		else
-			self.tBagCounts[idx]:SetText("")
-			wndCtrl:SetTooltip(string.format("<T Font=\"CRB_InterfaceSmall\" TextColor=\"white\">%s</T>", strEmptyBag))
-			wndCtrl:FindChild("RemoveBagIcon"):Show(false)
+		
+		if itemBag ~= wndCtrl:GetData() then
+			wndCtrl:SetData(itemBag)
+			if itemBag then
+				self.tBagCounts[idx]:SetText("+" .. itemBag:GetBagSlots())
+				local wndRemoveBagIcon = wndCtrl:FindChild("RemoveBagIcon")
+				wndRemoveBagIcon:Show(true)
+				wndRemoveBagIcon:SetData(itemBag)
+				self.nEquippedBagCount = self.nEquippedBagCount + 1
+				Tooltip.GetItemTooltipForm(self, wndCtrl, itemBag, {bPrimary = true, bSelling = false})
+			else
+				self.tBagCounts[idx]:SetText("")
+				wndCtrl:SetTooltip(string.format("<T Font=\"CRB_InterfaceSmall\" TextColor=\"white\">%s</T>", Apollo.GetString("Inventory_EmptySlot")))
+				wndCtrl:FindChild("RemoveBagIcon"):Show(false)
+			end
 		end
 	end
 end
-
 function ForgeUI_Inventory:OnBagBtnMouseEnter(wndHandler, wndControl)
 end
 
