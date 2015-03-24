@@ -746,7 +746,7 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 	tNameplate.bOnScreen = wndNameplate:IsOnScreen()
 	tNameplate.bOccluded = wndNameplate:IsOccluded()
 	
-	if self.tSettings.bReposition then
+	if self.tSettings.bReposition and tNameplate.unitType == "Hostile" then
 		local nX, nY = wndNameplate:GetPos()
 		if nY < 0 or tNameplate.bRepositioned then
 			self:Reposition(tNameplate)
