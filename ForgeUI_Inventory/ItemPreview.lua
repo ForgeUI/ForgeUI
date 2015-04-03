@@ -33,32 +33,6 @@ function ItemPreview:Init()
     Apollo.RegisterAddon(self)
 end
 
-function ItemPreview:OnSave(eType)
-	if eType ~= GameLib.CodeEnumAddonSaveLevel.Account then
-		return
-	end
-
-	local locWindowLocation = self.wndMain and self.wndMain:GetLocation() or self.locSavedWindowLoc
-
-	local tSaved =
-	{
-		tWindowLocation = locWindowLocation and locWindowLocation:ToTable() or nil,
-		nSaveVersion = knSaveVersion
-	}
-
-	return tSaved
-end
-
-function ItemPreview:OnRestore(eType, tSavedData)
-	if not tSavedData or tSavedData.nSaveVersion ~= knSaveVersion then
-		return
-	end
-
-	if tSavedData.tWindowLocation then
-		self.locSavedWindowLoc = WindowLocation.new(tSavedData.tWindowLocation)
-	end
-end
-
 function ItemPreview:OnLoad()
 	self.xmlDoc = XmlDoc.CreateFromFile("ItemPreview.xml")
 	self.xmlDoc:RegisterCallback("OnDocumentReady", self)
