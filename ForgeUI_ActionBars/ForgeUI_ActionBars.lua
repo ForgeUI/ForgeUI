@@ -35,6 +35,7 @@ function ForgeUI_ActionBars:new(o)
     self.tSettings = {
 		nSelectedMount = 0,
 		nSelectedPotion = 0,
+		nSelectedPath = 0,
 		bShowHotkeys = true,
 		tSideBar1 = {
 			bShow = true,
@@ -561,6 +562,16 @@ function ForgeUI_ActionBars:FillPath(wnd)
 	
 	wnd:Show(nCount > 0)
 	
+	local tActionSet = ActionSetLib.GetCurrentActionSet()
+	
+	if self.tSettings.nSelectedPath > 0 then
+		Event_FireGenericEvent("PathAbilityUpdated", self.tSettings.nSelectedPath)
+		tActionSet[10] = self.tSettings.nSelectedPath
+	else
+		tActionSet[10] = tActionSet[10]
+	end
+	ActionSetLib.RequestActionSetChanges(tActionSet)
+	
 	local nLeft, nTop, nRight, nBottom = wndPopup:GetAnchorOffsets()
 	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize), nRight, nBottom)
 	
@@ -736,8 +747,10 @@ function ForgeUI_ActionBars:OnSpellBtn( wndHandler, wndControl, eMouseButton )
 	elseif sType == "path" then
 		local tActionSet = ActionSetLib.GetCurrentActionSet()
 		
-		Event_FireGenericEvent("PathAbilityUpdated", wndControl:GetData())
-		tActionSet[10] = wndControl:GetData()
+		self.tSettings.nSelectedPath = wndControl:GetData()
+		
+		Event_FireGenericEvent("PathAbilityUpdated", self.tSettings.nSelectedPath)
+		tActionSet[10] = self.tSettings.nSelectedPath
 		ActionSetLib.RequestActionSetChanges(tActionSet)
 		
 		self.wndPathBtn:FindChild("Popup"):Show(false, true)
