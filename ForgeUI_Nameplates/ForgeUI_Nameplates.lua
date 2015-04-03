@@ -245,6 +245,11 @@ function ForgeUI_Nameplates:new(o)
 			bShow = false,
 			crName = "FFFFFFFF",
 		},
+		tInstancePortal = {
+			bShow = true,
+			bShowNames = true,
+			crName = "FFFFFFFF",
+		},
 		tPickup  = { -- player's weapon for example
 			bShow = true,
 			crName = "FFFFFFFF",
@@ -868,7 +873,11 @@ function ForgeUI_Nameplates:GetUnitType(unit)
 		end
 		return "PickupNotPlayer"
 	elseif unit:GetHealth() == nil and not unit:IsDead() then
-		return "Simple"
+		if unit:GetActivationState().InstancePortal then
+			return "InstancePortal"
+		else
+			return "Simple"
+		end
 	else
 		return tDispositionId[eDisposition]
 	end
@@ -1003,7 +1012,11 @@ function ForgeUI_Nameplates:IsImportantNPC(unitOwner)
 	end
 	
 	--Trainers
-	if tActivation.TradeskillTrainer then
+	if tActivation.TradeskillTrainer  then
+		return true
+	end
+	
+	if tActivation.InstancePortal then
 		return true
 	end
 end
