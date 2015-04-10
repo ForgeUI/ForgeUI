@@ -1,5 +1,0 @@
-<Addon Name="ForgeUI_Datachron" Version="0.0.1" Author="WintyBadass" APIVersion="10" Description="">
-    <Script Name="ForgeUI_Datachron.lua"/>
-    <Form Name="ForgeUI_Datachron.xml"/>
-    <ReplaceAddon Name="Datachron"/>
-</Addon>
