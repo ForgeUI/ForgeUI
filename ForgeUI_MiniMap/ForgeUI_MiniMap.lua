@@ -105,6 +105,29 @@ local ktCategoryNames =
 	[ktTooltipCategories.PvPMarker]		= Apollo.GetString("MiniMap_PvPObjective"),
 }
 
+local ktTypeToCategory = {
+	[ktTooltipCategories.QuestNPC]		= "Quests",
+	[ktTooltipCategories.TrackedQuest]	= "Tracked",
+	[ktTooltipCategories.NeutralNPC]		= "CreaturesN",
+	[ktTooltipCategories.HostileNPC]		= "CreaturesH",
+	[ktTooltipCategories.Path]			= "Missions",
+	[ktTooltipCategories.Challenge]		= "Challenges",
+	[ktTooltipCategories.PublicEvent]		= "PublicEvents",
+	[ktTooltipCategories.Tradeskill]		= "Tradeskills",
+	[ktTooltipCategories.Vendor]			= "Vendors",
+	[ktTooltipCategories.Service]			= "Services",
+	[ktTooltipCategories.Portal]			= "InstancePortals",
+	[ktTooltipCategories.BindPoint]		= "BindPoints",
+	[ktTooltipCategories.Mining]			= "MiningNodes",
+	[ktTooltipCategories.Relic]			= "RelicNodes",
+	[ktTooltipCategories.Survivalist]		= "SurvivalistNodes",
+	[ktTooltipCategories.Farming]			= "FarmingNodes",
+	[ktTooltipCategories.Friend]			= "Friends",
+	[ktTooltipCategories.Rival]			= "Rivals",
+	[ktTooltipCategories.Taxi]			= "Taxis",
+	[ktTooltipCategories.CityDirection]	= "CityDirections",
+}
+
 local ktUIElementToType =
 {
 	["OptionsBtnQuests"] 			= ktTooltipCategories.QuestNPC,
@@ -191,7 +214,7 @@ function ForgeUI_MiniMap:new(o)
 end
 
 function ForgeUI_MiniMap:CreateOverlayObjectTypes()
-
+	self.eObjectTypeInstancePortal 		= self.wndMiniMap:CreateOverlayType()
 	self.eObjectTypePublicEvent			= self.wndMiniMap:CreateOverlayType()
 	self.eObjectTypePublicEventKill		= self.wndMiniMap:CreateOverlayType()
 	self.eObjectTypeChallenge			= self.wndMiniMap:CreateOverlayType()
@@ -208,7 +231,6 @@ function ForgeUI_MiniMap:CreateOverlayObjectTypes()
 	self.eObjectTypeVendor 				= self.wndMiniMap:CreateOverlayType()
 	self.eObjectTypeAuctioneer 			= self.wndMiniMap:CreateOverlayType()
 	self.eObjectTypeCommodity 			= self.wndMiniMap:CreateOverlayType()
-	self.eObjectTypeInstancePortal 		= self.wndMiniMap:CreateOverlayType()
 	self.eObjectTypeBindPointActive 	= self.wndMiniMap:CreateOverlayType()
 	self.eObjectTypeBindPointInactive 	= self.wndMiniMap:CreateOverlayType()
 	self.eObjectTypeMiningNode 			= self.wndMiniMap:CreateOverlayType()
@@ -570,6 +592,8 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRestore()
 		
 		ForgeUI.API_RegisterCheckBox(self, wndOptionsBtn, self.tSettings.tCategories, strCategory, "OnFilterOption")
 	end
+	
+	self:RehideAllToggledIcons()
 end
 
 function ForgeUI_MiniMap:OnCharacterCreated()
@@ -1133,7 +1157,7 @@ function ForgeUI_MiniMap:HandleUnitCreated(unitNew)
 			objectType = tMarkerInfo.objectType
 		end
 
-		local bIconState = true
+		local bIconState = self:GetToggledIconState(objectType)
 		if not tInteract.Busy and (not tMarkerInfo.bHideIfHostile
 			or (tMarkerInfo.bHideIfHostile and unitNew:GetDispositionTo(self.unitPlayerDisposition) ~= Unit.CodeEnumDisposition.Hostile)) then
 			local mapIconReference = self.wndMiniMap:AddUnit(unitNew, objectType, tInfo, tMarkerOptions, bIconState ~= nil and not bIconState)
@@ -1414,7 +1438,7 @@ function ForgeUI_MiniMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY
 		local strName = string.format("<T Font=\"%s\" TextColor=\"%s\">%s</T>", "CRB_InterfaceMedium", "ffffffff", tObject.strName)
 		local eParentCategory = self.tReverseCategoryMap[tObject.eType]
 		
-		if true then
+		if self.tSettings.tCategories[ktTypeToCategory[eParentCategory]] then
 			if tObject.eType == GameLib.CodeEnumMapOverlayType.QuestObjective then
 				local strLevel = string.format("<T Font=\"%s\" TextColor=\"%s\"> (%s)</T>", "CRB_InterfaceMedium", ktConColors[tObject.userData:GetColoredDifficulty()], tObject.userData:GetConLevel())
 				strName = strName .. strLevel
@@ -1548,6 +1572,30 @@ function ForgeUI_MiniMap:OnFilterOption(wndControl)
 			self.wndMiniMap:HideObjectsByType(eObjectType)
 		end
 	end
+end
+
+function ForgeUI_MiniMap:RehideAllToggledIcons()
+	if self.wndMiniMap ~= nil and self.tToggledIcons ~= nil then
+		for eData, bState in pairs(self.tSettings.tCategories) do
+			if not bState then
+				for idx, eObjectType in pairs(self.tCategoryTypes[ktUIElementToType["OptionsBtn" .. eData]]) do
+					self.wndMiniMap:HideObjectsByType(eObjectType)
+				end
+			end
+		end
+	end
+end
+
+function ForgeUI_MiniMap:GetToggledIconState(eSearchType)
+	for eCategory, tTypes in pairs(self.tCategoryTypes) do
+		for idx, eObjectType in pairs(tTypes) do
+			if eObjectType == eSearchType then
+				return self.tSettings.tCategories[ktTypeToCategory[eCategory]]
+			end
+		end
+	end
+
+	return false
 end
 
 ---------------------------------------------------------------------------------------------------
