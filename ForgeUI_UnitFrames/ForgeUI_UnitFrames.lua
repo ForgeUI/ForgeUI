@@ -37,11 +37,16 @@ function ForgeUI_UnitFrames:new(o)
 	self.wndContainers = {}
 	
 	self.tStylers = {
+		["LoadStyle_PlayerFrame"] = self,
 		["UpdateStyle_PlayerFrame"] = self,
+		["RefreshStyle_PlayerFrame"] = self, -- (unit)
+		["LoadStyle_TargetFrame"] = self,
 		["UpdateStyle_TargetFrame"] = self,
 		["RefreshStyle_TargetFrame"] = self, -- (unit)
+		["LoadStyle_FocusFrame"] = self,
 		["UpdateStyle_FocusFrame"] = self,
 		["RefreshStyle_FocusFrame"] = self, -- (unit)
+		["LoadStyle_TotFrame"] = self,
 		["UpdateStyle_TotFrame"] = self,
 		["RefreshStyle_TotFrame"] = self, -- (unit)
 	}
@@ -181,6 +186,11 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 end
 
 function ForgeUI_UnitFrames:ForgeAPI_Initialization()
+	self.tStylers["LoadStyle_PlayerFrame"]["LoadStyle_PlayerFrame"](self)
+	self.tStylers["LoadStyle_TargetFrame"]["LoadStyle_TargetFrame"](self)
+	self.tStylers["LoadStyle_FocusFrame"]["LoadStyle_FocusFrame"](self)
+	self.tStylers["LoadStyle_TotFrame"]["LoadStyle_TotFrame"](self)
+
 	if GameLib.GetPlayerUnit() then
 		self:OnCharacterCreated()
 	else
@@ -207,6 +217,8 @@ function ForgeUI_UnitFrames:UpdatePlayerFrame(unit)
 	else
 		self.wndPlayerFrame:FindChild("Indicator"):Show(false)
 	end
+	
+	self.tStylers["RefreshStyle_PlayerFrame"]["RefreshStyle_PlayerFrame"](self, unit)
 		
 	self:UpdateHPBar(unit, self.wndPlayerFrame, "tPlayerFrame")
 	self:UpdateShieldBar(unit, self.wndPlayerFrame)
@@ -466,6 +478,9 @@ function ForgeUI_UnitFrames:UpdateStyles()
 	self.tStylers["UpdateStyle_TotFrame"]["UpdateStyle_TotFrame"](self)
 end
 
+function ForgeUI_UnitFrames:LoadStyle_PlayerFrame()
+end
+
 function ForgeUI_UnitFrames:UpdateStyle_PlayerFrame()
 	unit = GameLib.GetPlayerUnit()
 	if not unit or not self.wndPlayerFrame then return end
@@ -482,6 +497,12 @@ function ForgeUI_UnitFrames:UpdateStyle_PlayerFrame()
 	self.wndPlayerFrame:FindChild("Shield_TextValue"):SetTextColor(self.tSettings.tPlayerFrame.crShieldValue)
 	self.wndPlayerFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self.tSettings.tPlayerFrame.crAbsorbBar)
 	self.wndPlayerFrame:FindChild("Absorb_TextValue"):SetTextColor(self.tSettings.tPlayerFrame.crAbsorbValue)
+end
+
+function ForgeUI_UnitFrames:RefreshStyle_PlayerFrame()
+end
+
+function ForgeUI_UnitFrames:LoadStyle_TargetFrame()
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_TargetFrame()
@@ -505,6 +526,9 @@ function ForgeUI_UnitFrames:RefreshStyle_TargetFrame(unit)
 	else
 		_name:SetTextColor(unit:GetNameplateColor())
 	end
+end
+
+function ForgeUI_UnitFrames:LoadStyle_FocusFrame()
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_FocusFrame()
@@ -531,6 +555,9 @@ function ForgeUI_UnitFrames:RefreshStyle_FocusFrame(unit)
 	else
 		_name:SetTextColor(unit:GetNameplateColor())
 	end
+end
+
+function ForgeUI_UnitFrames:LoadStyle_TotFrame()
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_TotFrame()
