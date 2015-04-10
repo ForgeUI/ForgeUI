@@ -105,6 +105,30 @@ local ktCategoryNames =
 	[ktTooltipCategories.PvPMarker]		= Apollo.GetString("MiniMap_PvPObjective"),
 }
 
+local ktUIElementToType =
+{
+	["OptionsBtnQuests"] 			= ktTooltipCategories.QuestNPC,
+	["OptionsBtnTracked"] 			= ktTooltipCategories.TrackedQuest,
+	["OptionsBtnCreaturesN"] 		= ktTooltipCategories.NeutralNPC,
+	["OptionsBtnCreaturesH"] 		= ktTooltipCategories.HostileNPC,
+	["OptionsBtnMissions"] 			= ktTooltipCategories.Path,
+	["OptionsBtnChallenges"] 		= ktTooltipCategories.Challenge,
+	["OptionsBtnPublicEvents"] 		= ktTooltipCategories.PublicEvent,
+	["OptionsBtnTradeskills"] 		= ktTooltipCategories.Tradeskill,
+	["OptionsBtnVendors"] 			= ktTooltipCategories.Vendor,
+	["OptionsBtnServices"] 			= ktTooltipCategories.Service,
+	["OptionsBtnInstancePortals"] 	= ktTooltipCategories.Portal,
+	["OptionsBtnBindPoints"] 		= ktTooltipCategories.BindPoint,
+	["OptionsBtnMiningNodes"] 		= ktTooltipCategories.Mining,
+	["OptionsBtnRelicNodes"] 		= ktTooltipCategories.Relic,
+	["OptionsBtnSurvivalistNodes"] 	= ktTooltipCategories.Survivalist,
+	["OptionsBtnFarmingNodes"] 		= ktTooltipCategories.Farming,
+	["OptionsBtnFriends"]			= ktTooltipCategories.Friend,
+	["OptionsBtnRivals"] 			= ktTooltipCategories.Rival,
+	["OptionsBtnTaxis"] 			= ktTooltipCategories.Taxi,
+	["OptionsBtnCityDirections"] 	= ktTooltipCategories.CityDirection,	
+}
+
 local ktInstanceSettingTypeStrings =
 {
 	Veteran = Apollo.GetString("MiniMap_Veteran"),
@@ -138,7 +162,29 @@ function ForgeUI_MiniMap:new(o)
 	-- optional
 	self.settings_version = 1
     self.tSettings = {
-		nZoomLevel = 1
+		nZoomLevel = 1,
+		tCategories = {
+			Quests 			= true,
+			Tracked 		= true,
+			CreaturesN 		= true,
+			CreaturesH 		= true,
+			Missions 		= false,
+			Challenges 		= false,
+			PublicEvents 	= true,
+			Tradeskills 	= true,
+			Vendors 		= true,
+			Services 		= true,
+			InstancePortals = true,
+			BindPoints 		= true,
+			MiningNodes 	= true,
+			RelicNodes 		= true,
+			SurvivalistNodes = true,
+			FarmingNodes 	= true,
+			Friends			= true,
+			Rivals 			= true,
+			Taxis			= true,
+			CityDirections 	= true,
+		}
 	}
 
 	return o
@@ -429,7 +475,6 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRegistration()
 	Apollo.RegisterEventHandler("HazardShowMinimapUnit", 				"OnHazardShowMinimapUnit", self)
 	Apollo.RegisterEventHandler("HazardRemoveMinimapUnit", 				"OnHazardRemoveMinimapUnit", self)
 	Apollo.RegisterEventHandler("ZoneMapPing", 							"OnMapPing", self)
-	Apollo.RegisterEventHandler("UnitPvpFlagsChanged", 					"OnUnitPvpFlagsChanged", self)
 
 	Apollo.RegisterEventHandler("PlayerLevelChange",					"UpdateHarvestableNodes", self)
 
@@ -451,10 +496,13 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRegistration()
 
 	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 			"OnTutorial_RequestUIAnchor", self)
 
+	ForgeUI.API_AddItemButton(self, "MiniMap", { strContainer = "Container" })
+	
 	self.wndMain 			= Apollo.LoadForm(self.xmlDoc , "Minimap", "FixedHudStratum", self)
+	ForgeUI.API_RegisterWindow(self, self.wndMain, "ForgeUI_MiniMap", { strDisplayName = "MiniMap" })
+	
 	self.wndMiniMap 		= self.wndMain:FindChild("MapContent")
 	self.wndZoneName 		= self.wndMain:FindChild("MapZoneName")
-	self.wndPvPFlagName 	= self.wndMain:FindChild("MapZonePvPFlag")
 	self:UpdateZoneName(GetCurrentZoneName())
 
 	self.bLiveEventActive = false
@@ -465,34 +513,6 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRegistration()
 	self.unitPlayerDisposition = GameLib.GetPlayerUnit()
 	if self.unitPlayerDisposition ~= nil then
 		self:OnCharacterCreated()
-	end
-
-	if not self.tToggledIcons or self.tToggledIcons[ktTooltipCategories.QuestNPC] == nil then
-		self.tToggledIcons =
-		{
-			[ktTooltipCategories.QuestNPC]			= true,
-			[ktTooltipCategories.TrackedQuest] 		= true,
-			[ktTooltipCategories.NeutralNPC] 		= true,
-			[ktTooltipCategories.HostileNPC] 		= true,
-			[ktTooltipCategories.Path] 				= true,
-			[ktTooltipCategories.Challenge] 		= true,	
-			[ktTooltipCategories.PublicEvent] 		= true,
-			[ktTooltipCategories.Tradeskill] 		= true,
-			[ktTooltipCategories.Vendor] 			= true,
-			[ktTooltipCategories.Service] 			= true,
-			[ktTooltipCategories.Portal] 			= true,
-			[ktTooltipCategories.BindPoint] 		= true,
-			[ktTooltipCategories.Mining] 			= true,
-			[ktTooltipCategories.Relic] 			= true,
-			[ktTooltipCategories.Survivalist] 		= true,
-			[ktTooltipCategories.Farming] 			= true,
-			[ktTooltipCategories.Friend] 			= true,
-			[ktTooltipCategories.Rival] 			= true,
-			[ktTooltipCategories.Taxi] 				= true,
-			[ktTooltipCategories.CityDirection] 	= true,
-			[ktTooltipCategories.GroupMember] 		= true,
-			[ktTooltipCategories.PvPMarker] 		= true,
-		}
 	end
 	
 	-- The object types for each category
@@ -534,32 +554,6 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRegistration()
 	self:ReloadMissions()
 	self:OnQuestStateChanged()
 
-	local tUIElementToType =
-	{
-		["OptionsBtnQuests"] 			= ktTooltipCategories.QuestNPC,
-		["OptionsBtnTracked"] 			= ktTooltipCategories.TrackedQuest,
-		["OptionsBtnCreaturesN"] 		= ktTooltipCategories.NeutralNPC,
-		["OptionsBtnCreaturesH"] 		= ktTooltipCategories.HostileNPC,
-		["OptionsBtnMissions"] 			= ktTooltipCategories.Path,
-		["OptionsBtnChallenges"] 		= ktTooltipCategories.Challenge,
-		["OptionsBtnPublicEvents"] 		= ktTooltipCategories.PublicEvent,
-		["OptionsBtnTradeskills"] 		= ktTooltipCategories.Tradeskill,
-		["OptionsBtnVendors"] 			= ktTooltipCategories.Vendor,
-		["OptionsBtnServices"] 			= ktTooltipCategories.Service,
-		["OptionsBtnInstancePortals"] 	= ktTooltipCategories.Portal,
-		["OptionsBtnBindPoints"] 		= ktTooltipCategories.BindPoint,
-		["OptionsBtnMiningNodes"] 		= ktTooltipCategories.Mining,
-		["OptionsBtnRelicNodes"] 		= ktTooltipCategories.Relic,
-		["OptionsBtnSurvivalistNodes"] 	= ktTooltipCategories.Survivalist,
-		["OptionsBtnFarmingNodes"] 		= ktTooltipCategories.Farming,
-		["OptionsBtnFriends"]			= ktTooltipCategories.Friend,
-		["OptionsBtnRivals"] 			= ktTooltipCategories.Rival,
-		["OptionsBtnTaxis"] 			= ktTooltipCategories.Taxi,
-		["OptionsBtnCityDirections"] 	= ktTooltipCategories.CityDirection,	
-	}
-
-	self:RehideAllToggledIcons()
-
 	if g_wndTheMiniMap == nil then
 		g_wndTheMiniMap = self.wndMiniMap
 	end
@@ -569,6 +563,13 @@ end
 
 function ForgeUI_MiniMap:ForgeAPI_AfterRestore()
 	self.wndMiniMap:SetZoomLevel(self.tSettings.nZoomLevel)
+	
+	local wndOptionsWindow = self.wndContainers["Container"]
+	for strCategory, bEnabled in pairs(self.tSettings.tCategories) do
+		local wndOptionsBtn = wndOptionsWindow:FindChild("OptionsBtn" .. strCategory)
+		
+		ForgeUI.API_RegisterCheckBox(self, wndOptionsBtn, self.tSettings.tCategories, strCategory, "OnFilterOption")
+	end
 end
 
 function ForgeUI_MiniMap:OnCharacterCreated()
@@ -595,83 +596,6 @@ function ForgeUI_MiniMap:OnOptionsUpdated()
 	self:OnQuestStateChanged()
 end
 
----------------------------------------------------------------------------------------------------
-function ForgeUI_MiniMap:OnSaveOld(eType)
-	if eType ~= GameLib.CodeEnumAddonSaveLevel.Account then
-		return
-	end
-
-	local tShownUnits = {}
-	local tHiddenUnits = {}
-
-	if self.tUnitsShown then
-		for idUnit, unit in pairs(self.tUnitsShown) do
-			tShownUnits[idUnit] = idUnit
-		end
-	end
-
-
-	if self.tUnitsHidden then
-		for idx, unit in pairs(self.tUnitsHidden) do
-			tHiddenUnits[idx] = idx
-		end
-	end
-
-	local tSavedData =
-	{
-		bRotateToggled = self.bRotate,
-		fZoomLevel = self.wndMiniMap:GetZoomLevel(),
-		tToggled = self.tToggledIcons,
-		tSavedShownUnits = tShownUnits,
-		tSavedHiddenUnits = tHiddenUnits
-	}
-
-
-	return tSavedData
-end
-
----------------------------------------------------------------------------------------------------
-function ForgeUI_MiniMap:OnRestoreOld(eType, tSavedData)
-	self.tSavedData = tSavedData
-	if eType ~= GameLib.CodeEnumAddonSaveLevel.Account then
-		return
-	end
-
-	if tSavedData.fZoomLevel then
-		self.fSavedZoomLevel = tSavedData.fZoomLevel
-	end
-
-	if tSavedData.tToggled then
-		self.tToggledIcons = tSavedData.tToggled
-		self:RehideAllToggledIcons()
-	end
-
-	self.tQueuedUnits = {}
-
-	if tSavedData.tSavedShownUnits then
-		for idx, idUnit in pairs(tSavedData.tSavedShownUnits) do
-			local unitShown = GameLib.GetUnitById(idUnit)
-			if unitShown and  unitShown:IsValid() then
-				self.tQueuedUnits[#self.tQueuedUnits + 1] = unitShown
-			end
-		end
-	end
-
-	if tSavedData.tSavedHiddenUnits then
-		for idx, idUnit in pairs(tSavedData.tSavedHiddenUnits) do
-			local unitHidden = GameLib.GetUnitById(idUnit)
-			if unitHidden and  unitHidden:IsValid()then
-				self.tQueuedUnits[#self.tQueuedUnits + 1] = unitHidden
-			end
-		end
-	end
-
-	if tSavedData.bRotateToggled then
-		self.bRotate = tSavedData.bRotateToggled
-	end
-end
-
----------------------------------------------------------------------------------------------------
 function ForgeUI_MiniMap:ReloadMissions()
 	--self.wndMiniMap:RemoveObjectsByType(GameLib.CodeEnumMapOverlayType.PathObjective)
 	local epiCurrent = PlayerPathLib.GetCurrentEpisode()
@@ -682,7 +606,6 @@ function ForgeUI_MiniMap:ReloadMissions()
 	end
 end
 
----------------------------------------------------------------------------------------------------
 function ForgeUI_MiniMap:OnChangeZoneName(oVar, strNewZone)
 	self:UpdateZoneName(strNewZone)
 
@@ -745,60 +668,6 @@ function ForgeUI_MiniMap:UpdateZoneName(strZoneName)
 	end
 
 	self.wndZoneName:SetText(strAdjustedZoneName)
-	self:UpdatePvpFlag()
-end
-
-function ForgeUI_MiniMap:OnUnitPvpFlagsChanged(unitChanged)
-	if not unitChanged:IsThePlayer() then
-		return
-	end
-	self:UpdatePvpFlag()
-end
-
-function ForgeUI_MiniMap:UpdatePvpFlag()
-	if true then return end
-
-	local nZoneRules = GameLib.GetCurrentZonePvpRules()
-
-	if GameLib.IsPvpServer() == true then
-		self.wndPvPFlagName:Show(true)
-	else
-		self.wndPvPFlagName:Show(nZoneRules ~= GameLib.CodeEnumZonePvpRules.DominionPVPStronghold and nZoneRules ~= GameLib.CodeEnumZonePvpRules.ExilePVPStronghold)
-	end
-
-	self.wndPvPFlagName:SetText(ktPvPZoneTypes[nZoneRules] or "")
-end
-
----------------------------------------------------------------------------------------------------
--- pozor
-function ForgeUI_MiniMap:OnMenuBtnToggle(wndHandler, wndControl)
-
-	if wndControl:IsChecked() then
-		local bIsMiner, bIsRelicHunter, bIsSurvivalist, bIsFarmer = false, false, false, false
-
-		for idx, tTradeskill in pairs(CraftingLib.GetKnownTradeskills() or {}) do
-
-			local tTradeskillInfo = CraftingLib.GetTradeskillInfo(tTradeskill.eId)
-
-			if (tTradeskill.eId == CraftingLib.CodeEnumTradeskill.Mining) and tTradeskillInfo.bIsActive then
-				bIsMiner = true
-			elseif (tTradeskill.eId == CraftingLib.CodeEnumTradeskill.Relic_Hunter) and tTradeskillInfo.bIsActive then
-				bIsRelicHunter = true
-			elseif (tTradeskill.eId == CraftingLib.CodeEnumTradeskill.Survivalist) and tTradeskillInfo.bIsActive then
-				bIsSurvivalist = true
-			elseif (tTradeskill.eId == CraftingLib.CodeEnumTradeskill.Farmer) and tTradeskillInfo.bIsActive then
-				bIsFarmer = true
-			end
-
-		end
-
-		self.wndMinimapOptions:FindChild("OptionsBtnMiningNodes"):Enable(bIsMiner)
-		self.wndMinimapOptions:FindChild("OptionsBtnRelicNodes"):Enable(bIsRelicHunter)
-		self.wndMinimapOptions:FindChild("OptionsBtnSurvivalistNodes"):Enable(bIsSurvivalist)
-		self.wndMinimapOptions:FindChild("OptionsBtnFarmingNodes"):Enable(bIsFarmer)
-	end
-
-	self.wndMinimapOptions:Show(wndControl:IsChecked())
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -911,7 +780,7 @@ function ForgeUI_MiniMap:OnFlashChallengeIcon(chalOwner, strDescription, fDurati
 		self.wndMiniMap:RemoveObject(self.tChallengeObjects[chalOwner])
 	end
 
-	if self.tToggledIcons[ktTooltipCategories.Challenge] ~= false then
+	if self.tSettings.tCategories.Challenges ~= false then
 		-- TODO: Need to change the icon to a flashing icon
 		local tInfo =
 		{
@@ -945,7 +814,7 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function ForgeUI_MiniMap:OnPlayerPathMissionActivate(pmActivated)
-	if self.tToggledIcons == nil then
+	if self.tSettings.tCategories == nil then
 		return
 	end
 
@@ -959,7 +828,7 @@ function ForgeUI_MiniMap:OnPlayerPathMissionActivate(pmActivated)
 		crEdge 		= CColor.new(1, 1, 1, 1),
 	}
 
-	self.wndMiniMap:AddPathIndicator(pmActivated, tInfo, {bNeverShowOnEdge = true, bFixedSizeSmall = false}, not self.tToggledIcons[ktTooltipCategories.Path])
+	self.wndMiniMap:AddPathIndicator(pmActivated, tInfo, {bNeverShowOnEdge = true, bFixedSizeSmall = false}, not self.tSettings.tCategories.Missions)
 end
 
 function ForgeUI_MiniMap:OnPlayerPathMissionDeactivate(pmDeactivated)
@@ -981,7 +850,7 @@ function ForgeUI_MiniMap:OnPublicEventUpdate(peUpdated)
 		self:OnPublicEventObjectiveEnd(peoCurr)
 	end	
 	
-	if not peUpdated:IsActive() or self.tToggledIcons == nil then
+	if not peUpdated:IsActive() or self.tSettings.tCategories == nil then
 		return
 	end
 
@@ -995,7 +864,7 @@ function ForgeUI_MiniMap:OnPublicEventUpdate(peUpdated)
 
 	for idx, tPos in ipairs(peUpdated:GetLocations()) do
 		local tOptions = { bNeverShowOnEdge = peUpdated:ShouldShowOnMiniMapEdge(), bFixedSizeSmall = false }
-		self.wndMiniMap:AddObject(self.eObjectTypePublicEvent, tPos, peUpdated:GetName(), tInfo, tOptions, not self.tToggledIcons[ktTooltipCategories.PublicEvent], peUpdated)
+		self.wndMiniMap:AddObject(self.eObjectTypePublicEvent, tPos, peUpdated:GetName(), tInfo, tOptions, not self.tSettings.tCategories.PublicEvents, peUpdated)
 	end
 
 	for idx, peoCurr in ipairs(peUpdated:GetObjectives()) do
@@ -1039,7 +908,7 @@ function ForgeUI_MiniMap:OnPublicEventObjectiveUpdate(peoUpdated)
 	bHideOnEdge = (peoUpdated:ShouldShowOnMinimapEdge() ~= true)
 
 	for idx, tPos in ipairs(peoUpdated:GetLocations()) do
-		self.wndMiniMap:AddObject(self.eObjectTypePublicEvent, tPos, peoUpdated:GetShortDescription(), tInfo, {bNeverShowOnEdge = hideOnEdge, bFixedSizeSmall = false}, not self.tToggledIcons[ktTooltipCategories.PublicEvent], peoUpdated)
+		self.wndMiniMap:AddObject(self.eObjectTypePublicEvent, tPos, peoUpdated:GetShortDescription(), tInfo, {bNeverShowOnEdge = hideOnEdge, bFixedSizeSmall = false}, not self.tSettings.tCategories.PublicEvents, peoUpdated)
 	end
 end
 
@@ -1079,7 +948,7 @@ end
 function ForgeUI_MiniMap:OnQuestStateChanged()
 	self.tEpisodeList = QuestLib.GetTrackedEpisodes(self.bQuestTrackerByDistance)
 
-	if self.wndMiniMap == nil or self.tToggledIcons == nil then
+	if self.wndMiniMap == nil or self.tSettings.tCategories == nil then
 		return
 	end
 
@@ -1104,8 +973,8 @@ function ForgeUI_MiniMap:OnQuestStateChanged()
 					crEdge 		= CColor.new(1, 1, 1, 1),
 				}
 				-- This is a C++ call on the MiniMapWindow class
-				self.wndMiniMap:AddQuestIndicator(queCurr, tostring(nCount), tInfo, {bOnlyShowOnEdge = false, bAboveOverlay = true}, not self.tToggledIcons[ktTooltipCategories.TrackedQuest])
-			elseif not queCurr:IsActiveQuest() and self.tToggledIcons[ktTooltipCategories.QuestNPC] then
+				self.wndMiniMap:AddQuestIndicator(queCurr, tostring(nCount), tInfo, {bOnlyShowOnEdge = false, bAboveOverlay = true}, not self.tSettings.tCategories.Tracked)
+			elseif not queCurr:IsActiveQuest() and self.tSettings.tCategories.Quests then
 				local tInfo =
 				{
 					strIcon = "sprMM_QuestTracked",
@@ -1116,7 +985,7 @@ function ForgeUI_MiniMap:OnQuestStateChanged()
 					strIconBelow = "IconSprites:Icon_MapNode_Map_QuestMarkerBelow",
 				}
 				-- This is a C++ call on the MiniMapWindow class
-				self.wndMiniMap:AddQuestIndicator(queCurr, tostring(nCount), tInfo, {bOnlyShowOnEdge = false, bFixedSizeMedium = false, bAboveOverlay = true}, not self.tToggledIcons[ktTooltipCategories.TrackedQuest])
+				self.wndMiniMap:AddQuestIndicator(queCurr, tostring(nCount), tInfo, {bOnlyShowOnEdge = false, bFixedSizeMedium = false, bAboveOverlay = true}, not self.tSettings.tCategories.Tracked)
 			end
 		end
 	end
@@ -1264,7 +1133,7 @@ function ForgeUI_MiniMap:HandleUnitCreated(unitNew)
 			objectType = tMarkerInfo.objectType
 		end
 
-		local bIconState = self:GetToggledIconState(objectType)
+		local bIconState = true
 		if not tInteract.Busy and (not tMarkerInfo.bHideIfHostile
 			or (tMarkerInfo.bHideIfHostile and unitNew:GetDispositionTo(self.unitPlayerDisposition) ~= Unit.CodeEnumDisposition.Hostile)) then
 			local mapIconReference = self.wndMiniMap:AddUnit(unitNew, objectType, tInfo, tMarkerOptions, bIconState ~= nil and not bIconState)
@@ -1545,7 +1414,7 @@ function ForgeUI_MiniMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY
 		local strName = string.format("<T Font=\"%s\" TextColor=\"%s\">%s</T>", "CRB_InterfaceMedium", "ffffffff", tObject.strName)
 		local eParentCategory = self.tReverseCategoryMap[tObject.eType]
 		
-		if self.tToggledIcons[eParentCategory] then
+		if true then
 			if tObject.eType == GameLib.CodeEnumMapOverlayType.QuestObjective then
 				local strLevel = string.format("<T Font=\"%s\" TextColor=\"%s\"> (%s)</T>", "CRB_InterfaceMedium", ktConColors[tObject.userData:GetColoredDifficulty()], tObject.userData:GetConLevel())
 				strName = strName .. strLevel
@@ -1671,55 +1540,14 @@ end
 ---------------------------------------------------------------------------------------------------
 -- MinimapOptions Functions
 ---------------------------------------------------------------------------------------------------
-
-function ForgeUI_MiniMap:OnFilterOptionCheck(wndHandler, wndControl, eMouseButton)
-	local eCategory = wndControl:GetData()
-	if eCategory == nil then
-		return
-	end
-
-	self.tToggledIcons[eCategory] = true
-	
-	for idx, eObjectType in pairs(self.tCategoryTypes[eCategory]) do
-		self.wndMiniMap:ShowObjectsByType(eObjectType)
-	end
-end
-
-function ForgeUI_MiniMap:OnFilterOptionUncheck(wndHandler, wndControl, eMouseButton)
-	local eCategory = wndControl:GetData()
-	if eCategory == nil then
-		return
-	end
-
-	self.tToggledIcons[eCategory] = false
-	
-	for idx, eObjectType in pairs(self.tCategoryTypes[eCategory]) do
-		self.wndMiniMap:HideObjectsByType(eObjectType)
-	end
-end
-
-function ForgeUI_MiniMap:RehideAllToggledIcons()
-	if self.wndMiniMap ~= nil and self.tToggledIcons ~= nil then
-		for eData, bState in pairs(self.tToggledIcons) do
-			if not bState then
-				for idx, eObjectType in pairs(self.tCategoryTypes[eData]) do
-					self.wndMiniMap:HideObjectsByType(eObjectType)
-				end
-			end
+function ForgeUI_MiniMap:OnFilterOption(wndControl)
+	for idx, eObjectType in pairs(self.tCategoryTypes[ktUIElementToType[wndControl:GetName()]]) do
+		if wndControl:IsChecked() then
+			self.wndMiniMap:ShowObjectsByType(eObjectType)
+		else
+			self.wndMiniMap:HideObjectsByType(eObjectType)
 		end
 	end
-end
-
-function ForgeUI_MiniMap:GetToggledIconState(eSearchType)
-	for eCategory, tTypes in pairs(self.tCategoryTypes) do
-		for idx, eObjectType in pairs(tTypes) do
-			if eObjectType == eSearchType then
-				return self.tToggledIcons[eCategory]
-			end
-		end
-	end
-
-	return false
 end
 
 ---------------------------------------------------------------------------------------------------

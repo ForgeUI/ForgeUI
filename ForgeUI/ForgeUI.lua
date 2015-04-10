@@ -790,7 +790,7 @@ function ForgeUI:OnChechBoxCheck( wndHandler, wndControl )
 		if tData.tAddon.tStylers[tData.strCallback] ~= nil then
 			tData.tAddon.tStylers[tData.strCallback][tData.strCallback](tData.tAddon)
 		else
-			tData.tAddon[tData.strCallback](tData.tAddon)
+			tData.tAddon[tData.strCallback](tData.tAddon, wndControl)
 		end
 	end
 end
@@ -841,7 +841,7 @@ function ForgeUI:OnNumberBoxChanged( wndHandler, wndControl, strText )
 			if tData.tAddon.tStylers[tData.strCallback] ~= nil then
 				tData.tAddon.tStylers[tData.strCallback][tData.strCallback](tData.tAddon)
 			else
-				tData.tAddon[tData.strCallback](tData.tAddon)
+				tData.tAddon[tData.strCallback](tData.tAddon, wndControl)
 			end
 		end
 	else
