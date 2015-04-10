@@ -180,6 +180,14 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	end
 end
 
+function ForgeUI_UnitFrames:ForgeAPI_Initialization()
+	if GameLib.GetPlayerUnit() then
+		self:OnCharacterCreated()
+	else
+		Apollo.RegisterEventHandler("CharacterCreated", 	"OnCharacterCreated", self)
+	end
+end
+
 -----------------------------------------------------------------------------------------------
 -- On next frame
 -----------------------------------------------------------------------------------------------
@@ -591,12 +599,6 @@ function ForgeUI_UnitFrames:OnDocLoaded()
 	end
 	
 	ForgeUI.API_RegisterAddon(self)
-	
-	if GameLib.GetPlayerUnit() then
-		self:OnCharacterCreated()
-	else
-		Apollo.RegisterEventHandler("CharacterCreated", 	"OnCharacterCreated", self)
-	end
 end
 
 ---------------------------------------------------------------------------------------------------

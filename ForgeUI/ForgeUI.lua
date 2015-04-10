@@ -229,6 +229,10 @@ function ForgeUI.API_RegisterAddon(tAddon)
 			tAddon:ForgeAPI_LoadOptions() -- Forge API LoadOptions
 		end
 		
+		if tAddon.ForgeAPI_Initialization ~= nil then
+			tAddon:ForgeAPI_Initialization() -- Forge API Initialization
+		end
+		
 		local wndAddon = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_AddonForm", ForgeUIInst.wndAddons, ForgeUIInst)
 		wndAddon:FindChild("AddonName"):SetText(tAddon.strDisplayName)
 		
