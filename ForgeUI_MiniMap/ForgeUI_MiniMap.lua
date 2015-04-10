@@ -110,6 +110,7 @@ local ktTypeToCategory = {
 	[ktTooltipCategories.TrackedQuest]	= "Tracked",
 	[ktTooltipCategories.NeutralNPC]		= "CreaturesN",
 	[ktTooltipCategories.HostileNPC]		= "CreaturesH",
+	[ktTooltipCategories.GroupMember] = "GroupMember",
 	[ktTooltipCategories.Path]			= "Missions",
 	[ktTooltipCategories.Challenge]		= "Challenges",
 	[ktTooltipCategories.PublicEvent]		= "PublicEvents",
@@ -134,6 +135,7 @@ local ktUIElementToType =
 	["OptionsBtnTracked"] 			= ktTooltipCategories.TrackedQuest,
 	["OptionsBtnCreaturesN"] 		= ktTooltipCategories.NeutralNPC,
 	["OptionsBtnCreaturesH"] 		= ktTooltipCategories.HostileNPC,
+	["OptionsBtnGroupMember"]		= ktTooltipCategories.GroupMember,
 	["OptionsBtnMissions"] 			= ktTooltipCategories.Path,
 	["OptionsBtnChallenges"] 		= ktTooltipCategories.Challenge,
 	["OptionsBtnPublicEvents"] 		= ktTooltipCategories.PublicEvent,
@@ -191,6 +193,7 @@ function ForgeUI_MiniMap:new(o)
 			Tracked 		= true,
 			CreaturesN 		= true,
 			CreaturesH 		= true,
+			GroupMember		= true,
 			Missions 		= false,
 			Challenges 		= false,
 			PublicEvents 	= true,
@@ -590,7 +593,9 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRestore()
 	for strCategory, bEnabled in pairs(self.tSettings.tCategories) do
 		local wndOptionsBtn = wndOptionsWindow:FindChild("OptionsBtn" .. strCategory)
 		
-		ForgeUI.API_RegisterCheckBox(self, wndOptionsBtn, self.tSettings.tCategories, strCategory, "OnFilterOption")
+		if wndOptionsBtn then
+			ForgeUI.API_RegisterCheckBox(self, wndOptionsBtn, self.tSettings.tCategories, strCategory, "OnFilterOption")
+		end
 	end
 	
 	self:RehideAllToggledIcons()
@@ -1414,12 +1419,11 @@ function ForgeUI_MiniMap:DrawGroupMember(tMember)
 	local strNameFormatted = string.format("<T Font=\"CRB_InterfaceMedium_B\" TextColor=\"ff31fcf6\">%s</T>", tMember.strName)
 	strNameFormatted = String_GetWeaselString(Apollo.GetString("ZoneMap_AppendGroupMemberLabel"), strNameFormatted)
 	tMember.mapObject = self.wndMiniMap:AddObject(self.eObjectTypeGroupMember, tMember.tWorldLoc, strNameFormatted, tInfo, tMarkerOptions)
-
 end
 
 
 ---------------------------------------------------------------------------------------------------
-function ForgeUI_MiniMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY)	
+function ForgeUI_MiniMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY)
 	local strTooltip = ""
 	if eType ~= Tooltip.TooltipGenerateType_Map then
 		wndControl:SetTooltip("")
