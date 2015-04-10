@@ -1093,6 +1093,15 @@ function ForgeUI.FormatDuration(tim)
 	end
 end
 
+function ForgeUI.GetTime(b24HourFormat)
+	if b24HourFormat then
+		local l_time = GameLib.GetLocalTime()
+		return string.format("%02d:%02d", l_time.nHour, l_time.nMinute)
+	else
+		return ""
+	end
+end
+
 function ForgeUI.Round(num, idp)
   local mult = 10^(idp or 0)
   return math.floor(num * mult + 0.5) / mult
