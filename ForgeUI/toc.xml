@@ -5,4 +5,5 @@
     <Script Name="ForgeColor\ForgeColor.lua"/>
     <Script Name="ForgeComm.lua"/>
     <Script Name="lib\TableUtils.lua"/>
+    <Script Name="lib\LibJSON\LibJSON-2.5.lua"/>
 </Addon>

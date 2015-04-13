@@ -1,39 +1,59 @@
 require "ICComm"
 
-local MAJOR, MINOR = "ForgeComm", 1
-
-local APkg = Apollo.GetPackage(MAJOR)
-if APkg and (APkg.nVersion or 0) >= MINOR then return end
+local LibJSON
 
 local ForgeUI = Apollo.GetAddon("ForgeUI")
-local ForgeComm = {}
 
-function ForgeComm:OnMessageSent(iccomm, eResult, idMessage)
+local tMessageFormat = {
+	strAuthor = "",
+	strMessageSign = "",
+	tMessage = {}
+}
+
+function ForgeUI:InitComm()
+	LibJSON = Apollo.GetPackage("Lib:dkJSON-2.5").tPackage
+
+	self.icComm = ICCommLib.JoinChannel("ForgeUI", ICCommLib.CodeEnumICCommChannelType.Global);
 	
+	self.icComm:SetSendMessageResultFunction("OnMessageSent", self)
+	self.icComm:SetReceivedMessageFunction("OnMessageReceived", self);
 end
 
-function ForgeComm:OnMessageReceived(channel, strMessage, idMessage)
-	if strMessage == "returnVersion" then
-		self:ReturnVersion()
+function ForgeUI:OnMessageSent(iccomm, eResult, idMessage)
+
+end
+
+function ForgeUI:OnMessageReceived(channel, strMessage, idMessage)
+	local tMsg = LibJSON.decode(strMessage)
+	
+	if tMsg.strMessageSign == "command" then
+		if tMsg.tMessage.strCommand == "returnVersion" then
+			local tNewMsg = {
+				author = GameLib.GetPlayerUnit():GetName(),
+				strMessageSign = "print",
+				tMessage = {
+					strText = GameLib.GetPlayerUnit():GetName() .. " - " .. ForgeUI.version
+				}
+			}
+			
+			self.icComm:SendPrivateMessage(tMsg.strAuthor, LibJSON.encode(tNewMsg))
+		end
+	elseif tMsg.strMessageSign == "print" then
+		Print(tMsg.tMessage.strText)
 	end
 end
 
-function ForgeComm:ReturnVersion()
-	self.icComm.SendPrivateMessage("Winty Badass@Jabbit", GameLib.GetPlayerUnit():GetName() .. " - " .. ForgeUI.version) 
+function ForgeUI:SendMessage(strMsgSign, tMsg)
+	local tMessage = {
+		strAuthor = GameLib.GetPlayerUnit():GetName(),
+		strMessageSign = strMsgSign,
+		tMessage = {
+			strCommand = "returnVersion"
+		}
+	}
+	
+	strMessage = LibJSON.encode(tMessage)
+	self.icComm:SendMessage(strMessage)
 end
 
-function ForgeComm:new(o)
-	o = o or {}
-	setmetatable(o, self)
-	self.__index = self
-	
-	-- CComLib
-	o.icComm = ICCommLib.JoinChannel("ForgeUI", ICCommLib.CodeEnumICCommChannelType.Global);
-	
-	o.icComm:SetSendMessageResultFunction("OnMessageSent", self)
-	o.icComm:SetReceivedMessageFunction("OnMessageReceived", self)
-	
-	return o
-end
 
-Apollo.RegisterPackage(ForgeComm:new(), MAJOR, MINOR, {})

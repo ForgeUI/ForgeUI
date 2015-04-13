@@ -97,7 +97,8 @@ function ForgeUI:OnDocLoaded()
 	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
 	
 	ForgeColor = Apollo.GetPackage("ForgeColor").tPackage
-	ForgeComm = Apollo.GetPackage("ForgeComm").tPackage
+	
+	self:InitComm()
 	
 	-- sprites
 	Apollo.LoadSprites("ForgeUI_Sprite.xml", "ForgeUI_Sprite")
@@ -171,8 +172,6 @@ function ForgeUI:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crWarrior"), self.tSettings.tClassColors, "crWarrior", false)
 	
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_Home:FindChild("TextColorBox"), self.tSettings, "crTest")
-	
-	--ForgeComm:TestPrint()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -942,7 +941,12 @@ function ForgeUI:OnForgeUIcmd(cmd, args)
 	elseif tParams[1] == "reset" then
 		self:ResetDefaults()
 	elseif tParams[1] == "comm" then
-		ForgeComm.icComm:SendMessage(tParams[2])
+		if tParams[2] == "returnVersion" then
+			Print("Sending 'returnVersion' command")
+			self:SendMessage("command", { strCommand = "returnVersion" })
+		elseif tParams[2] == "print" then
+			self:SendMessage("print", { strText = tParams[3] })
+		end
 	end
 end
 
