@@ -929,23 +929,20 @@ end
 -----------------------------------------------------------------------------------------------
 -- ForgeUI_Form Functions
 -----------------------------------------------------------------------------------------------
-function ForgeUI:OnForgeUIcmd(cmd, arg)
+function ForgeUI:OnForgeUIcmd(cmd, args)
 	if cmd ~= "forgeui" then return end
 	
-	if arg == "" then
+	local tParams = {}
+	for sOneParam in string.gmatch(args, "[^%s]+") do
+		table.insert(tParams, sOneParam)
+	end
+	
+	if args == "" then
 		self:OnForgeUIOn()
-	elseif arg == "reset" then
+	elseif tParams[1] == "reset" then
 		self:ResetDefaults()
-	else
-		tArgs = {}
-		for sArg in arg:gmatch("%w+") do table.insert(tArgs, sArg) end
-		
-		if tArgs[1] == "reset" then
-			if tAddons["ForgeUI_" .. tArgs[2]] ~= nil then
-				tAddons["ForgeUI_" .. tArgs[2]].bReset = true
-			end
-			RequestReloadUI()
-		end
+	elseif tParams[1] == "comm" then
+		ForgeComm.icComm:SendMessage(tParams[2])
 	end
 end
 

@@ -9,7 +9,7 @@ local ForgeUI = Apollo.GetAddon("ForgeUI")
 local ForgeComm = {}
 
 function ForgeComm:OnMessageSent(iccomm, eResult, idMessage)
-
+	
 end
 
 function ForgeComm:OnMessageReceived(channel, strMessage, idMessage)
