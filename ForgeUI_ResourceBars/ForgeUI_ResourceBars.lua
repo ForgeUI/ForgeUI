@@ -427,6 +427,9 @@ function ForgeUI_ResourceBars:OnWarriorCreated(unitPlayer)
 	
 	self.tStylers["LoadStyle_ResourceBar_Warrior"]["LoadStyle_ResourceBar_Warrior"](self)
 	
+	Apollo.RegisterEventHandler("BuffAdded", "OnWarriorBuffAdded", self)
+	Apollo.RegisterEventHandler("BuffRemoved", "OnWarriorBuffRemoved", self)
+	
 	if self.tSettings.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnWarriorUpdate", self)
 	else
@@ -449,6 +452,35 @@ function ForgeUI_ResourceBars:OnWarriorUpdate()
 	
 	if bShow ~= self.wndResource:IsShown() then
 		self.wndResource:Show(bShow, true)
+	end
+end
+
+function ForgeUI_ResourceBars:OnWarriorBuffAdded(unit)
+	if not unit or not unit:IsThePlayer() then return end
+
+	for k, v in pairs(unit:GetBuffs().arBeneficial) do
+		if v.splEffect:GetId() == 79757 and v.nCount > 0 then
+			self.wndResource:FindChild("AG_Stacks"):SetText(v.nCount)
+			self.wndResource:FindChild("AG_Stacks"):Show(true, true)
+			self.wndResource:FindChild("KE_Drain"):Show(true, true)
+		end
+	end
+end
+
+function ForgeUI_ResourceBars:OnWarriorBuffRemoved(unit)
+	if not unit or not unit:IsThePlayer() then return end
+
+	local bActive = false
+	for k, v in pairs(unit:GetBuffs().arBeneficial) do
+		if v.splEffect:GetId() == 79757 then
+			bActive = true
+		end
+	end
+	
+	if not bActive then
+		self.wndResource:FindChild("AG_Stacks"):SetText("")
+		self.wndResource:FindChild("AG_Stacks"):Show(false, true)
+		self.wndResource:FindChild("KE_Drain"):Show(false, true)
 	end
 end
 
@@ -636,6 +668,7 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Warrior()
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, -5, 0, 0)
 	end
 	self.wndResource:FindChild("Value"):SetTextFlags("DT_VCENTER", self.tSettings.bCenterText)
+	self.wndResource:FindChild("AG_Stacks"):SetTextFlags("DT_VCENTER", self.tSettings.bCenterText)
 end
 
 function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Warrior(unitPlayer, nResource)
