@@ -2,6 +2,7 @@ require "Window"
  
 local ForgeUI = {}
 local ForgeColor
+local ForgeComm
  
 -----------------------------------------------------------------------------------------------
 -- Constants
@@ -96,6 +97,7 @@ function ForgeUI:OnDocLoaded()
 	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
 	
 	ForgeColor = Apollo.GetPackage("ForgeColor").tPackage
+	ForgeComm = Apollo.GetPackage("ForgeComm").tPackage
 	
 	-- sprites
 	Apollo.LoadSprites("ForgeUI_Sprite.xml", "ForgeUI_Sprite")
@@ -169,6 +171,8 @@ function ForgeUI:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crWarrior"), self.tSettings.tClassColors, "crWarrior", false)
 	
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_Home:FindChild("TextColorBox"), self.tSettings, "crTest")
+	
+	--ForgeComm:TestPrint()
 end
 
 -----------------------------------------------------------------------------------------------

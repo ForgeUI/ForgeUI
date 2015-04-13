@@ -3,4 +3,6 @@
     <Script Name="ForgeUI.lua"/>
     <Form Name="ForgeUI.xml"/>
     <Script Name="ForgeColor\ForgeColor.lua"/>
+    <Script Name="ForgeComm.lua"/>
+    <Script Name="lib\TableUtils.lua"/>
 </Addon>
