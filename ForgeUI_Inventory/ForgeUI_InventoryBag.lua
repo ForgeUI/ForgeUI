@@ -308,7 +308,7 @@ function ForgeUI_Inventory:OnLootstackItemSentToTradeskillBag(item)
 end
 
 function ForgeUI_Inventory:OnInterfaceMenuListHasLoaded()
-	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Inventory"), {"InterfaceMenu_ToggleInventory", "ForgeUI_Inventory", "Icon_Windows32_UI_CRB_InterfaceMenu_Inventory"})
+	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Inventory"), {"InterfaceMenu_ToggleInventory", "Inventory", "Icon_Windows32_UI_CRB_InterfaceMenu_Inventory"})
 end
 
 function ForgeUI_Inventory:OnCharacterCreated()

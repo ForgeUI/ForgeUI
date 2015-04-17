@@ -472,16 +472,18 @@ function ForgeUI_Nameplates:UpdateGuild(tNameplate)
 	
 	if strGuildName ~= nil and strGuildName ~= "" then
 		if self.tSettings["t" .. tNameplate.unitType].bShowGuild == true then
-			strGuildName = String_GetWeaselString(Apollo.GetString("Nameplates_GuildDisplay"), strGuildName)
-		
-			local nNameWidth = Apollo.GetTextWidth("Nameplates", strGuildName .. " ")
-			local nLeft, nTop, nRight, nBottom = guild:GetAnchorOffsets()
-			guild:SetAnchorOffsets(- (nNameWidth / 2), nTop, (nNameWidth / 2), nBottom)			
+			if self.tSettings["t" .. tNameplate.unitType].bShowNamesInCombat and unitOwner:IsInCombat() or not unitOwner:IsInCombat() then
+				strGuildName = String_GetWeaselString(Apollo.GetString("Nameplates_GuildDisplay"), strGuildName)
 			
-			guild:SetTextRaw(strGuildName)
-			guild:SetTextColor(self.tSettings["t" .. tNameplate.unitType].crName)
-			
-			bShow = true
+				local nNameWidth = Apollo.GetTextWidth("Nameplates", strGuildName .. " ")
+				local nLeft, nTop, nRight, nBottom = guild:GetAnchorOffsets()
+				guild:SetAnchorOffsets(- (nNameWidth / 2), nTop, (nNameWidth / 2), nBottom)			
+				
+				guild:SetTextRaw(strGuildName)
+				guild:SetTextColor(self.tSettings["t" .. tNameplate.unitType].crName)
+				
+				bShow = true
+			end
 		end
 	else
 		guild:SetText("")
