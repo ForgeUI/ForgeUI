@@ -24,6 +24,8 @@ function ForgeUI:OnMessageSent(iccomm, eResult, idMessage)
 end
 
 function ForgeUI:OnMessageReceived(channel, strMessage, idMessage)
+	if not self.tSettings.bNetworking then return end
+
 	local tMsg = LibJSON.decode(strMessage)
 	
 	if tMsg.strMessageSign == "command" then
@@ -44,6 +46,8 @@ function ForgeUI:OnMessageReceived(channel, strMessage, idMessage)
 end
 
 function ForgeUI:SendMessage(strMsgSign, tMsg)
+	if not self.tSettings.bNetworking then return end
+
 	local tMessage = {
 		strAuthor = GameLib.GetPlayerUnit():GetName(),
 		strMessageSign = strMsgSign,

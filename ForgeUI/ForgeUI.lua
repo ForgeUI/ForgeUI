@@ -58,6 +58,7 @@ function ForgeUI:new(o)
     self.tSettings = {
 		crMain = "FFFF0000",
 		crTest = "FFFFFFFF",
+		bNetworking = true,
 		tClassColors = {
 			crEngineer = "FFEFAB48",
 			crEsper = "FF1591DB",
@@ -172,6 +173,8 @@ function ForgeUI:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crWarrior"), self.tSettings.tClassColors, "crWarrior", false)
 	
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_Home:FindChild("TextColorBox"), self.tSettings, "crTest")
+	
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.ForgeUI_General:FindChild("bNetworking"), self.tSettings, "bNetworking")
 end
 
 -----------------------------------------------------------------------------------------------
