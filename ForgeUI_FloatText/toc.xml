@@ -1,0 +1,4 @@
+<?xml version="1.2" encoding="UTF-8"?>
+<Addon Author="WintyBadass" APIVersion="9" Name="ForgeUI_FloatText" Version="1.0">
+    <Script Name="ForgeUI_FloatText.lua"/>
+</Addon>
