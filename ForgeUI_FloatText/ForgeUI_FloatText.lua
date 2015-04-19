@@ -528,7 +528,7 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 		self:OnPlayerDamageOrHealing( unitTarget, eDamageType, nDamage, nShieldDamaged, nAbsorptionAmount, bCritical )
 		return
 	end
-
+	
 	-- NOTE: This needs to be changed if we're ever planning to display shield and normal damage in different formats.
 	-- NOTE: Right now, we're just telling the player the amount of damage they did and not the specific type to keep things neat
 	local nTotalDamage = nDamage
@@ -561,18 +561,21 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 
 	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields
 	local nBaseColor = 0x00DBDB
+	local nHighlightColor = 0xFFFFFF
 	local fMaxSize = 0.8
 	local nOffsetDirection = 95
 	local fMaxDuration = 0.7
 
 	tTextOption.strFontFace = "Subtitle"
-	tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.IgnoreCollision
+	tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Horizontal
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Bottom
 
 	if not bHeal and bCritical == true then -- Crit not vuln
 		nBaseColor = 0xFFC600
 		fMaxSize = 1
-		fMaxDuration = 1.5
+		fMaxDuration = 1
+		tTextOption.fOffsetDirection = 0.5
+		tTextOption.fVelocityMagnitude = 1
 	elseif not bHeal and (unitTarget:IsInCCState( Unit.CodeEnumCCState.Vulnerability ) or eDamageType == knTestingVulnerable ) then -- vuln not crit
 		nBaseColor = 0xF49CFF
 	else -- normal damage
@@ -603,11 +606,11 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 	-- scale and movement
 	tTextOption.arFrames =
 	{
-		[1] = {fScale = (fMaxSize) * 1.3,	fTime = 0,									nColor = 0xffffff,	},
-		[2] = {fScale = fMaxSize,			fTime = .15,			fAlpha = 1.0,},--	nColor = nBaseColor,},
-		[3] = {fScale = fMaxSize,			fTime = .3,									nColor = nBaseColor,},
-		[4] = {fScale = fMaxSize,			fTime = .5,				fAlpha = 1.0,},
-		[5] = {								fTime = fMaxDuration,	fAlpha = 0.0,},
+		[1] = {fScale = fMaxSize * .75,	fTime = 0,									nColor = nHighlightColor,	fVelocityDirection = 0,		fVelocityMagnitude = 0,},
+		[2] = {fScale = fMaxSize * 1.3,	fTime = 0.05,								nColor = nHighlightColor,	fVelocityDirection = 0,		fVelocityMagnitude = 0,},
+		[3] = {fScale = fMaxSize,		fTime = 0.1,				fAlpha = 1.0,	nColor = nBaseColor,															},
+		[4] = {							fTime = 0.5,				fAlpha = 1.0,								fVelocityDirection = 0,		fVelocityMagnitude = 4,},
+		[5] = {							fTime = fMaxDuration,		fAlpha = 0.2,								fVelocityDirection = 0,								},
 	}
 
 	if not bHeal then
@@ -677,7 +680,7 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 	if type(nShieldDamaged) == "number" and nShieldDamaged > 0 then
 		nDamage = nDamage + nShieldDamaged
 	end
-
+	
 	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields
 	local nBaseColor = 0xFF4242
 	local nHighlightColor = 0xE35656
