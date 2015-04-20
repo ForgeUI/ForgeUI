@@ -1,36 +1,22 @@
------------------------------------------------------------------------------------------------
--- Client Lua Script for ForgeUI_Nameplates
--- Copyright (c) NCsoft. All rights reserved
------------------------------------------------------------------------------------------------
-
 require "Window"
-require "ChallengesLib"
-require "Unit"
-require "GameLib"
-require "Apollo"
-require "PathMission"
-require "Quest"
-require "Episode"
-require "math"
-require "string"
-require "DialogSys"
-require "PublicEvent"
-require "PublicEventObjective"
-require "CommunicatorLib"
-require "GroupLib"
-require "PlayerPathLib"
-require "GuildLib"
-require "GuildTypeLib"
 
+local ForgeUI
 local ForgeUI_Nameplates = {}
 
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
-
+krtClassEnums = {
+	[GameLib.CodeEnumClass.Warrior]      	= "Warrior",
+	[GameLib.CodeEnumClass.Engineer]     	= "Engineer",
+	[GameLib.CodeEnumClass.Esper]        	= "Esper",
+	[GameLib.CodeEnumClass.Medic]        	= "Medic",
+	[GameLib.CodeEnumClass.Stalker]      	= "Stalker",
+	[GameLib.CodeEnumClass.Spellslinger]	= "Spellslinger"
+}
 
 -----------------------------------------------------------------------------------------------
--- Local function reference declarations
+-- Initialization
 -----------------------------------------------------------------------------------------------
 local fnDrawName
 local fnDrawHealth
@@ -83,14 +69,17 @@ function ForgeUI_Nameplates:new(o)
 				nShowName = 0,
 				nShowBars = 0,
 				nShowCast = 0,
+				nShowGuild = 0,
 				crName = "FFFFFFFF",
 				crHealth = "FF75CC26",
+				bClassColors = false,
 			},
 			FriendlyPlayer = {
 				bEnabled = true,
 				nShowName = 3,
 				nShowBars = 3,
 				nShowCast = 0,
+				nShowGuild = 0,
 				crName = "FFFFFFFF",
 				crHealth = "FF75CC26",
 				bClassColors = true,
@@ -100,6 +89,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowName = 3,
 				nShowBars = 3,
 				nShowCast = 0,
+				nShowGuild = 0,
 				crName = "FF43C8F3",
 				crHealth = "FF75CC26",
 				bClassColors = true,
@@ -109,6 +99,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowName = 3,
 				nShowBars = 3,
 				nShowCast = 3,
+				nShowGuild = 0,
 				crName = "FFFF0000",
 				crHealth = "FFFF0000",
 				bClassColors = true,
@@ -118,6 +109,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowName = 3,
 				nShowBars = 2,
 				nShowCast = 2,
+				nShowGuild = 3,
 				crName = "FF76CD26",
 				crHealth = "FF75CC26",
 			},
@@ -126,6 +118,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowName = 3,
 				nShowBars = 2,
 				nShowCast = 2,
+				nShowGuild = 0,
 				crName = "FFFFF569",
 				crHealth = "FFF3D829",
 			},
@@ -134,6 +127,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowName = 3,
 				nShowBars = 2,
 				nShowCast = 2,
+				nShowGuild = 0,
 				crName = "FFD9544D",
 				crHealth = "FFE50000",
 			},
@@ -507,6 +501,10 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 	if unitOwner:IsDead() then
 		crNameColors = self.tSettings.crDead
 	end
+	
+	if tSettings.bClassColors then
+		crBarColor = ForgeUI.tSettings.tClassColors["cr" .. krtClassEnums[unitOwner:GetClassId()]]
+	end
 
 	tNameplate.wnd.wndName:SetTextColor(crNameColors)
 	tNameplate.wnd.wndGuild:SetTextColor(crNameColors)
@@ -540,14 +538,6 @@ function ForgeUI_Nameplates:DrawName(tNameplate)
 			if unitOwner:GetType() == "Player" and strNewGuild ~= nil and strNewGuild ~= "" then
 				strNewGuild = String_GetWeaselString(Apollo.GetString("Nameplates_GuildDisplay"), strNewGuild)
 			end
-
-			-- Resize
-			local wndNameplate = tNameplate.wndNameplate
-			local nLeft, nTop, nRight, nBottom = wndNameplate:GetAnchorOffsets()
-			local nHalfNameWidth = math.ceil(math.max(Apollo.GetTextWidth("ForgeUI_Nameplates", strNewName), Apollo.GetTextWidth("CRB_Interface9_BO", strNewGuild)) / 2)
-			nHalfNameWidth = math.max(nHalfNameWidth, math.ceil(self.nHealthWidth / 2))
-			tNameplate.nHalfNameWidth = nHalfNameWidth
-			wndNameplate:SetAnchorOffsets(-nHalfNameWidth - 17, nTop, nHalfNameWidth + tNameplate.wnd.nameRewardContainer:ArrangeChildrenHorz(0) + 17, nBottom)
 		end
 	end
 end
@@ -557,11 +547,7 @@ function ForgeUI_Nameplates:DrawGuild(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 
 	local wndGuild = tNameplate.wnd.wndGuild
-	local bUseTarget = tNameplate.bIsTarget
-	local bShow = self.bShowTitle
-	if bUseTarget then
-		bShow = self.bShowGuildNameTarget
-	end
+	local bShow = self:GetBooleanOption(tNameplate.tSettings.nShowGuild, unitOwner)
 
 	local strNewGuild = unitOwner:GetAffiliationName()
 	if unitOwner:GetType() == "Player" and strNewGuild ~= nil and strNewGuild ~= "" then
@@ -578,12 +564,6 @@ function ForgeUI_Nameplates:DrawGuild(tNameplate)
 		else
 			strNewName = unitOwner:GetName()
 		end
-
-		-- Resize
-		local nLeft, nTop, nRight, nBottom = wndNameplate:GetAnchorOffsets()
-		local nHalfNameWidth = math.ceil(math.max(Apollo.GetTextWidth("ForgeUI_Nameplates", strNewName), Apollo.GetTextWidth("CRB_Interface9_BO", strNewGuild)) / 2)
-		nHalfNameWidth = math.max(nHalfNameWidth, math.ceil(self.nHealthWidth / 2))
-		wndNameplate:SetAnchorOffsets(-nHalfNameWidth - 17, nTop, nHalfNameWidth + tNameplate.wnd.nameRewardContainer:ArrangeChildrenHorz(0) + 17, nBottom)
 	end
 
 	wndGuild:Show(bShow and strNewGuild ~= nil and strNewGuild ~= "", true)
@@ -629,7 +609,21 @@ function ForgeUI_Nameplates:DrawShield(tNameplate)
 end
 
 function ForgeUI_Nameplates:DrawAbsorb(tNameplate)
-
+	local unitOwner = tNameplate.unitOwner
+	
+	local nAbsorb = unitOwner:GetAbsorptionValue()
+	local nAbsorbMax = unitOwner:GetAbsorptionMax()
+	
+	local bShow = nAbsorb ~= nil and not unitOwner:IsDead() and nAbsorb > 0
+	
+	if bShow then
+		self:SetBarValue(tNameplate.wnd.healthAbsorbFill, 0, nAbsorb, nAbsorbMax)
+	end
+	
+	if bShow ~= tNameplate.wnd.healthMaxAbsorb:IsShown() then
+		tNameplate.wnd.healthMaxAbsorb:Show(bShow, true)
+		tNameplate.bShowAbsorb = bShow
+	end
 end
 
 function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
