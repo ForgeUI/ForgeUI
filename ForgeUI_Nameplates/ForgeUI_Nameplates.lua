@@ -32,13 +32,14 @@ local ForgeUI_Nameplates = {}
 -----------------------------------------------------------------------------------------------
 -- Local function reference declarations
 -----------------------------------------------------------------------------------------------
+local fnDrawName
 local fnDrawHealth
 local fnDrawShield
 local fnDrawAbsorb
+
 local fnDrawRewards
 local fnDrawCastBar
-local fnDrawVulnerable
-local fnDrawTargeting
+local fnDrawTarget
 
 local fnColorNameplate
 
@@ -77,41 +78,109 @@ function ForgeUI_Nameplates:new(o)
 				bShowMarker = true
 			},
 			Player = {
-				bShowBars = true,
+				bEnabled = true,
+				nShowName = 0,
+				nShowBars = 0,
 				crName = "FFFFFFFF",
 				crHealth = "FF75CC26",
 			},
 			FriendlyPlayer = {
-				bShowBars = true,
+				bEnabled = true,
+				nShowName = 3,
+				nShowBars = 3,
 				crName = "FFFFFFFF",
 				crHealth = "FF75CC26",
 				bClassColors = true,
 			},
+			PartyPlayer = {
+				bEnabled = true,
+				nShowName = 3,
+				nShowBars = 3,
+				crName = "FF43C8F3",
+				crHealth = "FF75CC26",
+				bClassColors = true,
+			},
 			HostilePlayer = {
-				bShowBars = true,
+				bEnabled = true,
+				nShowName = 3,
+				nShowBars = 3,
 				crName = "FFFF0000",
 				crHealth = "FFFF0000",
 				bClassColors = true,
 			},
 			FriendlyNPC = {
-				bShowBars = true,
+				bEnabled = true,
+				nShowName = 3,
+				nShowBars = 2,
 				crName = "FF76CD26",
 				crHealth = "FF75CC26",
 			},
 			NeutralNPC = {
-				bShowBars = true,
+				bEnabled = true,
+				nShowName = 3,
+				nShowBars = 2,
 				crName = "FFFFF569",
 				crHealth = "FFF3D829",
 			},
 			HostileNPC = {
-				bShowBars = true,
+				bEnabled = true,
+				nShowName = 3,
+				nShowBars = 2,
 				crName = "FFD9544D",
 				crHealth = "FFE50000",
 			},
+			UnknownNPC = {
+				bEnabled = false,
+				nShowName = 0,
+				nShowBars = 0,
+			},
+			FriendlyPet = {
+				bEnabled = false,
+				nShowName = 0,
+				nShowBars = 0,
+			},
+			PlayerPet = {
+				bEnabled = true,
+				nShowName = 0,
+				nShowBars = 0,
+				crName = "FFFFFFFF",
+				crHealth = "FFFFFFFF"
+			},
+			HostilePet = {
+				bEnabled = false,
+				nShowName = 0,
+				nShowBars = 0,
+			},
 			Simple = {
-				bShowBars = false,
+				bEnabled = false,
+				nShowName = 0,
 				crName = "FFFFFFFF"
-			}
+			},
+			Pickup = {
+				bEnabled = true,
+				nShowName = 3,
+				crName = "FFFFFFFF"
+			},
+			PickupNotPlayer = {
+				bEnabled = false,
+				nShowName = 0,
+				crName = "FFFFFFFF"
+			},
+			Collectible = {
+				bEnabled = false,
+				nShowName = 0,
+				crName = "FFFFFFFF"
+			},
+			PinataLoot = {
+				bEnabled = false,
+				nShowName = 0,
+				crName = "FFFFFFFF"
+			},
+			Mount = {
+				bEnabled = false,
+				nShowName = 0,
+				crName = "FFFFFFFF"
+			},
 			
 		},
 		knNameplatePoolLimit = 500,
@@ -122,11 +191,7 @@ function ForgeUI_Nameplates:new(o)
 end
 
 function ForgeUI_Nameplates:Init()
-    Apollo.RegisterAddon(self, true, "", {})
-end
-
-function ForgeUI_Nameplates:OnDependencyError(strDependency, strError)
-	return true
+    Apollo.RegisterAddon(self, false, nil, {})
 end
 
 -----------------------------------------------------------------------------------------------
@@ -164,7 +229,6 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRegistration()
 	Apollo.RegisterEventHandler("UnitTitleChanged", 			"OnUnitTitleChanged", self)
 	Apollo.RegisterEventHandler("PlayerTitleChange", 			"OnPlayerTitleChanged", self)
 	Apollo.RegisterEventHandler("UnitGuildNameplateChanged", 	"OnUnitGuildNameplateChanged",self)
-	Apollo.RegisterEventHandler("UnitLevelChanged", 			"OnUnitLevelChanged", self)
 	Apollo.RegisterEventHandler("UnitMemberOfGuildChange", 		"OnUnitMemberOfGuildChange", self)
 	Apollo.RegisterEventHandler("GuildChange", 					"OnGuildChange", self)
 	Apollo.RegisterEventHandler("UnitGibbed",					"OnUnitGibbed", self)
@@ -267,7 +331,7 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 		
 		fnDrawHealth(self, tNameplate)
 		fnDrawShield(self, tNameplate)
-		fnDrawTargeting(self, tNameplate)
+		fnDrawTarget(self, tNameplate)
 		
 		fnDrawRewards(self, tNameplate)
 	end
@@ -276,15 +340,9 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 end
 
 function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
-	if unitNew == nil
-		or not unitNew:IsValid()
-		or not unitNew:ShouldShowNamePlate()
-		or unitNew:GetType() == "Collectible"
-		or unitNew:GetType() == "Simple"
-		or unitNew:GetType() == "PinataLoot" then
-		-- Never have nameplates
-		return
-	end
+	local strNewUnitType = self:GetUnitType(unitNew)
+	if not self.tSettings.tUnits[strNewUnitType] then Print(strNewUnitType) end
+	if not self.tSettings.tUnits[strNewUnitType].bEnabled then return end
 
 	local idUnit = unitNew:GetId()
 	if self.arUnit2Nameplate[idUnit] ~= nil and self.arUnit2Nameplate[idUnit].wndNameplate:IsValid() then
@@ -306,7 +364,6 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 
 	wnd:SetUnit(unitNew, 1)
 
-	local strNewUnitType = self:GetUnitType(unitNew)
 	local tNameplate =
 	{
 		unitOwner 		= unitNew,
@@ -358,11 +415,11 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	self.arWnd2Nameplate[wnd:GetId()] = tNameplate
 
 	self:UpdateNameplateRewardInfo(tNameplate)
+	
 	self:DrawName(tNameplate)
 	self:DrawGuild(tNameplate)
-	self:DrawLevel(tNameplate)
 	self:DrawRewards(tNameplate)
-	self:DrawTargeting(tNameplate)
+	self:DrawTarget(tNameplate)
 	self:DrawHealth(tNameplate)
 end
 
@@ -426,10 +483,6 @@ function ForgeUI_Nameplates:OnFrame()
 			
 			if tNameplate.tSettings.bShowBars then
 				fnDrawHealth(self, tNameplate)
-				fnDrawShield(self, tNameplate)
-				fnDrawAbsorb(self, tNameplate)
-				
-				fnDrawVulnerable(self, tNameplate)
 			end
 		end
 	end
@@ -459,7 +512,7 @@ function ForgeUI_Nameplates:DrawName(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 	local wndName = tNameplate.wnd.wndName
 	
-	local bShow = true
+	local bShow = self:GetBooleanOption(tNameplate.tSettings.nShowName, unitOwner)
 
 	if wndName:IsShown() ~= bShow then
 		wndName:Show(bShow, true)
@@ -532,22 +585,19 @@ function ForgeUI_Nameplates:DrawGuild(tNameplate)
 	wndNameplate:ArrangeChildrenVert(2) -- Must be run if bShow is false as well
 end
 
-function ForgeUI_Nameplates:DrawLevel(tNameplate)
-	local unitOwner = tNameplate.unitOwner
-
-	tNameplate.wnd.level:SetText(unitOwner:GetLevel() or "-")
-end
-
 function ForgeUI_Nameplates:DrawHealth(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 
 	local nHealth = unitOwner:GetHealth()
 	local nMaxHealth = unitOwner:GetMaxHealth()
 	
-	local bShow = nHealth ~= nil and not unitOwner:IsDead() and nMaxHealth > 0
+	local bShow = nHealth ~= nil and not unitOwner:IsDead() and nMaxHealth > 0 and self:GetBooleanOption(tNameplate.tSettings.nShowBars, unitOwner)
 	
 	if bShow then
 		self:SetBarValue(tNameplate.wnd.healthHealthFill, 0, nHealth, nMaxHealth)
+		
+		fnDrawShield(self, tNameplate)
+		fnDrawAbsorb(self, tNameplate)
 	end
 	
 	if bShow ~= tNameplate.wnd.health:IsShown() then
@@ -617,35 +667,6 @@ function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
 	end
 end
 
-function ForgeUI_Nameplates:DrawVulnerable(tNameplate) -- Every frame
-	local wndNameplate = tNameplate.wndNameplate
-	local unitOwner = tNameplate.unitOwner
-
-	local bUseTarget = tNameplate.bIsTarget
-	local wndVulnerable = tNameplate.wnd.vulnerable
-	local bShow = false
-	
-	local nNewVulnerabilityTime = tNameplate.nVulnerabilityTime
-	
-	if (not bUseTarget and (self.bShowHealthMain or self.bShowHealthMainDamaged)) or (bUseTarget and self.bShowHealthTarget) then
-		local nVulnerable = unitOwner:GetCCStateTimeRemaining(Unit.CodeEnumCCState.Vulnerability)
-		if nVulnerable == nil then
-			bShow = false
-		elseif nVulnerable == 0 and nVulnerable ~= tNameplate.nVulnerableTime then
-			nNewVulnerabilityTime = 0 -- casting done, set back to 0
-			bShow = false
-		elseif nVulnerable ~= 0 and nVulnerable < tNameplate.nVulnerableTime then
-			tNameplate.wnd.vulnerableVulnFill:SetMax(tNameplate.nVulnerableTime)
-			tNameplate.wnd.vulnerableVulnFill:SetProgress(nVulnerable)
-			bShow = true
-		end
-	end
-	
-	if bShow ~= wndVulnerable:IsShown() then
-		wndVulnerable:Show(bShow)
-	end
-end
-
 function ForgeUI_Nameplates:DrawRewards(tNameplate)
 	local wndNameplate = tNameplate.wndNameplate
 	local unitOwner = tNameplate.unitOwner
@@ -668,7 +689,7 @@ function ForgeUI_Nameplates:DrawRewards(tNameplate)
 	end
 end
 
-function ForgeUI_Nameplates:DrawTargeting(tNameplate)
+function ForgeUI_Nameplates:DrawTarget(tNameplate)
 	local wndNameplate = tNameplate.wndNameplate
 	local unitOwner = tNameplate.unitOwner
 
@@ -835,6 +856,26 @@ function ForgeUI_Nameplates:GetUnitType(unit)
 	end
 end
 
+function ForgeUI_Nameplates:GetBooleanOption(nOption, unit)
+	if nOption == 0 then
+		return false
+	elseif nOption == 1 then
+		if not unit:IsInCombat() then
+			return true
+		else
+			return false
+		end
+	elseif nOption == 2 then
+		if unit:IsInCombat() or unit:GetHealth() ~= unit:GetMaxHealth() then
+			return true
+		else
+			return false
+		end
+	elseif nOption == 3 then
+		return true
+	end
+end
+
 -----------------------------------------------------------------------------------------------
 -- Nameplate Events
 -----------------------------------------------------------------------------------------------
@@ -875,6 +916,11 @@ function ForgeUI_Nameplates:OnEnteredCombat(unitChecked, bInCombat)
 	if unitChecked == self.unitPlayer then
 		self.bPlayerInCombat = bInCombat
 	end
+	
+	local tNameplate = self.arUnit2Nameplate[unitChecked:GetId()]
+	if tNameplate ~= nil then
+		self:DrawName(tNameplate)
+	end
 end
 
 function ForgeUI_Nameplates:OnUnitGibbed(unitUpdated)
@@ -903,13 +949,6 @@ function ForgeUI_Nameplates:OnPlayerTitleChanged()
 	local tNameplate = self.arUnit2Nameplate[self.unitPlayer:GetId()]
 	if tNameplate ~= nil then
 		self:DrawName(tNameplate)
-	end
-end
-
-function ForgeUI_Nameplates:OnUnitLevelChanged(unitUpdating)
-	local tNameplate = self.arUnit2Nameplate[unitUpdating:GetId()]
-	if tNameplate ~= nil then
-		self:DrawLevel(tNameplate)
 	end
 end
 
@@ -961,9 +1000,8 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 			self:DrawHealth(tNameplateOther)
 			self:DrawName(tNameplateOther)
 			self:DrawGuild(tNameplateOther)
-			self:DrawLevel(tNameplateOther)
 			self:UpdateNameplateRewardInfo(tNameplateOther)
-			self:DrawTargeting(tNameplateOther)
+			self:DrawTarget(tNameplateOther)
 		end
 	end
 
@@ -981,8 +1019,7 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 		self:DrawHealth(tNameplate)
 		self:DrawName(tNameplate)
 		self:DrawGuild(tNameplate)
-		self:DrawLevel(tNameplate)
-		self:DrawTargeting(tNameplate)
+		self:DrawTarget(tNameplate)
 		self:UpdateNameplateRewardInfo(tNameplate)
 
 		local tCluster = unitOwner:GetClusterUnits()
@@ -1002,15 +1039,15 @@ end
 -----------------------------------------------------------------------------------------------
 -- Local function reference assignments
 -----------------------------------------------------------------------------------------------
+fnDrawName = ForgeUI_Nameplates.DrawName
 fnDrawHealth = ForgeUI_Nameplates.DrawHealth
 fnDrawShield = ForgeUI_Nameplates.DrawShield
 fnDrawAbsorb = ForgeUI_Nameplates.DrawAbsorb
 
 fnDrawRewards = ForgeUI_Nameplates.DrawRewards
 fnDrawCastBar = ForgeUI_Nameplates.DrawCastBar
-fnDrawVulnerable = ForgeUI_Nameplates.DrawVulnerable
 fnColorNameplate = ForgeUI_Nameplates.ColorNameplate
-fnDrawTargeting = ForgeUI_Nameplates.DrawTargeting
+fnDrawTarget = ForgeUI_Nameplates.DrawTarget
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI_Nameplates Instance
