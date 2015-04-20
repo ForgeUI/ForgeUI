@@ -27,104 +27,20 @@ local ForgeUI_Nameplates = {}
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
-local karDisposition =
-{
-	tTextColors =
-	{
-		[Unit.CodeEnumDisposition.Hostile] 	= ApolloColor.new("DispositionHostile"),
-		[Unit.CodeEnumDisposition.Neutral] 	= ApolloColor.new("DispositionNeutral"),
-		[Unit.CodeEnumDisposition.Friendly] = ApolloColor.new("DispositionFriendly"),
-	},
 
-	tTargetPrimary =
-	{
-		[Unit.CodeEnumDisposition.Hostile] 	= "CRB_Nameplates:sprNP_BaseSelectedRed",
-		[Unit.CodeEnumDisposition.Neutral] 	= "CRB_Nameplates:sprNP_BaseSelectedYellow",
-		[Unit.CodeEnumDisposition.Friendly] = "CRB_Nameplates:sprNP_BaseSelectedGreen",
-	},
-
-	tTargetSecondary =
-	{
-		[Unit.CodeEnumDisposition.Hostile] 	= "sprNp_Target_HostileSecondary",
-		[Unit.CodeEnumDisposition.Neutral] 	= "sprNp_Target_NeutralSecondary",
-		[Unit.CodeEnumDisposition.Friendly] = "sprNp_Target_FriendlySecondary",
-	},
-
-	tHealthBar =
-	{
-		[Unit.CodeEnumDisposition.Hostile] 	= "CRB_Nameplates:sprNP_RedProg",
-		[Unit.CodeEnumDisposition.Neutral] 	= "CRB_Nameplates:sprNP_YellowProg",
-		[Unit.CodeEnumDisposition.Friendly] = "CRB_Nameplates:sprNP_GreenProg",
-	},
-
-	tHealthTextColor =
-	{
-		[Unit.CodeEnumDisposition.Hostile] 	= "ffff8585",
-		[Unit.CodeEnumDisposition.Neutral] 	= "ffffdb57",
-		[Unit.CodeEnumDisposition.Friendly] = "ff9bff80",
-	},
-}
-
-local knHealthRed = 0.3
-local knHealthYellow = 0.5
-
-local karConColors =  -- differential value, color
-{
-	{-4, ApolloColor.new("ConTrivial")},
-	{-3, ApolloColor.new("ConInferior")},
-	{-2, ApolloColor.new("ConMinor")},
-	{-1, ApolloColor.new("ConEasy")},
-	{0, ApolloColor.new("ConAverage")},
-	{1, ApolloColor.new("ConModerate")},
-	{2, ApolloColor.new("ConTough")},
-	{3, ApolloColor.new("ConHard")},
-	{4, ApolloColor.new("ConImpossible")}
-}
-
-local kcrScalingHex 	= "ffffbf80"
-local kcrScalingCColor 	= CColor.new(1.0, 191/255, 128/255, 0.7)
-
-local ksprHighLevel = "CRB_Nameplates:sprNP_HighLevel"
-local ksprPvpTarget = "IconSprites:Icon_Windows_UI_CRB_Marker_Crosshair"
-
-local karPathSprite =
-{
-	[PlayerPathLib.PlayerPathType_Soldier] 		= "CRB_TargetFrameRewardPanelSprites:sprTargetFrame_PathSol",
-	[PlayerPathLib.PlayerPathType_Settler] 		= "CRB_TargetFrameRewardPanelSprites:sprTargetFrame_PathSet",
-	[PlayerPathLib.PlayerPathType_Scientist] 	= "CRB_TargetFrameRewardPanelSprites:sprTargetFrame_PathSci",
-	[PlayerPathLib.PlayerPathType_Explorer] 	= "CRB_TargetFrameRewardPanelSprites:sprTargetFrame_PathExp",
-}
-
-local knCharacterWidth 		= 8 -- the average width of a character in the font used. TODO: Not this.
-local knRewardWidth 		= 23 -- the width of a reward icon + padding
-local knTextHeight 			= 15 -- text window height
-local knNameRewardWidth 	= 400 -- the width of the name/reward container
-local knNameRewardHeight 	= 20 -- the width of the name/reward container
-local knTargetRange 		= 40000 -- the distance^2 that normal nameplates should draw within (max targeting range)
-local knNameplatePoolLimit	= 500 -- the window pool max size
-
--- Todo: break these out onto options
-local kcrUnflaggedGroupmate				= ApolloColor.new("DispositionFriendlyUnflaggedDull")
-local kcrUnflaggedGuildmate				= ApolloColor.new("DispositionGuildmateUnflagged")
-local kcrUnflaggedAlly					= ApolloColor.new("DispositionFriendlyUnflagged")
-local kcrFlaggedAlly					= ApolloColor.new("DispositionFriendly")
-local kcrUnflaggedEnemyWhenUnflagged 	= ApolloColor.new("DispositionNeutral")
-local kcrFlaggedEnemyWhenUnflagged		= ApolloColor.new("DispositionPvPFlagMismatch")
-local kcrUnflaggedEnemyWhenFlagged		= ApolloColor.new("DispositionPvPFlagMismatch")
-local kcrFlaggedEnemyWhenFlagged		= ApolloColor.new("DispositionHostile")
-local kcrDeadColor 						= ApolloColor.new("crayGray")
-
-local kcrDefaultTaggedColor = ApolloColor.new("crayGray")
 
 -----------------------------------------------------------------------------------------------
 -- Local function reference declarations
 -----------------------------------------------------------------------------------------------
 local fnDrawHealth
+local fnDrawShield
+local fnDrawAbsorb
 local fnDrawRewards
 local fnDrawCastBar
 local fnDrawVulnerable
-local fnColorNameplate
 local fnDrawTargeting
+
+local fnColorNameplate
 
 function ForgeUI_Nameplates:new(o)
     o = o or {}
@@ -153,6 +69,53 @@ function ForgeUI_Nameplates:new(o)
     self.tSettings = {
 		nMaxRange = 75,
 		bUseOcclusion = true,
+		crShield = "FF0699F3",
+		crAbsorb = "FFFFC600",
+		crDead = "FF666666",
+		tUnits = {
+			Target = {
+				bShowMarker = true
+			},
+			Player = {
+				bShowBars = true,
+				crName = "FFFFFFFF",
+				crHealth = "FF75CC26",
+			},
+			FriendlyPlayer = {
+				bShowBars = true,
+				crName = "FFFFFFFF",
+				crHealth = "FF75CC26",
+				bClassColors = true,
+			},
+			HostilePlayer = {
+				bShowBars = true,
+				crName = "FFFF0000",
+				crHealth = "FFFF0000",
+				bClassColors = true,
+			},
+			FriendlyNPC = {
+				bShowBars = true,
+				crName = "FF76CD26",
+				crHealth = "FF75CC26",
+			},
+			NeutralNPC = {
+				bShowBars = true,
+				crName = "FFFFF569",
+				crHealth = "FFF3D829",
+			},
+			HostileNPC = {
+				bShowBars = true,
+				crName = "FFD9544D",
+				crHealth = "FFE50000",
+			},
+			Simple = {
+				bShowBars = false,
+				crName = "FFFFFFFF"
+			}
+			
+		},
+		knNameplatePoolLimit = 500,
+		knTargetRange = 5000,
 	}
 	
     return o
@@ -204,6 +167,7 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRegistration()
 	Apollo.RegisterEventHandler("UnitLevelChanged", 			"OnUnitLevelChanged", self)
 	Apollo.RegisterEventHandler("UnitMemberOfGuildChange", 		"OnUnitMemberOfGuildChange", self)
 	Apollo.RegisterEventHandler("GuildChange", 					"OnGuildChange", self)
+	Apollo.RegisterEventHandler("UnitGibbed",					"OnUnitGibbed", self)
 	
 	local tRewardUpdateEvents = {
 		"QuestObjectiveUpdated", "QuestStateChanged", "ChallengeAbandon", "ChallengeLeftArea",
@@ -299,21 +263,10 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 	end
 	
 	if bNewShow then
-		-- Disposition based update
-		if eDisposition ~= tNameplate.eDisposition then
-			tNameplate.wnd.targetMarkerArrow:SetSprite(karDisposition.tTargetSecondary[tNameplate.eDisposition])
-			tNameplate.wnd.targetMarker:SetSprite(karDisposition.tTargetPrimary[tNameplate.eDisposition])
-		end
-		
-		-- Does not need to update every frame
-		local bShowScaled = unitOwner:IsScaled()
-		if bShowScaled ~= tNameplate.wnd.targetScalingMark:IsShown() then
-			tNameplate.wnd.targetScalingMark:Show(bShowScaled)
-		end
-		
 		fnColorNameplate(self, tNameplate)
 		
 		fnDrawHealth(self, tNameplate)
+		fnDrawShield(self, tNameplate)
 		fnDrawTargeting(self, tNameplate)
 		
 		fnDrawRewards(self, tNameplate)
@@ -327,6 +280,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		or not unitNew:IsValid()
 		or not unitNew:ShouldShowNamePlate()
 		or unitNew:GetType() == "Collectible"
+		or unitNew:GetType() == "Simple"
 		or unitNew:GetType() == "PinataLoot" then
 		-- Never have nameplates
 		return
@@ -352,13 +306,14 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 
 	wnd:SetUnit(unitNew, 1)
 
-	local strNewUnitType = unitNew:GetType()
+	local strNewUnitType = self:GetUnitType(unitNew)
 	local tNameplate =
 	{
 		unitOwner 		= unitNew,
 		idUnit 			= idUnit,
 		wndNameplate	= wnd,
 		strUnitType		= strNewUnitType,
+		tSettings 		= self.tSettings.tUnits[strNewUnitType],
 		
 		bOnScreen 		= wnd:IsOnScreen(),
 		bOccluded 		= wnd:IsOccluded(),
@@ -382,8 +337,6 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		level = wnd:FindChild("Container:Health:Level"),
 		wndGuild = wnd:FindChild("Guild"),
 		wndName = wnd:FindChild("NameRewardContainer:Name"),
-		certainDeath = wnd:FindChild("TargetAndDeathContainer:CertainDeath"),
-		targetScalingMark = wnd:FindChild("TargetScalingMark"),
 		
 		nameRewardContainer = wnd:FindChild("NameRewardContainer:RewardContainer"),
 		healthMaxShield = wnd:FindChild("Container:Health:HealthBars:MaxShield"),
@@ -398,7 +351,6 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		castBarCastFill = wnd:FindChild("Container:CastBar:CastFill"),
 		vulnerableVulnFill = wnd:FindChild("Container:Vulnerable:VulnFill"),
 		questRewards = wnd:FindChild("NameRewardContainer:RewardContainer:QuestRewards"),
-		targetMarkerArrow = wnd:FindChild("TargetAndDeathContainer:TargetMarkerArrow"),
 		targetMarker = wnd:FindChild("Container:TargetMarker"),
 	}
 
@@ -455,7 +407,7 @@ function ForgeUI_Nameplates:OnUnitDestroyed(unitOwner)
 	local wndNameplate = tNameplate.wndNameplate
 
 	self.arWnd2Nameplate[wndNameplate:GetId()] = nil
-	if #self.arWindowPool < knNameplatePoolLimit then
+	if #self.arWindowPool < self.tSettings.knNameplatePoolLimit then
 		wndNameplate:Show(false, true)
 		wndNameplate:SetUnit(nil)
 		table.insert(self.arWindowPool, {wndNameplate, tNameplate.wnd})
@@ -468,75 +420,38 @@ end
 function ForgeUI_Nameplates:OnFrame()
 	self.unitPlayer = GameLib.GetPlayerUnit()
 
-	local fnHealth = ForgeUI_Nameplates.DrawHealthShieldBar
-	
 	for idx, tNameplate in pairs(self.arUnit2Nameplate) do
 		if tNameplate.bShow then
-			fnDrawCastBar(self, tNameplate)
-			fnDrawVulnerable(self, tNameplate)
+			--fnDrawCastBar(self, tNameplate)
 			
-			if tNameplate.bShowHealth then
-				fnHealth(self, tNameplate.wnd.health, tNameplate.unitOwner, tNameplate.eDisposition, tNameplate)
+			if tNameplate.tSettings.bShowBars then
+				fnDrawHealth(self, tNameplate)
+				fnDrawShield(self, tNameplate)
+				fnDrawAbsorb(self, tNameplate)
+				
+				fnDrawVulnerable(self, tNameplate)
 			end
 		end
 	end
 end
 
 function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
-	local unitPlayer = self.unitPlayer
 	local unitOwner = tNameplate.unitOwner
 	local wndNameplate = tNameplate.wndNameplate
-
-	local eDisposition = tNameplate.eDisposition
-
-	if tNameplate.wnd.targetScalingMark:IsShown() then
-		crLevelColorToUse = kcrScalingCColor
-	elseif unitOwner:GetLevel() == nil then
-		crLevelColorToUse = karConColors[1][2]
-	end
-
-	local crColorToUse = karDisposition.tTextColors[eDisposition]
-	local unitController = unitOwner:GetUnitOwner() or unitOwner
-	local strUnitType = unitOwner:GetType()
-
-	if strUnitType == "Player" or strUnitType == "Pet" or strUnitType == "Esper Pet" then
-		if eDisposition == Unit.CodeEnumDisposition.Friendly or unitOwner:IsThePlayer() then
-			crColorToUse = kcrUnflaggedAlly
-			if unitController:IsPvpFlagged() then
-				crColorToUse = kcrFlaggedAlly
-			elseif unitController:IsInYourGroup() then
-				crColorToUse = kcrUnflaggedGroupmate
-			elseif tNameplate.bIsGuildMember then
-				crColorToUse = kcrUnflaggedGuildmate
-			end
-		else
-			local bIsUnitFlagged = unitController:IsPvpFlagged()
-			local bAmIFlagged = GameLib.IsPvpFlagged()
-
-			if not bAmIFlagged and not bIsUnitFlagged then
-				crColorToUse = kcrUnflaggedEnemyWhenUnflagged
-			elseif bAmIFlagged and not bIsUnitFlagged then
-				crColorToUse = kcrUnflaggedEnemyWhenFlagged
-			elseif not bAmIFlagged and bIsUnitFlagged then
-				crColorToUse = kcrFlaggedEnemyWhenUnflagged
-			elseif bAmIFlagged and bIsUnitFlagged then
-				crColorToUse = kcrFlaggedEnemyWhenFlagged
-			end
-		end
-	end
-
-	if unitOwner:GetType() ~= "Player" and unitOwner:IsTagged() and not unitOwner:IsTaggedByMe() and not unitOwner:IsSoftKill() then
-		crColorToUse = kcrDefaultTaggedColor
-	end
-
+	local tSettings = tNameplate.tSettings
+	
+	if tSettings == nil then Print(tNameplate.strUnitType) end
+	
+	local crNameColors = tSettings.crName
+	local crBarColor = tSettings.crHealth
+	
 	if unitOwner:IsDead() then
-		crColorToUse = kcrDeadColor
-		crLevelColorToUse = kcrDeadColor
+		crNameColors = self.tSettings.crDead
 	end
 
-	tNameplate.wnd.level:SetTextColor(crLevelColorToUse)
-	tNameplate.wnd.wndName:SetTextColor(crColorToUse)
-	tNameplate.wnd.wndGuild:SetTextColor(crColorToUse)
+	tNameplate.wnd.wndName:SetTextColor(crNameColors)
+	tNameplate.wnd.wndGuild:SetTextColor(crNameColors)
+	tNameplate.wnd.healthHealthFill:SetBarColor(crBarColor)
 end
 
 function ForgeUI_Nameplates:DrawName(tNameplate)
@@ -626,19 +541,40 @@ end
 function ForgeUI_Nameplates:DrawHealth(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 
-	local bShow = unitOwner:GetHealth() ~= nil and not unitOwner:IsDead() and unitOwner:GetMaxHealth() > 0
+	local nHealth = unitOwner:GetHealth()
+	local nMaxHealth = unitOwner:GetMaxHealth()
+	
+	local bShow = nHealth ~= nil and not unitOwner:IsDead() and nMaxHealth > 0
 	
 	if bShow then
-		tNameplate.wnd.healthHealthFill:SetMax(unitOwner:GetMaxHealth())
-		tNameplate.wnd.healthHealthFill:SetProgress(unitOwner:GetHealth())
-		
-		tNameplate.wnd.healthShieldFill:SetProgress(100)
+		self:SetBarValue(tNameplate.wnd.healthHealthFill, 0, nHealth, nMaxHealth)
 	end
 	
 	if bShow ~= tNameplate.wnd.health:IsShown() then
 		tNameplate.wnd.health:Show(bShow, true)
-		tNameplate.bShowHealth = bShow
 	end
+end
+
+function ForgeUI_Nameplates:DrawShield(tNameplate)
+	local unitOwner = tNameplate.unitOwner
+	
+	local nShield = unitOwner:GetShieldCapacity()
+	local nShieldMax = unitOwner:GetShieldCapacityMax()
+	
+	local bShow = nShield ~= nil and not unitOwner:IsDead() and nShield > 0
+	
+	if bShow then
+		self:SetBarValue(tNameplate.wnd.healthShieldFill, 0, nShield, nShieldMax)
+	end
+	
+	if bShow ~= tNameplate.wnd.healthMaxShield:IsShown() then
+		tNameplate.wnd.healthMaxShield:Show(bShow, true)
+		tNameplate.bShowShield = bShow
+	end
+end
+
+function ForgeUI_Nameplates:DrawAbsorb(tNameplate)
+
 end
 
 function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
@@ -738,14 +674,9 @@ function ForgeUI_Nameplates:DrawTargeting(tNameplate)
 
 	local bUseTarget = tNameplate.bIsTarget
 
-	local bShowTargetMarkerArrow = bUseTarget and self.bShowMarkerTarget and not tNameplate.wnd.health:IsShown()
-
-	local bShowTargetMarker = bUseTarget and self.bShowMarkerTarget and tNameplate.wnd.health:IsShown()
+	local bShowTargetMarker = bUseTarget and self.tSettings.tUnits["Target"].bShowMarker and tNameplate.wnd.health:IsShown()
 	if tNameplate.wnd.targetMarker:IsShown() ~= bShowTargetMarker then
 		tNameplate.wnd.targetMarker:Show(bShowTargetMarker)
-	end
-	if tNameplate.wnd.targetMarkerArrow:IsShown() ~= bShowTargetMarkerArrow then
-		tNameplate.wnd.targetMarkerArrow:Show(bShowTargetMarkerArrow, not bShowTargetMarkerArrow)
 	end
 end
 
@@ -771,7 +702,7 @@ function ForgeUI_Nameplates:CheckDrawDistance(tNameplate)
 	local nDistance = (nDeltaX * nDeltaX) + (nDeltaY * nDeltaY) + (nDeltaZ * nDeltaZ)
 
 	if tNameplate.bIsTarget or tNameplate.bIsCluster then
-		bInRange = nDistance < knTargetRange
+		bInRange = nDistance < self.tSettings.knTargetRange
 		return bInRange
 	else
 		bInRange = nDistance < self.tSettings.nMaxRange * self.tSettings.nMaxRange
@@ -785,6 +716,7 @@ function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 	
 	local bDontShowNameplate = (not unitOwner:ShouldShowNamePlate() and not tNameplate.bIsTarget)
 		or ((self.tSettings.bUseOcclusion and tNameplate.bOccluded) or not tNameplate.bOnScreen)
+		or tNameplate.bGibbed
 	
 	if bDontShowNameplate then
 		return false
@@ -807,116 +739,6 @@ function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 	end
 
 	return bShowNameplate
-end
-
-function ForgeUI_Nameplates:DrawHealthShieldBar(wndHealth, unitOwner, eDisposition, tNameplate) -- Every frame
-	local nHealthCurr = unitOwner:GetHealth()
-	
-	if tNameplate.strUnitType == "Simple" or nHealthCurr == nil then
-		if nHealthCurr ~= tNameplate.nHealthCurr then
-			tNameplate.wnd.healthMaxHealth:SetAnchorOffsets(self.nFrameLeft, self.nFrameTop, self.nFrameRight, self.nFrameBottom)
-			tNameplate.wnd.healthHealthLabel:SetText("")
-		end
-		
-		tNameplate.nHealthCurr = nHealthCurr
-		return
-	end
-	
-	local nHealthMax 	= unitOwner:GetMaxHealth()
-	local nShieldCurr 	= unitOwner:GetShieldCapacity()
-	local nShieldMax 	= unitOwner:GetShieldCapacityMax()
-	local nAbsorbCurr 	= 0
-	local nAbsorbMax 	= unitOwner:GetAbsorptionMax()
-	if nAbsorbMax > 0 then
-		nAbsorbCurr = unitOwner:GetAbsorptionValue() -- Since it doesn't clear when the buff drops off
-	end
-	local nTotalMax = nHealthMax + nShieldMax + nAbsorbMax
-
-	if unitOwner:IsDead() then
-		nHealthCurr = 0
-	end
-
-	local nHealthTintType = 0
-	
-	if unitOwner:IsInCCState(Unit.CodeEnumCCState.Vulnerability) then
-		nHealthTintType = 3
-	elseif nHealthCurr / nHealthMax <= knHealthRed then
-		nHealthTintType = 2
-	elseif nHealthCurr / nHealthMax <= knHealthYellow then
-		nHealthTintType = 1
-	end
-	
-	if nHealthTintType ~= tNameplate.nHealthTintType then
-		tNameplate.wnd.healthMaxHealth:SetSprite(nHealthTintType == 3 and "CRB_Nameplates:sprNP_PurpleProg" or karDisposition.tHealthBar[tNameplate.eDisposition])
-		tNameplate.wnd.targetMarker:SetSprite(nHealthTintType == 3 and "CRB_Nameplates:sprNP_BaseSelectedPurple" or karDisposition.tTargetPrimary[tNameplate.eDisposition])
-		tNameplate.nHealthTintType = nHealthTintType
-	end
-	
-	local nPointHealthRight = self.nFrameLeft + (self.nHealthWidth * (nHealthCurr / nTotalMax)) -- applied to the difference between L and R
-	local nPointShieldRight = self.nFrameLeft + (self.nHealthWidth * ((nHealthCurr + nShieldMax) / nTotalMax))
-	local nPointAbsorbRight = self.nFrameLeft + (self.nHealthWidth * ((nHealthCurr + nShieldMax + nAbsorbMax) / nTotalMax))
-
-	if nShieldMax > 0 and nShieldMax / nTotalMax < 0.2 then
-		local nMinShieldSize = 0.2 -- HARDCODE: Minimum shield bar length is 20% of total for formatting
-		nPointHealthRight = self.nFrameLeft + (self.nHealthWidth*(math.min(1 - nMinShieldSize, nHealthCurr / nTotalMax)))
-		nPointShieldRight = self.nFrameLeft + (self.nHealthWidth*(math.min(1, (nHealthCurr / nTotalMax) + nMinShieldSize)))
-	end
-
-	-- Resize
-	tNameplate.wnd.healthShieldFill:EnableGlow(nShieldCurr > 0 and nShieldCurr ~= nShieldMax)
-	if nShieldCurr ~= tNameplate.nShieldCurr or nShieldMax ~= tNameplate.nShieldMax then
-		self:SetBarValue(tNameplate.wnd.healthShieldFill, 0, nShieldCurr, nShieldMax) -- Only the Curr Shield really progress fills
-	end
-	if nAbsorbCurr ~= tNameplate.nAbsorbCurr or nAbsorbMax ~= tNameplate.nAbsorbMax then
-		self:SetBarValue(tNameplate.wnd.healthAbsorbFill, 0, nAbsorbCurr, nAbsorbMax)
-	end
-	
-	local bHealthSizeChanged = nHealthCurr ~= tNameplate.nHealthCurr or nTotalMax ~= tNameplate.nTotalMax
-	if bHealthSizeChanged then
-		tNameplate.wnd.healthMaxHealth:SetAnchorOffsets(self.nFrameLeft, self.nFrameTop, nPointHealthRight, self.nFrameBottom)
-		tNameplate.wnd.healthMaxShield:SetAnchorOffsets(nPointHealthRight - 1, self.nFrameTop, nPointShieldRight, self.nFrameBottom)
-		tNameplate.wnd.healthMaxAbsorb:SetAnchorOffsets(nPointShieldRight - 1, self.nFrameTop, nPointAbsorbRight, self.nFrameBottom)
-	end
-
-	-- Bars
-	local bHasHealth = nHealthCurr > 0
-	if bHasHealth ~= tNameplate.wnd.healthShieldFill:IsShown() then
-		tNameplate.wnd.healthShieldFill:Show(bHasHealth)
-	end
-	if bHasHealth ~= tNameplate.wnd.healthMaxHealth:IsShown() then
-		tNameplate.wnd.healthMaxHealth:Show(bHasHealth)
-	end
-	
-	local bHasShield = bHasHealth and nShieldMax > 0
-	if bHasShield ~= tNameplate.wnd.healthMaxShield:IsShown() then
-		tNameplate.wnd.healthMaxShield:Show(bHasShield)
-	end
-	
-	local bHasAbsorb = bHasHealth and nAbsorbMax > 0
-	if bHasAbsorb ~= tNameplate.wnd.healthMaxAbsorb:IsShown() then
-		tNameplate.wnd.healthMaxAbsorb:Show(bHasAbsorb)
-	end
-
-	-- Text
-	if nHealthMax ~= tNameplate.nHealthMax or nHealthCurr ~= tNameplate.nHealthCurr or nShieldCurr ~= tNameplate.nShieldCurr then
-		local strHealthMax = self:HelperFormatBigNumber(nHealthMax)
-		local strHealthCurr = self:HelperFormatBigNumber(nHealthCurr)
-		local strShieldCurr = self:HelperFormatBigNumber(nShieldCurr)
-	
-		local strText = nHealthMax == nHealthCurr and strHealthMax or String_GetWeaselString(Apollo.GetString("TargetFrame_HealthText"), strHealthCurr, strHealthMax)
-		if nShieldMax > 0 and nShieldCurr > 0 then
-			strText = String_GetWeaselString(Apollo.GetString("TargetFrame_HealthShieldText"), strText, strShieldCurr)
-		end
-		tNameplate.wnd.healthHealthLabel:SetText(strText)
-	end
-
-	tNameplate.nHealthCurr = nHealthCurr
-	tNameplate.nHealthMax = nHealthMax
-	tNameplate.nShieldCurr = nShieldCurr
-	tNameplate.nShieldMax = nShieldMax
-	tNameplate.nAbsorbCurr = nAbsorbCurr
-	tNameplate.nAbsorbMax = nAbsorbMax
-	tNameplate.nTotalMax = nTotalMax
 end
 
 function ForgeUI_Nameplates:HelperFormatBigNumber(nArg)
@@ -950,6 +772,67 @@ function ForgeUI_Nameplates:SetBarValue(wndBar, fMin, fValue, fMax)
 	wndBar:SetMax(fMax)
 	wndBar:SetFloor(fMin)
 	wndBar:SetProgress(fValue)
+end
+
+-----------------------------------------------------------------------------------------------
+-- Helper functions
+-----------------------------------------------------------------------------------------------
+
+function ForgeUI_Nameplates:GetUnitType(unit)
+	if unit == nil or not unit:IsValid() then return end
+
+	local eDisposition = unit:GetDispositionTo(self.unitPlayer)
+	
+	if unit:IsThePlayer() then
+		return "Player"
+	elseif unit:GetType() == "Player" then
+		if eDisposition == 0 then
+			return "HostilePlayer"
+		else
+			if unit:IsInYourGroup() then
+				return "PartyPlayer"
+			else
+				return "FriendlyPlayer"
+			end
+		end
+	elseif unit:GetType() == "Collectible" then
+		return "Collectible"
+	elseif unit:GetType() == "PinataLoot" then
+		return "PinataLoot"
+	elseif unit:GetType() == "Pet" then
+		local petOwner = unit:GetUnitOwner()
+	
+		if eDisposition == 0 then
+			return "HostilePet"
+		elseif petOwner ~= nil and petOwner:IsThePlayer() then
+			return "PlayerPet"
+		else
+			return "FriendlyPet"
+		end
+	elseif unit:GetType() == "Mount" then
+		return "Mount"
+	elseif unit:GetType() == "Pickup" then
+		if string.match(unit:GetName(), self.unitPlayer:GetName()) then
+			return "Pickup"
+		end
+		return "PickupNotPlayer"
+	elseif unit:GetHealth() == nil and not unit:IsDead() then
+		if unit:GetActivationState().InstancePortal then
+			return "Simple"
+		else
+			return "Simple"
+		end
+	else
+		if eDisposition == 0 then
+			return "HostileNPC"
+		elseif eDisposition == 1 then
+			return "NeutralNPC"
+		elseif eDisposition == 2 then
+			return "FriendlyNPC"
+		elseif eDisposition == 3 then
+			return "UnknownNPC"
+		end
+	end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -991,6 +874,14 @@ end
 function ForgeUI_Nameplates:OnEnteredCombat(unitChecked, bInCombat)
 	if unitChecked == self.unitPlayer then
 		self.bPlayerInCombat = bInCombat
+	end
+end
+
+function ForgeUI_Nameplates:OnUnitGibbed(unitUpdated)
+	local tNameplate = self.arUnit2Nameplate[unitUpdated:GetId()]
+	if tNameplate ~= nil then
+		tNameplate.bGibbed = true
+		self:UpdateNameplateVisibility(tNameplate)
 	end
 end
 
@@ -1080,8 +971,6 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 		return
 	end
 	
-	Print(unitOwner:GetType())
-
 	local tNameplate = self.arUnit2Nameplate[unitOwner:GetId()]
 	if tNameplate == nil then
 		return
@@ -1114,6 +1003,9 @@ end
 -- Local function reference assignments
 -----------------------------------------------------------------------------------------------
 fnDrawHealth = ForgeUI_Nameplates.DrawHealth
+fnDrawShield = ForgeUI_Nameplates.DrawShield
+fnDrawAbsorb = ForgeUI_Nameplates.DrawAbsorb
+
 fnDrawRewards = ForgeUI_Nameplates.DrawRewards
 fnDrawCastBar = ForgeUI_Nameplates.DrawCastBar
 fnDrawVulnerable = ForgeUI_Nameplates.DrawVulnerable
