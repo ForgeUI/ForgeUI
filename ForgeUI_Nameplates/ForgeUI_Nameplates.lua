@@ -70,6 +70,7 @@ function ForgeUI_Nameplates:new(o)
     self.tSettings = {
 		nMaxRange = 75,
 		bUseOcclusion = true,
+		bShowTitles = false,
 		crShield = "FF0699F3",
 		crAbsorb = "FFFFC600",
 		crDead = "FF666666",
@@ -81,6 +82,7 @@ function ForgeUI_Nameplates:new(o)
 				bEnabled = true,
 				nShowName = 0,
 				nShowBars = 0,
+				nShowCast = 0,
 				crName = "FFFFFFFF",
 				crHealth = "FF75CC26",
 			},
@@ -88,6 +90,7 @@ function ForgeUI_Nameplates:new(o)
 				bEnabled = true,
 				nShowName = 3,
 				nShowBars = 3,
+				nShowCast = 0,
 				crName = "FFFFFFFF",
 				crHealth = "FF75CC26",
 				bClassColors = true,
@@ -96,6 +99,7 @@ function ForgeUI_Nameplates:new(o)
 				bEnabled = true,
 				nShowName = 3,
 				nShowBars = 3,
+				nShowCast = 0,
 				crName = "FF43C8F3",
 				crHealth = "FF75CC26",
 				bClassColors = true,
@@ -104,6 +108,7 @@ function ForgeUI_Nameplates:new(o)
 				bEnabled = true,
 				nShowName = 3,
 				nShowBars = 3,
+				nShowCast = 3,
 				crName = "FFFF0000",
 				crHealth = "FFFF0000",
 				bClassColors = true,
@@ -112,6 +117,7 @@ function ForgeUI_Nameplates:new(o)
 				bEnabled = true,
 				nShowName = 3,
 				nShowBars = 2,
+				nShowCast = 2,
 				crName = "FF76CD26",
 				crHealth = "FF75CC26",
 			},
@@ -119,6 +125,7 @@ function ForgeUI_Nameplates:new(o)
 				bEnabled = true,
 				nShowName = 3,
 				nShowBars = 2,
+				nShowCast = 2,
 				crName = "FFFFF569",
 				crHealth = "FFF3D829",
 			},
@@ -126,6 +133,7 @@ function ForgeUI_Nameplates:new(o)
 				bEnabled = true,
 				nShowName = 3,
 				nShowBars = 2,
+				nShowCast = 2,
 				crName = "FFD9544D",
 				crHealth = "FFE50000",
 			},
@@ -390,7 +398,6 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	tNameplate.wnd = {
 		health = wnd:FindChild("Container:Health"),
 		castBar = wnd:FindChild("Container:CastBar"),
-		vulnerable = wnd:FindChild("Container:Vulnerable"),
 		level = wnd:FindChild("Container:Health:Level"),
 		wndGuild = wnd:FindChild("Guild"),
 		wndName = wnd:FindChild("NameRewardContainer:Name"),
@@ -406,7 +413,6 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		
 		castBarLabel = wnd:FindChild("Container:CastBar:Label"),
 		castBarCastFill = wnd:FindChild("Container:CastBar:CastFill"),
-		vulnerableVulnFill = wnd:FindChild("Container:Vulnerable:VulnFill"),
 		questRewards = wnd:FindChild("NameRewardContainer:RewardContainer:QuestRewards"),
 		targetMarker = wnd:FindChild("Container:TargetMarker"),
 	}
@@ -479,7 +485,7 @@ function ForgeUI_Nameplates:OnFrame()
 
 	for idx, tNameplate in pairs(self.arUnit2Nameplate) do
 		if tNameplate.bShow then
-			--fnDrawCastBar(self, tNameplate)
+			fnDrawCastBar(self, tNameplate)
 			
 			if tNameplate.tSettings.bShowBars then
 				fnDrawHealth(self, tNameplate)
@@ -513,14 +519,13 @@ function ForgeUI_Nameplates:DrawName(tNameplate)
 	local wndName = tNameplate.wnd.wndName
 	
 	local bShow = self:GetBooleanOption(tNameplate.tSettings.nShowName, unitOwner)
-
 	if wndName:IsShown() ~= bShow then
 		wndName:Show(bShow, true)
 	end
 
 	if bShow then
 		local strNewName
-		if self.bShowTitle then
+		if self.tSettings.bShowTitles then
 			strNewName = unitOwner:GetTitleOrName()
 		else
 			strNewName = unitOwner:GetName()
@@ -634,12 +639,7 @@ function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
 	-- Casting; has some onDraw parameters we need to check
 	tNameplate.bIsCasting = unitOwner:ShouldShowCastBar()
 
-	local bShowTarget = tNameplate.bIsTarget
-	
-	local bShow = tNameplate.bIsCasting and self.bShowCastBarMain
-	if tNameplate.bIsCasting and bShowTarget then
-		bShow = self.bShowCastBarTarget
-	end
+	local bShow = tNameplate.bIsCasting and self:GetBooleanOption(tNameplate.tSettings.nShowCast, unitOwner)
 
 	local wndCastBar = tNameplate.wnd.castBar
 	if bShow ~= wndCastBar:IsShown() then
