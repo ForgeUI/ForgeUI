@@ -30,8 +30,6 @@ local fnDrawTarget
 
 local fnColorNameplate
 
-local strPlayerName = ""
-
 function ForgeUI_Nameplates:new(o)
     o = o or {}
     setmetatable(o, self)
@@ -60,7 +58,8 @@ function ForgeUI_Nameplates:new(o)
 		nMaxRange = 75,
 		bUseOcclusion = true,
 		bShowTitles = false,
-		bOnlyImportantNPC = false,
+		bOnlyImportantNPC = true,
+		bShowQuestIcons = false,
 		crShield = "FF0699F3",
 		crAbsorb = "FFFFC600",
 		crDead = "FF666666",
@@ -210,14 +209,13 @@ end
 
 function ForgeUI_Nameplates:OnLoad()
 	Apollo.RegisterEventHandler("UnitCreated", 					"OnPreloadUnitCreated", self)
-
-	self.xmlDoc = XmlDoc.CreateFromFile("ForgeUI_Nameplates.xml")
-	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
-end
-
-function ForgeUI_Nameplates:OnDocLoaded()
-	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
-
+	
+	self.xmlNameplate = XmlDoc.CreateFromFile("ForgeUI_Nameplates.xml")
+	self.xmlNameplate:RegisterCallback("OptionsInit", self)
+	
+	self.xmlOptions = XmlDoc.CreateFromFile("ForgeUI_Options.xml")
+	self.xmlOptions:RegisterCallback("NameplateInit", self)
+	
 	if ForgeUI == nil then -- forgeui loaded
 		ForgeUI = Apollo.GetAddon("ForgeUI")
 	end
@@ -226,12 +224,11 @@ function ForgeUI_Nameplates:OnDocLoaded()
 end
 
 function ForgeUI_Nameplates:ForgeAPI_AfterRegistration()
-	strPlayerName = GameLib.GetPlayerUnit():GetName()
+	local wndItemButton = ForgeUI.API_AddItemButton(self, "Nameplates", { xmlDoc = self.xmlOptions, strContainer = "General" })
+end
 
-	Apollo.RemoveEventHandler("UnitCreated", self)
-	
-	Apollo.RegisterEventHandler("UnitCreated",					"OnUnitCreated", self)
-	Apollo.RegisterEventHandler("UnitDestroyed", 				"OnUnitDestroyed", self)
+function ForgeUI_Nameplates:NameplateInit()
+	if self.xmlNameplate == nil or not self.xmlNameplate:IsLoaded() then return end 
 
 	Apollo.RegisterEventHandler("VarChange_FrameCount", 		"OnFrame", self)
 
@@ -245,6 +242,7 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRegistration()
 	Apollo.RegisterEventHandler("GuildChange", 					"OnGuildChange", self)
 	Apollo.RegisterEventHandler("UnitGibbed",					"OnUnitGibbed", self)
 	
+	self.bRedrawRewardIcons = true
 	local tRewardUpdateEvents = {
 		"QuestObjectiveUpdated", "QuestStateChanged", "ChallengeAbandon", "ChallengeLeftArea",
 		"ChallengeFailTime", "ChallengeFailArea", "ChallengeActivate", "ChallengeCompleted",
@@ -262,18 +260,24 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRegistration()
 
 	self.arUnit2Nameplate = {}
 	self.arWnd2Nameplate = {}
-
-	-- Cache defaults
-	local wndTemp = Apollo.LoadForm(self.xmlDoc, "Nameplate", nil, self)
-	self.nFrameLeft, self.nFrameTop, self.nFrameRight, self.nFrameBottom = wndTemp:FindChild("Container:Health:HealthBars:MaxHealth"):GetAnchorOffsets()
-	self.nHealthWidth = self.nFrameRight - self.nFrameLeft
-	wndTemp:Destroy()
 	
 	self:CreateUnitsFromPreload()
 end
 
+function ForgeUI_Nameplates:UpdateAllNameplates()
+	self:UpdateAllNameplateVisibility()
+	
+	for idx, tNameplate in pairs(self.arUnit2Nameplate) do
+		fnDrawName(self, tNameplate)
+		fnDrawHealth(self, tNameplate)
+		fnDrawIA(self, tNameplate)
+		fnDrawCastBar(self, tNameplate)
+		
+		fnColorNameplate(self, tNameplate)
+	end
+end
+
 function ForgeUI_Nameplates:OnHalfSecTimer()
-	--self:CreateUnitsFromPreload()
 	self:UpdateAllNameplateVisibility()
 end
 
@@ -285,17 +289,24 @@ function ForgeUI_Nameplates:UpdateNameplateRewardInfo(tNameplate)
 	local tFlags =
 	{
 		bVert = false,
-		bHideQuests = not true,
-		bHideChallenges = not true,
-		bHideMissions = not true,
-		bHidePublicEvents = not true,
-		bHideRivals = not true,
-		bHideFriends = not true
+		bHideQuests = not self.tSettings.bShowQuestIcons,
+		bHideChallenges = true,
+		bHideMissions = true,
+		bHidePublicEvents = true,
+		bHideRivals = true,
+		bHideFriends = true
 	}
 
 	if RewardIcons ~= nil and RewardIcons.GetUnitRewardIconsForm ~= nil then
 		RewardIcons.GetUnitRewardIconsForm(tNameplate.wnd.questRewards, tNameplate.unitOwner, tFlags)
 	end
+	
+	--for k, v in pairs(tNameplate.wnd.questRewards:GetChildren()) do
+	--	if v:GetName() == "Quest" then
+	--		v:FindChild("Single"):SetSprite("ForgeUI_quest_icon_s")
+	--		v:FindChild("Multi"):SetSprite("ForgeUI_quest_icon_s")
+	--	end
+	--end
 end
 
 function ForgeUI_Nameplates:UpdateAllNameplateVisibility()
@@ -343,8 +354,6 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 		fnColorNameplate(self, tNameplate)
 		
 		fnDrawHealth(self, tNameplate)
-		
-		fnDrawRewards(self, tNameplate)
 	end
 	
 	tNameplate.eDisposition = eDisposition
@@ -369,7 +378,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	end
 
 	if wnd == nil or not wnd:IsValid() then
-		wnd = Apollo.LoadForm(self.xmlDoc, "Nameplate", "InWorldHudStratum", self)
+		wnd = Apollo.LoadForm(self.xmlNameplate, "Nameplate", "InWorldHudStratum", self)
 		wndReferences = nil
 	end
 
@@ -396,31 +405,34 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		tActivation		= unitNew:GetActivationState(),
 		
 		bShow			= false,
+		wnd				= wndReferences,
 	}
 
-	tNameplate.wnd = {
-		health = wnd:FindChild("Container:Health"),
-		castBar = wnd:FindChild("Container:CastBar"),
-		level = wnd:FindChild("NameRewardContainer:Level"),
-		wndGuild = wnd:FindChild("Guild"),
-		wndName = wnd:FindChild("NameRewardContainer:Name"),
-		
-		nameRewardContainer = wnd:FindChild("NameRewardContainer:RewardContainer"),
-		healthMaxShield = wnd:FindChild("Container:Health:HealthBars:MaxShield"),
-		healthShieldFill = wnd:FindChild("Container:Health:HealthBars:MaxShield:ShieldFill"),
-		healthMaxAbsorb = wnd:FindChild("Container:Health:HealthBars:MaxAbsorb"),
-		healthAbsorbFill = wnd:FindChild("Container:Health:HealthBars:MaxAbsorb:AbsorbFill"),
-		healthMaxHealth = wnd:FindChild("Container:Health:HealthBars:MaxHealth"),
-		healthHealthFill = wnd:FindChild("Container:Health:HealthBars:MaxHealth:HealthFill"),
-		healthHealthLabel = wnd:FindChild("Container:Health:HealthLabel"),
-		ia = wnd:FindChild("Container:Health:IA"),
-		
-		castBarLabel = wnd:FindChild("Container:CastBar:Label"),
-		castBarCastFill = wnd:FindChild("Container:CastBar:CastFill"),
-		questRewards = wnd:FindChild("NameRewardContainer:Name:RewardContainer:QuestRewards"),
-		targetMarker = wnd:FindChild("Container:TargetMarker"),
-	}
-
+	if wndReferences == nil then
+		tNameplate.wnd = {
+			health = wnd:FindChild("Container:Health"),
+			castBar = wnd:FindChild("Container:CastBar"),
+			level = wnd:FindChild("NameRewardContainer:Level"),
+			wndGuild = wnd:FindChild("Guild"),
+			wndName = wnd:FindChild("NameRewardContainer:Name"),
+			
+			nameRewardContainer = wnd:FindChild("NameRewardContainer:RewardContainer"),
+			healthMaxShield = wnd:FindChild("Container:Health:HealthBars:MaxShield"),
+			healthShieldFill = wnd:FindChild("Container:Health:HealthBars:MaxShield:ShieldFill"),
+			healthMaxAbsorb = wnd:FindChild("Container:Health:HealthBars:MaxAbsorb"),
+			healthAbsorbFill = wnd:FindChild("Container:Health:HealthBars:MaxAbsorb:AbsorbFill"),
+			healthMaxHealth = wnd:FindChild("Container:Health:HealthBars:MaxHealth"),
+			healthHealthFill = wnd:FindChild("Container:Health:HealthBars:MaxHealth:HealthFill"),
+			healthHealthLabel = wnd:FindChild("Container:Health:HealthLabel"),
+			ia = wnd:FindChild("Container:Health:IA"),
+			
+			castBarLabel = wnd:FindChild("Container:CastBar:Label"),
+			castBarCastFill = wnd:FindChild("Container:CastBar:CastFill"),
+			questRewards = wnd:FindChild("NameRewardContainer:Name:RewardContainer:QuestRewards"),
+			targetMarker = wnd:FindChild("Container:TargetMarker"),
+		}
+	end
+	
 	self.arUnit2Nameplate[idUnit] = tNameplate
 	self.arWnd2Nameplate[wnd:GetId()] = tNameplate
 
@@ -446,22 +458,29 @@ function ForgeUI_Nameplates:CreateUnitsFromPreload()
 end
 
 function ForgeUI_Nameplates:OnPreloadUnitCreateTimer()
-	local nCurrentTime = GameLib.GetTickCount()
+	if self.unitPlayer then
+		Apollo.RemoveEventHandler("UnitCreated", self)
 	
-	while #self.tPreloadUnits > 0 do
-		local unit = table.remove(self.tPreloadUnits, #self.tPreloadUnits)
-		if unit:IsValid() then
-			self:OnUnitCreated(unit)
+		Apollo.RegisterEventHandler("UnitCreated",					"OnUnitCreated", self)
+		Apollo.RegisterEventHandler("UnitDestroyed", 				"OnUnitDestroyed", self)
+	
+		local nCurrentTime = GameLib.GetTickCount()
+		
+		while #self.tPreloadUnits > 0 do
+			local unit = table.remove(self.tPreloadUnits, #self.tPreloadUnits)
+			if unit:IsValid() then
+				self:OnUnitCreated(unit)
+			end
+			
+			if GameLib.GetTickCount() - nCurrentTime > 250 then
+				return
+			end
 		end
 		
-		if GameLib.GetTickCount() - nCurrentTime > 250 then
-			return
-		end
+		self.timerPreloadUnitCreateDelay:Stop()
+		self.arPreloadUnits = nil
+		self.timerPreloadUnitCreateDelay = nil
 	end
-	
-	self.timerPreloadUnitCreateDelay:Stop()
-	self.arPreloadUnits = nil
-	self.timerPreloadUnitCreateDelay = nil
 end
 
 function ForgeUI_Nameplates:OnUnitDestroyed(unitOwner)
@@ -717,22 +736,13 @@ function ForgeUI_Nameplates:DrawRewards(tNameplate)
 	local wndNameplate = tNameplate.wndNameplate
 	local unitOwner = tNameplate.unitOwner
 
-	local bUseTarget = tNameplate.bIsTarget
-	local bShow = self.bShowRewardsMain
-	if bUseTarget then
-		bShow = self.bShowRewardsTarget
-	end
+	local bShow = self.tSettings.bShowQuestIcons
 
 	if bShow ~= tNameplate.wnd.questRewards:IsShown() then
 		tNameplate.wnd.questRewards:Show(bShow)
 	end
 	
 	local tRewardsData = tNameplate.wnd.questRewards:GetData()
-	if bShow and tRewardsData ~= nil and tRewardsData.nIcons ~= nil and tRewardsData.nIcons > 0 and tNameplate.nHalfNameWidth ~= nil then
-		local wndnameRewardContainer = tNameplate.wnd.nameRewardContainer
-		local nLeft, nTop, nRight, nBottom = wndnameRewardContainer:GetAnchorOffsets()
-		wndnameRewardContainer:SetAnchorOffsets(tNameplate.nHalfNameWidth, nTop, tNameplate.nHalfNameWidth + wndnameRewardContainer:ArrangeChildrenHorz(0), nBottom)
-	end
 end
 
 function ForgeUI_Nameplates:DrawTarget(tNameplate)
@@ -822,11 +832,15 @@ function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 	return bShowNameplate
 end
 
-
+local strPlayerName = nil
 function ForgeUI_Nameplates:GetUnitType(unit)
 	if unit == nil or not unit:IsValid() then return end
 
 	local eDisposition = unit:GetDispositionTo(GameLib.GetPlayerUnit())
+	
+	if not strPlayerName then
+		strPlayerName = self.unitPlayer:GetName()
+	end
 	
 	if unit:GetType() == "Player" and unit:GetName() == strPlayerName then -- TODO: :IsThePlayer() broken
 		return "Player"

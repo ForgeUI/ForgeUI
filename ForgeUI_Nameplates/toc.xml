@@ -2,4 +2,6 @@
     <Script Name="ForgeUI_Nameplates.lua"/>
     <Form Name="ForgeUI_Nameplates.xml"/>
     <ReplaceAddon Name="Nameplates"/>
+    <Script Name="ForgeUI_Options.lua"/>
+    <Form Name="ForgeUI_Options.xml"/>
 </Addon>
