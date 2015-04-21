@@ -20,6 +20,7 @@ krtClassEnums = {
 -----------------------------------------------------------------------------------------------
 local fnDrawName
 local fnDrawHealth
+local fnDrawIA
 local fnDrawShield
 local fnDrawAbsorb
 
@@ -59,9 +60,11 @@ function ForgeUI_Nameplates:new(o)
 		nMaxRange = 75,
 		bUseOcclusion = true,
 		bShowTitles = false,
+		bOnlyImportantNPC = false,
 		crShield = "FF0699F3",
 		crAbsorb = "FFFFC600",
 		crDead = "FF666666",
+		crMOO = "FF7E00FF",
 		tUnits = {
 			Target = {
 				bShowMarker = true,
@@ -282,12 +285,12 @@ function ForgeUI_Nameplates:UpdateNameplateRewardInfo(tNameplate)
 	local tFlags =
 	{
 		bVert = false,
-		bHideQuests = not self.bShowRewardTypeQuest,
-		bHideChallenges = not self.bShowRewardTypeChallenge,
-		bHideMissions = not self.bShowRewardTypeMission,
-		bHidePublicEvents = not self.bShowRewardTypePublicEvent,
-		bHideRivals = not self.bShowRivals,
-		bHideFriends = not self.bShowFriends
+		bHideQuests = not true,
+		bHideChallenges = not true,
+		bHideMissions = not true,
+		bHidePublicEvents = not true,
+		bHideRivals = not true,
+		bHideFriends = not true
 	}
 
 	if RewardIcons ~= nil and RewardIcons.GetUnitRewardIconsForm ~= nil then
@@ -349,7 +352,7 @@ end
 
 function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	local strNewUnitType = self:GetUnitType(unitNew)
-	if not self.tSettings.tUnits[strNewUnitType] then Print(strNewUnitType) end
+	
 	if not self.tSettings.tUnits[strNewUnitType].bEnabled then return end
 
 	local idUnit = unitNew:GetId()
@@ -398,7 +401,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	tNameplate.wnd = {
 		health = wnd:FindChild("Container:Health"),
 		castBar = wnd:FindChild("Container:CastBar"),
-		level = wnd:FindChild("Container:Health:Level"),
+		level = wnd:FindChild("NameRewardContainer:Level"),
 		wndGuild = wnd:FindChild("Guild"),
 		wndName = wnd:FindChild("NameRewardContainer:Name"),
 		
@@ -410,10 +413,11 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		healthMaxHealth = wnd:FindChild("Container:Health:HealthBars:MaxHealth"),
 		healthHealthFill = wnd:FindChild("Container:Health:HealthBars:MaxHealth:HealthFill"),
 		healthHealthLabel = wnd:FindChild("Container:Health:HealthLabel"),
+		ia = wnd:FindChild("Container:Health:IA"),
 		
 		castBarLabel = wnd:FindChild("Container:CastBar:Label"),
 		castBarCastFill = wnd:FindChild("Container:CastBar:CastFill"),
-		questRewards = wnd:FindChild("NameRewardContainer:RewardContainer:QuestRewards"),
+		questRewards = wnd:FindChild("NameRewardContainer:Name:RewardContainer:QuestRewards"),
 		targetMarker = wnd:FindChild("Container:TargetMarker"),
 	}
 
@@ -515,6 +519,10 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 	if tSettings.bClassColors then
 		crBarColor = ForgeUI.tSettings.tClassColors["cr" .. krtClassEnums[unitOwner:GetClassId()]]
 	end
+	
+	if unitOwner:IsInCCState(Unit.CodeEnumCCState.Vulnerability) then
+		crBarColor = self.tSettings.crMOO
+	end
 
 	tNameplate.wnd.wndName:SetTextColor(crNameColors)
 	tNameplate.wnd.wndGuild:SetTextColor(crNameColors)
@@ -543,6 +551,10 @@ function ForgeUI_Nameplates:DrawName(tNameplate)
 			wndName:SetText(strNewName)
 			tNameplate.strName = strNewName
 
+			local nNameWidth = Apollo.GetTextWidth("Nameplates", strNewName .. " ")
+			local nLeft, nTop, nRight, nBottom = wndName:GetAnchorOffsets()
+			wndName:SetAnchorOffsets(- (nNameWidth / 2), nTop, (nNameWidth / 2), nBottom)
+			
 			-- Need to consider guild as well for the resize code
 			local strNewGuild = unitOwner:GetAffiliationName()
 			if unitOwner:GetType() == "Player" and strNewGuild ~= nil and strNewGuild ~= "" then
@@ -593,12 +605,40 @@ function ForgeUI_Nameplates:DrawHealth(tNameplate)
 		
 		--fnDrawTarget(self, tNameplate)
 		
+		fnDrawIA(self, tNameplate)
 		fnDrawShield(self, tNameplate)
 		fnDrawAbsorb(self, tNameplate)
 	end
 	
 	if bShow ~= tNameplate.wnd.health:IsShown() then
 		tNameplate.wnd.health:Show(bShow, true)
+	end
+end
+
+function ForgeUI_Nameplates:DrawIA(tNameplate)
+	local unitOwner = tNameplate.unitOwner
+	
+	local ia = tNameplate.wnd.ia
+	
+	local bShow = false
+	
+	nValue = unitOwner:GetInterruptArmorValue()
+	nMax = unitOwner:GetInterruptArmorMax()
+	if nMax == 0 or nValue == nil or unitOwner:IsDead() then
+		
+	else
+		bShow = true
+		if nMax == -1 then
+			ia:SetSprite("ForgeUI_IAinf")
+			ia:SetText("")
+		elseif nMax > 0 then
+			ia:SetSprite("ForgeUI_IA")
+			ia:SetText(nValue)
+		end
+	end
+	
+	if bShow ~= ia:IsShown() then
+		ia:Show(bShow, true)
 	end
 end
 
@@ -753,7 +793,7 @@ function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 	
 	local bDontShowNameplate = (not unitOwner:ShouldShowNamePlate() and not tNameplate.bIsTarget)
 		or ((self.tSettings.bUseOcclusion and tNameplate.bOccluded) or not tNameplate.bOnScreen)
-		or tNameplate.bGibbed or not tNameplate.bIsImportant
+		or tNameplate.bGibbed or not tNameplate.bIsImportant and self.tSettings.bOnlyImportantNPC
 	
 	if bDontShowNameplate and not tNameplate.bIsTarget then
 		return false
@@ -786,7 +826,7 @@ end
 function ForgeUI_Nameplates:GetUnitType(unit)
 	if unit == nil or not unit:IsValid() then return end
 
-	local eDisposition = unit:GetDispositionTo(self.unitPlayer)
+	local eDisposition = unit:GetDispositionTo(GameLib.GetPlayerUnit())
 	
 	if unit:GetType() == "Player" and unit:GetName() == strPlayerName then -- TODO: :IsThePlayer() broken
 		return "Player"
@@ -1043,11 +1083,12 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 		tNameplateOther.bIsTarget = false
 
 		if bIsTarget then
-			self:DrawHealth(tNameplateOther)
-			self:DrawName(tNameplateOther)
+			fnDrawHealth(self, tNameplateOther)
+			fnDrawName(self, tNameplateOther)
 			self:DrawGuild(tNameplateOther)
+			fnDrawTarget(self, tNameplateOther)
+			
 			self:UpdateNameplateRewardInfo(tNameplateOther)
-			self:DrawTarget(tNameplateOther)
 			
 			self:UpdateNameplateVisibility(tNameplateOther)
 		end
@@ -1064,10 +1105,12 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 
 	if GameLib.GetTargetUnit() == unitOwner then
 		tNameplate.bIsTarget = true
-		self:DrawHealth(tNameplate)
-		self:DrawName(tNameplate)
+		
+		fnDrawHealth(self, tNameplate)
+		fnDrawName(self, tNameplate)
 		self:DrawGuild(tNameplate)
-		self:DrawTarget(tNameplate)
+		fnDrawTarget(self, tNameplate)
+		
 		self:UpdateNameplateRewardInfo(tNameplate)
 		
 		self:UpdateNameplateVisibility(tNameplate)
@@ -1079,6 +1122,7 @@ end
 -----------------------------------------------------------------------------------------------
 fnDrawName = ForgeUI_Nameplates.DrawName
 fnDrawHealth = ForgeUI_Nameplates.DrawHealth
+fnDrawIA = ForgeUI_Nameplates.DrawIA
 fnDrawShield = ForgeUI_Nameplates.DrawShield
 fnDrawAbsorb = ForgeUI_Nameplates.DrawAbsorb
 
