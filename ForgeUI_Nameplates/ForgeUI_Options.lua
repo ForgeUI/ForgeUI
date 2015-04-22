@@ -16,10 +16,33 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_General"]:FindChild("crShield"):FindChild("EditBox"), self.tSettings, "crShield", false, "LoadStyle_Nameplates" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_General"]:FindChild("crAbsorb"):FindChild("EditBox"), self.tSettings, "crAbsorb", false, "LoadStyle_Nameplates" )
 	
-	ForgeUI.API_RegisterDropdown(self, self.wndContainers["Container_Player"]:FindChild("nShowName"):FindChild("Dropdown"), self.tSettings.tUnits.Player, "nShowName", {
-		[0] = "Never",
-		[1] = "Out of combat",
-		[2] = "In combat",
-		[3] = "Always",
-	}, "UpdateAllNameplates")
+	for type, keyValue in pairs(self.tSettings.tUnits) do
+		for option, optionValue in pairs(keyValue) do
+			if self.wndContainers["Container_" .. type] ~= nil then
+				if string.sub(option, 1, 1) == "n" then
+					if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil and self.wndContainers["Container_" .. type]:FindChild(tostring(option)):FindChild("Dropdown") ~= nil then
+						ForgeUI.API_RegisterDropdown(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)):FindChild("Dropdown"), self.tSettings.tUnits[type], option, {
+							[0] = "Never",
+							[1] = "Out of combat",
+							[2] = "In combat",
+							[3] = "Always",
+						})
+					elseif self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil and self.wndContainers["Container_" .. type]:FindChild(tostring(option)):FindChild("EditBox") ~= nil then
+					end
+				end
+				
+				if string.sub(option, 1, 1) == "b" then
+					if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil and self.wndContainers["Container_" .. type]:FindChild(tostring(option)):FindChild("CheckBox") ~= nil then
+						ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_" .. type]:FindChild(option):FindChild("CheckBox"), self.tSettings.tUnits[type], option )
+					end
+				end
+				
+				if string.sub(option, 1, 2) == "cr" then
+					if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil and self.wndContainers["Container_" .. type]:FindChild(tostring(option)):FindChild("EditBox") ~= nil then
+						ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_" .. type]:FindChild(option):FindChild("EditBox"), self.tSettings.tUnits[type], option, false )
+					end
+				end
+			end
+		end
+	end
 end

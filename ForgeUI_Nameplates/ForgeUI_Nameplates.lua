@@ -22,6 +22,7 @@ local fnUpdateNameplate
 local fnUpdateNameplateVisibility
 
 local fnDrawName
+local fnDrawGuild
 local fnDrawHealth
 local fnDrawIA
 local fnDrawShield
@@ -147,9 +148,11 @@ function ForgeUI_Nameplates:new(o)
 				crHealth = "FFE50000",
 			},
 			UnknownNPC = {
-				bEnabled = false,
-				nShowName = 0,
-				nShowBars = 0,
+				bEnabled = true,
+				nShowName = 3,
+				nShowBars = 3,
+				crName = "FF333333",
+				crHealth = "FF333333",
 			},
 			FriendlyPet = {
 				bEnabled = false,
@@ -230,7 +233,16 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRegistration()
 
 	local wndItemButton = ForgeUI.API_AddItemButton(self, "Nameplates" )
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "General", { xmlDoc = self.xmlOptions, strContainer = "Container_General", bDefault = true })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Target", { xmlDoc = self.xmlOptions, strContainer = "Container_Target" })
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Player", { xmlDoc = self.xmlOptions, strContainer = "Container_Player" })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Friendly player", { xmlDoc = self.xmlOptions, strContainer = "Container_FriendlyPlayer" })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Party player", { xmlDoc = self.xmlOptions, strContainer = "Container_PartyPlayer" })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Hostile player", { xmlDoc = self.xmlOptions, strContainer = "Container_HostilePlayer" })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Friendly NPC", { xmlDoc = self.xmlOptions, strContainer = "Container_FriendlyNPC" })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Neutral NPC", { xmlDoc = self.xmlOptions, strContainer = "Container_NeutralNPC" })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Hostile NPC", { xmlDoc = self.xmlOptions, strContainer = "Container_HostileNPC" })
+	
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Player's pet", { xmlDoc = self.xmlOptions, strContainer = "Container_PlayerPet" })
 end
 
 function ForgeUI_Nameplates:OnDocLoaded()
@@ -286,9 +298,10 @@ end
 
 function ForgeUI_Nameplates:UpdateNameplate(tNameplate)
 	fnDrawName(self, tNameplate)
+	fnDrawGuild(self, tNameplate)
 	fnDrawHealth(self, tNameplate)
-	fnDrawIA(self, tNameplate)
 	fnDrawCastBar(self, tNameplate)
+	fnDrawTarget(self, tNameplate)
 	
 	fnColorNameplate(self, tNameplate)
 end
@@ -367,6 +380,7 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 		fnColorNameplate(self, tNameplate)
 	
 		fnDrawName(self, tNameplate)
+		fnDrawGuild(self, tNameplate)
 		fnDrawHealth(self, tNameplate)
 	end
 
@@ -457,9 +471,9 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	
 	self:DrawName(tNameplate)
 	self:DrawGuild(tNameplate)
-	self:DrawRewards(tNameplate)
-	self:DrawTarget(tNameplate)
 	self:DrawHealth(tNameplate)
+	self:DrawTarget(tNameplate)
+	self:DrawRewards(tNameplate)
 end
 
 function ForgeUI_Nameplates:OnPreloadUnitCreated(unitNew)
@@ -535,6 +549,7 @@ function ForgeUI_Nameplates:OnFrame()
 				fnColorNameplate(self, tNameplate)
 			
 				fnDrawName(self, tNameplate)
+				fnDrawGuild(self, tNameplate)
 				fnDrawHealth(self, tNameplate)
 			end
 		end
@@ -607,26 +622,26 @@ function ForgeUI_Nameplates:DrawGuild(tNameplate)
 
 	local wndGuild = tNameplate.wnd.wndGuild
 	local bShow = self:GetBooleanOption("nShowGuild", tNameplate)
-
-	local strNewGuild = unitOwner:GetAffiliationName()
-	if unitOwner:GetType() == "Player" and strNewGuild ~= nil and strNewGuild ~= "" then
-		strNewGuild = String_GetWeaselString(Apollo.GetString("Nameplates_GuildDisplay"), strNewGuild)
-	end
-
-	if bShow and strNewGuild ~= wndGuild:GetText() then
-		wndGuild:SetTextRaw(strNewGuild)
-
-		-- Need to consider name as well for the resize code
-		local strNewName
-		if self.bShowTitle then
-			strNewName = unitOwner:GetTitleOrName()
-		else
-			strNewName = unitOwner:GetName()
+	
+	if bShow then
+		local strNewGuild = unitOwner:GetAffiliationName()
+		if tNameplate.strAffiliationName ~= strNewGuild then
+			tNameplate.strAffiliationName = strNewGuild
+			
+			if unitOwner:GetType() == "Player" and strNewGuild ~= nil and strNewGuild ~= "" then
+				strNewGuild = String_GetWeaselString(Apollo.GetString("Nameplates_GuildDisplay"), strNewGuild)
+			end
+			
+			wndGuild:SetTextRaw(strNewGuild)
 		end
+		
+		bShow = bShow and strNewGuild ~= nil and strNewGuild ~= ""
 	end
 
-	wndGuild:Show(bShow and strNewGuild ~= nil and strNewGuild ~= "", true)
-	wndNameplate:ArrangeChildrenVert(2) -- Must be run if bShow is false as well
+	if bShow ~= wndGuild:IsShown() then
+		wndGuild:Show(bShow, true)
+		wndNameplate:ArrangeChildrenVert(2)
+	end
 end
 
 function ForgeUI_Nameplates:DrawHealth(tNameplate)
@@ -1121,14 +1136,14 @@ end
 function ForgeUI_Nameplates:OnUnitGuildNameplateChanged(unitUpdated)
 	local tNameplate = self.arUnit2Nameplate[unitUpdated:GetId()]
 	if tNameplate ~= nil then
-		self:DrawGuild(tNameplate)
+		fnDrawGuild(self, tNameplate)
 	end
 end
 
 function ForgeUI_Nameplates:OnUnitMemberOfGuildChange(unitOwner)
 	local tNameplate = self.arUnit2Nameplate[unitOwner:GetId()]
 	if tNameplate ~= nil then
-		self:DrawGuild(tNameplate)
+		fnDrawGuild(self, tNameplate)
 		tNameplate.bIsGuildMember = self.guildDisplayed and self.guildDisplayed:IsUnitMember(unitOwner) or false
 		tNameplate.bIsWarPartyMember = self.guildWarParty and self.guildWarParty:IsUnitMember(unitOwner) or false
 	end
@@ -1143,7 +1158,7 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 		if bIsTarget then
 			fnDrawHealth(self, tNameplateOther)
 			fnDrawName(self, tNameplateOther)
-			self:DrawGuild(tNameplateOther)
+			fnDrawGuild(self, tNameplateOther)
 			fnDrawTarget(self, tNameplateOther)
 			
 			self:UpdateNameplateRewardInfo(tNameplateOther)
@@ -1166,7 +1181,7 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 		
 		fnDrawHealth(self, tNameplate)
 		fnDrawName(self, tNameplate)
-		self:DrawGuild(tNameplate)
+		fnDrawGuild(self, tNameplate)
 		fnDrawTarget(self, tNameplate)
 		
 		self:UpdateNameplateRewardInfo(tNameplate)
@@ -1182,6 +1197,7 @@ fnUpdateNameplate = ForgeUI_Nameplates.UpdateNameplate
 fnUpdateNameplateVisibility = ForgeUI_Nameplates.UpdateNameplateVisibility
 
 fnDrawName = ForgeUI_Nameplates.DrawName
+fnDrawGuild = ForgeUI_Nameplates.DrawGuild
 fnDrawHealth = ForgeUI_Nameplates.DrawHealth
 fnDrawIA = ForgeUI_Nameplates.DrawIA
 fnDrawShield = ForgeUI_Nameplates.DrawShield
