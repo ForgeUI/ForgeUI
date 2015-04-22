@@ -53,7 +53,9 @@ function ForgeUI_Nameplates:new(o)
 	
 	self.wndContainers = {}
 	
-	self.tStylers = {}
+	self.tStylers = {
+		["LoadStyle_Nameplates"] = self
+	}
 	
 	-- optional
 	self.settings_version = 3
@@ -65,7 +67,7 @@ function ForgeUI_Nameplates:new(o)
 		bShowQuestIcons = false,
 		bShowShield = true,
 		bShowAbsorb = true,
-		bFrequentUpdate = true,
+		bFrequentUpdate = false,
 		crShield = "FF0699F3",
 		crAbsorb = "FFFFC600",
 		crDead = "FF666666",
@@ -220,8 +222,18 @@ function ForgeUI_Nameplates:OnLoad()
 	self.xmlNameplate:RegisterCallback("OptionsInit", self)
 	
 	self.xmlOptions = XmlDoc.CreateFromFile("ForgeUI_Options.xml")
-	self.xmlOptions:RegisterCallback("NameplateInit", self)
-	
+	self.xmlOptions:RegisterCallback("OnDocLoaded", self)
+end
+
+function ForgeUI_Nameplates:ForgeAPI_AfterRegistration()
+	self:NameplatesInit()
+
+	local wndItemButton = ForgeUI.API_AddItemButton(self, "Nameplates" )
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "General", { xmlDoc = self.xmlOptions, strContainer = "Container_General", bDefault = true })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Player", { xmlDoc = self.xmlOptions, strContainer = "Container_Player" })
+end
+
+function ForgeUI_Nameplates:OnDocLoaded()
 	if ForgeUI == nil then -- forgeui loaded
 		ForgeUI = Apollo.GetAddon("ForgeUI")
 	end
@@ -229,13 +241,7 @@ function ForgeUI_Nameplates:OnLoad()
 	ForgeUI.API_RegisterAddon(self)
 end
 
-function ForgeUI_Nameplates:ForgeAPI_AfterRegistration()
-	local wndItemButton = ForgeUI.API_AddItemButton(self, "Nameplates", { xmlDoc = self.xmlOptions, strContainer = "General" })
-end
-
-function ForgeUI_Nameplates:NameplateInit()
-	if self.xmlNameplate == nil or not self.xmlNameplate:IsLoaded() then return end 
-
+function ForgeUI_Nameplates:NameplatesInit()
 	Apollo.RegisterEventHandler("VarChange_FrameCount", 		"OnFrame", self)
 
 	Apollo.RegisterEventHandler("TargetUnitChanged", 			"OnTargetUnitChanged", self)
@@ -355,14 +361,15 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 	
 	local bNewShow = self:HelperVerifyVisibilityOptions(tNameplate) and self:CheckDrawDistance(tNameplate)
 	
-	if bNewShow then
-		fnColorNameplate(self, tNameplate)
-		
-		fnDrawHealth(self, tNameplate)
-	end
-	
 	tNameplate.eDisposition = eDisposition
 	
+	if bNewShow and not self.tSettings.bFrequentUpdate then
+		fnColorNameplate(self, tNameplate)
+	
+		fnDrawName(self, tNameplate)
+		fnDrawHealth(self, tNameplate)
+	end
+
 	if bNewShow ~= tNameplate.bShow then
 		tNameplate.bShow = bNewShow
 		wndNameplate:Show(bNewShow, not bNewShow) -- removes weird glitching when occluding nameplates
@@ -525,6 +532,9 @@ function ForgeUI_Nameplates:OnFrame()
 			fnDrawCastBar(self, tNameplate)
 			
 			if self.tSettings.bFrequentUpdate then
+				fnColorNameplate(self, tNameplate)
+			
+				fnDrawName(self, tNameplate)
 				fnDrawHealth(self, tNameplate)
 			end
 		end
@@ -535,8 +545,6 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 	local unitOwner = tNameplate.unitOwner
 	local wndNameplate = tNameplate.wndNameplate
 	local tSettings = tNameplate.tSettings
-	
-	if tSettings == nil then Print(tNameplate.strUnitType) end
 	
 	local crNameColors = tSettings.crName
 	local crBarColor = tSettings.crHealth
@@ -997,6 +1005,19 @@ function ForgeUI_Nameplates:IsImportantNPC(unitOwner)
 	end
 		
 	return false
+end
+
+-----------------------------------------------------------------------------------------------
+-- Stylers
+-----------------------------------------------------------------------------------------------
+
+function ForgeUI_Nameplates:LoadStyle_Nameplates()
+	for idx, tNameplate in pairs(self.arUnit2Nameplate) do
+		local wndNameplate = tNameplate.wndNameplate
+		
+		wndNameplate:FindChild("ShieldFill"):SetBarColor(self.tSettings.crShield)
+		wndNameplate:FindChild("AbsorbFill"):SetBarColor(self.tSettings.crAbsorb)
+	end
 end
 
 -----------------------------------------------------------------------------------------------

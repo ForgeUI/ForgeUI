@@ -46,7 +46,7 @@ function ForgeUI:new(o)
 	
 	 -- mandatory 
     self.api_version = 2
-	self.version = "0.4.0beta1"
+	self.version = "0.4.0beta2"
 	self.author = "WintyBadass"
 	self.strAddonName = "~ForgeUI"
 	self.strDisplayName = "ForgeUI"
@@ -310,9 +310,15 @@ function ForgeUI.API_AddItemButton(tAddon, strDisplayName, tOptions)
 	end
 	
 	if tOptions.strContainer ~= nil then
-		tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
-		tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
-		tData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+		if tOptions.xmlDoc ~= nil then
+			tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tOptions.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
+			tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
+			tData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+		else
+			tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
+			tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
+			tData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+		end
 	end
 	
 	if tOptions.bDefault ~= nil then
@@ -364,9 +370,15 @@ function ForgeUI.API_AddListItemToButton(tAddon, wndBtn, strDisplayName, tOption
 	end
 	
 	if tOptions.strContainer ~= nil then
-		tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
-		tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
-		tNewData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+		if tOptions.xmlDoc ~= nil then
+			tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tOptions.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
+			tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
+			tNewData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+		else
+			tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
+			tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
+			tNewData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+		end
 	end
 	
 	if tOptions.bDefault ~= nil then
@@ -855,6 +867,57 @@ function ForgeUI:OnNumberBoxChanged( wndHandler, wndControl, strText )
 		wndControl:SetText(tData.prevValue)
 	end
 end
+
+-----------------------------------------------------------------------------------------------
+-- Dropdown
+-----------------------------------------------------------------------------------------------
+function ForgeUI.API_RegisterDropdown(tAddon, wndControl, tSettings, strValue, tOptions, strCallback)
+	local wndDropdown = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Dropdown", wndControl, ForgeUIInst)
+	wndDropdown:FindChild("Value"):SetText(tOptions[tSettings[strValue]])
+	
+	for k, v in pairs(tOptions) do
+		local wndButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_DropdownButton", wndDropdown:FindChild("OptionsHolder"), ForgeUIInst)
+		
+		local tData = {
+			tAddon = tAddon,
+			tSettings = tSettings,
+			strValue = strValue,
+			strCallback = strCallback,
+			key = k,
+		}
+		
+		wndButton:FindChild("DropdownButton"):SetText(v)
+		wndButton:FindChild("DropdownButton"):SetData(tData)
+	end
+	
+	local nLeft, nTop, nRight, nBottom = wndDropdown:FindChild("OptionsHolder"):GetAnchorOffsets()
+	wndDropdown:FindChild("OptionsHolder"):SetAnchorOffsets(nLeft, nTop, nRight, 27 * (#tOptions + 1) + 2)
+	
+	wndDropdown:FindChild("OptionsHolder"):ArrangeChildrenVert()
+end
+
+function ForgeUI:OnDropdownButton( wndHandler, wndControl, eMouseButton )
+	if wndControl:GetName() == "MoreButton" then
+		wndControl:GetParent():FindChild("OptionsHolder"):Show(not wndControl:GetParent():FindChild("OptionsHolder"):IsShown())
+	elseif wndControl:GetName() == "DropdownButton" then
+		local tData = wndControl:GetData()
+	
+		wndControl:GetParent():GetParent():Show(false, true)
+		wndControl:GetParent():GetParent():GetParent():FindChild("Value"):SetText(wndControl:GetText())
+		
+		if tData then
+			if tData.tSettings and tData.strValue then
+				tData.tSettings[tData.strValue] = tData.key
+			end
+			if tData.strCallback and tData.tAddon then
+				if tData.tAddon[tData.strCallback] then
+					tData.tAddon[tData.strCallback](tData.tAddon)
+				end
+			end
+		end
+	end
+end
+
 
 -----------------------------------------------------------------------------------------------
 -- OnSave / OnRestore
