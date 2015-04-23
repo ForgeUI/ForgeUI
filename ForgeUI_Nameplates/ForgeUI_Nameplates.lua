@@ -92,6 +92,8 @@ function ForgeUI_Nameplates:new(o)
 			},
 			FriendlyPlayer = {
 				bEnabled = true,
+				bHideOnHealth = false,
+				bHideOnShield = false,
 				nShowName = 3,
 				nShowBars = 3,
 				nShowCast = 0,
@@ -102,6 +104,8 @@ function ForgeUI_Nameplates:new(o)
 			},
 			PartyPlayer = {
 				bEnabled = true,
+				bHideOnHealth = false,
+				bHideOnShield = false,
 				nShowName = 3,
 				nShowBars = 3,
 				nShowCast = 0,
@@ -651,6 +655,18 @@ function ForgeUI_Nameplates:DrawHealth(tNameplate)
 	local nMaxHealth = unitOwner:GetMaxHealth()
 	
 	local bShow = nHealth ~= nil and not unitOwner:IsDead() and nMaxHealth > 0 and self:GetBooleanOption("nShowBars", tNameplate)
+	
+	if tNameplate.tSettings.bHideOnHealth or tNameplate.tSettings.bHideOnShield then
+		local bHealth = nHealth ~= nMaxHealth and tNameplate.tSettings.bHideOnHealth
+		
+		local nShield = unitOwner:GetShieldCapacity()
+		local nShieldMax = unitOwner:GetShieldCapacityMax()	
+		
+		local bShield = nShield ~= nShieldMax and tNameplate.tSettings.bHideOnShield
+	
+		--Print(unitOwner:GetName() .. " " .. tostring(bHealth) .. " " .. tostring(bShield))
+		bShow = bHealth or bShield
+	end
 	
 	if bShow then
 		self:SetBarValue(tNameplate.wnd.healthHealthFill, 0, nHealth, nMaxHealth)
