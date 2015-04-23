@@ -69,6 +69,7 @@ function ForgeUI_Nameplates:new(o)
 		bShowShield = true,
 		bShowAbsorb = true,
 		bFrequentUpdate = false,
+		bShowDead = true,
 		crShield = "FF0699F3",
 		crAbsorb = "FFFFC600",
 		crDead = "FF666666",
@@ -79,6 +80,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowName = 3,
 				nShowBars = 3,
 				nShowCast = 3,
+				crMarker = "FFFFFFFF",
 			},
 			Player = {
 				bEnabled = true,
@@ -208,7 +210,7 @@ function ForgeUI_Nameplates:new(o)
 			
 		},
 		knNameplatePoolLimit = 500,
-		knTargetRange = 5000,
+		knTargetRange = 16000,
 	}
 	
     return o
@@ -664,7 +666,6 @@ function ForgeUI_Nameplates:DrawHealth(tNameplate)
 		
 		local bShield = nShield ~= nShieldMax and tNameplate.tSettings.bHideOnShield
 	
-		--Print(unitOwner:GetName() .. " " .. tostring(bHealth) .. " " .. tostring(bShield))
 		bShow = bHealth or bShield
 	end
 	
@@ -859,6 +860,7 @@ function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 	
 	local bDontShowNameplate = not tNameplate.bOnScreen or tNameplate.bGibbed or not tNameplate.bIsImportant and self.tSettings.bOnlyImportantNPC
+		or (unitOwner:IsDead() and not self.tSettings.bShowDead)
 	
 	if bDontShowNameplate and not tNameplate.bIsTarget then
 		return false

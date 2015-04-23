@@ -12,9 +12,11 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_General"]:FindChild("bShowShield"):FindChild("CheckBox"), self.tSettings, "bShowShield")
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_General"]:FindChild("bOnlyImportantNPC"):FindChild("CheckBox"), self.tSettings, "bOnlyImportantNPC")
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_General"]:FindChild("bFrequentUpdate"):FindChild("CheckBox"), self.tSettings, "bFrequentUpdate")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_General"]:FindChild("bShowDead"):FindChild("CheckBox"), self.tSettings, "bShowDead")
 	
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_General"]:FindChild("crShield"):FindChild("EditBox"), self.tSettings, "crShield", false, "LoadStyle_Nameplates" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_General"]:FindChild("crAbsorb"):FindChild("EditBox"), self.tSettings, "crAbsorb", false, "LoadStyle_Nameplates" )
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_General"]:FindChild("crDead"):FindChild("EditBox"), self.tSettings, "crDead", false )
 	
 	for type, keyValue in pairs(self.tSettings.tUnits) do
 		for option, optionValue in pairs(keyValue) do
