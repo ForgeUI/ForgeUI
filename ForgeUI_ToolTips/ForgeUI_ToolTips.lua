@@ -375,6 +375,8 @@ function ForgeUI_ToolTips:OnDocLoaded()
 end
 
 local GenerateBuffTooltipForm
+local GenerateSpellTooltipForm
+local GenerateItemTooltipForm
 
 function ForgeUI_ToolTips:ForgeAPI_AfterRegistration()
 	ToolTips_OnDocumentReady = ToolTips.OnDocumentReady
@@ -385,12 +387,21 @@ function ForgeUI_ToolTips:ForgeAPI_AfterRegistration()
 end
 
 local origGenerateBuffTooltipForm
+local origGenerateSpellTooltipForm
+local origGenerateItemTooltipForm
+
 function ForgeUI_ToolTips.TooltipsHook_OnDocumentReady(tooltips)
 	ToolTips_OnDocumentReady(tooltips)
 	local ToolTipsInst = tooltips
 	
 	origGenerateBuffTooltipForm = Tooltip.GetBuffTooltipForm
 	Tooltip.GetBuffTooltipForm = GenerateBuffTooltipForm
+	
+	origGenerateSpellTooltipForm = Tooltip.GetSpellTooltipForm 
+	Tooltip.GetSpellTooltipForm  = GenerateSpellTooltipForm
+	
+	origGenerateItemTooltipForm = Tooltip.GetItemTooltipForm
+	Tooltip.GetItemTooltipForm = GenerateItemTooltipForm
 end
 
 -----------------------------------------------------------------------------------------------
@@ -414,6 +425,41 @@ GenerateBuffTooltipForm = function(luaCaller, wndParent, splSource, tFlags)
 	
 	local nLeft, nTop, nRight, nBottom = wndToolTip:GetAnchorOffsets()
 	wndToolTip:SetAnchorOffsets(nLeft, nTop, nRight, nBottom - 45)
+end
+
+GenerateSpellTooltipForm = function(luaCaller, wndParent, splSource, tFlags)
+	local wndToolTip = origGenerateSpellTooltipForm(luaCaller, wndParent, splSource, tFlags)
+	
+	wndToolTip:SetSprite("ForgeUI_Border")
+	wndToolTip:SetBGColor("FF000000")
+	
+	wndToolTip:FindChild("BGArt2"):SetSprite("ForgeUI_Border")
+	wndToolTip:FindChild("BGArt2"):SetBGColor("FF000000")
+	wndToolTip:FindChild("BGArt2"):SetAnchorOffsets(3, 3, -3, -3)
+end
+
+GenerateItemTooltipForm = function(luaCaller, wndParent, itemSource, tFlags, nCount)
+	local wndToolTip, wndTooltipComp = origGenerateItemTooltipForm(luaCaller, wndParent, itemSource, tFlags, nCount)
+	
+	wndToolTip:FindChild("ItemTooltipBG"):SetSprite("ForgeUI_Border")
+	wndToolTip:FindChild("ItemTooltipBG"):SetBGColor("FF000000")
+	
+	wndToolTip:FindChild("CurrentHeader"):SetSprite("ForgeUI_Border")
+	wndToolTip:FindChild("CurrentHeader"):SetBGColor("FF000000")
+	
+	wndToolTip:FindChild("ItemTooltip_BaseRarityFrame"):SetSprite("ForgeUI_Border")
+	wndToolTip:FindChild("ItemTooltip_BaseRarityFrame"):SetBGColor("FF000000")
+	
+	if wndTooltipComp then
+		wndTooltipComp:FindChild("ItemTooltipBG"):SetSprite("ForgeUI_Border")
+		wndTooltipComp:FindChild("ItemTooltipBG"):SetBGColor("FF000000")
+		
+		wndTooltipComp:FindChild("CurrentHeader"):SetSprite("ForgeUI_Border")
+		wndTooltipComp:FindChild("CurrentHeader"):SetBGColor("FF000000")
+		
+		wndTooltipComp:FindChild("ItemTooltip_BaseRarityFrame"):SetSprite("ForgeUI_Border")
+		wndTooltipComp:FindChild("ItemTooltip_BaseRarityFrame"):SetBGColor("FF000000")
+	end
 end
 
 function ForgeUI_ToolTips:UnitTooltipGen(wndContainer, unitSource, strProp)
