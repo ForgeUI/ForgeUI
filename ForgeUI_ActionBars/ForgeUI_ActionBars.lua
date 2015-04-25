@@ -564,11 +564,12 @@ function ForgeUI_ActionBars:FillPath(wnd)
 	
 	local tActionSet = ActionSetLib.GetCurrentActionSet()
 	
-	if self.tSettings.nSelectedPath > 0 then
+	if self.tSettings.nSelectedPath > 0 and ActionSetLib.IsSpellCompatibleWithActionSet(self.tSettings.nSelectedPath) ~= 3 then
 		Event_FireGenericEvent("PathAbilityUpdated", self.tSettings.nSelectedPath)
 		tActionSet[10] = self.tSettings.nSelectedPath
 	else
 		tActionSet[10] = tActionSet[10]
+		self.tSettings.nSelectedPath = tActionSet[10]
 	end
 	ActionSetLib.RequestActionSetChanges(tActionSet)
 	
