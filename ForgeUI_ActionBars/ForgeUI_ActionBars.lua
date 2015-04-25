@@ -636,6 +636,10 @@ end
 
 function ForgeUI_ActionBars:CreateBars()
 	self.wndActionBar = self:CreateBar(self.tActionBars.tActionBar)
+	if self.wndVehicleBar then
+		self.wndActionBar:Show(not self.wndVehicleBar:IsShown())
+	end
+	
 	self.wndSideBar1 = self:CreateBar(self.tActionBars.tSideBar1)
 	self.wndSideBar2 = self:CreateBar(self.tActionBars.tSideBar2)
 	
@@ -659,7 +663,9 @@ end
 
 function ForgeUI_ActionBars:ShowShortcutBar(nBar, bIsVisible, nShortcuts)
 	if nBar == ActionSetLib.CodeEnumShortcutSet.VehicleBar then -- vehiclebar
-		self.wndActionBar:Show(not bIsVisible, true)
+		if self.wndActionBar then
+			self.wndActionBar:Show(not bIsVisible, true)
+		end
 		
 		if bIsVisible then
 			self.wndVehicleBar = self:CreateBar(self.tActionBars.tVehicleBar)
