@@ -13,6 +13,7 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_General"]:FindChild("bOnlyImportantNPC"):FindChild("CheckBox"), self.tSettings, "bOnlyImportantNPC")
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_General"]:FindChild("bFrequentUpdate"):FindChild("CheckBox"), self.tSettings, "bFrequentUpdate")
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_General"]:FindChild("bShowDead"):FindChild("CheckBox"), self.tSettings, "bShowDead")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_General"]:FindChild("bShowRewards"):FindChild("CheckBox"), self.tSettings, "bShowRewards")
 	
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_General"]:FindChild("crShield"):FindChild("EditBox"), self.tSettings, "crShield", false, "LoadStyle_Nameplates" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_General"]:FindChild("crAbsorb"):FindChild("EditBox"), self.tSettings, "crAbsorb", false, "LoadStyle_Nameplates" )
@@ -30,12 +31,21 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 			if self.wndContainers["Container_" .. type] ~= nil then
 				if string.sub(option, 1, 1) == "n" then
 					if self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil and self.wndContainers["Container_" .. type]:FindChild(tostring(option)):FindChild("Dropdown") ~= nil then
-						ForgeUI.API_RegisterDropdown(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)):FindChild("Dropdown"), self.tSettings.tUnits[type], option, {
-							[0] = "Never",
-							[1] = "Out of combat",
-							[2] = "In combat",
-							[3] = "Always",
-						})
+						if tostring(option) == "nShowInfo" then
+							ForgeUI.API_RegisterDropdown(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)):FindChild("Dropdown"), self.tSettings.tUnits[type], option, {
+								[0] = "Nothing",
+								[1] = "Level",
+								[2] = "Class",
+								[3] = "Both",
+							}, "UpdateAllNameplates")
+						else
+							ForgeUI.API_RegisterDropdown(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)):FindChild("Dropdown"), self.tSettings.tUnits[type], option, {
+								[0] = "Never",
+								[1] = "Out of combat",
+								[2] = "In combat",
+								[3] = "Always",
+							})
+						end
 					elseif self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil and self.wndContainers["Container_" .. type]:FindChild(tostring(option)):FindChild("EditBox") ~= nil then
 					end
 				end
@@ -56,4 +66,5 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 	end
 	
 	self.tStylers["LoadStyle_Nameplates"]["LoadStyle_Nameplates"](self)
+	self:UpdateAllNameplates()
 end

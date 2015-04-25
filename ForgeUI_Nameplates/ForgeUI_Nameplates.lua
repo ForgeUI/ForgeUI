@@ -15,6 +15,15 @@ krtClassEnums = {
 	[GameLib.CodeEnumClass.Spellslinger]	= "Spellslinger"
 }
 
+krtNpcRankEnums = {
+	[Unit.CodeEnumRank.Elite] 		= "elite",
+	[Unit.CodeEnumRank.Superior] 	= "superior",
+	[Unit.CodeEnumRank.Champion] 	= "champion",
+	[Unit.CodeEnumRank.Standard] 	= "standard",
+	[Unit.CodeEnumRank.Minion] 		= "minion",
+	[Unit.CodeEnumRank.Fodder] 		= "fodder",
+}
+
 -----------------------------------------------------------------------------------------------
 -- Initialization
 -----------------------------------------------------------------------------------------------
@@ -31,6 +40,7 @@ local fnDrawAbsorb
 local fnDrawRewards
 local fnDrawCastBar
 local fnDrawIndicators
+local fnDrawInfo
 
 local fnColorNameplate
 
@@ -66,7 +76,7 @@ function ForgeUI_Nameplates:new(o)
 		bUseOcclusion = true,
 		bShowTitles = false,
 		bOnlyImportantNPC = true,
-		bShowQuestIcons = false,
+		bShowRewards = true,
 		bShowShield = true,
 		bShowAbsorb = true,
 		bFrequentUpdate = false,
@@ -82,6 +92,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowName = 3,
 				nShowBars = 3,
 				nShowCast = 3,
+				nShowInfo = 0,
 			},
 			Player = {
 				bEnabled = true,
@@ -89,6 +100,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowBars = 0,
 				nShowCast = 0,
 				nShowGuild = 0,
+				nShowInfo = 0,
 				crName = "FFFFFFFF",
 				crHealth = "FF75CC26",
 				bClassColors = false,
@@ -103,6 +115,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowBars = 3,
 				nShowCast = 0,
 				nShowGuild = 0,
+				nShowInfo = 0,
 				crName = "FFFFFFFF",
 				crHealth = "FF75CC26",
 				bClassColors = true,
@@ -117,6 +130,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowBars = 3,
 				nShowCast = 0,
 				nShowGuild = 0,
+				nShowInfo = 0,
 				crName = "FF43C8F3",
 				crHealth = "FF75CC26",
 				bClassColors = true,
@@ -127,6 +141,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowBars = 3,
 				nShowCast = 3,
 				nShowGuild = 0,
+				nShowInfo = 0,
 				crName = "FFFF0000",
 				crHealth = "FFFF0000",
 				bClassColors = true,
@@ -137,6 +152,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowBars = 2,
 				nShowCast = 2,
 				nShowGuild = 3,
+				nShowInfo = 0,
 				crName = "FF76CD26",
 				crHealth = "FF75CC26",
 			},
@@ -146,6 +162,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowBars = 2,
 				nShowCast = 2,
 				nShowGuild = 0,
+				nShowInfo = 1,
 				crName = "FFFFF569",
 				crHealth = "FFF3D829",
 			},
@@ -157,6 +174,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowBars = 2,
 				nShowCast = 2,
 				nShowGuild = 0,
+				nShowInfo = 1,
 				crName = "FFD9544D",
 				crHealth = "FFE50000",
 			},
@@ -303,6 +321,7 @@ end
 
 function ForgeUI_Nameplates:UpdateAllNameplates()
 	self:UpdateAllNameplateVisibility()
+	self:RequestUpdateAllNameplateRewards()
 	
 	for idx, tNameplate in pairs(self.arUnit2Nameplate) do
 		fnUpdateNameplate(self, tNameplate)
@@ -312,9 +331,11 @@ end
 function ForgeUI_Nameplates:UpdateNameplate(tNameplate)
 	fnDrawName(self, tNameplate)
 	fnDrawGuild(self, tNameplate)
+	fnDrawInfo(self, tNameplate)
 	fnDrawHealth(self, tNameplate)
 	fnDrawCastBar(self, tNameplate)
 	fnDrawIndicators(self, tNameplate)
+	fnDrawRewards(self, tNameplate)
 	
 	fnColorNameplate(self, tNameplate)
 end
@@ -331,7 +352,7 @@ function ForgeUI_Nameplates:UpdateNameplateRewardInfo(tNameplate)
 	local tFlags =
 	{
 		bVert = false,
-		bHideQuests = not self.tSettings.bShowQuestIcons,
+		bHideQuests = not self.tSettings.bShowRewards,
 		bHideChallenges = true,
 		bHideMissions = true,
 		bHidePublicEvents = true,
@@ -349,9 +370,9 @@ function ForgeUI_Nameplates:UpdateAllNameplateVisibility()
 		fnUpdateNameplateVisibility(self, tNameplate)
 		if self.bRedrawRewardIcons then
 			self:UpdateNameplateRewardInfo(tNameplate)
-			self.bRedrawRewardIcons = false
 		end
 	end
+	self.bRedrawRewardIcons = false
 end
 
 function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
@@ -390,11 +411,7 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 	tNameplate.eDisposition = eDisposition
 	
 	if bNewShow and not self.tSettings.bFrequentUpdate then
-		fnColorNameplate(self, tNameplate)
-	
-		fnDrawName(self, tNameplate)
-		fnDrawGuild(self, tNameplate)
-		fnDrawHealth(self, tNameplate)
+		fnDrawNameplate(self, tNameplate)
 	end
 
 	if bNewShow ~= tNameplate.bShow then
@@ -434,6 +451,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		idUnit 			= idUnit,
 		wndNameplate	= wnd,
 		strUnitType		= strNewUnitType,
+		unitClassID 	= unitNew:IsACharacter() and unitNew:GetClassId() or unitNew:GetRank(),
 		tSettings 		= self.tSettings.tUnits[strNewUnitType],
 		
 		bOnScreen 		= wnd:IsOnScreen(),
@@ -475,6 +493,9 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 			questRewards = wnd:FindChild("NameRewardContainer:Name:RewardContainer:QuestRewards"),
 			targetMarker = wnd:FindChild("Container:Health:TargetMarker"),
 			indicator = wnd:FindChild("Container:Health:Indicator"),
+			info = wnd:FindChild("NameRewardContainer:Name:Info"),
+			info_level = wnd:FindChild("NameRewardContainer:Name:Info:Level"),
+			info_class = wnd:FindChild("NameRewardContainer:Name:Info:Class"),
 		}
 	end
 	
@@ -488,6 +509,9 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	self:DrawHealth(tNameplate)
 	self:DrawIndicators(tNameplate)
 	self:DrawRewards(tNameplate)
+	
+	self:UpdateInfo(tNameplate)
+	self:UpdateNameplateRewardInfo(tNameplate)
 	
 	self.tStylers["LoadStyle_Nameplate"]["LoadStyle_Nameplate"](tNameplate)
 end
@@ -562,14 +586,20 @@ function ForgeUI_Nameplates:OnFrame()
 			fnDrawCastBar(self, tNameplate)
 			
 			if self.tSettings.bFrequentUpdate then
-				fnColorNameplate(self, tNameplate)
-			
-				fnDrawName(self, tNameplate)
-				fnDrawGuild(self, tNameplate)
-				fnDrawHealth(self, tNameplate)
+				fnDrawNameplate(self, tNameplate)
 			end
 		end
 	end
+end
+
+function ForgeUI_Nameplates:DrawNameplate(tNameplate)
+	fnColorNameplate(self, tNameplate)
+	
+	fnDrawName(self, tNameplate)
+	fnDrawGuild(self, tNameplate)
+	fnDrawHealth(self, tNameplate)
+	
+	fnDrawRewards(self, tNameplate)
 end
 
 function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
@@ -804,7 +834,7 @@ function ForgeUI_Nameplates:DrawRewards(tNameplate)
 	local wndNameplate = tNameplate.wndNameplate
 	local unitOwner = tNameplate.unitOwner
 
-	local bShow = self.tSettings.bShowQuestIcons
+	local bShow = self.tSettings.bShowRewards
 
 	if bShow ~= tNameplate.wnd.questRewards:IsShown() then
 		tNameplate.wnd.questRewards:Show(bShow)
@@ -838,6 +868,56 @@ function ForgeUI_Nameplates:DrawIndicators(tNameplate)
 	if bShowIndicator ~= wnd.indicator:IsShown() then
 		wnd.indicator:Show(bShowIndicator, true)
 	end
+end
+
+function ForgeUI_Nameplates:DrawInfo(tNameplate)
+	local wnd = tNameplate.wnd
+	
+	local nShowInfo = tNameplate.tSettings.nShowInfo
+	local bShowInfo = false
+	
+	if nShowInfo == 0 then
+	elseif nShowInfo == 1 then
+		wnd.info_level:Show(true, true)
+		wnd.info_class:Show(false, true)
+		
+		wnd.info_level:SetAnchorOffsets(-60, 0, -2, 0)
+		wnd.info_class:SetAnchorOffsets(0, 0, 0, 0)
+		
+		bShowInfo = true
+	elseif nShowInfo == 2 then
+		wnd.info_level:Show(false, true)
+		wnd.info_class:Show(true, true)
+		
+		wnd.info_class:SetAnchorOffsets(-15, 0, 0, 0)
+		wnd.info_level:SetAnchorOffsets(0, 0, 0, 0)
+		
+		bShowInfo = true
+	elseif nShowInfo == 3 then
+		wnd.info_level:Show(true, true)
+		wnd.info_class:Show(true, true)
+		
+		wnd.info_class:SetAnchorOffsets(-15, 0, 0, 0)
+		wnd.info_level:SetAnchorOffsets(-75, 0, -17, 0)
+		
+		bShowInfo = true
+	end
+	
+	if bShowInfo ~= wnd.info:IsShown() then
+		wnd.info:Show(bShowInfo, true)
+	end
+end
+
+function ForgeUI_Nameplates:UpdateInfo(tNameplate)
+	local unitOwner = tNameplate.unitOwner
+	local wnd = tNameplate.wnd
+	
+	wnd.info_level:SetText("lvl" .. tostring(unitOwner:GetLevel()))
+	if unitOwner:GetType() == "Player" then
+		wnd.info_class:SetSprite("ForgeUI_" .. krtClassEnums[tNameplate.unitClassID] .. "_t")
+	elseif tNameplate.unitClassID ~= 6 and tNameplate.unitClassID >= 0 then
+		wnd.info_class:SetSprite("ForgeUI_npc_rank_" .. krtNpcRankEnums[tNameplate.unitClassID] .. "_t")
+	end 
 end
 
 function ForgeUI_Nameplates:SetBarValue(wndBar, fMin, fValue, fMax)
@@ -1255,6 +1335,8 @@ end
 fnUpdateNameplate = ForgeUI_Nameplates.UpdateNameplate
 fnUpdateNameplateVisibility = ForgeUI_Nameplates.UpdateNameplateVisibility
 
+fnDrawNameplate = ForgeUI_Nameplates.DrawNameplate
+
 fnDrawName = ForgeUI_Nameplates.DrawName
 fnDrawGuild = ForgeUI_Nameplates.DrawGuild
 fnDrawHealth = ForgeUI_Nameplates.DrawHealth
@@ -1266,6 +1348,7 @@ fnDrawRewards = ForgeUI_Nameplates.DrawRewards
 fnDrawCastBar = ForgeUI_Nameplates.DrawCastBar
 fnColorNameplate = ForgeUI_Nameplates.ColorNameplate
 fnDrawIndicators = ForgeUI_Nameplates.DrawIndicators
+fnDrawInfo = ForgeUI_Nameplates.DrawInfo
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI_Nameplates Instance
