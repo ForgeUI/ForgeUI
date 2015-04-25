@@ -18,6 +18,13 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_General"]:FindChild("crAbsorb"):FindChild("EditBox"), self.tSettings, "crAbsorb", false, "LoadStyle_Nameplates" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_General"]:FindChild("crDead"):FindChild("EditBox"), self.tSettings, "crDead", false )
 	
+	-- external
+	
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_Target"]:FindChild("crTargetMarkerEXT"):FindChild("EditBox"), self.tSettings.tUnits["Target"], "crTargetMarker", false, "LoadStyle_Nameplates" )
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_HostileNPC"]:FindChild("crThreatIndicatorEXT"):FindChild("EditBox"), self.tSettings.tUnits["HostileNPC"], "crThreatIndicator", false, "LoadStyle_Nameplates" )
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_FriendlyPlayer"]:FindChild("crCleanseIndicatorEXT"):FindChild("EditBox"), self.tSettings.tUnits["FriendlyPlayer"], "crCleanseIndicator", false, "LoadStyle_Nameplates" )
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_PartyPlayer"]:FindChild("crCleanseIndicatorEXT"):FindChild("EditBox"), self.tSettings.tUnits["PartyPlayer"], "crCleanseIndicator", false, "LoadStyle_Nameplates" )
+	
 	for type, keyValue in pairs(self.tSettings.tUnits) do
 		for option, optionValue in pairs(keyValue) do
 			if self.wndContainers["Container_" .. type] ~= nil then
@@ -47,4 +54,6 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 			end
 		end
 	end
+	
+	self.tStylers["LoadStyle_Nameplates"]["LoadStyle_Nameplates"](self)
 end

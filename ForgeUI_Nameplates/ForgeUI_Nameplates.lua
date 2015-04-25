@@ -30,7 +30,7 @@ local fnDrawAbsorb
 
 local fnDrawRewards
 local fnDrawCastBar
-local fnDrawTarget
+local fnDrawIndicators
 
 local fnColorNameplate
 
@@ -55,7 +55,8 @@ function ForgeUI_Nameplates:new(o)
 	self.wndContainers = {}
 	
 	self.tStylers = {
-		["LoadStyle_Nameplates"] = self
+		["LoadStyle_Nameplates"] = self,
+		["LoadStyle_Nameplate"] = self, -- (tNameplate)
 	}
 	
 	-- optional
@@ -77,10 +78,10 @@ function ForgeUI_Nameplates:new(o)
 		tUnits = {
 			Target = {
 				bShowMarker = true,
+				crTargetMarker = "FFFFFFFF",
 				nShowName = 3,
 				nShowBars = 3,
 				nShowCast = 3,
-				crMarker = "FFFFFFFF",
 			},
 			Player = {
 				bEnabled = true,
@@ -96,6 +97,8 @@ function ForgeUI_Nameplates:new(o)
 				bEnabled = true,
 				bHideOnHealth = false,
 				bHideOnShield = false,
+				bCleanseIndicator = false,
+				crCleanseIndicator = "FFA100FE",
 				nShowName = 3,
 				nShowBars = 3,
 				nShowCast = 0,
@@ -108,6 +111,8 @@ function ForgeUI_Nameplates:new(o)
 				bEnabled = true,
 				bHideOnHealth = false,
 				bHideOnShield = false,
+				bCleanseIndicator = false,
+				crCleanseIndicator = "FFA100FE",
 				nShowName = 3,
 				nShowBars = 3,
 				nShowCast = 0,
@@ -146,6 +151,8 @@ function ForgeUI_Nameplates:new(o)
 			},
 			HostileNPC = {
 				bEnabled = true,
+				bThreatIndicator = false,
+				crThreatIndicator = "FFFF9900",
 				nShowName = 3,
 				nShowBars = 2,
 				nShowCast = 2,
@@ -307,7 +314,7 @@ function ForgeUI_Nameplates:UpdateNameplate(tNameplate)
 	fnDrawGuild(self, tNameplate)
 	fnDrawHealth(self, tNameplate)
 	fnDrawCastBar(self, tNameplate)
-	fnDrawTarget(self, tNameplate)
+	fnDrawIndicators(self, tNameplate)
 	
 	fnColorNameplate(self, tNameplate)
 end
@@ -466,7 +473,8 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 			castBarLabel = wnd:FindChild("Container:CastBar:Label"),
 			castBarCastFill = wnd:FindChild("Container:CastBar:CastFill"),
 			questRewards = wnd:FindChild("NameRewardContainer:Name:RewardContainer:QuestRewards"),
-			targetMarker = wnd:FindChild("Container:TargetMarker"),
+			targetMarker = wnd:FindChild("Container:Health:TargetMarker"),
+			indicator = wnd:FindChild("Container:Health:Indicator"),
 		}
 	end
 	
@@ -478,8 +486,10 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	self:DrawName(tNameplate)
 	self:DrawGuild(tNameplate)
 	self:DrawHealth(tNameplate)
-	self:DrawTarget(tNameplate)
+	self:DrawIndicators(tNameplate)
 	self:DrawRewards(tNameplate)
+	
+	self.tStylers["LoadStyle_Nameplate"]["LoadStyle_Nameplate"](tNameplate)
 end
 
 function ForgeUI_Nameplates:OnPreloadUnitCreated(unitNew)
@@ -672,7 +682,7 @@ function ForgeUI_Nameplates:DrawHealth(tNameplate)
 	if bShow then
 		self:SetBarValue(tNameplate.wnd.healthHealthFill, 0, nHealth, nMaxHealth)
 		
-		--fnDrawTarget(self, tNameplate)
+		fnDrawIndicators(self, tNameplate)
 		
 		fnDrawIA(self, tNameplate)
 		fnDrawShield(self, tNameplate)
@@ -803,15 +813,30 @@ function ForgeUI_Nameplates:DrawRewards(tNameplate)
 	local tRewardsData = tNameplate.wnd.questRewards:GetData()
 end
 
-function ForgeUI_Nameplates:DrawTarget(tNameplate)
-	local wndNameplate = tNameplate.wndNameplate
+function ForgeUI_Nameplates:DrawIndicators(tNameplate)
+	local wnd = tNameplate.wnd
 	local unitOwner = tNameplate.unitOwner
 
-	local bUseTarget = tNameplate.bIsTarget
-
-	local bShowTargetMarker = bUseTarget and self.tSettings.tUnits["Target"].bShowMarker and tNameplate.wnd.health:IsShown()
-	if tNameplate.wnd.targetMarker:IsShown() ~= bShowTargetMarker then
-		tNameplate.wnd.targetMarker:Show(bShowTargetMarker)
+	-- target indicator
+	
+	local bShowTargetMarker = tNameplate.bIsTarget and self.tSettings.tUnits["Target"].bShowMarker
+	if wnd.targetMarker:IsShown() ~= bShowTargetMarker then
+		wnd.targetMarker:Show(bShowTargetMarker)
+	end
+	
+	-- threat loss indicator
+	
+	local bShowIndicator = false
+	
+	if tNameplate.tSettings.bThreatIndicator then
+		local unitsTarget = unitOwner:GetTarget()
+		if unitsTarget and not unitsTarget:IsThePlayer() then
+			bShowIndicator = true
+		end
+	end
+	
+	if bShowIndicator ~= wnd.indicator:IsShown() then
+		wnd.indicator:Show(bShowIndicator, true)
 	end
 end
 
@@ -1046,10 +1071,26 @@ end
 
 function ForgeUI_Nameplates:LoadStyle_Nameplates()
 	for idx, tNameplate in pairs(self.arUnit2Nameplate) do
-		local wndNameplate = tNameplate.wndNameplate
-		
-		wndNameplate:FindChild("ShieldFill"):SetBarColor(self.tSettings.crShield)
-		wndNameplate:FindChild("AbsorbFill"):SetBarColor(self.tSettings.crAbsorb)
+		self.tStylers["LoadStyle_Nameplate"]["LoadStyle_Nameplate"](self, tNameplate)
+	end
+end
+
+function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
+	if not tNameplate then return end
+	
+	local wnd = tNameplate.wnd
+	
+	wnd.targetMarker:SetBGColor(self.tSettings.tUnits["Target"].crTargetMarker)
+	
+	wnd.healthShieldFill:SetBarColor(self.tSettings.crShield)
+	wnd.healthAbsorbFill:SetBarColor(self.tSettings.crAbsorb)
+	
+	if tNameplate.strUnitType == "HostileNPC" then
+		wnd.indicator:SetBGColor(self.tSettings.tUnits["HostileNPC"].crThreatIndicator)
+	elseif tNameplate.strUnitType == "FriendlyPlayer" then
+		wnd.indicator:SetBGColor(self.tSettings.tUnits["FriendlyPlayer"].crCleanseIndicator)
+	elseif tNameplate.strUnitType == "PartyPlayer" then
+		wnd.indicator:SetBGColor(self.tSettings.tUnits["PartyPlayer"].crCleanseIndicator)
 	end
 end
 
@@ -1177,7 +1218,7 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 			fnDrawHealth(self, tNameplateOther)
 			fnDrawName(self, tNameplateOther)
 			fnDrawGuild(self, tNameplateOther)
-			fnDrawTarget(self, tNameplateOther)
+			fnDrawIndicators(self, tNameplateOther)
 			
 			self:UpdateNameplateRewardInfo(tNameplateOther)
 			
@@ -1200,7 +1241,7 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 		fnDrawHealth(self, tNameplate)
 		fnDrawName(self, tNameplate)
 		fnDrawGuild(self, tNameplate)
-		fnDrawTarget(self, tNameplate)
+		fnDrawIndicators(self, tNameplate)
 		
 		self:UpdateNameplateRewardInfo(tNameplate)
 		
@@ -1224,7 +1265,7 @@ fnDrawAbsorb = ForgeUI_Nameplates.DrawAbsorb
 fnDrawRewards = ForgeUI_Nameplates.DrawRewards
 fnDrawCastBar = ForgeUI_Nameplates.DrawCastBar
 fnColorNameplate = ForgeUI_Nameplates.ColorNameplate
-fnDrawTarget = ForgeUI_Nameplates.DrawTarget
+fnDrawIndicators = ForgeUI_Nameplates.DrawIndicators
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI_Nameplates Instance
