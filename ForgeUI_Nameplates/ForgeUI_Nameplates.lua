@@ -44,6 +44,8 @@ local fnDrawInfo
 
 local fnColorNameplate
 
+local fnRepositionNameplate
+
 function ForgeUI_Nameplates:new(o)
     o = o or {}
     setmetatable(o, self)
@@ -76,7 +78,7 @@ function ForgeUI_Nameplates:new(o)
 		bUseOcclusion = true,
 		bShowTitles = false,
 		bOnlyImportantNPC = true,
-		bShowRewards = true,
+		bShowRewards = false,
 		bShowShield = true,
 		bShowAbsorb = true,
 		bFrequentUpdate = false,
@@ -169,6 +171,7 @@ function ForgeUI_Nameplates:new(o)
 			HostileNPC = {
 				bEnabled = true,
 				bThreatIndicator = false,
+				bReposition = false,
 				crThreatIndicator = "FFFF9900",
 				nShowName = 3,
 				nShowBars = 2,
@@ -353,9 +356,9 @@ function ForgeUI_Nameplates:UpdateNameplateRewardInfo(tNameplate)
 	{
 		bVert = false,
 		bHideQuests = not self.tSettings.bShowRewards,
-		bHideChallenges = true,
-		bHideMissions = true,
-		bHidePublicEvents = true,
+		bHideChallenges = not self.tSettings.bShowRewards,
+		bHideMissions = not self.tSettings.bShowRewards,
+		bHidePublicEvents = not self.tSettings.bShowRewards,
 		bHideRivals = true,
 		bHideFriends = true
 	}
@@ -499,6 +502,13 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		}
 	end
 	
+	if tNameplate.wndReposition == nil then
+		tNameplate.wndReposition = Apollo.LoadForm(self.xmlNameplate, "Reposition", "InWorldHudStratum", self)
+		tNameplate.wndReposition:SetUnit(unitNew, 0)
+	else
+		tNameplate.wndReposition:SetUnit(unitNew, 0)
+	end
+	
 	self.arUnit2Nameplate[idUnit] = tNameplate
 	self.arWnd2Nameplate[wnd:GetId()] = tNameplate
 
@@ -509,6 +519,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	self:DrawHealth(tNameplate)
 	self:DrawIndicators(tNameplate)
 	self:DrawRewards(tNameplate)
+	self:DrawInfo(tNameplate)
 	
 	self:UpdateInfo(tNameplate)
 	self:UpdateNameplateRewardInfo(tNameplate)
@@ -584,6 +595,7 @@ function ForgeUI_Nameplates:OnFrame()
 	for idx, tNameplate in pairs(self.arUnit2Nameplate) do
 		if tNameplate.bShow then
 			fnDrawCastBar(self, tNameplate)
+			fnRepositionNameplate(self, tNameplate)
 			
 			if self.tSettings.bFrequentUpdate then
 				fnDrawNameplate(self, tNameplate)
@@ -873,30 +885,28 @@ end
 function ForgeUI_Nameplates:DrawInfo(tNameplate)
 	local wnd = tNameplate.wnd
 	
-	local nShowInfo = tNameplate.tSettings.nShowInfo
+	local nShowInfo = 0
 	local bShowInfo = false
+	
+	--if tNameplate.bIsTarget then
+	--	nShowInfo = self.tSettings.tUnits["Target"].nShowInfo
+	--else
+		nShowInfo = tNameplate.tSettings.nShowInfo
+	--end
+	
 	
 	if nShowInfo == 0 then
 	elseif nShowInfo == 1 then
-		wnd.info_level:Show(true, true)
-		wnd.info_class:Show(false, true)
-		
 		wnd.info_level:SetAnchorOffsets(-60, 0, -2, 0)
 		wnd.info_class:SetAnchorOffsets(0, 0, 0, 0)
 		
 		bShowInfo = true
 	elseif nShowInfo == 2 then
-		wnd.info_level:Show(false, true)
-		wnd.info_class:Show(true, true)
-		
 		wnd.info_class:SetAnchorOffsets(-15, 0, 0, 0)
 		wnd.info_level:SetAnchorOffsets(0, 0, 0, 0)
 		
 		bShowInfo = true
 	elseif nShowInfo == 3 then
-		wnd.info_level:Show(true, true)
-		wnd.info_class:Show(true, true)
-		
 		wnd.info_class:SetAnchorOffsets(-15, 0, 0, 0)
 		wnd.info_level:SetAnchorOffsets(-75, 0, -17, 0)
 		
@@ -918,6 +928,30 @@ function ForgeUI_Nameplates:UpdateInfo(tNameplate)
 	elseif tNameplate.unitClassID ~= 6 and tNameplate.unitClassID >= 0 then
 		wnd.info_class:SetSprite("ForgeUI_npc_rank_" .. krtNpcRankEnums[tNameplate.unitClassID] .. "_t")
 	end 
+end
+
+function ForgeUI_Nameplates:RepositionNameplate(tNameplate)
+	if tNameplate.tSettings.bReposition then
+		local wndNameplate = tNameplate.wndNameplate
+	
+		local nX, nY = wndNameplate:GetPos()
+		if nY < 0 or tNameplate.bRepositioned then
+			local wndReposition = tNameplate.wndReposition
+		
+			local nX, nY = wndReposition:GetPos()
+			if nY > 0 and tNameplate.bRepositioned then
+				tNameplate.bRepositioned = false
+				
+				wndReposition:SetUnit(tNameplate.unitOwner, 0)
+				wndNameplate:SetUnit(tNameplate.unitOwner, 1)
+			elseif not tNameplate.bRepositioned then
+				tNameplate.bRepositioned = true
+				
+				wndReposition:SetUnit(tNameplate.unitOwner, 1)
+				wndNameplate:SetUnit(tNameplate.unitOwner, 0)
+			end
+		end
+	end
 end
 
 function ForgeUI_Nameplates:SetBarValue(wndBar, fMin, fValue, fMax)
@@ -1299,6 +1333,7 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 			fnDrawName(self, tNameplateOther)
 			fnDrawGuild(self, tNameplateOther)
 			fnDrawIndicators(self, tNameplateOther)
+			fnDrawInfo(self, tNameplateOther)
 			
 			self:UpdateNameplateRewardInfo(tNameplateOther)
 			
@@ -1322,6 +1357,7 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 		fnDrawName(self, tNameplate)
 		fnDrawGuild(self, tNameplate)
 		fnDrawIndicators(self, tNameplate)
+		fnDrawInfo(self, tNameplate)
 		
 		self:UpdateNameplateRewardInfo(tNameplate)
 		
@@ -1349,6 +1385,8 @@ fnDrawCastBar = ForgeUI_Nameplates.DrawCastBar
 fnColorNameplate = ForgeUI_Nameplates.ColorNameplate
 fnDrawIndicators = ForgeUI_Nameplates.DrawIndicators
 fnDrawInfo = ForgeUI_Nameplates.DrawInfo
+
+fnRepositionNameplate = ForgeUI_Nameplates.RepositionNameplate
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI_Nameplates Instance
