@@ -545,8 +545,14 @@ function ForgeUI:OnLockElements()
 	self.wndMovables:Show(false, true)
 	self.wndMovables:FindChild("Grid"):DestroyAllPixies()
 
-	for _, tAddon in pairs(_tRegisteredWindows) do
-		for _, tMovable in pairs(tAddon) do
+	for _, tAddon in pairs(tAddons) do
+		if tAddon.ForgeAPI_AfterMovableMove ~= nil then
+			tAddon:ForgeAPI_AfterMovableMove() -- Forge API AfterMovableMove
+		end
+	end
+
+	for _, tWindow in pairs(_tRegisteredWindows) do
+		for _, tMovable in pairs(tWindow) do
 			tMovable.movable:Show(false, true)
 			tMovable.wnd:Show(tMovable.wnd_shown, true)
 		end

@@ -38,6 +38,7 @@ function ForgeUI_CastBars:new(o)
 		bCenterPlayerText = false,
 		bCenterTargetText = false,
 		bCenterFocusText = false,
+		bShowCastIcons = true,
 		crBorder = "FF000000",
 		crBackground = "FF101010",
 		crCastBar = "FF272727",
@@ -187,6 +188,15 @@ function ForgeUI_CastBars:UpdateCastBar(unit, wnd)
 		wnd:FindChild("SpellName"):SetText(strSpellName)
 		wnd:FindChild("CastBar"):SetMax(fDuration)
 		wnd:FindChild("CastBar"):SetProgress(fElapsed)
+		if wnd:FindChild("Icon") then
+			local strIcon = self:GetSpellIconByName(strSpellName)
+			if strIcon ~= "" and self.tSettings.bShowCastIcons then
+				wnd:FindChild("Icon"):SetSprite(self:GetSpellIconByName(strSpellName))
+				wnd:FindChild("IconHolder"):Show(true, true)
+			else
+				wnd:FindChild("IconHolder"):Show(false, true)
+			end
+		end
 		wnd:FindChild("CastTime"):SetText(string.format("%00.01f", (fDuration - fElapsed)/1000) .. "s")
 	elseif wnd:GetName() ==  "PlayerCastBar" and self.cast ~= nil then
 		wnd:FindChild("SpellName"):SetText(self.cast.strSpellName)
@@ -297,6 +307,7 @@ end
 
 function ForgeUI_CastBars:UpdateStyle_TargetCastBar()
 	self.wndTargetCastBar:FindChild("Border"):SetBGColor(self.tSettings.crBorder)
+	self.wndTargetCastBar:FindChild("IconHolder"):SetBGColor(self.tSettings.crBorder)
 	self.wndTargetCastBar:FindChild("Background"):SetBGColor(self.tSettings.crBackground)
 	self.wndTargetCastBar:FindChild("CastBar"):SetBarColor(self.tSettings.crCastBarTarget)
 	self.wndTargetCastBar:FindChild("MoOBar"):SetBarColor(self.tSettings.crMooBar)
@@ -316,6 +327,9 @@ function ForgeUI_CastBars:UpdateStyle_TargetCastBar()
 		self.wndTargetCastBar:FindChild("CastTime"):SetAnchorOffsets(0, -10, -10, 15)
 		self.wndTargetCastBar:FindChild("CastTime"):SetAnchorPoints(0, 0, 1, 0)
 	end
+	
+	local nLeft, nTop, nRight, nBottom = self.wndTargetCastBar:GetAnchorOffsets()
+	self.wndTargetCastBar:FindChild("IconHolder"):SetAnchorOffsets(nTop - nBottom - 5, 0, -5, 0)
 end
 
 function ForgeUI_CastBars:RefreshStyle_TargetCastBar(unit, wnd)
@@ -329,6 +343,7 @@ end
 
 function ForgeUI_CastBars:UpdateStyle_FocusCastBar()
 	self.wndFocusCastBar:FindChild("Border"):SetBGColor(self.tSettings.crBorder)
+	self.wndFocusCastBar:FindChild("IconHolder"):SetBGColor(self.tSettings.crBorder)
 	self.wndFocusCastBar:FindChild("Background"):SetBGColor(self.tSettings.crBackground)
 	self.wndFocusCastBar:FindChild("CastBar"):SetBarColor(self.tSettings.crCastBarFocus)
 	self.wndFocusCastBar:FindChild("MoOBar"):SetBarColor(self.tSettings.crMooBar)
@@ -348,6 +363,9 @@ function ForgeUI_CastBars:UpdateStyle_FocusCastBar()
 		self.wndFocusCastBar:FindChild("CastTime"):SetAnchorOffsets(0, -10, -10, 15)
 		self.wndFocusCastBar:FindChild("CastTime"):SetAnchorPoints(0, 0, 1, 0)
 	end
+	
+	local nLeft, nTop, nRight, nBottom = self.wndFocusCastBar:GetAnchorOffsets()
+	self.wndFocusCastBar:FindChild("IconHolder"):SetAnchorOffsets(nTop - nBottom - 5, 0, -5, 0)
 end
 
 function ForgeUI_CastBars:RefreshStyle_FocusCastBar(unit, wnd)
@@ -357,6 +375,28 @@ function ForgeUI_CastBars:RefreshStyle_FocusCastBar(unit, wnd)
 	else
 		wnd:FindChild("CastBar"):SetBarColor(self.tSettings.crCastBarFocus)
 	end
+end
+
+function ForgeUI_CastBars:GetAbilitiesList()
+	if self.abilityNameToIcon == nil then
+		self.abilityNameToIcon = {}
+	
+		local list = AbilityBook.GetAbilitiesList()
+		for _, ability in pairs(list) do
+			self.abilityNameToIcon[ability.strName] = ability.tTiers[1].splObject:GetIcon()
+		end
+	end
+	return self.abilityNameToIcon
+end
+
+function ForgeUI_CastBars:GetSpellIconByName(spellName)
+	local abilities = self:GetAbilitiesList()
+	
+	if abilities[spellName] ~= nil then
+		return abilities[spellName]
+	end
+	
+	return ""
 end
 
 -----------------------------------------------------------------------------------------------
@@ -407,7 +447,12 @@ function ForgeUI_CastBars:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bCenterFocusText"), self.tSettings, "bCenterFocusText", "UpdateStyles")
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bShowFocus"), self.tSettings, "bShowFocus")
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bShowTarget"), self.tSettings, "bShowTarget")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bShowCastIcons"), self.tSettings, "bShowCastIcons")
 	
+	self:UpdateStyles()
+end
+
+function ForgeUI_CastBars:ForgeAPI_AfterMovableMove()
 	self:UpdateStyles()
 end
 
