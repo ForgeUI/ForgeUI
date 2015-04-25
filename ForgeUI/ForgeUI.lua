@@ -151,12 +151,6 @@ function ForgeUI:OnDocLoaded()
 		ForgeUI.ShowWarning("Addon 'Interface' is turned off which may cause errors. Please turn it on.")
 	end
 	tInterface = nil
-	
-	local tHazards = Apollo.GetAddon("Hazards")
-	if tHazards == nil then
-		ForgeUI.ShowWarning("Addon 'Hazards' is turned off which may cause errors. Please turn it on.")
-	end
-	tHazards = nil
 end
 
 function ForgeUI:ForgeAPI_AfterRegistration()
