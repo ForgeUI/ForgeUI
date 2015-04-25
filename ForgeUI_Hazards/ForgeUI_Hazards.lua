@@ -121,6 +121,10 @@ function ForgeUI_Hazards:UpdateHazard(nID, tOptions)
 		wndHazard:FindChild("ProgressBar"):SetProgress(tOptions.nValue)
 		wndHazard:FindChild("Text"):SetText(wndHazard:GetData().strName .. " - " .. ForgeUI.Round((tOptions.nValue / wndHazard:GetData().nMax) * 100, 0))
 	end
+	
+	if tOptions.strTooltip then
+		wndHazard:SetTooltip(tOptions.strTooltip)
+	end
 end
 
 function ForgeUI_Hazards:RemoveHazard(nID)
@@ -178,7 +182,7 @@ function ForgeUI_Hazards:OnHazardsUpdated()
 			self:CreateHazard(tData.nId, tHazard.strName, tHazard.nMin, tData.fMaxValue, tHazard.crBar)
 		end
 		
-		self:UpdateHazard(tData.nId, { nValue = tData.fMeterValue })
+		self:UpdateHazard(tData.nId, { nValue = tData.fMeterValue, strTooltip = tData.strTooltip })
 	end
 end
 
