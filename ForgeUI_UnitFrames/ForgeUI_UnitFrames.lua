@@ -149,10 +149,6 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	self.wndThreat = self.wndToTFrame:FindChild("Threat")
 	self.wndFocusFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_FocusFrame", "FixedHudStratumLow", self)
 	
-	self.wndHazardBreath = Apollo.LoadForm(self.xmlDoc, "ForgeUI_HazardBreath", "FixedHudStratumLow", self)
-	self.wndHazardHeat = Apollo.LoadForm(self.xmlDoc, "ForgeUI_HazardHeat", "FixedHudStratumLow", self)
-	self.wndHazardToxic = Apollo.LoadForm(self.xmlDoc, "ForgeUI_HazardToxic", "FixedHudStratumLow", self)
-	
 	-- register windows
 	
 	ForgeUI.API_RegisterWindow(self, self.wndPlayerFrame, "ForgeUI_PlayerFrame", { strDisplayName = "Player frame" })
@@ -175,10 +171,6 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame:FindChild("ShieldBar"), "ForgeUI_FocusFrame_Shield", { strParent = "ForgeUI_FocusFrame", strDisplayName = "Shield", crBorder = "FF0699F3" })
 	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame:FindChild("AbsorbBar"), "ForgeUI_FocusFrame_Absorb", { strParent = "ForgeUI_FocusFrame", strDisplayName = "Absorb", crBorder = "FFFFC600" })
 	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame:FindChild("InterruptArmor"), "ForgeUI_FocusFrame_IA", { strParent = "ForgeUI_FocusFrame", strDisplayName = "IA", crBorder = "FFFFFFFF", bMaintainRatio = true })
-	
-	ForgeUI.API_RegisterWindow(self, self.wndHazardBreath, "ForgeUI_wndHazardBreath", { strDisplayName = "Breath" })
-	ForgeUI.API_RegisterWindow(self, self.wndHazardHeat, "ForgeUI_wndHazardHeat", { strDisplayName = "Heat" })
-	ForgeUI.API_RegisterWindow(self, self.wndHazardToxic, "ForgeUI_wndHazardToxic", { strDisplayName = "Toxic" })
 	
 	if self.tSettings.tTotFrame.bShowThreat then
 		Apollo.RegisterEventHandler("TargetThreatListUpdated", "OnThreatUpdated", self)
@@ -207,7 +199,6 @@ function ForgeUI_UnitFrames:OnNextFrame()
 	if unitPlayer == nil or not unitPlayer then return end
 	
 	self:UpdatePlayerFrame(unitPlayer)
-	self:UpdateHazards(unitPlayer)
 end
 
 -- Player Frame
@@ -401,37 +392,6 @@ function ForgeUI_UnitFrames:UpdateInterruptArmor(unit, wnd)
 	end
 end
 
--- uodate hazard bars
-function ForgeUI_UnitFrames:UpdateHazards(unit)
-	self.wndHazardHeat:Show(false)
-	self.wndHazardToxic:Show(false)
-
-	for idx, tActiveHazard in ipairs(HazardsLib.GetHazardActiveList()) do
-		if tActiveHazard.eHazardType == HazardsLib.HazardType_Radiation then
-			self.wndHazardToxic:Show(true)
-			self.wndHazardToxic:FindChild("ProgressBar"):SetMax(tActiveHazard.fMaxValue)
-			self.wndHazardToxic:FindChild("ProgressBar"):SetProgress(tActiveHazard.fMeterValue)
-			self.wndHazardHeat:FindChild("Text"):SetText("Radiation - " .. ForgeUI.Round((tActiveHazard.fMeterValue / tActiveHazard.fMaxValue * 100), 0))
-		end
-		if tActiveHazard.eHazardType == HazardsLib.HazardType_Temperature then
-			self.wndHazardHeat:Show(true)
-			self.wndHazardHeat:FindChild("ProgressBar"):SetMax(tActiveHazard.fMaxValue)
-			self.wndHazardHeat:FindChild("ProgressBar"):SetProgress(tActiveHazard.fMeterValue)
-			self.wndHazardHeat:FindChild("Text"):SetText("Heat - " .. ForgeUI.Round((tActiveHazard.fMeterValue / tActiveHazard.fMaxValue * 100), 0))
-		end
-	end
-end
-
-function ForgeUI_UnitFrames:OnBreathChanged(nBreath)
-	if nBreath == 100 then
-		self.wndHazardBreath:Show(false)
-	else
-		self.wndHazardBreath:Show(true)
-		self.wndHazardBreath:FindChild("ProgressBar"):SetMax(100)
-		self.wndHazardBreath:FindChild("ProgressBar"):SetProgress(nBreath)
-	end
-end
-
 -----------------------------------------------------------------------------------------------
 -- On character created
 -----------------------------------------------------------------------------------------------
@@ -446,7 +406,6 @@ function ForgeUI_UnitFrames:OnCharacterCreated()
 	self:UpdateStyles()
 	
 	Apollo.RegisterEventHandler("VarChange_FrameCount", 	"OnNextFrame", self)
-	Apollo.RegisterEventHandler("BreathChanged",			"OnBreathChanged", self)
 end
 
 function ForgeUI_UnitFrames:ForgeAPI_AfterRestore()
