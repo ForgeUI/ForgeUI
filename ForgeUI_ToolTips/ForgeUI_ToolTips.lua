@@ -102,16 +102,16 @@ local karFactionToString =
 
 local karDispositionColors =
 {
-	[Unit.CodeEnumDisposition.Neutral]  = ApolloColor.new("DispositionNeutral"),
-	[Unit.CodeEnumDisposition.Hostile]  = ApolloColor.new("DispositionHostile"),
-	[Unit.CodeEnumDisposition.Friendly] = ApolloColor.new("DispositionFriendly"),
+	[Unit.CodeEnumDisposition.Neutral]  = "FFFFF569",
+	[Unit.CodeEnumDisposition.Hostile]  = "FFE50000",
+	[Unit.CodeEnumDisposition.Friendly] = "FF75CC26",
 }
 
 local karDispositionColorStrings =
 {
-	[Unit.CodeEnumDisposition.Neutral]  = "DispositionNeutral",
-	[Unit.CodeEnumDisposition.Hostile]  = "DispositionHostile",
-	[Unit.CodeEnumDisposition.Friendly] = "DispositionFriendly",
+	[Unit.CodeEnumDisposition.Neutral]  = "FFFFF569",
+	[Unit.CodeEnumDisposition.Hostile]  = "FFE50000",
+	[Unit.CodeEnumDisposition.Friendly] = "FF75CC26",
 }
 
 local karDispositionFrameSprites =
@@ -348,6 +348,8 @@ function ForgeUI_ToolTips:new(o)
     return o
 end
 
+local ForgeUI_ToolTipsInst
+
 function ForgeUI_ToolTips:Init()
 	local bHasConfigureFunction = false
 	local strConfigureButtonText = ""
@@ -372,21 +374,48 @@ function ForgeUI_ToolTips:OnDocLoaded()
 	if self.xmlDoc ~= nil or not self.xmlDoc:IsLoaded() then return end
 end
 
+local GenerateBuffTooltipForm
+
 function ForgeUI_ToolTips:ForgeAPI_AfterRegistration()
 	ToolTips_OnDocumentReady = ToolTips.OnDocumentReady
 	ToolTips.OnDocumentReady = ForgeUI_ToolTips.TooltipsHook_OnDocumentReady
 	
+	-- hooks
 	ToolTips.UnitTooltipGen = self.UnitTooltipGen
 end
 
+local origGenerateBuffTooltipForm
 function ForgeUI_ToolTips.TooltipsHook_OnDocumentReady(tooltips)
 	ToolTips_OnDocumentReady(tooltips)
 	local ToolTipsInst = tooltips
+	
+	origGenerateBuffTooltipForm = Tooltip.GetBuffTooltipForm
+	Tooltip.GetBuffTooltipForm = GenerateBuffTooltipForm
 end
 
 -----------------------------------------------------------------------------------------------
 -- Hooks
 -----------------------------------------------------------------------------------------------
+GenerateBuffTooltipForm = function(luaCaller, wndParent, splSource, tFlags)
+	local wndToolTip = origGenerateBuffTooltipForm(luaCaller, wndParent, splSource, tFlags)
+	
+	wndToolTip:SetStyle("Picture", true)
+	wndToolTip:SetStyle("Border", false)
+	wndToolTip:SetSprite("ForgeUI_Border")
+	wndToolTip:SetBGColor("FF000000")
+	
+	wndToolTip:FindChild("NameString"):SetStyle("Picture", true)
+	wndToolTip:FindChild("NameString"):SetSprite("ForgeUI_Border")
+	wndToolTip:FindChild("NameString"):SetBGColor("FF000000")
+	
+	wndToolTip:FindChild("GeneralDescriptionString"):SetStyle("Picture", true)
+	wndToolTip:FindChild("GeneralDescriptionString"):SetSprite("ForgeUI_Border")
+	wndToolTip:FindChild("GeneralDescriptionString"):SetBGColor("FF000000")
+	
+	local nLeft, nTop, nRight, nBottom = wndToolTip:GetAnchorOffsets()
+	wndToolTip:SetAnchorOffsets(nLeft, nTop, nRight, nBottom - 45)
+end
+
 function ForgeUI_ToolTips:UnitTooltipGen(wndContainer, unitSource, strProp)
 	local wndTooltipForm = nil
 	local bSkipFormatting = false -- used to identify when we switch to item tooltips (aka pinata loot)
@@ -399,7 +428,8 @@ function ForgeUI_ToolTips:UnitTooltipGen(wndContainer, unitSource, strProp)
 		return
 	elseif strProp ~= "" then
 		if not self.wndPropTooltip or not self.wndPropTooltip:IsValid() then
-			self.wndPropTooltip = wndContainer:LoadTooltipForm("ui\\Tooltips\\TooltipsForms.xml", "PropTooltip_Base", self)
+			--self.wndPropTooltip = wndContainer:LoadTooltipForm("ui\\Tooltips\\TooltipsForms.xml", "PropTooltip_Base", self) -- ForgeUI
+			self.wndPropTooltip = Apollo.LoadForm(ForgeUI_ToolTipsInst.xmlDoc, "PropTooltip_Base", nil, self)
 		end
 		self.wndPropTooltip:FindChild("NameString"):SetText(strProp)
 
@@ -415,7 +445,8 @@ function ForgeUI_ToolTips:UnitTooltipGen(wndContainer, unitSource, strProp)
 	Apollo.SetNavTextAnchor(10, true, nScreenHeight - 332, false)
 
 	if not self.wndUnitTooltip or not self.wndUnitTooltip:IsValid() then
-		self.wndUnitTooltip = wndContainer:LoadTooltipForm("ui\\Tooltips\\TooltipsForms.xml", "UnitTooltip_Base", self)
+		--self.wndUnitTooltip = wndContainer:LoadTooltipForm("ui\\Tooltips\\TooltipsForms.xml", "UnitTooltip_Base", self) -- ForgeUI
+		self.wndUnitTooltip = Apollo.LoadForm(ForgeUI_ToolTipsInst.xmlDoc, "UnitTooltip_Base", nil, self)
 	end
 
 	local wndTopDataBlock 			= self.wndUnitTooltip:FindChild("TopDataBlock")
@@ -443,25 +474,8 @@ function ForgeUI_ToolTips:UnitTooltipGen(wndContainer, unitSource, strProp)
 
 	-- Basics
 	wndLevelString:SetText(unitSource:GetLevel())
-	wndNameString:SetText(string.format("<P Font=\"CRB_HeaderSmall\" TextColor=\"%s\">%s</P>", karDispositionColorStrings[eDisposition], unitSource:GetName()))
-	wndDispositionFrame:SetSprite("ForgeUI_Border")
-	wndDispositionFrame:SetBGColor("FF000000")
+	wndNameString:SetText(string.format("<P Font=\"CRB_HeaderSmall_O\" TextColor=\"%s\">%s</P>", karDispositionColorStrings[eDisposition], unitSource:GetName()))
 	
-	self.wndUnitTooltip:SetSprite("ForgeUI_Border")
-	self.wndUnitTooltip:SetBGColor("FF000000")
-	
-	wndClassBack:SetSprite("ForgeUI_Border")
-	wndClassBack:SetBGColor("FF000000")
-	
-	wndPathBack:SetSprite("ForgeUI_Border")
-	wndPathBack:SetBGColor("FF000000")
-	
-	wndLevelBack:SetSprite("ForgeUI_Border")
-	wndLevelBack:SetBGColor("FF000000")
-	
-	wndMiddleDataBlock:SetSprite("ForgeUI_Border")
-	wndMiddleDataBlock:SetBGColor("FF000000")
-
 	-- Unit to player affiliation
 	local strAffiliationName = unitSource:GetAffiliationName() or ""
 	wndAffiliationString:SetTextRaw(strAffiliationName)
@@ -804,7 +818,7 @@ function ForgeUI_ToolTips:UnitTooltipGen(wndContainer, unitSource, strProp)
 	if not bSkipFormatting then
 		if bNoDisposition then
 			wndNameString:SetTextColor(ApolloColor.new("UI_TextHoloBodyHighlight"))
-			wndDispositionFrame:SetSprite("sprTooltip_SquareFrame_UnitTeal")
+			--wndDispositionFrame:SetSprite("sprTooltip_SquareFrame_UnitTeal") -- ForgeUI
 		end
 
 		wndClassBack:Show(wndClassIcon:IsShown())
@@ -887,8 +901,41 @@ function ForgeUI_ToolTips:UnitTooltipGen(wndContainer, unitSource, strProp)
 	end
 end
 
+function ForgeUI_ToolTips:HookItemToolTips()
+	local aTooltips = Apollo.GetAddon("ToolTips")
+	if aTooltips == nil then return end
+	
+	local origCreateCallNames = aTooltips.CreateCallNames
+	aTooltips.CreateCallNames = function(luaCaller)
+		origCreateCallNames(luaCaller)
+		local origItemTooltip = Tooltip.GetItemTooltipForm
+		Tooltip.GetItemTooltipForm = function(luaCaller, wndControl, item, bStuff, nCount)
+		
+			if item ~= nil then
+				
+				wndControl:SetTooltipDoc(nil)
+										
+				local wndTooltip, wndTooltipComp = origItemTooltip(luaCaller, wndControl, item, bStuff, nCount)
+				local wndGearTooltips = Apollo.LoadForm(self.xmlDoc, "Gear_Tooltips_wnd", wndTooltip, self)
+			
+				wndTooltip:FindChild("ItemTooltipBG"):SetSprite("ForgeUI_Border")
+				wndTooltip:FindChild("ItemTooltipBG"):SetBGColor("FF000000")
+												
+				return wndTooltip, wndTooltipComp
+			else
+				return origItemTooltip(luaCaller, wndControl, item, bStuff, nCount)
+			end
+		end
+	end
+end 
+
+-----------------------------------------------------------------------------------------------
+-- Event handlers
+-----------------------------------------------------------------------------------------------
+
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI_ToolTips Instance
 -----------------------------------------------------------------------------------------------
-local ForgeUI_ToolTipsInst = ForgeUI_ToolTips:new()
+ForgeUI_ToolTipsInst = ForgeUI_ToolTips:new()
 ForgeUI_ToolTipsInst:Init()
