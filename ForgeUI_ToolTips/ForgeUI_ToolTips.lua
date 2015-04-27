@@ -107,10 +107,14 @@ GenerateBuffTooltipForm = function(luaCaller, wndParent, splSource, tFlags)
 	wndToolTip:FindChild("NameString"):SetStyle("Picture", true)
 	wndToolTip:FindChild("NameString"):SetSprite("ForgeUI_Border")
 	wndToolTip:FindChild("NameString"):SetBGColor("FF000000")
+	wndToolTip:FindChild("NameString"):SetFont("Nameplates")
+	
+	wndToolTip:FindChild("DispellableString"):SetFont("Nameplates")
 	
 	wndToolTip:FindChild("GeneralDescriptionString"):SetStyle("Picture", true)
 	wndToolTip:FindChild("GeneralDescriptionString"):SetSprite("ForgeUI_Border")
 	wndToolTip:FindChild("GeneralDescriptionString"):SetBGColor("FF000000")
+	wndToolTip:FindChild("GeneralDescriptionString"):SetFont("Nameplates")
 	
 	local nLeft, nTop, nRight, nBottom = wndToolTip:GetAnchorOffsets()
 	wndToolTip:SetAnchorOffsets(nLeft, nTop, nRight, nBottom - 45)
@@ -157,6 +161,7 @@ GenerateItemTooltipForm = function(luaCaller, wndParent, itemSource, tFlags, nCo
 	return wndToolTip, wndTooltipComp
 end
 
+local b = true
 GenerateUnitTooltipForm = function(luaCaller, wndContainer, unitSource, strProp)
 	origGenerateUnitTooltipForm(luaCaller, wndContainer, unitSource, strProp)
 	
@@ -169,10 +174,14 @@ GenerateUnitTooltipForm = function(luaCaller, wndContainer, unitSource, strProp)
 		-- TopDataBlock
 		local wndTopDataBlock = wndUnitTooltip:FindChild("TopDataBlock")
 		if wndTopDataBlock then
+			wndTopDataBlock:FindChild("NameString"):SetText(unitSource:GetName())
+			wndTopDataBlock:FindChild("NameString"):SetFont("CRB_Interface11_BO")
+		
 			local wndLevelBack = wndUnitTooltip:FindChild("LevelBack")
 			if wndLevelBack then
 				wndLevelBack:SetSprite("ForgeUI_Border")
 				wndLevelBack:SetBGColor("FF000000")
+				wndTopDataBlock:FindChild("LevelString"):SetFont("CRB_ButtonHeader")
 			end
 			
 			local wndClassBack = wndUnitTooltip:FindChild("ClassBack")
@@ -222,6 +231,12 @@ GenerateUnitTooltipForm = function(luaCaller, wndContainer, unitSource, strProp)
 			wndAffiliationString:SetFont("Nameplates")
 		end
 	end
+	
+	--wndUnitTooltip:SetAnchorOffsets(500, 500, 800, 700)
+end
+
+function ForgeUI_ToolTips:OnMouseOverUnitChanged(unit)
+	GenerateUnitTooltipForm(self, GameLib.GetWorldTooltipContainer(), unit, "")
 end
 
 -----------------------------------------------------------------------------------------------
