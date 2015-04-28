@@ -98,6 +98,8 @@ function ForgeUI_Nameplates:new(o)
 			},
 			Player = {
 				bEnabled = true,
+				bHideOnHealth = false,
+				bHideOnShield = false,
 				nShowName = 0,
 				nShowBars = 0,
 				nShowCast = 0,
@@ -511,7 +513,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	
 	self.arUnit2Nameplate[idUnit] = tNameplate
 	self.arWnd2Nameplate[wnd:GetId()] = tNameplate
-
+	
 	self:UpdateNameplateRewardInfo(tNameplate)
 	
 	self:DrawName(tNameplate)
@@ -794,7 +796,7 @@ function ForgeUI_Nameplates:DrawAbsorb(tNameplate)
 		local nAbsorb = unitOwner:GetAbsorptionValue()
 		local nAbsorbMax = unitOwner:GetAbsorptionMax()
 		
-		local bShow = nAbsorb ~= nil and not unitOwner:IsDead() and nAbsorb > 0
+		bShow = nAbsorb ~= nil and not unitOwner:IsDead() and nAbsorb > 0
 		
 		if bShow then
 			self:SetBarValue(tNameplate.wnd.healthAbsorbFill, 0, nAbsorb, nAbsorbMax)
@@ -866,14 +868,26 @@ function ForgeUI_Nameplates:DrawIndicators(tNameplate)
 		wnd.targetMarker:Show(bShowTargetMarker)
 	end
 	
-	-- threat loss indicator
-	
 	local bShowIndicator = false
+	
+	-- threat loss indicator
 	
 	if tNameplate.tSettings.bThreatIndicator then
 		local unitsTarget = unitOwner:GetTarget()
 		if unitsTarget and not unitsTarget:IsThePlayer() then
 			bShowIndicator = true
+		end
+	end
+	
+	-- cleanse indicator
+	
+	if tNameplate.tSettings.bCleanseIndicator then
+		local tDebuffs = unitOwner:GetBuffs().arBeneficial
+		
+		for _, debuff in pairs(tDebuffs) do
+			if debuff["splEffect"]:GetClass() == Spell.CodeEnumSpellClass.DebuffDispellable then
+				bShowIndicator = true
+			end
 		end
 	end
 	
@@ -922,7 +936,7 @@ function ForgeUI_Nameplates:UpdateInfo(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 	local wnd = tNameplate.wnd
 	
-	wnd.info_level:SetText("lvl" .. tostring(unitOwner:GetLevel()))
+	wnd.info_level:SetText(tostring(unitOwner:GetLevel()))
 	if unitOwner:GetType() == "Player" then
 		wnd.info_class:SetSprite("ForgeUI_" .. krtClassEnums[tNameplate.unitClassID] .. "_t")
 	elseif tNameplate.unitClassID ~= 6 and tNameplate.unitClassID >= 0 then
