@@ -1,48 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Sprites>
     <Sprite Name="ForgeUI_Border" Cycle="1">
-        <Frame Texture="ForgeUI\textures\border.png" x0="0" x1="0" x2="0" x3="1" x4="31" x5="32" y0="0" y1="0" y2="0" y3="1" y4="31" y5="32" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="ForgeUI\Sprites\border.png" x0="0" x1="0" x2="0" x3="1" x4="31" x5="32" y0="0" y1="0" y2="0" y3="1" y4="31" y5="32" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="ForgeUI_Bar" Cycle="1">
-        <Frame Texture="ForgeUI\textures\bar.png" x0="0" x1="0" x2="0" x3="0" x4="64" x5="64" y0="0" y1="0" y2="0" y3="0" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="ForgeUI\Sprites\bar.png" x0="0" x1="0" x2="0" x3="0" x4="64" x5="64" y0="0" y1="0" y2="0" y3="0" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="ForgeUI_TextBox" Cycle="1">
-        <Frame Texture="ForgeUI\textures\text_box.png" x0="0" x1="0" x2="0" x3="1" x4="31" x5="32" y0="0" y1="0" y2="0" y3="1" y4="31" y5="32" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="ForgeUI\Sprites\text_box.png" x0="0" x1="0" x2="0" x3="1" x4="31" x5="32" y0="0" y1="0" y2="0" y3="1" y4="31" y5="32" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="ForgeUI_OuterGlow" Cycle="1">
-        <Frame Texture="ForgeUI\textures\OuterGlow.png" x0="0" x1="0" x2="0" x3="7" x4="9" x5="16" y0="0" y1="0" y2="0" y3="7" y4="9" y5="16" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
-    </Sprite>
-    <Sprite Name="ForgeUI_QuestIcon" Cycle="1">
-        <Frame Texture="ForgeUI\textures\QuestIcon.png" x0="0" x1="0" x2="0" x3="0" x4="64" x5="64" y0="0" y1="0" y2="0" y3="0" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
-    </Sprite>
-    <Sprite Name="ForgeUI_Grid" Cycle="1">
-        <Frame Texture="ForgeUI\textures\grid.png" x0="0" x1="0" x2="0" x3="0" x4="5" x5="5" y0="0" y1="0" y2="0" y3="0" y4="5" y5="5" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="ForgeUI\Sprites\OuterGlow.png" x0="0" x1="0" x2="0" x3="7" x4="9" x5="16" y0="0" y1="0" y2="0" y3="7" y4="9" y5="16" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="ForgeUI_IA" Cycle="1">
-        <Frame Texture="ForgeUI\textures\ia.png" x0="0" x1="0" x2="0" x3="0" x4="179" x5="179" y0="0" y1="0" y2="0" y3="0" y4="179" y5="179" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
-    </Sprite>
-    <Sprite Name="ForgeUI_ChallangeIcon" Cycle="1">
-        <Frame Texture="ForgeUI\textures\ChallangeIcon.png" x0="0" x1="0" x2="0" x3="0" x4="64" x5="64" y0="0" y1="0" y2="0" y3="0" y4="64" y5="64" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="ForgeUI\Sprites\ia.png" x0="0" x1="0" x2="0" x3="0" x4="179" x5="179" y0="0" y1="0" y2="0" y3="0" y4="179" y5="179" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="ForgeUI_IAInf" Cycle="1">
-        <Frame Texture="ForgeUI\textures\ia_inf.png" x0="0" x1="0" x2="0" x3="0" x4="179" x5="179" y0="0" y1="0" y2="0" y3="0" y4="179" y5="179" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="ForgeUI\Sprites\ia_inf.png" x0="0" x1="0" x2="0" x3="0" x4="179" x5="179" y0="0" y1="0" y2="0" y3="0" y4="179" y5="179" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="ForgeUI_InnerGlow" Cycle="1">
-        <Frame Texture="ForgeUI\textures\InnerGlow.png" x0="0" x1="0" x2="0" x3="3" x4="5" x5="8" y0="0" y1="0" y2="0" y3="3" y4="5" y5="8" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="ForgeUI\Sprites\InnerGlow.png" x0="0" x1="0" x2="0" x3="3" x4="5" x5="8" y0="0" y1="0" y2="0" y3="3" y4="5" y5="8" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="ForgeUI_GCHSL" Cycle="1">
-        <Frame Texture="ForgeUI\textures\GCHSL.png" x0="0" x1="0" x2="0" x3="0" x4="256" x5="256" y0="0" y1="0" y2="0" y3="0" y4="8" y5="8" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="ForgeUI\Sprites\GCHSL.png" x0="0" x1="0" x2="0" x3="0" x4="256" x5="256" y0="0" y1="0" y2="0" y3="0" y4="8" y5="8" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="ForgeUI_BuffBorder" Cycle="1">
-        <Frame Texture="ForgeUI\textures\buff-border.png" x0="0" x1="0" x2="0" x3="3" x4="29" x5="32" y0="0" y1="0" y2="0" y3="3" y4="29" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="ForgeUI\Sprites\buff-border.png" x0="0" x1="0" x2="0" x3="3" x4="29" x5="32" y0="0" y1="0" y2="0" y3="3" y4="29" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="ForgeUI_DebuffBorder" Cycle="1">
-        <Frame Texture="ForgeUI\textures\debuff-border.png" x0="0" x1="0" x2="0" x3="3" x4="29" x5="32" y0="0" y1="0" y2="0" y3="3" y4="29" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="ForgeUI\Sprites\debuff-border.png" x0="0" x1="0" x2="0" x3="3" x4="29" x5="32" y0="0" y1="0" y2="0" y3="3" y4="29" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="ForgeUI_CleanseBorder" Cycle="1">
-        <Frame Texture="ForgeUI\textures\cleanse-border.png" x0="0" x1="0" x2="0" x3="3" x4="29" x5="32" y0="0" y1="0" y2="0" y3="3" y4="29" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="ForgeUI\Sprites\cleanse-border.png" x0="0" x1="0" x2="0" x3="3" x4="29" x5="32" y0="0" y1="0" y2="0" y3="3" y4="29" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
-    <AutoButton Name="ForgeUI_Button" Texture="textures\button.png" x0="0" x1="0" x2="0" x3="1" x4="31" x5="32" y0="0" y1="0" y2="0" y3="1" y4="31" y5="32" Stretchy="1" StateBits="15" Direction="Across"/>
-    <AutoButton Name="ForgeUI_CheckBox" Texture="ForgeUI\textures\checkbox.png" x0="0" x1="0" x2="0" x3="0" x4="0" x5="32" y0="0" y1="0" y2="0" y3="0" y4="0" y5="32" Stretchy="1" StateBits="15" Direction="Across"/>
-    <AutoButton Name="ForgeUI_Button3D" Texture="textures\button3d.png" x0="0" x1="0" x2="0" x3="5" x4="40" x5="45" y0="0" y1="0" y2="0" y3="5" y4="40" y5="45" Stretchy="1" StateBits="7" Direction="Across"/>
+    <AutoButton Name="ForgeUI_Button" Texture="ForgeUI\Sprites\button.png" x0="0" x1="0" x2="0" x3="1" x4="31" x5="32" y0="0" y1="0" y2="0" y3="1" y4="31" y5="32" Stretchy="1" StateBits="15" Direction="Across"/>
+    <AutoButton Name="ForgeUI_CheckBox" Texture="ForgeUI\Sprites\checkbox.png" x0="0" x1="0" x2="0" x3="0" x4="0" x5="32" y0="0" y1="0" y2="0" y3="0" y4="0" y5="32" Stretchy="1" StateBits="15" Direction="Across"/>
 </Sprites>
