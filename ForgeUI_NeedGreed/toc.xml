@@ -1,0 +1,5 @@
+<Addon Name="ForgeUI_NeedGreed" Author="WintyBadass" APIVersion="9" Version="0.1.0" Description="">
+    <Script Name="ForgeUI_NeedGreed.lua"/>
+    <Form Name="ForgeUI_NeedGreed.xml"/>
+    <ReplaceAddon Name="NeedVsGreed"/>
+</Addon>
