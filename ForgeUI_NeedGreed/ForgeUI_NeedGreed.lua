@@ -117,7 +117,8 @@ function ForgeUI_NeedGreed:OnOneSecTimer()
 	self:UpdateKnownLoot()
 
 	if self.tLootRolls then
-		self:DrawAllLoot(self.tLootRolls, #self.tLootRolls)
+		--self:DrawAllLoot(self.tLootRolls, #self.tLootRolls)
+		self:DrawAllLoot(self.tKnownLoot, #self.tLootRolls)
 	else
 		self.wndContainer:DestroyChildren()
 	end
@@ -175,7 +176,7 @@ function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
 			wndLoot:FindChild("GiantItemIcon"):SetSprite(itemCurrent:GetIcon())
 			self:HelperBuildItemTooltip(wndLoot:FindChild("GiantItemIcon"), itemCurrent, itemModData, tGlyphData)
 			
-			wndLoot:FindChild("NeedBtn"):Enable(GameLib.IsNeedRollAllowed(tCurrentElement.nLootId))
+			wndLoot:FindChild("NeedBtn"):Show(GameLib.IsNeedRollAllowed(tCurrentElement.nLootId))
 			
 		end
 		
@@ -263,6 +264,7 @@ function ForgeUI_NeedGreed:OnNeedBtn(wndHandler, wndControl)
 	local wndLoot = wndControl:GetParent():GetParent()
 
 	GameLib.RollOnLoot(wndLoot:GetData(), true)
+	self:UpdateKnownLoot()
 	wndLoot:Destroy()
 	
 	self.wndContainer:ArrangeChildrenVert(2)
@@ -272,6 +274,7 @@ function ForgeUI_NeedGreed:OnGreedBtn(wndHandler, wndControl)
 	local wndLoot = wndControl:GetParent():GetParent()
 
 	GameLib.RollOnLoot(wndLoot:GetData(), false)
+	self:UpdateKnownLoot()
 	wndLoot:Destroy()
 	
 	self.wndContainer:ArrangeChildrenVert(2)
@@ -281,6 +284,7 @@ function ForgeUI_NeedGreed:OnPassBtn(wndHandler, wndControl)
 	local wndLoot = wndControl:GetParent():GetParent()
 
 	GameLib.PassOnLoot(wndLoot:GetData(), true)
+	self:UpdateKnownLoot()
 	wndLoot:Destroy()
 	
 	self.wndContainer:ArrangeChildrenVert(2)

@@ -8,14 +8,14 @@ local ForgeComm
 -- Constants
 -----------------------------------------------------------------------------------------------
 
-AUTHOR = "Adam Jedlicka"
-AUTHOR_LONG = "Winty Badass@Jabbit"
-API_VERSION = 2
+local AUTHOR = "Adam Jedlicka"
+local AUTHOR_LONG = "Winty Badass@Jabbit"
+local API_VERSION = 2
 
 -- errors
-ERR_ADDON_REGISTERED = 0
-ERR_ADDON_NOT_REGISTERED = 1
-ERR_WRONG_API = 2
+local ERR_ADDON_REGISTERED = 0
+local ERR_ADDON_NOT_REGISTERED = 1
+local ERR_WRONG_API = 2
 
 -----------------------------------------------------------------------------------------------
 -- Variables
