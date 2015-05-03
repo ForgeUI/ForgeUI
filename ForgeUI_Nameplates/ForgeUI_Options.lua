@@ -47,6 +47,7 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 							})
 						end
 					elseif self.wndContainers["Container_" .. type]:FindChild(tostring(option)) ~= nil and self.wndContainers["Container_" .. type]:FindChild(tostring(option)):FindChild("EditBox") ~= nil then
+						ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container_" .. type]:FindChild(tostring(option)):FindChild("EditBox"), self.tSettings.tUnits[type], option, { nMin = 0 })
 					end
 				end
 				

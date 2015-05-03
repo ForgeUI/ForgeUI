@@ -105,6 +105,8 @@ function ForgeUI_Nameplates:new(o)
 				nShowCast = 0,
 				nShowGuild = 0,
 				nShowInfo = 0,
+				nHpCutoff = 0,
+				crHpCutoff = "FFCCCCCC",
 				crName = "FFFFFFFF",
 				crHealth = "FF75CC26",
 				bClassColors = false,
@@ -120,6 +122,8 @@ function ForgeUI_Nameplates:new(o)
 				nShowCast = 0,
 				nShowGuild = 0,
 				nShowInfo = 0,
+				nHpCutoff = 0,
+				crHpCutoff = "FFCCCCCC",
 				crName = "FFFFFFFF",
 				crHealth = "FF75CC26",
 				bClassColors = true,
@@ -135,6 +139,8 @@ function ForgeUI_Nameplates:new(o)
 				nShowCast = 0,
 				nShowGuild = 0,
 				nShowInfo = 0,
+				nHpCutoff = 0,
+				crHpCutoff = "FFCCCCCC",
 				crName = "FF43C8F3",
 				crHealth = "FF75CC26",
 				bClassColors = true,
@@ -146,6 +152,8 @@ function ForgeUI_Nameplates:new(o)
 				nShowCast = 3,
 				nShowGuild = 0,
 				nShowInfo = 0,
+				nHpCutoff = 0,
+				crHpCutoff = "FFCCCCCC",
 				crName = "FFFF0000",
 				crHealth = "FFFF0000",
 				bClassColors = true,
@@ -180,7 +188,8 @@ function ForgeUI_Nameplates:new(o)
 				nShowCast = 2,
 				nShowGuild = 0,
 				nShowInfo = 1,
-				nHpCutoff = 30,
+				nHpCutoff = 0,
+				crHpCutoff = "FFCCCCCC",
 				crName = "FFD9544D",
 				crHealth = "FFE50000",
 			},
@@ -633,9 +642,9 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 		crBarColor = ForgeUI.tSettings.tClassColors["cr" .. krtClassEnums[unitOwner:GetClassId()]]
 	end
 	
-	--if tSettings.nHpCutoff and tNameplate.hpPercentage and tNameplate.hpPercentage < tSettings.nHpCutoff then
-	--	crBarColor = "FFFFFFFF"
-	--end
+	if tSettings.nHpCutoff and tNameplate.hpPercentage and tNameplate.hpPercentage < tSettings.nHpCutoff then
+		crBarColor = tSettings.crHpCutoff
+	end
 	
 	if unitOwner:IsInCCState(Unit.CodeEnumCCState.Vulnerability) then
 		crBarColor = self.tSettings.crMOO
