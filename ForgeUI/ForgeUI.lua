@@ -233,12 +233,12 @@ function ForgeUI.API_RegisterAddon(tAddon)
 			tAddon:ForgeAPI_Initialization() -- Forge API Initialization
 		end
 		
-		local wndAddon = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_AddonForm", ForgeUIInst.wndAddons, ForgeUIInst)
+		local wndAddon = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_AddonForm", ForgeUIInst.wndAddons:FindChild("Container"), ForgeUIInst)
 		wndAddon:FindChild("AddonName"):SetText(tAddon.strDisplayName)
 		
 		wndAddon:SetData(tAddon)
 		
-		ForgeUIInst.wndAddons:ArrangeChildrenVert()
+		ForgeUIInst.wndAddons:FindChild("Container"):ArrangeChildrenVert()
 	else
 		tAddonsToRegister[tAddon.strAddonName] = tAddon
 	end
