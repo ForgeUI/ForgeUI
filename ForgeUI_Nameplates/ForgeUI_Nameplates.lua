@@ -180,6 +180,7 @@ function ForgeUI_Nameplates:new(o)
 				nShowCast = 2,
 				nShowGuild = 0,
 				nShowInfo = 1,
+				nHpCutoff = 30,
 				crName = "FFD9544D",
 				crHealth = "FFE50000",
 			},
@@ -632,6 +633,10 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 		crBarColor = ForgeUI.tSettings.tClassColors["cr" .. krtClassEnums[unitOwner:GetClassId()]]
 	end
 	
+	--if tSettings.nHpCutoff and tNameplate.hpPercentage and tNameplate.hpPercentage < tSettings.nHpCutoff then
+	--	crBarColor = "FFFFFFFF"
+	--end
+	
 	if unitOwner:IsInCCState(Unit.CodeEnumCCState.Vulnerability) then
 		crBarColor = self.tSettings.crMOO
 	end
@@ -712,7 +717,7 @@ function ForgeUI_Nameplates:DrawHealth(tNameplate)
 	
 	local bShow = nHealth ~= nil and not unitOwner:IsDead() and nMaxHealth > 0 and self:GetBooleanOption("nShowBars", tNameplate)
 	
-	if tNameplate.tSettings.bHideOnHealth or tNameplate.tSettings.bHideOnShield then
+	if (tNameplate.tSettings.bHideOnHealth or tNameplate.tSettings.bHideOnShield) and not tNameplate.bIsTarget then
 		local bHealth = nHealth ~= nMaxHealth and tNameplate.tSettings.bHideOnHealth
 		
 		local nShield = unitOwner:GetShieldCapacity()
@@ -725,6 +730,8 @@ function ForgeUI_Nameplates:DrawHealth(tNameplate)
 	
 	if bShow then
 		self:SetBarValue(tNameplate.wnd.healthHealthFill, 0, nHealth, nMaxHealth)
+		
+		tNameplate.hpPercentage = (nHealth / nMaxHealth) * 100
 		
 		fnDrawIndicators(self, tNameplate)
 		
@@ -882,7 +889,7 @@ function ForgeUI_Nameplates:DrawIndicators(tNameplate)
 	-- cleanse indicator
 	
 	if tNameplate.tSettings.bCleanseIndicator then
-		local tDebuffs = unitOwner:GetBuffs().arBeneficial
+		local tDebuffs = unitOwner:GetBuffs().arHarmful
 		
 		for _, debuff in pairs(tDebuffs) do
 			if debuff["splEffect"]:GetClass() == Spell.CodeEnumSpellClass.DebuffDispellable then
