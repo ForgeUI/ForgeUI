@@ -341,7 +341,7 @@ function ForgeUI_ActionBars:FillMounts(wnd)
 	end
 
 	if tSelectedSpellObj == nil and #tMountList > 0 then
-		tSelectedSpellObj = tMountList[1].tTiers[1].splObject
+		tSelectedSpellObj = tMountList[1].splObject
 	end
 
 	if tSelectedSpellObj ~= nil then
