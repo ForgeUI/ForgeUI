@@ -87,6 +87,14 @@ function ForgeUI_Nameplates:new(o)
 		crAbsorb = "FFFFC600",
 		crDead = "FF666666",
 		crMOO = "FF7E00FF",
+		tStyle = {
+			nStyle = 0,
+			nBarHeight = 120,
+			nBarWidth = 20,
+			nShieldHeight = 8,
+			nAbsorbHeight = 8,
+			nCastHeight = 7,
+		},
 		tUnits = {
 			Target = {
 				bShowMarker = true,
@@ -279,6 +287,7 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRegistration()
 
 	local wndItemButton = ForgeUI.API_AddItemButton(self, "Nameplates" )
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "General", { xmlDoc = self.xmlOptions, strContainer = "Container_General", bDefault = true })
+	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Style", { xmlDoc = self.xmlOptions, strContainer = "Container_Style" })
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Target", { xmlDoc = self.xmlOptions, strContainer = "Container_Target" })
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Player", { xmlDoc = self.xmlOptions, strContainer = "Container_Player" })
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Friendly player", { xmlDoc = self.xmlOptions, strContainer = "Container_FriendlyPlayer" })
@@ -1223,6 +1232,7 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	if not tNameplate then return end
 	
 	local wnd = tNameplate.wnd
+	local wndNameplate = tNameplate.wndNameplate
 	
 	wnd.targetMarker:SetBGColor(self.tSettings.tUnits["Target"].crTargetMarker)
 	
@@ -1236,6 +1246,43 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	elseif tNameplate.strUnitType == "PartyPlayer" then
 		wnd.indicator:SetBGColor(self.tSettings.tUnits["PartyPlayer"].crCleanseIndicator)
 	end
+	
+	--style
+	local tStyle = self.tSettings.tStyle
+	
+	-- bar
+	local nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("Container"):GetAnchorOffsets()
+	
+	nLeft = -(tStyle.nBarHeight / 2)
+	nRight = (tStyle.nBarHeight / 2)
+	
+	nTop = 70 -(tStyle.nBarWidth / 2)
+	nBottom = 70 + (tStyle.nBarWidth / 2)
+	
+	wndNameplate:FindChild("Container"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+	
+	-- shield
+	nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("MaxShield"):GetAnchorOffsets()
+	
+	nTop = -(tStyle.nShieldHeight / 2)
+	nBottom = (tStyle.nShieldHeight / 2)
+	
+	wndNameplate:FindChild("MaxShield"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+	
+	-- absorb
+	nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("MaxAbsorb"):GetAnchorOffsets()
+	
+	nTop = -(tStyle.nShieldHeight / 2)
+	nBottom = (tStyle.nShieldHeight / 2)
+	
+	wndNameplate:FindChild("MaxAbsorb"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+	
+	-- cast
+	nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("CastBar"):GetAnchorOffsets()
+	
+	nBottom = 3 + tStyle.nCastHeight
+	
+	wndNameplate:FindChild("CastBar"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 end
 
 -----------------------------------------------------------------------------------------------

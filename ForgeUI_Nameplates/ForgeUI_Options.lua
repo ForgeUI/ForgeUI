@@ -66,6 +66,14 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 		end
 	end
 	
+	-- style
+	
+	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container_Style"]:FindChild("nBarHeight"):FindChild("EditBox"), self.tSettings.tStyle, "nBarHeight", { nMin = 0 }, "LoadStyle_Nameplates")
+	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container_Style"]:FindChild("nBarWidth"):FindChild("EditBox"), self.tSettings.tStyle, "nBarWidth", { nMin = 0 }, "LoadStyle_Nameplates")
+	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container_Style"]:FindChild("nShieldHeight"):FindChild("EditBox"), self.tSettings.tStyle, "nShieldHeight", { nMin = 0 }, "LoadStyle_Nameplates")
+	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container_Style"]:FindChild("nAbsorbHeight"):FindChild("EditBox"), self.tSettings.tStyle, "nAbsorbHeight", { nMin = 0 }, "LoadStyle_Nameplates")
+	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container_Style"]:FindChild("nCastHeight"):FindChild("EditBox"), self.tSettings.tStyle, "nCastHeight", { nMin = 0 }, "LoadStyle_Nameplates")
+	
 	self.tStylers["LoadStyle_Nameplates"]["LoadStyle_Nameplates"](self)
 	self:UpdateAllNameplates()
 end
