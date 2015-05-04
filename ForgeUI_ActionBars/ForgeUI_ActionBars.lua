@@ -564,11 +564,12 @@ function ForgeUI_ActionBars:FillPath(wnd)
 	
 	local tActionSet = ActionSetLib.GetCurrentActionSet()
 	
-	if self.tSettings.nSelectedPath > 0 then
+	if self.tSettings.nSelectedPath > 0 and ActionSetLib.IsSpellCompatibleWithActionSet(self.tSettings.nSelectedPath) ~= 3 then
 		Event_FireGenericEvent("PathAbilityUpdated", self.tSettings.nSelectedPath)
 		tActionSet[10] = self.tSettings.nSelectedPath
 	else
 		tActionSet[10] = tActionSet[10]
+		self.tSettings.nSelectedPath = tActionSet[10]
 	end
 	ActionSetLib.RequestActionSetChanges(tActionSet)
 	
@@ -636,6 +637,10 @@ end
 
 function ForgeUI_ActionBars:CreateBars()
 	self.wndActionBar = self:CreateBar(self.tActionBars.tActionBar)
+	if self.wndVehicleBar then
+		self.wndActionBar:Show(not self.wndVehicleBar:IsShown())
+	end
+	
 	self.wndSideBar1 = self:CreateBar(self.tActionBars.tSideBar1)
 	self.wndSideBar2 = self:CreateBar(self.tActionBars.tSideBar2)
 	
@@ -659,7 +664,9 @@ end
 
 function ForgeUI_ActionBars:ShowShortcutBar(nBar, bIsVisible, nShortcuts)
 	if nBar == ActionSetLib.CodeEnumShortcutSet.VehicleBar then -- vehiclebar
-		self.wndActionBar:Show(not bIsVisible, true)
+		if self.wndActionBar then
+			self.wndActionBar:Show(not bIsVisible, true)
+		end
 		
 		if bIsVisible then
 			self.wndVehicleBar = self:CreateBar(self.tActionBars.tVehicleBar)
