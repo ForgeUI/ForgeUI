@@ -1,8 +1,9 @@
+require "Window"
+
 local MAJOR, MINOR = "ForgeColor", 1
+
 local APkg = Apollo.GetPackage(MAJOR)
 if APkg and (APkg.nVersion or 0) >= MINOR then return end
-
-require "Window"
 
 local ForgeUI
 local ForgeColor = APkg and APkg.tPackage or {}

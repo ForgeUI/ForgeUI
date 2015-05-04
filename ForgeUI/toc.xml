@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Addon Author="WintyBadass" APIVersion="9" Name="ForgeUI" Description="">
+<Addon Author="WintyBadass" APIVersion="10" Name="ForgeUI" Description="">
     <Script Name="ForgeUI.lua"/>
     <Form Name="ForgeUI.xml"/>
     <Script Name="ForgeColor\ForgeColor.lua"/>
+    <Script Name="Libs\LibJSON\LibJSON-2.5.lua"/>
 </Addon>

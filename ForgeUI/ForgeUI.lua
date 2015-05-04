@@ -2,19 +2,20 @@ require "Window"
  
 local ForgeUI = {}
 local ForgeColor
+local ForgeComm
  
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
 
-AUTHOR = "Adam Jedlicka"
-AUTHOR_LONG = "Winty Badass@Jabbit"
-API_VERSION = 2
+local AUTHOR = "Adam Jedlicka"
+local AUTHOR_LONG = "Winty Badass@Jabbit"
+local API_VERSION = 2
 
 -- errors
-ERR_ADDON_REGISTERED = 0
-ERR_ADDON_NOT_REGISTERED = 1
-ERR_WRONG_API = 2
+local ERR_ADDON_REGISTERED = 0
+local ERR_ADDON_NOT_REGISTERED = 1
+local ERR_WRONG_API = 2
 
 -----------------------------------------------------------------------------------------------
 -- Variables
@@ -45,7 +46,8 @@ function ForgeUI:new(o)
 	
 	 -- mandatory 
     self.api_version = 2
-	self.version = "0.3.7c"
+	self.version = "0.4.0"
+
 	self.author = "WintyBadass"
 	self.strAddonName = "~ForgeUI"
 	self.strDisplayName = "ForgeUI"
@@ -57,6 +59,7 @@ function ForgeUI:new(o)
     self.tSettings = {
 		crMain = "FFFF0000",
 		crTest = "FFFFFFFF",
+		bNetworking = true,
 		tClassColors = {
 			crEngineer = "FFEFAB48",
 			crEsper = "FF1591DB",
@@ -96,6 +99,8 @@ function ForgeUI:OnDocLoaded()
 	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
 	
 	ForgeColor = Apollo.GetPackage("ForgeColor").tPackage
+	
+	--self:InitComm()
 	
 	-- sprites
 	Apollo.LoadSprites("ForgeUI_Sprite.xml", "ForgeUI_Sprite")
@@ -147,12 +152,6 @@ function ForgeUI:OnDocLoaded()
 		ForgeUI.ShowWarning("Addon 'Interface' is turned off which may cause errors. Please turn it on.")
 	end
 	tInterface = nil
-	
-	local tHazards = Apollo.GetAddon("Hazards")
-	if tHazards == nil then
-		ForgeUI.ShowWarning("Addon 'Hazards' is turned off which may cause errors. Please turn it on.")
-	end
-	tHazards = nil
 end
 
 function ForgeUI:ForgeAPI_AfterRegistration()
@@ -169,6 +168,8 @@ function ForgeUI:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_General:FindChild("crWarrior"), self.tSettings.tClassColors, "crWarrior", false)
 	
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_Home:FindChild("TextColorBox"), self.tSettings, "crTest")
+	
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.ForgeUI_General:FindChild("bNetworking"), self.tSettings, "bNetworking")
 end
 
 -----------------------------------------------------------------------------------------------
@@ -229,12 +230,16 @@ function ForgeUI.API_RegisterAddon(tAddon)
 			tAddon:ForgeAPI_LoadOptions() -- Forge API LoadOptions
 		end
 		
-		local wndAddon = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_AddonForm", ForgeUIInst.wndAddons, ForgeUIInst)
+		if tAddon.ForgeAPI_Initialization ~= nil then
+			tAddon:ForgeAPI_Initialization() -- Forge API Initialization
+		end
+		
+		local wndAddon = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_AddonForm", ForgeUIInst.wndAddons:FindChild("Container"), ForgeUIInst)
 		wndAddon:FindChild("AddonName"):SetText(tAddon.strDisplayName)
 		
 		wndAddon:SetData(tAddon)
 		
-		ForgeUIInst.wndAddons:ArrangeChildrenVert()
+		ForgeUIInst.wndAddons:FindChild("Container"):ArrangeChildrenVert()
 	else
 		tAddonsToRegister[tAddon.strAddonName] = tAddon
 	end
@@ -300,9 +305,15 @@ function ForgeUI.API_AddItemButton(tAddon, strDisplayName, tOptions)
 	end
 	
 	if tOptions.strContainer ~= nil then
-		tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
-		tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
-		tData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+		if tOptions.xmlDoc ~= nil then
+			tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tOptions.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
+			tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
+			tData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+		else
+			tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
+			tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
+			tData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+		end
 	end
 	
 	if tOptions.bDefault ~= nil then
@@ -354,9 +365,15 @@ function ForgeUI.API_AddListItemToButton(tAddon, wndBtn, strDisplayName, tOption
 	end
 	
 	if tOptions.strContainer ~= nil then
-		tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
-		tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
-		tNewData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+		if tOptions.xmlDoc ~= nil then
+			tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tOptions.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
+			tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
+			tNewData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+		else
+			tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tAddon.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
+			tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
+			tNewData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
+		end
 	end
 	
 	if tOptions.bDefault ~= nil then
@@ -523,8 +540,14 @@ function ForgeUI:OnLockElements()
 	self.wndMovables:Show(false, true)
 	self.wndMovables:FindChild("Grid"):DestroyAllPixies()
 
-	for _, tAddon in pairs(_tRegisteredWindows) do
-		for _, tMovable in pairs(tAddon) do
+	for _, tAddon in pairs(tAddons) do
+		if tAddon.ForgeAPI_AfterMovableMove ~= nil then
+			tAddon:ForgeAPI_AfterMovableMove() -- Forge API AfterMovableMove
+		end
+	end
+
+	for _, tWindow in pairs(_tRegisteredWindows) do
+		for _, tMovable in pairs(tWindow) do
 			tMovable.movable:Show(false, true)
 			tMovable.wnd:Show(tMovable.wnd_shown, true)
 		end
@@ -786,7 +809,7 @@ function ForgeUI:OnChechBoxCheck( wndHandler, wndControl )
 		if tData.tAddon.tStylers[tData.strCallback] ~= nil then
 			tData.tAddon.tStylers[tData.strCallback][tData.strCallback](tData.tAddon)
 		else
-			tData.tAddon[tData.strCallback](tData.tAddon)
+			tData.tAddon[tData.strCallback](tData.tAddon, wndControl)
 		end
 	end
 end
@@ -837,7 +860,7 @@ function ForgeUI:OnNumberBoxChanged( wndHandler, wndControl, strText )
 			if tData.tAddon.tStylers[tData.strCallback] ~= nil then
 				tData.tAddon.tStylers[tData.strCallback][tData.strCallback](tData.tAddon)
 			else
-				tData.tAddon[tData.strCallback](tData.tAddon)
+				tData.tAddon[tData.strCallback](tData.tAddon, wndControl)
 			end
 		end
 	else
@@ -845,6 +868,57 @@ function ForgeUI:OnNumberBoxChanged( wndHandler, wndControl, strText )
 		wndControl:SetText(tData.prevValue)
 	end
 end
+
+-----------------------------------------------------------------------------------------------
+-- Dropdown
+-----------------------------------------------------------------------------------------------
+function ForgeUI.API_RegisterDropdown(tAddon, wndControl, tSettings, strValue, tOptions, strCallback)
+	local wndDropdown = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Dropdown", wndControl, ForgeUIInst)
+	wndDropdown:FindChild("Value"):SetText(tOptions[tSettings[strValue]])
+	
+	for k, v in pairs(tOptions) do
+		local wndButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_DropdownButton", wndDropdown:FindChild("OptionsHolder"), ForgeUIInst)
+		
+		local tData = {
+			tAddon = tAddon,
+			tSettings = tSettings,
+			strValue = strValue,
+			strCallback = strCallback,
+			key = k,
+		}
+		
+		wndButton:FindChild("DropdownButton"):SetText(v)
+		wndButton:FindChild("DropdownButton"):SetData(tData)
+	end
+	
+	local nLeft, nTop, nRight, nBottom = wndDropdown:FindChild("OptionsHolder"):GetAnchorOffsets()
+	wndDropdown:FindChild("OptionsHolder"):SetAnchorOffsets(nLeft, nTop, nRight, 27 * (#tOptions + 1) + 2)
+	
+	wndDropdown:FindChild("OptionsHolder"):ArrangeChildrenVert()
+end
+
+function ForgeUI:OnDropdownButton( wndHandler, wndControl, eMouseButton )
+	if wndControl:GetName() == "MoreButton" then
+		wndControl:GetParent():FindChild("OptionsHolder"):Show(not wndControl:GetParent():FindChild("OptionsHolder"):IsShown())
+	elseif wndControl:GetName() == "DropdownButton" then
+		local tData = wndControl:GetData()
+	
+		wndControl:GetParent():GetParent():Show(false, true)
+		wndControl:GetParent():GetParent():GetParent():FindChild("Value"):SetText(wndControl:GetText())
+		
+		if tData then
+			if tData.tSettings and tData.strValue then
+				tData.tSettings[tData.strValue] = tData.key
+			end
+			if tData.strCallback and tData.tAddon then
+				if tData.tAddon[tData.strCallback] then
+					tData.tAddon[tData.strCallback](tData.tAddon)
+				end
+			end
+		end
+	end
+end
+
 
 -----------------------------------------------------------------------------------------------
 -- OnSave / OnRestore
@@ -921,22 +995,24 @@ end
 -----------------------------------------------------------------------------------------------
 -- ForgeUI_Form Functions
 -----------------------------------------------------------------------------------------------
-function ForgeUI:OnForgeUIcmd(cmd, arg)
+function ForgeUI:OnForgeUIcmd(cmd, args)
 	if cmd ~= "forgeui" then return end
 	
-	if arg == "" then
+	local tParams = {}
+	for sOneParam in string.gmatch(args, "[^%s]+") do
+		table.insert(tParams, sOneParam)
+	end
+	
+	if args == "" then
 		self:OnForgeUIOn()
-	elseif arg == "reset" then
+	elseif tParams[1] == "reset" then
 		self:ResetDefaults()
-	else
-		tArgs = {}
-		for sArg in arg:gmatch("%w+") do table.insert(tArgs, sArg) end
-		
-		if tArgs[1] == "reset" then
-			if tAddons["ForgeUI_" .. tArgs[2]] ~= nil then
-				tAddons["ForgeUI_" .. tArgs[2]].bReset = true
-			end
-			RequestReloadUI()
+	elseif tParams[1] == "comm" then
+		if tParams[2] == "returnVersion" then
+			Print("Sending 'returnVersion' command")
+			self:SendMessage("command", { strCommand = "returnVersion" })
+		elseif tParams[2] == "print" then
+			self:SendMessage("print", { strText = tParams[3] })
 		end
 	end
 end
@@ -1085,6 +1161,15 @@ function ForgeUI.FormatDuration(tim)
 	elseif (tim>0) then
 		return ("%.1fs"):format(tim)
 	elseif (tim==0) then
+		return ""
+	end
+end
+
+function ForgeUI.GetTime(b24HourFormat)
+	if b24HourFormat then
+		local l_time = GameLib.GetLocalTime()
+		return string.format("%02d:%02d", l_time.nHour, l_time.nMinute)
+	else
 		return ""
 	end
 end

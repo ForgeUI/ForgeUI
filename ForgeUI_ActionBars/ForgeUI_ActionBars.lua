@@ -312,35 +312,36 @@ function ForgeUI_ActionBars:FillMounts(wnd)
 	
 	wndList:DestroyChildren()
 
-	local tMountList = AbilityBook.GetAbilitiesList(Spell.CodeEnumSpellTag.Mount)
+	local tMountList = GameLib.GetMountList()
 	local tSelectedSpellObj = nil
 
 	local nCount = 0
 	for idx, tMount in pairs(tMountList) do
+		if tMount.bIsKnown then
+			nCount = nCount + 1
+			
+			local tSpellObject = tMount.splObject
 	
-		nCount = nCount + 1
-		
-		local tSpellObject = tMount.tTiers[1].splObject
-
-		if tSpellObject:GetId() == self.tSettings.nSelectedMount then
-			tSelectedSpellObj = tSpellObject
-		end
-
-		local wndCurr = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
-		wndCurr:SetData({sType = "mount"})
-		wndCurr:FindChild("Icon"):SetSprite(tSpellObject:GetIcon())
-		wndCurr:FindChild("Button"):SetData(tSpellObject)
-
-		wndCurr:SetAnchorOffsets(0, 0, nSize, nSize)
-		
-		if Tooltip and Tooltip.GetSpellTooltipForm then
-			wndCurr:SetTooltipDoc(nil)
-			Tooltip.GetSpellTooltipForm(self, wndCurr, tSpellObject, {})
+			if tSpellObject:GetId() == self.tSettings.nSelectedMount then
+				tSelectedSpellObj = tSpellObject
+			end
+	
+			local wndCurr = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
+			wndCurr:SetData({sType = "mount"})
+			wndCurr:FindChild("Icon"):SetSprite(tSpellObject:GetIcon())
+			wndCurr:FindChild("Button"):SetData(tSpellObject)
+	
+			wndCurr:SetAnchorOffsets(0, 0, nSize, nSize)
+			
+			if Tooltip and Tooltip.GetSpellTooltipForm then
+				wndCurr:SetTooltipDoc(nil)
+				Tooltip.GetSpellTooltipForm(self, wndCurr, tSpellObject, {})
+			end
 		end
 	end
 
 	if tSelectedSpellObj == nil and #tMountList > 0 then
-		tSelectedSpellObj = tMountList[1].tTiers[1].splObject
+		tSelectedSpellObj = tMountList[1].splObject
 	end
 
 	if tSelectedSpellObj ~= nil then
@@ -638,9 +639,15 @@ end
 function ForgeUI_ActionBars:CreateBars()
 	self.wndActionBar = self:CreateBar(self.tActionBars.tActionBar)
 	if self.wndVehicleBar then
+<<<<<<< HEAD
 		self.wndActionBar:Show(not self.wndVehicleBar:IsShown())
 	end
 	
+=======
+		self.wndActionBar:Show(not self.wndVehicleBar:IsShown(), true)
+	end
+
+>>>>>>> origin/v0.4.0
 	self.wndSideBar1 = self:CreateBar(self.tActionBars.tSideBar1)
 	self.wndSideBar2 = self:CreateBar(self.tActionBars.tSideBar2)
 	

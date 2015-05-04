@@ -37,11 +37,16 @@ function ForgeUI_UnitFrames:new(o)
 	self.wndContainers = {}
 	
 	self.tStylers = {
+		["LoadStyle_PlayerFrame"] = self,
 		["UpdateStyle_PlayerFrame"] = self,
+		["RefreshStyle_PlayerFrame"] = self, -- (unit)
+		["LoadStyle_TargetFrame"] = self,
 		["UpdateStyle_TargetFrame"] = self,
 		["RefreshStyle_TargetFrame"] = self, -- (unit)
+		["LoadStyle_FocusFrame"] = self,
 		["UpdateStyle_FocusFrame"] = self,
 		["RefreshStyle_FocusFrame"] = self, -- (unit)
+		["LoadStyle_TotFrame"] = self,
 		["UpdateStyle_TotFrame"] = self,
 		["RefreshStyle_TotFrame"] = self, -- (unit)
 	}
@@ -144,10 +149,6 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	self.wndThreat = self.wndToTFrame:FindChild("Threat")
 	self.wndFocusFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_FocusFrame", "FixedHudStratumLow", self)
 	
-	self.wndHazardBreath = Apollo.LoadForm(self.xmlDoc, "ForgeUI_HazardBreath", "FixedHudStratumLow", self)
-	self.wndHazardHeat = Apollo.LoadForm(self.xmlDoc, "ForgeUI_HazardHeat", "FixedHudStratumLow", self)
-	self.wndHazardToxic = Apollo.LoadForm(self.xmlDoc, "ForgeUI_HazardToxic", "FixedHudStratumLow", self)
-	
 	-- register windows
 	
 	ForgeUI.API_RegisterWindow(self, self.wndPlayerFrame, "ForgeUI_PlayerFrame", { strDisplayName = "Player frame" })
@@ -171,12 +172,21 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame:FindChild("AbsorbBar"), "ForgeUI_FocusFrame_Absorb", { strParent = "ForgeUI_FocusFrame", strDisplayName = "Absorb", crBorder = "FFFFC600" })
 	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame:FindChild("InterruptArmor"), "ForgeUI_FocusFrame_IA", { strParent = "ForgeUI_FocusFrame", strDisplayName = "IA", crBorder = "FFFFFFFF", bMaintainRatio = true })
 	
-	ForgeUI.API_RegisterWindow(self, self.wndHazardBreath, "ForgeUI_wndHazardBreath", { strDisplayName = "Breath" })
-	ForgeUI.API_RegisterWindow(self, self.wndHazardHeat, "ForgeUI_wndHazardHeat", { strDisplayName = "Heat" })
-	ForgeUI.API_RegisterWindow(self, self.wndHazardToxic, "ForgeUI_wndHazardToxic", { strDisplayName = "Toxic" })
-	
 	if self.tSettings.tTotFrame.bShowThreat then
 		Apollo.RegisterEventHandler("TargetThreatListUpdated", "OnThreatUpdated", self)
+	end
+end
+
+function ForgeUI_UnitFrames:ForgeAPI_Initialization()
+	self.tStylers["LoadStyle_PlayerFrame"]["LoadStyle_PlayerFrame"](self)
+	self.tStylers["LoadStyle_TargetFrame"]["LoadStyle_TargetFrame"](self)
+	self.tStylers["LoadStyle_FocusFrame"]["LoadStyle_FocusFrame"](self)
+	self.tStylers["LoadStyle_TotFrame"]["LoadStyle_TotFrame"](self)
+
+	if GameLib.GetPlayerUnit() then
+		self:OnCharacterCreated()
+	else
+		Apollo.RegisterEventHandler("CharacterCreated", 	"OnCharacterCreated", self)
 	end
 end
 
@@ -189,7 +199,6 @@ function ForgeUI_UnitFrames:OnNextFrame()
 	if unitPlayer == nil or not unitPlayer then return end
 	
 	self:UpdatePlayerFrame(unitPlayer)
-	self:UpdateHazards(unitPlayer)
 end
 
 -- Player Frame
@@ -199,6 +208,8 @@ function ForgeUI_UnitFrames:UpdatePlayerFrame(unit)
 	else
 		self.wndPlayerFrame:FindChild("Indicator"):Show(false)
 	end
+	
+	self.tStylers["RefreshStyle_PlayerFrame"]["RefreshStyle_PlayerFrame"](self, unit)
 		
 	self:UpdateHPBar(unit, self.wndPlayerFrame, "tPlayerFrame")
 	self:UpdateShieldBar(unit, self.wndPlayerFrame)
@@ -381,37 +392,6 @@ function ForgeUI_UnitFrames:UpdateInterruptArmor(unit, wnd)
 	end
 end
 
--- uodate hazard bars
-function ForgeUI_UnitFrames:UpdateHazards(unit)
-	self.wndHazardHeat:Show(false)
-	self.wndHazardToxic:Show(false)
-
-	for idx, tActiveHazard in ipairs(HazardsLib.GetHazardActiveList()) do
-		if tActiveHazard.eHazardType == HazardsLib.HazardType_Radiation then
-			self.wndHazardToxic:Show(true)
-			self.wndHazardToxic:FindChild("ProgressBar"):SetMax(tActiveHazard.fMaxValue)
-			self.wndHazardToxic:FindChild("ProgressBar"):SetProgress(tActiveHazard.fMeterValue)
-			self.wndHazardHeat:FindChild("Text"):SetText("Radiation - " .. ForgeUI.Round((tActiveHazard.fMeterValue / tActiveHazard.fMaxValue * 100), 0))
-		end
-		if tActiveHazard.eHazardType == HazardsLib.HazardType_Temperature then
-			self.wndHazardHeat:Show(true)
-			self.wndHazardHeat:FindChild("ProgressBar"):SetMax(tActiveHazard.fMaxValue)
-			self.wndHazardHeat:FindChild("ProgressBar"):SetProgress(tActiveHazard.fMeterValue)
-			self.wndHazardHeat:FindChild("Text"):SetText("Heat - " .. ForgeUI.Round((tActiveHazard.fMeterValue / tActiveHazard.fMaxValue * 100), 0))
-		end
-	end
-end
-
-function ForgeUI_UnitFrames:OnBreathChanged(nBreath)
-	if nBreath == 100 then
-		self.wndHazardBreath:Show(false)
-	else
-		self.wndHazardBreath:Show(true)
-		self.wndHazardBreath:FindChild("ProgressBar"):SetMax(100)
-		self.wndHazardBreath:FindChild("ProgressBar"):SetProgress(nBreath)
-	end
-end
-
 -----------------------------------------------------------------------------------------------
 -- On character created
 -----------------------------------------------------------------------------------------------
@@ -426,7 +406,6 @@ function ForgeUI_UnitFrames:OnCharacterCreated()
 	self:UpdateStyles()
 	
 	Apollo.RegisterEventHandler("VarChange_FrameCount", 	"OnNextFrame", self)
-	Apollo.RegisterEventHandler("BreathChanged",			"OnBreathChanged", self)
 end
 
 function ForgeUI_UnitFrames:ForgeAPI_AfterRestore()
@@ -458,6 +437,9 @@ function ForgeUI_UnitFrames:UpdateStyles()
 	self.tStylers["UpdateStyle_TotFrame"]["UpdateStyle_TotFrame"](self)
 end
 
+function ForgeUI_UnitFrames:LoadStyle_PlayerFrame()
+end
+
 function ForgeUI_UnitFrames:UpdateStyle_PlayerFrame()
 	unit = GameLib.GetPlayerUnit()
 	if not unit or not self.wndPlayerFrame then return end
@@ -474,6 +456,12 @@ function ForgeUI_UnitFrames:UpdateStyle_PlayerFrame()
 	self.wndPlayerFrame:FindChild("Shield_TextValue"):SetTextColor(self.tSettings.tPlayerFrame.crShieldValue)
 	self.wndPlayerFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self.tSettings.tPlayerFrame.crAbsorbBar)
 	self.wndPlayerFrame:FindChild("Absorb_TextValue"):SetTextColor(self.tSettings.tPlayerFrame.crAbsorbValue)
+end
+
+function ForgeUI_UnitFrames:RefreshStyle_PlayerFrame()
+end
+
+function ForgeUI_UnitFrames:LoadStyle_TargetFrame()
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_TargetFrame()
@@ -497,6 +485,9 @@ function ForgeUI_UnitFrames:RefreshStyle_TargetFrame(unit)
 	else
 		_name:SetTextColor(unit:GetNameplateColor())
 	end
+end
+
+function ForgeUI_UnitFrames:LoadStyle_FocusFrame()
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_FocusFrame()
@@ -523,6 +514,9 @@ function ForgeUI_UnitFrames:RefreshStyle_FocusFrame(unit)
 	else
 		_name:SetTextColor(unit:GetNameplateColor())
 	end
+end
+
+function ForgeUI_UnitFrames:LoadStyle_TotFrame()
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_TotFrame()
@@ -591,12 +585,6 @@ function ForgeUI_UnitFrames:OnDocLoaded()
 	end
 	
 	ForgeUI.API_RegisterAddon(self)
-	
-	if GameLib.GetPlayerUnit() then
-		self:OnCharacterCreated()
-	else
-		Apollo.RegisterEventHandler("CharacterCreated", 	"OnCharacterCreated", self)
-	end
 end
 
 ---------------------------------------------------------------------------------------------------
