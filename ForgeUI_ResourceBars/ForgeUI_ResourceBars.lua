@@ -417,6 +417,8 @@ function ForgeUI_ResourceBars:OnWarriorCreated(unitPlayer)
 	
 	self.wndContainers.Container:FindChild("WarriorContainer"):Show(true, true)
 	
+	self.nAugBladeRemaining = 0
+	
 	-- register options
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Warrior_Color1_EditBox"), self.tSettings.warrior, "crResource1", false, "LoadStyle_ResourceBar_Warrior" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Warrior_Color2_EditBox"), self.tSettings.warrior, "crResource2", false, "LoadStyle_ResourceBar_Warrior" )
@@ -426,6 +428,10 @@ function ForgeUI_ResourceBars:OnWarriorCreated(unitPlayer)
 	ForgeUI.API_RegisterWindow(self, self.wndResource, "ForgeUI_ResourceBar", { nLevel = 3, strDisplayName = "Resource bar" })
 	
 	self.tStylers["LoadStyle_ResourceBar_Warrior"]["LoadStyle_ResourceBar_Warrior"](self)
+	
+	Apollo.RegisterEventHandler("BuffAdded", "OnWarriorBuffAdded", self)
+	Apollo.RegisterEventHandler("BuffUpdated", "OnWarriorBuffUpdated", self)
+	Apollo.RegisterEventHandler("BuffRemoved", "OnWarriorBuffRemoved", self)
 	
 	if self.tSettings.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnWarriorUpdate", self)
@@ -449,6 +455,47 @@ function ForgeUI_ResourceBars:OnWarriorUpdate()
 	
 	if bShow ~= self.wndResource:IsShown() then
 		self.wndResource:Show(bShow, true)
+	end
+end
+
+function ForgeUI_ResourceBars:OnWarriorBuffAdded(unit, tBuff, nCout)
+	if not unit or not unit:IsThePlayer() then return end
+
+	if tBuff.splEffect:GetId() == 79757 and tBuff.nCount > 0 then
+		self.wndResource:FindChild("AG_Stacks"):SetText(tBuff.nCount)
+		self.wndResource:FindChild("AG_Stacks"):Show(true, true)
+		self.wndResource:FindChild("KE_Drain"):Show(true, true)
+		
+		self.bAugBlade = true
+	elseif tBuff.splEffect:GetId() == 79787 then
+		self.wndResource:FindChild("KE_Drain"):Show(true, true)
+		
+		self.bPowerLink = true
+	end
+end
+
+function ForgeUI_ResourceBars:OnWarriorBuffUpdated(unit, tBuff, nCout)
+	if not unit or not unit:IsThePlayer() then return end
+
+	if tBuff.splEffect:GetId() == 79757 and tBuff.nCount > 0 then
+		self.wndResource:FindChild("AG_Stacks"):SetText(tBuff.nCount)
+	end
+end
+
+function ForgeUI_ResourceBars:OnWarriorBuffRemoved(unit, tBuff, nCout)
+	if not unit or not unit:IsThePlayer() then return end
+
+	if tBuff.splEffect:GetId() == 79757 then
+		self.wndResource:FindChild("AG_Stacks"):Show(false, true)
+		
+		self.bAugBlade = false
+	elseif tBuff.splEffect:GetId() == 79787 then
+		self.bPowerLink = false
+	elseif tBuff.splEffect:GetId() == 49311 then -- aug blade turned off
+	end
+	
+	if not self.bAugBlade and not self.bPowerLink then
+		self.wndResource:FindChild("KE_Drain"):Show(false, true)
 	end
 end
 
@@ -636,6 +683,7 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Warrior()
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, -5, 0, 0)
 	end
 	self.wndResource:FindChild("Value"):SetTextFlags("DT_VCENTER", self.tSettings.bCenterText)
+	self.wndResource:FindChild("AG_Stacks"):SetTextFlags("DT_VCENTER", self.tSettings.bCenterText)
 end
 
 function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Warrior(unitPlayer, nResource)
