@@ -99,7 +99,7 @@ function ForgeUI:OnDocLoaded()
 	
 	ForgeColor = Apollo.GetPackage("ForgeColor").tPackage
 	
-	self:InitComm()
+	--self:InitComm()
 	
 	-- sprites
 	Apollo.LoadSprites("ForgeUI_Sprite.xml", "ForgeUI_Sprite")

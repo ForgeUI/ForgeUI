@@ -312,30 +312,31 @@ function ForgeUI_ActionBars:FillMounts(wnd)
 	
 	wndList:DestroyChildren()
 
-	local tMountList = AbilityBook.GetAbilitiesList(Spell.CodeEnumSpellTag.Mount)
+	local tMountList = GameLib.GetMountList()
 	local tSelectedSpellObj = nil
 
 	local nCount = 0
 	for idx, tMount in pairs(tMountList) do
+		if tMount.bIsKnown then
+			nCount = nCount + 1
+			
+			local tSpellObject = tMount.splObject
 	
-		nCount = nCount + 1
-		
-		local tSpellObject = tMount.tTiers[1].splObject
-
-		if tSpellObject:GetId() == self.tSettings.nSelectedMount then
-			tSelectedSpellObj = tSpellObject
-		end
-
-		local wndCurr = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
-		wndCurr:SetData({sType = "mount"})
-		wndCurr:FindChild("Icon"):SetSprite(tSpellObject:GetIcon())
-		wndCurr:FindChild("Button"):SetData(tSpellObject)
-
-		wndCurr:SetAnchorOffsets(0, 0, nSize, nSize)
-		
-		if Tooltip and Tooltip.GetSpellTooltipForm then
-			wndCurr:SetTooltipDoc(nil)
-			Tooltip.GetSpellTooltipForm(self, wndCurr, tSpellObject, {})
+			if tSpellObject:GetId() == self.tSettings.nSelectedMount then
+				tSelectedSpellObj = tSpellObject
+			end
+	
+			local wndCurr = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
+			wndCurr:SetData({sType = "mount"})
+			wndCurr:FindChild("Icon"):SetSprite(tSpellObject:GetIcon())
+			wndCurr:FindChild("Button"):SetData(tSpellObject)
+	
+			wndCurr:SetAnchorOffsets(0, 0, nSize, nSize)
+			
+			if Tooltip and Tooltip.GetSpellTooltipForm then
+				wndCurr:SetTooltipDoc(nil)
+				Tooltip.GetSpellTooltipForm(self, wndCurr, tSpellObject, {})
+			end
 		end
 	end
 
