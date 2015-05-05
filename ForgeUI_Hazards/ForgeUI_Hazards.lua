@@ -128,7 +128,9 @@ function ForgeUI_Hazards:UpdateHazard(nID, tOptions)
 end
 
 function ForgeUI_Hazards:RemoveHazard(nID)
-	self.tHazards[nID]:Destroy()
+	if self.tHazards[nID] and self.tHazards[nID].Destroy then
+		self.tHazards[nID]:Destroy()
+	end
 	self.tHazards[nID] = nil
 	
 	self.wndHazardsHolder:ArrangeChildrenHorz(1)
