@@ -138,14 +138,16 @@ end
 GenerateItemTooltipForm = function(luaCaller, wndParent, itemSource, tFlags, nCount)
 	local wndToolTip, wndTooltipComp = origGenerateItemTooltipForm(luaCaller, wndParent, itemSource, tFlags, nCount)
 	
-	wndToolTip:FindChild("ItemTooltipBG"):SetSprite("ForgeUI_Border")
-	wndToolTip:FindChild("ItemTooltipBG"):SetBGColor("FF000000")
+	if wndToolTip then
+		wndToolTip:FindChild("ItemTooltipBG"):SetSprite("ForgeUI_Border")
+		wndToolTip:FindChild("ItemTooltipBG"):SetBGColor("FF000000")
 	
-	wndToolTip:FindChild("CurrentHeader"):SetSprite("ForgeUI_Border")
-	wndToolTip:FindChild("CurrentHeader"):SetBGColor("FF000000")
-	
-	wndToolTip:FindChild("ItemTooltip_BaseRarityFrame"):SetSprite("ForgeUI_Border")
-	wndToolTip:FindChild("ItemTooltip_BaseRarityFrame"):SetBGColor("FF000000")
+		wndToolTip:FindChild("CurrentHeader"):SetSprite("ForgeUI_Border")
+		wndToolTip:FindChild("CurrentHeader"):SetBGColor("FF000000")
+		
+		wndToolTip:FindChild("ItemTooltip_BaseRarityFrame"):SetSprite("ForgeUI_Border")
+		wndToolTip:FindChild("ItemTooltip_BaseRarityFrame"):SetBGColor("FF000000")
+	end
 	
 	if wndTooltipComp then
 		wndTooltipComp:FindChild("ItemTooltipBG"):SetSprite("ForgeUI_Border")
