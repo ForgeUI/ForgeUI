@@ -639,15 +639,9 @@ end
 function ForgeUI_ActionBars:CreateBars()
 	self.wndActionBar = self:CreateBar(self.tActionBars.tActionBar)
 	if self.wndVehicleBar then
-<<<<<<< HEAD
-		self.wndActionBar:Show(not self.wndVehicleBar:IsShown())
-	end
-	
-=======
 		self.wndActionBar:Show(not self.wndVehicleBar:IsShown(), true)
 	end
 
->>>>>>> origin/v0.4.0
 	self.wndSideBar1 = self:CreateBar(self.tActionBars.tSideBar1)
 	self.wndSideBar2 = self:CreateBar(self.tActionBars.tSideBar2)
 	
