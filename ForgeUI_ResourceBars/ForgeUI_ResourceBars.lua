@@ -12,7 +12,35 @@ tClassEnums = {
 	[GameLib.CodeEnumClass.Medic]        	= "medic",
 	[GameLib.CodeEnumClass.Stalker]      	= "stalker",
 	[GameLib.CodeEnumClass.Spellslinger]	= "spellslinger"
-} 
+}
+
+tPowerLinkId = {
+	[79798] = true,
+	[79797] = true,
+	[79796] = true,
+	[79795] = true,
+	[79794] = true,
+	[79793] = true,
+	[79792] = true,
+	[79791] = true,
+	[79787] = true,
+}
+
+tAugBladeBuffId = {
+	[49311] = true,
+	[49310] = true,
+	[49309] = true,
+	[49308] = true,
+	[49307] = true,
+	[49302] = true,
+	[49301] = true,
+	[49300] = true,
+	[46935] = true,
+}
+
+tAugBladeDrainId = {
+	[79757] = true,
+}
  
 -----------------------------------------------------------------------------------------------
 -- Initialization
@@ -453,6 +481,14 @@ function ForgeUI_ResourceBars:OnWarriorUpdate()
 		bShow = true
 	end
 	
+	if not self.bAugBlade and self.wndResource:FindChild("AG_Stacks"):IsShown() then
+		for k, v in pairs(GameLib.GetPlayerUnit():GetBuffs().arBeneficial) do
+			if tAugBladeDrainId[v.splEffect:GetId()] then
+				self.wndResource:FindChild("AG_Stacks"):SetText(ForgeUI.Round(v.fTimeRemaining, 1) .. " - " .. v.nCount)	
+			end	
+		end
+	end
+	
 	if bShow ~= self.wndResource:IsShown() then
 		self.wndResource:Show(bShow, true)
 	end
@@ -461,13 +497,14 @@ end
 function ForgeUI_ResourceBars:OnWarriorBuffAdded(unit, tBuff, nCout)
 	if not unit or not unit:IsThePlayer() then return end
 
-	if tBuff.splEffect:GetId() == 79757 and tBuff.nCount > 0 then
+	if tAugBladeDrainId[tBuff.splEffect:GetId()] and tBuff.nCount > 0 then
 		self.wndResource:FindChild("AG_Stacks"):SetText(tBuff.nCount)
 		self.wndResource:FindChild("AG_Stacks"):Show(true, true)
+	elseif tAugBladeBuffId[tBuff.splEffect:GetId()] then -- aug blade turned off
 		self.wndResource:FindChild("KE_Drain"):Show(true, true)
 		
 		self.bAugBlade = true
-	elseif tBuff.splEffect:GetId() == 79787 then
+	elseif tPowerLinkId[tBuff.splEffect:GetId()] then
 		self.wndResource:FindChild("KE_Drain"):Show(true, true)
 		
 		self.bPowerLink = true
@@ -477,7 +514,7 @@ end
 function ForgeUI_ResourceBars:OnWarriorBuffUpdated(unit, tBuff, nCout)
 	if not unit or not unit:IsThePlayer() then return end
 
-	if tBuff.splEffect:GetId() == 79757 and tBuff.nCount > 0 then
+	if tAugBladeDrainId[tBuff.splEffect:GetId()] and tBuff.nCount > 0 then
 		self.wndResource:FindChild("AG_Stacks"):SetText(tBuff.nCount)
 	end
 end
@@ -485,13 +522,12 @@ end
 function ForgeUI_ResourceBars:OnWarriorBuffRemoved(unit, tBuff, nCout)
 	if not unit or not unit:IsThePlayer() then return end
 
-	if tBuff.splEffect:GetId() == 79757 then
+	if tAugBladeDrainId[tBuff.splEffect:GetId()] then
 		self.wndResource:FindChild("AG_Stacks"):Show(false, true)
-		
-		self.bAugBlade = false
-	elseif tBuff.splEffect:GetId() == 79787 then
+	elseif tPowerLinkId[tBuff.splEffect:GetId()] then
 		self.bPowerLink = false
-	elseif tBuff.splEffect:GetId() == 49311 then -- aug blade turned off
+	elseif tAugBladeBuffId[tBuff.splEffect:GetId()] then -- aug blade turned off
+		self.bAugBlade = false
 	end
 	
 	if not self.bAugBlade and not self.bPowerLink then
