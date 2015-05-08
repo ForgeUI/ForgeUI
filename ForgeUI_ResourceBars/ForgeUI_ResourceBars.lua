@@ -86,7 +86,8 @@ function ForgeUI_ResourceBars:new(o)
 		bCenterText = false,
 		warrior = {
 			crResource1 = "FFE53805",
-			crResource2 = "FFEF0000"
+			crResource2 = "FFEF0000",
+			bPlaySoundAbEnd = false,
 		},
 		stalker = {
 			crResource1 = "FFD23EF4",
@@ -452,6 +453,7 @@ function ForgeUI_ResourceBars:OnWarriorCreated(unitPlayer)
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Warrior_Color2_EditBox"), self.tSettings.warrior, "crResource2", false, "LoadStyle_ResourceBar_Warrior" )
 	
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("WarriorContainer"):FindChild("bCenterText"), self.tSettings, "bCenterText", "LoadStyles")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("WarriorContainer"):FindChild("bPlaySoundAbEnd"):FindChild("CheckBox"), self.tSettings.warrior, "bPlaySoundAbEnd")
 	
 	ForgeUI.API_RegisterWindow(self, self.wndResource, "ForgeUI_ResourceBar", { nLevel = 3, strDisplayName = "Resource bar" })
 	
@@ -504,7 +506,7 @@ function ForgeUI_ResourceBars:OnWarriorBuffAdded(unit, tBuff, nCout)
 		self.wndResource:FindChild("KE_Drain"):Show(true, true)
 		
 		self.bAugBlade = true
-	elseif tPowerLinkId[tBuff.splEffect:GetId()] then
+	elseif self.bHasPowerlink and tPowerLinkId[tBuff.splEffect:GetId()] then
 		self.wndResource:FindChild("KE_Drain"):Show(true, true)
 		
 		self.bPowerLink = true
@@ -524,7 +526,11 @@ function ForgeUI_ResourceBars:OnWarriorBuffRemoved(unit, tBuff, nCout)
 
 	if tAugBladeDrainId[tBuff.splEffect:GetId()] then
 		self.wndResource:FindChild("AG_Stacks"):Show(false, true)
-	elseif tPowerLinkId[tBuff.splEffect:GetId()] then
+		
+		if self.tSettings.warrior.bPlaySoundAbEnd then
+			Sound.Play(220)
+		end
+	elseif self.bHasPowerlink and tPowerLinkId[tBuff.splEffect:GetId()] then
 		self.bPowerLink = false
 	elseif tAugBladeBuffId[tBuff.splEffect:GetId()] then -- aug blade turned off
 		self.bAugBlade = false
