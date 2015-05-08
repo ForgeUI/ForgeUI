@@ -68,7 +68,7 @@ function ItemPreview:OnGenericEvent_LoadItemPreview(item)
 
 	self.wndMain:FindChild("PreviewWindow"):SetItem(item)
 
-	local strItem = string.format("<T Font=\"CRB_InterfaceSmall\" TextColor=\"UI_TextHoloTitle\" Align=\"Center\">%s</T>", item:GetName())
+	local strItem = string.format("<T Font=\"Nameplates\" TextColor=\"FFFFFFFF\" Align=\"Center\">%s</T>", item:GetName())
 	self.wndMain:FindChild("ItemLabel"):SetAML("<P Align=\"Center\">"..String_GetWeaselString(strItem).."</P>")
 
 	-- set sheathed or not

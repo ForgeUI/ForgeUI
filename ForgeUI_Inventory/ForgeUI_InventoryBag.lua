@@ -235,7 +235,7 @@ function ForgeUI_Inventory:ForgeAPI_AfterRegistration()
 	local nLeft, nTop, nRight, nBottom = self.wndMain:GetAnchorOffsets()
 	self.nFirstEverWidth = nRight - nLeft
 	self.wndMain:SetSizingMinimum(238, 270)
-	self.wndMain:SetSizingMaximum(1200, 700)
+	--self.wndMain:SetSizingMaximum(1200, 700)
 
 	nLeft, nTop, nRight, nBottom = self.wndMain:FindChild("MainGridContainer"):GetAnchorOffsets()
 	self.nFirstEverMainGridHeight = nBottom - nTop
@@ -645,10 +645,12 @@ end
 
 function ForgeUI_Inventory:OnDragDropNotifyTrash(wndHandler, wndControl, bMe) -- TODO: We can probably replace this with a button mouse over state
 	if bMe then
-		self.wndMain:FindChild("TrashIcon"):SetSprite("CRB_Inventory:InvBtn_TrashToggleFlyby")
+		--self.wndMain:FindChild("TrashIcon"):SetSprite("CRB_Inventory:InvBtn_TrashToggleFlyby")
+		self.wndMain:FindChild("TrashIcon"):SetTextColor("FFFFFFFF")
 		self.wndMain:FindChild("TextActionPrompt_Trash"):Show(true)
 	else
-		self.wndMain:FindChild("TrashIcon"):SetSprite("CRB_Inventory:InvBtn_TrashTogglePressed")
+		--self.wndMain:FindChild("TrashIcon"):SetSprite("CRB_Inventory:InvBtn_TrashTogglePressed")
+		self.wndMain:FindChild("TrashIcon"):SetTextColor("FFFF0000")
 		self.wndMain:FindChild("TextActionPrompt_Trash"):Show(false)
 	end
 end
@@ -703,7 +705,7 @@ function ForgeUI_Inventory:OnSystemBeginDragDrop(wndSource, strType, iData)
 	self.wndMain:FindChild("TextActionPrompt_Trash"):Show(false)
 	self.wndMain:FindChild("TextActionPrompt_Salvage"):Show(false)
 
-	self.wndMain:FindChild("TrashIcon"):SetSprite("CRB_Inventory:InvBtn_TrashTogglePressed")
+	--self.wndMain:FindChild("TrashIcon"):SetSprite("CRB_Inventory:InvBtn_TrashTogglePressed")
 
 	local item = self.wndMain:FindChild("MainBagWindow"):GetItem(iData)
 	if item and item:CanSalvage() then
@@ -721,7 +723,7 @@ function ForgeUI_Inventory:OnSystemEndDragDrop(strType, iData)
 		return -- TODO Investigate if there are other types
 	end
 
-	self.wndMain:FindChild("TrashIcon"):SetSprite("CRB_Inventory:InvBtn_TrashToggleNormal")
+	--self.wndMain:FindChild("TrashIcon"):SetSprite("CRB_Inventory:InvBtn_TrashToggleNormal")
 	self.wndMain:FindChild("SalvageIcon"):SetData(false)
 	self.wndMain:FindChild("TextActionPrompt_Trash"):Show(false)
 	self.wndMain:FindChild("TextActionPrompt_Salvage"):Show(false)
