@@ -24,6 +24,15 @@ krtNpcRankEnums = {
 	[Unit.CodeEnumRank.Fodder] 		= "fodder",
 }
 
+tAllowedNames = {
+	["Thayd Cargo Lifter"] = 274008,
+}
+
+tNameSwaps = {
+	["Briex Sper"] = "Pink Cheese",
+	["Thayd Cargo Lifter"] = "Lifty",
+}
+
 -----------------------------------------------------------------------------------------------
 -- Initialization
 -----------------------------------------------------------------------------------------------
@@ -433,6 +442,8 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 	
 	local bNewShow = self:HelperVerifyVisibilityOptions(tNameplate) and self:CheckDrawDistance(tNameplate)
 	
+	--if tNameplate.unitOwner:GetName() == "Thayd Cargo Lifter" then Print(tNameplate.unitOwner:GetId()) end
+	
 	tNameplate.eDisposition = eDisposition
 	
 	if bNewShow and not self.tSettings.bFrequentUpdate then
@@ -448,13 +459,16 @@ end
 function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	local strNewUnitType = self:GetUnitType(unitNew)
 	
-	if not self.tSettings.tUnits[strNewUnitType].bEnabled then return end
-
+	if tAllowedNames[unitNew:GetName()] == unitNew:GetId() then
+	else
+		if not self.tSettings.tUnits[strNewUnitType].bEnabled then return end
+	end
+	
 	local idUnit = unitNew:GetId()
 	if self.arUnit2Nameplate[idUnit] ~= nil and self.arUnit2Nameplate[idUnit].wndNameplate:IsValid() then
 		return
 	end
-
+	
 	local wnd = nil
 	local wndReferences = nil
 	if next(self.arWindowPool) ~= nil then
@@ -672,7 +686,7 @@ function ForgeUI_Nameplates:DrawName(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 	local wndName = tNameplate.wnd.wndName
 	
-	local bShow = self:GetBooleanOption("nShowName", tNameplate)
+	local bShow = self:GetBooleanOption("nShowName", tNameplate) or tAllowedNames[unitOwner:GetName()]
 	if wndName:IsShown() ~= bShow then
 		wndName:Show(bShow, true)
 	end
@@ -683,6 +697,10 @@ function ForgeUI_Nameplates:DrawName(tNameplate)
 			strNewName = unitOwner:GetTitleOrName()
 		else
 			strNewName = unitOwner:GetName()
+		end
+		
+		if tNameSwaps[unitOwner:GetName()] then
+			strNewName = tNameSwaps[unitOwner:GetName()]
 		end
 
 		if tNameplate.strName ~= strNewName then
@@ -1037,6 +1055,8 @@ end
 function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 	local unitPlayer = self.unitPlayer
 	local unitOwner = tNameplate.unitOwner
+	
+	if tAllowedNames[unitOwner:GetName()] then return true end
 	
 	local bDontShowNameplate = not tNameplate.bOnScreen or tNameplate.bGibbed or not tNameplate.bIsImportant and self.tSettings.bOnlyImportantNPC
 		or (unitOwner:IsDead() and not self.tSettings.bShowDead)
