@@ -309,6 +309,11 @@ end
 
 function ForgeUI_Inventory:OnInterfaceMenuListHasLoaded()
 	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Inventory"), {"InterfaceMenu_ToggleInventory", "Inventory", "Icon_Windows32_UI_CRB_InterfaceMenu_Inventory"})
+
+	if self.wndMainBagWindow then
+		local tParams = {false, nil, self.wndMainBagWindow:GetTotalEmptyBagSlots()}
+		Event_FireGenericEvent("InterfaceMenuList_AlertAddOn", Apollo.GetString("InterfaceMenu_Inventory"), tParams)
+	end
 end
 
 function ForgeUI_Inventory:OnCharacterCreated()
@@ -697,6 +702,9 @@ function ForgeUI_Inventory:OnUpdateInventory()
 		return
 	end
 
+	local tParams = {false, nil, self.wndMainBagWindow:GetTotalEmptyBagSlots()}
+	Event_FireGenericEvent("InterfaceMenuList_AlertAddOn", Apollo.GetString("InterfaceMenu_Inventory"), tParams)
+	
 	self:HelperSetSalvageEnable()
 end
 
