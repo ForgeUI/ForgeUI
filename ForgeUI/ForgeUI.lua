@@ -60,6 +60,7 @@ function ForgeUI:new(o)
 		crMain = "FFFF0000",
 		crTest = "FFFFFFFF",
 		bNetworking = true,
+		b24HourFormat = true,
 		tClassColors = {
 			crEngineer = "FFEFAB48",
 			crEsper = "FF1591DB",
@@ -170,6 +171,7 @@ function ForgeUI:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_Home:FindChild("TextColorBox"), self.tSettings, "crTest")
 	
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.ForgeUI_General:FindChild("bNetworking"), self.tSettings, "bNetworking")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.ForgeUI_General:FindChild("b24HourFormat"):FindChild("CheckBox"), self.tSettings, "b24HourFormat")
 end
 
 -----------------------------------------------------------------------------------------------
@@ -1165,12 +1167,21 @@ function ForgeUI.FormatDuration(tim)
 	end
 end
 
-function ForgeUI.GetTime(b24HourFormat)
-	if b24HourFormat then
-		local l_time = GameLib.GetLocalTime()
-		return string.format("%02d:%02d", l_time.nHour, l_time.nMinute)
+function ForgeUI.GetTime()
+	local l_time = GameLib.GetLocalTime()
+
+	if ForgeUIInst.tSettings.b24HourFormat then
+		return string.format("%02d:%02d", l_time.nHour, l_time.nMinute)	
 	else
-		return ""
+		if l_time.nHour > 12 then
+			return string.format("%02d:%02d", l_time.nHour - 12, l_time.nMinute)
+		else
+			if l_time.nHour == 0 then
+				return string.format("%02d:%02d", l_time.nHour + 12, l_time.nMinute)
+			else
+				return string.format("%02d:%02d", l_time.nHour, l_time.nMinute)
+			end
+		end
 	end
 end
 
