@@ -1056,12 +1056,10 @@ function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 	local unitPlayer = self.unitPlayer
 	local unitOwner = tNameplate.unitOwner
 	
-	if tAllowedNames[unitOwner:GetName()] then return true end
-	
 	local bDontShowNameplate = not tNameplate.bOnScreen or tNameplate.bGibbed or not tNameplate.bIsImportant and self.tSettings.bOnlyImportantNPC
 		or (unitOwner:IsDead() and not self.tSettings.bShowDead)
 	
-	if bDontShowNameplate and not tNameplate.bIsTarget then
+	if bDontShowNameplate and not tNameplate.bIsTarget and not tAllowedNames[unitOwner:GetName()] then
 		return false
 	end
 	
