@@ -581,7 +581,9 @@ function ForgeUI_Nameplates:OnPreloadUnitCreateTimer()
 			end
 		end
 		
-		self.timerPreloadUnitCreateDelay:Stop()
+		if self.timerPreloadUnitCreateDelay then
+			self.timerPreloadUnitCreateDelay:Stop()
+		end
 		self.arPreloadUnits = nil
 		self.timerPreloadUnitCreateDelay = nil
 	end
