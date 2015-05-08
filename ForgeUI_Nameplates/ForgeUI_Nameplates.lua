@@ -546,7 +546,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	self:UpdateInfo(tNameplate)
 	self:UpdateNameplateRewardInfo(tNameplate)
 	
-	self.tStylers["LoadStyle_Nameplate"]["LoadStyle_Nameplate"](tNameplate)
+	self.tStylers["LoadStyle_Nameplate"]["LoadStyle_Nameplate"](self, tNameplate)
 end
 
 function ForgeUI_Nameplates:OnPreloadUnitCreated(unitNew)
