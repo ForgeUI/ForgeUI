@@ -14,6 +14,7 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_General"]:FindChild("bFrequentUpdate"):FindChild("CheckBox"), self.tSettings, "bFrequentUpdate")
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_General"]:FindChild("bShowDead"):FindChild("CheckBox"), self.tSettings, "bShowDead")
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_General"]:FindChild("bShowRewards"):FindChild("CheckBox"), self.tSettings, "bShowRewards")
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers["Container_General"]:FindChild("bClickable"):FindChild("CheckBox"), self.tSettings, "bClickable", "LoadStyle_Nameplates" )
 	
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_General"]:FindChild("crShield"):FindChild("EditBox"), self.tSettings, "crShield", false, "LoadStyle_Nameplates" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers["Container_General"]:FindChild("crAbsorb"):FindChild("EditBox"), self.tSettings, "crAbsorb", false, "LoadStyle_Nameplates" )

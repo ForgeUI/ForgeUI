@@ -83,6 +83,7 @@ function ForgeUI_Nameplates:new(o)
 		bShowAbsorb = true,
 		bFrequentUpdate = false,
 		bShowDead = true,
+		bClickable = false,
 		crShield = "FF0699F3",
 		crAbsorb = "FFFFC600",
 		crDead = "FF666666",
@@ -689,12 +690,6 @@ function ForgeUI_Nameplates:DrawName(tNameplate)
 			local nNameWidth = Apollo.GetTextWidth("Nameplates", strNewName .. " ")
 			local nLeft, nTop, nRight, nBottom = wndName:GetAnchorOffsets()
 			wndName:SetAnchorOffsets(- (nNameWidth / 2), nTop, (nNameWidth / 2), nBottom)
-			
-			-- Need to consider guild as well for the resize code
-			local strNewGuild = unitOwner:GetAffiliationName()
-			if unitOwner:GetType() == "Player" and strNewGuild ~= nil and strNewGuild ~= "" then
-				strNewGuild = String_GetWeaselString(Apollo.GetString("Nameplates_GuildDisplay"), strNewGuild)
-			end
 		end
 	end
 end
@@ -716,6 +711,10 @@ function ForgeUI_Nameplates:DrawGuild(tNameplate)
 			end
 			
 			wndGuild:SetTextRaw(strNewGuild)
+			
+			local nNameWidth = Apollo.GetTextWidth("Nameplates", strNewGuild .. " ")
+			local nLeft, nTop, nRight, nBottom = wndGuild:GetAnchorOffsets()
+			wndGuild:SetAnchorOffsets(- (nNameWidth / 2), nTop, (nNameWidth / 2), nBottom)
 		end
 		
 		bShow = bShow and strNewGuild ~= nil and strNewGuild ~= ""
@@ -1247,6 +1246,8 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 		wnd.indicator:SetBGColor(self.tSettings.tUnits["PartyPlayer"].crCleanseIndicator)
 	end
 	
+	wndNameplate:FindChild("Container"):SetStyle("IgnoreMouse", not self.tSettings.bClickable)
+	
 	--style
 	local tStyle = self.tSettings.tStyle
 	
@@ -1290,7 +1291,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ForgeUI_Nameplates:OnNameplateNameClick(wndHandler, wndCtrl, eMouseButton)
-	if true then return end
+	if not self.tSettings.bClickable then return end
 
 	local tNameplate = self.arWnd2Nameplate[wndHandler:GetParent():GetId()]
 	if tNameplate == nil then
