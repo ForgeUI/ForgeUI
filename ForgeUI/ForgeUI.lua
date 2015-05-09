@@ -936,7 +936,7 @@ function ForgeUI:OnSave(eType)
 	
 	local tSett = {}
 	local tAdd = tSettings_addons
-	local tWindows = {}
+	local tWindows = ForgeUI.CopyTable(tWindows, tSettings_windows)
 
 	tSett = ForgeUI.CopyTable(tSett, tSettings)
 	
@@ -953,7 +953,7 @@ function ForgeUI:OnSave(eType)
 			
 			tAdd[addonName] = ForgeUI.CopyTable(tAdd[addonName], addon.tSettings)
 			
-			tWindows[addonName] = {}
+			if not tWindows[addonName] then tWindows[addonName] = {} end
 			if _tRegisteredWindows[addonName] ~= nil then
 				for strName, tWindow in pairs(_tRegisteredWindows[addonName]) do
 					local nLeft, nTop, nRight, nBottom = tWindow.wnd:GetAnchorOffsets()
