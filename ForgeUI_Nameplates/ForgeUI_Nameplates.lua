@@ -173,6 +173,7 @@ function ForgeUI_Nameplates:new(o)
 				nHpCutoff = 0,
 				crHpCutoff = "FFCCCCCC",
 				crName = "FFFF0000",
+				crNameNoPvP = "FFFF5900",
 				crHealth = "FFFF0000",
 				bClassColors = true,
 			},
@@ -659,6 +660,10 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 	
 	local crNameColors = tSettings.crName
 	local crBarColor = tSettings.crHealth
+	
+	if tNameplate.strUnitType == "HostilePlayer" and not unitOwner:IsPvpFlagged() then
+		crNameColors = tSettings.crNameNoPvP
+	end
 	
 	if unitOwner:IsDead() then
 		crNameColors = self.tSettings.crDead
