@@ -132,6 +132,12 @@ end
 function ForgeUI_UnitFrames:OnLoad()
 	self.xmlDoc = XmlDoc.CreateFromFile("ForgeUI_UnitFrames.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
+	
+	-- buff filter hack
+	local BuffFilter = Apollo.GetAddon("BuffFilter")
+	if BuffFilter then
+		BuffFilter.tBarProviders["ForgeUI_UnitFrames"].tTargetType.TargetOfTarget = "wndToT"
+	end
 end
 
 function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
@@ -150,8 +156,14 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	self.wndTargetDebuffFrame = Apollo.LoadForm(self.xmlDoc, "TargetDebuffContainerWindow", "FixedHudStratumHigh", self)
 	
 	self.wndToTFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ToTFrame", "FixedHudStratumLow", self)
+	self.wndToTBuffFrame = self.wndToTFrame:FindChild("BuffContainerWindow")
+	self.wndToTDebuffFrame = self.wndToTFrame:FindChild("DebuffContainerWindow")
+
 	self.wndThreat = self.wndToTFrame:FindChild("Threat")
+
 	self.wndFocusFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_FocusFrame", "FixedHudStratumLow", self)
+	self.wndFocusBuffFrame = self.wndFocusFrame:FindChild("BuffContainerWindow")
+	self.wndFocusDebuffFrame = self.wndFocusFrame:FindChild("DebuffContainerWindow")
 	
 	-- register windows
 	
