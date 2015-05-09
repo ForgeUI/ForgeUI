@@ -833,6 +833,11 @@ function ForgeUI_Nameplates:DrawShield(tNameplate)
 	if bShow ~= tNameplate.wnd.healthMaxShield:IsShown() then
 		tNameplate.wnd.healthMaxShield:Show(bShow, true)
 		tNameplate.bShowShield = bShow
+		
+		if self.tSettings.tStyle.nStyle == 1 then
+			tNameplate.wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, bShow and 7 + self.tSettings.tStyle.nShieldHeight or 7)
+			tNameplate.wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, bShow and 7 + self.tSettings.tStyle.nShieldHeight or 7)
+		end
 	end
 end
 
@@ -848,13 +853,28 @@ function ForgeUI_Nameplates:DrawAbsorb(tNameplate)
 		bShow = nAbsorb ~= nil and not unitOwner:IsDead() and nAbsorb > 0
 		
 		if bShow then
-			self:SetBarValue(tNameplate.wnd.healthAbsorbFill, 0, nAbsorb, nAbsorbMax)
+			if self.tSettings.tStyle.nStyle == 0 then
+				self:SetBarValue(tNameplate.wnd.healthAbsorbFill, 0, nAbsorb, nAbsorbMax)
+			elseif self.tSettings.tStyle.nStyle == 1 then
+				local nMaxHealth = unitOwner:GetMaxHealth()
+				
+				if nMaxHealth > nAbsorbMax then
+					self:SetBarValue(tNameplate.wnd.healthAbsorbFill, 0, nAbsorb, nMaxHealth)
+				else
+					self:SetBarValue(tNameplate.wnd.healthAbsorbFill, 0, nAbsorb, nAbsorbMax)
+				end
+			end
 		end
 	end
 		
 	if bShow ~= tNameplate.wnd.healthMaxAbsorb:IsShown() then
 		tNameplate.wnd.healthMaxAbsorb:Show(bShow, true)
 		tNameplate.bShowAbsorb = bShow
+		
+		if self.tSettings.tStyle.nStyle == 1 then
+			tNameplate.wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, bShow and -7 - self.tSettings.tStyle.nAbsorbHeight or -7, 7, 7)
+			tNameplate.wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, bShow and -7 - self.tSettings.tStyle.nAbsorbHeight or -7, 7, 7)
+		end
 	end
 end
 
@@ -1276,6 +1296,15 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	--style
 	local tStyle = self.tSettings.tStyle
 	
+	-- indicators
+	if tStyle.nStyle == 0 then
+		wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, 7)
+		wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, 7)
+	elseif self.tSettings.tStyle.nStyle == 1 then
+		wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, 7 + tStyle.nShieldHeight)
+		wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, 7 + tStyle.nShieldHeight)
+	end
+	
 	-- bar
 	local nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("Container"):GetAnchorOffsets()
 	
@@ -1288,20 +1317,36 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	wndNameplate:FindChild("Container"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 	
 	-- shield
-	nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("MaxShield"):GetAnchorOffsets()
+	if tStyle.nStyle == 0 then
+		wndNameplate:FindChild("MaxShield"):SetAnchorPoints(0.5, 1, 1, 1)
+		wndNameplate:FindChild("MaxShield"):SetAnchorOffsets(10, -4, -5, 4)
 	
-	nTop = -(tStyle.nShieldHeight / 2)
-	nBottom = (tStyle.nShieldHeight / 2)
-	
-	wndNameplate:FindChild("MaxShield"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
-	
+		nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("MaxShield"):GetAnchorOffsets()
+		
+		nTop = -(tStyle.nShieldHeight / 2)
+		nBottom = (tStyle.nShieldHeight / 2)
+		
+		wndNameplate:FindChild("MaxShield"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+	elseif tStyle.nStyle == 1 then
+		wndNameplate:FindChild("MaxShield"):SetAnchorPoints(0, 1, 1, 1)
+		wndNameplate:FindChild("MaxShield"):SetAnchorOffsets(0, -1, 0, tStyle.nShieldHeight)
+	end
+		
 	-- absorb
-	nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("MaxAbsorb"):GetAnchorOffsets()
+	if tStyle.nStyle == 0 then
+		wndNameplate:FindChild("MaxAbsorb"):SetAnchorPoints(0, 1, 0.5, 1)
+		wndNameplate:FindChild("MaxAbsorb"):SetAnchorOffsets(5, -4, -10, 4)
 	
-	nTop = -(tStyle.nShieldHeight / 2)
-	nBottom = (tStyle.nShieldHeight / 2)
-	
-	wndNameplate:FindChild("MaxAbsorb"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+		nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("MaxAbsorb"):GetAnchorOffsets()
+		
+		nTop = -(tStyle.nAbsorbHeight/ 2)
+		nBottom = (tStyle.nAbsorbHeight/ 2)
+		
+		wndNameplate:FindChild("MaxAbsorb"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+	elseif tStyle.nStyle == 1 then
+		wndNameplate:FindChild("MaxAbsorb"):SetAnchorPoints(0, 0, 1, 0)
+		wndNameplate:FindChild("MaxAbsorb"):SetAnchorOffsets(0, - tStyle.nAbsorbHeight, 0, 1)
+	end
 	
 	-- cast
 	nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("CastBar"):GetAnchorOffsets()
@@ -1309,6 +1354,24 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	nBottom = 3 + tStyle.nCastHeight
 	
 	wndNameplate:FindChild("CastBar"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+end
+
+function ForgeUI_Nameplates:OnStyleChanged()
+	if self.tSettings.tStyle.nStyle == 0 then
+		self.tSettings.tStyle.nAbsorbHeight = 8
+		self.tSettings.tStyle.nShieldHeight = 8
+		
+		self.wndContainers["Container_Style"]:FindChild("nAbsorbHeight"):FindChild("EditBox"):SetText(8)
+		self.wndContainers["Container_Style"]:FindChild("nShieldHeight"):FindChild("EditBox"):SetText(8)
+	elseif self.tSettings.tStyle.nStyle == 1 then
+		self.tSettings.tStyle.nAbsorbHeight = 4
+		self.tSettings.tStyle.nShieldHeight = 4
+		
+		self.wndContainers["Container_Style"]:FindChild("nAbsorbHeight"):FindChild("EditBox"):SetText(4)
+		self.wndContainers["Container_Style"]:FindChild("nShieldHeight"):FindChild("EditBox"):SetText(4)
+	end
+
+	self.tStylers["LoadStyle_Nameplates"]["LoadStyle_Nameplates"](self)
 end
 
 -----------------------------------------------------------------------------------------------

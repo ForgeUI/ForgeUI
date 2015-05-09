@@ -75,6 +75,11 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container_Style"]:FindChild("nAbsorbHeight"):FindChild("EditBox"), self.tSettings.tStyle, "nAbsorbHeight", { nMin = 0 }, "LoadStyle_Nameplates")
 	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container_Style"]:FindChild("nCastHeight"):FindChild("EditBox"), self.tSettings.tStyle, "nCastHeight", { nMin = 0 }, "LoadStyle_Nameplates")
 	
+	ForgeUI.API_RegisterDropdown(self, self.wndContainers["Container_Style"]:FindChild("nStyle"):FindChild("Dropdown"), self.tSettings.tStyle, "nStyle", {
+		[0] = "Modern",
+		[1] = "Classic",
+	}, "OnStyleChanged")
+	
 	self.tStylers["LoadStyle_Nameplates"]["LoadStyle_Nameplates"](self)
 	self:UpdateAllNameplates()
 end
