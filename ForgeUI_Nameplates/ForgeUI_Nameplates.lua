@@ -87,7 +87,7 @@ function ForgeUI_Nameplates:new(o)
 		bUseOcclusion = true,
 		bShowTitles = false,
 		bOnlyImportantNPC = true,
-		bShowRewards = false,
+		bShowObjectives = true,
 		bShowShield = true,
 		bShowAbsorb = true,
 		bFrequentUpdate = false,
@@ -386,10 +386,10 @@ function ForgeUI_Nameplates:UpdateNameplateRewardInfo(tNameplate)
 	local tFlags =
 	{
 		bVert = false,
-		bHideQuests = not self.tSettings.bShowRewards,
-		bHideChallenges = not self.tSettings.bShowRewards,
-		bHideMissions = not self.tSettings.bShowRewards,
-		bHidePublicEvents = not self.tSettings.bShowRewards,
+		bHideQuests = not self.tSettings.bShowObjectives,
+		bHideChallenges = not self.tSettings.bShowObjectives,
+		bHideMissions = not self.tSettings.bShowObjectives,
+		bHidePublicEvents = not self.tSettings.bShowObjectives,
 		bHideRivals = true,
 		bHideFriends = true
 	}
@@ -892,7 +892,7 @@ function ForgeUI_Nameplates:DrawRewards(tNameplate)
 	local wndNameplate = tNameplate.wndNameplate
 	local unitOwner = tNameplate.unitOwner
 
-	local bShow = self.tSettings.bShowRewards
+	local bShow = self.tSettings.bShowObjectives
 
 	if bShow ~= tNameplate.wnd.questRewards:IsShown() then
 		tNameplate.wnd.questRewards:Show(bShow)
