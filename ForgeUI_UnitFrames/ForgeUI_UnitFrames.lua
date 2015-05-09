@@ -80,6 +80,8 @@ function ForgeUI_UnitFrames:new(o)
 		},
 		tTotFrame = {
 			bShowThreat = false,
+			bShowBuffs = false,
+			bShowDebuffs = false,
 			crThreatLow = "FF33CC33",
 			crThreatMedium = "FFFFFF00",
 			crThreatHigh = "FFFF0000",
@@ -96,6 +98,8 @@ function ForgeUI_UnitFrames:new(o)
 		tFocusFrame = {
 			bShowShieldBar = true,
 			bShowAbsorbBar = true,
+			bShowBuffs = false,
+			bShowDebuffs = false,
 			crBorder = "FF000000",
 			crBackground = "FF101010",
 			crHpBar = "FF272727",
@@ -166,11 +170,16 @@ function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
 	ForgeUI.API_RegisterWindow(self, self.wndTargetDebuffFrame, "ForgeUI_TargetFrame_Debuffs", { strDisplayName = "Target debuffs" })
 	
 	ForgeUI.API_RegisterWindow(self, self.wndToTFrame, "ForgeUI_ToTFrame", { strDisplayName = "ToT frame" })
+	ForgeUI.API_RegisterWindow(self, self.wndToTFrame:FindChild("BuffContainerWindow"), "ForgeUI_ToTFrame_Buffs", { strParent = "ForgeUI_ToTFrame", strDisplayName = "ToT's buffs" })
+	ForgeUI.API_RegisterWindow(self, self.wndToTFrame:FindChild("DebuffContainerWindow"), "ForgeUI_ToTFrame_Debuffs", { strParent = "ForgeUI_ToTFrame", strDisplayName = "ToT's debuffs" })
+
 	
 	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame, "ForgeUI_FocusFrame", { strDisplayName = "Focus frame" })
 	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame:FindChild("ShieldBar"), "ForgeUI_FocusFrame_Shield", { strParent = "ForgeUI_FocusFrame", strDisplayName = "Shield", crBorder = "FF0699F3" })
 	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame:FindChild("AbsorbBar"), "ForgeUI_FocusFrame_Absorb", { strParent = "ForgeUI_FocusFrame", strDisplayName = "Absorb", crBorder = "FFFFC600" })
 	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame:FindChild("InterruptArmor"), "ForgeUI_FocusFrame_IA", { strParent = "ForgeUI_FocusFrame", strDisplayName = "IA", crBorder = "FFFFFFFF", bMaintainRatio = true })
+	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame:FindChild("BuffContainerWindow"), "ForgeUI_FocusFrame_Buffs", { strParent = "ForgeUI_FocusFrame", strDisplayName = "Focus' buffs" })
+	ForgeUI.API_RegisterWindow(self, self.wndFocusFrame:FindChild("DebuffContainerWindow"), "ForgeUI_FocusFrame_Debuffs", { strParent = "ForgeUI_FocusFrame", strDisplayName = "Focus' debuffs" })
 	
 	if self.tSettings.tTotFrame.bShowThreat then
 		Apollo.RegisterEventHandler("TargetThreatListUpdated", "OnThreatUpdated", self)
@@ -271,15 +280,11 @@ function ForgeUI_UnitFrames:UpdateToTFrame(unitSource)
 	end
 	
 	self.tStylers["RefreshStyle_TotFrame"]["RefreshStyle_TotFrame"](self, unit)
-	if self.tSettings.tTotFrame.bShowThreat and unitSource:GetType() == "Player"  then
-		self.wndThreat:SetText("")
-	elseif self.tSettings.tTotFrame.bShowThreat and unit:IsACharacter() then
-		self.wndThreat:Show(true, true)
-	else
-		self.wndThreat:Show(false, true)
-	end
 	
 	self:UpdateHPBar(unit, self.wndToTFrame)
+	
+	self.wndToTFrame:FindChild("BuffContainerWindow"):SetUnit(unitSource)
+	self.wndToTFrame:FindChild("DebuffContainerWindow"):SetUnit(unitSource)
 	
 	self.wndToTFrame:SetData(unit)
 	if not self.wndToTFrame:IsShown() then
@@ -308,6 +313,9 @@ function ForgeUI_UnitFrames:UpdateFocusFrame(unitSource)
 	if self.tSettings.tFocusFrame.bShowAbsorbBar then
 		self:UpdateAbsorbBar(unit, self.wndFocusFrame)
 	end
+	
+	self.wndFocusFrame:FindChild("BuffContainerWindow"):SetUnit(unitSource)
+	self.wndFocusFrame:FindChild("DebuffContainerWindow"):SetUnit(unitSource)
 	
 	self.wndFocusFrame:SetData(unit)
 	if not self.wndFocusFrame:IsShown() then
@@ -503,6 +511,9 @@ function ForgeUI_UnitFrames:UpdateStyle_FocusFrame()
 	
 	self.wndFocusFrame:FindChild("ShieldBar"):Show(self.tSettings.tFocusFrame.bShowShieldBar, true)
 	self.wndFocusFrame:FindChild("AbsorbBar"):Show(self.tSettings.tFocusFrame.bShowAbsorbBar, true)
+	
+	self.wndFocusFrame:FindChild("BuffContainerWindow"):Show(self.tSettings.tFocusFrame.bShowBuffs)
+	self.wndFocusFrame:FindChild("DebuffContainerWindow"):Show(self.tSettings.tFocusFrame.bShowDebuffs)
 end
 
 function ForgeUI_UnitFrames:RefreshStyle_FocusFrame(unit)
@@ -523,6 +534,9 @@ function ForgeUI_UnitFrames:UpdateStyle_TotFrame()
 	self.wndToTFrame:FindChild("HPBar"):SetBGColor(self.tSettings.tTotFrame.crBorder)
 	self.wndToTFrame:FindChild("Background"):SetBGColor(self.tSettings.tTotFrame.crBackground)
 	self.wndToTFrame:FindChild("HP_ProgressBar"):SetBarColor(self.tSettings.tTotFrame.crHpBar)
+	
+	self.wndToTFrame:FindChild("BuffContainerWindow"):Show(self.tSettings.tTotFrame.bShowBuffs)
+	self.wndToTFrame:FindChild("DebuffContainerWindow"):Show(self.tSettings.tTotFrame.bShowDebuffs)
 end
 
 function ForgeUI_UnitFrames:RefreshStyle_TotFrame(unit)
