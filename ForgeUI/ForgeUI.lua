@@ -4,6 +4,8 @@ local ForgeUI = {}
 local ForgeColor
 local ForgeOptions
 local ForgeComm
+
+local WildShell = Apollo.GetAddon("WildShell")
  
 -----------------------------------------------------------------------------------------------
 -- Constants
@@ -49,7 +51,8 @@ function ForgeUI:new(o)
 	
 	 -- mandatory 
     self.api_version = 2
-	self.version = "0.4.3"
+	self.sVersion = "0.4.3"
+	self.nVersion = 1
 
 	self.author = "WintyBadass"
 	self.strAddonName = "~ForgeUI"
@@ -75,7 +78,9 @@ function ForgeUI:new(o)
 			crSpellslinger = "FF98C723",
 			crStalker = "FFD23EF4",
 			crWarrior = "FFF54F4F"
-		}
+		},
+		bDebug = false,
+		bNetworkLoop = false,
 	}	
 
     return o
@@ -111,7 +116,7 @@ function ForgeUI:OnDocLoaded()
 	ForgeColor = Apollo.GetPackage("ForgeColor").tPackage
 	ForgeOptions = Apollo.GetPackage("ForgeOptions").tPackage
 	
-	--self:InitComm()
+	self:InitComm()
 	
 	-- sprites
 	Apollo.LoadSprites("ForgeUI_Sprite.xml", "ForgeUI_Sprite")
@@ -130,7 +135,7 @@ function ForgeUI:OnDocLoaded()
 	
 	-- main window
     self.wndMain = Apollo.LoadForm(self.xmlMain, "ForgeUI_Form", nil, self)
-	self.wndMain:FindChild("Version"):FindChild("Text"):SetText(self.version)
+	self.wndMain:FindChild("Version"):FindChild("Text"):SetText(self.sVersion)
 	self.wndMain:FindChild("Author"):FindChild("Text"):SetText(AUTHOR_LONG)
 	
 	-- addons list
@@ -188,6 +193,11 @@ function ForgeUI:ForgeAPI_AfterRestore()
 	
 	ForgeOptions:API_AddAdvancedOption(self, "General", "Allow networking", "boolean", self.tSettings, "bNetworking", nil, {})
 	ForgeOptions:API_AddAdvancedOption(self, "General", "Enable notifications", "boolean", self.tSettings, "bNotifications", nil, {})
+	
+	ForgeOptions:API_AddAdvancedOption(self, "Debug", "Enable debugging", "boolean", self.tSettings, "bDebug", nil, {})
+	if GameLib.GetPlayerUnit() and GameLib.GetPlayerUnit():GetName() == "Winty Badass" then
+		ForgeOptions:API_AddAdvancedOption(self, "Debug", "Enable network loop", "boolean", self.tSettings, "bNetworkLoop", nil, {})
+	end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -1038,7 +1048,7 @@ function ForgeUI:OnForgeUIcmd(cmd, args)
 	elseif tParams[1] == "comm" then
 		if tParams[2] == "returnVersion" then
 			Print("Sending 'returnVersion' command")
-			self:SendMessage("command", { strCommand = "returnVersion" })
+			self:SendMessage("cmd", { strCommand = "returnVersion" })
 		elseif tParams[2] == "print" then
 			self:SendMessage("print", { strText = tParams[3] })
 		end
@@ -1143,6 +1153,18 @@ end
 ---------------------------------------------------------------------------------------------------
 -- Libraries
 ---------------------------------------------------------------------------------------------------
+function ForgeUI:Debug(strText)
+	if not self.tSettings.bDebug or not WildShell then return end
+	
+	WildShell:AppendText(strText, "FFBBBBBB")
+end
+
+function ForgeUI:Print(strText)
+	if not WildShell then return end
+	
+	WildShell:AppendText(strText, "FF98C723")
+end
+
 function ForgeUI.ReturnTestStr()
 	return "ForgeUI"
 end

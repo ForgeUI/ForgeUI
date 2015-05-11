@@ -5,6 +5,7 @@
     <Form Name="ForgeUI.xml"/>
     <Form Name="ForgeUI_UIElements.xml"/>
     <!-- modules -->
+	<Script Name="ForgeComm.lua"/>
     <Script Name="ForgeColor\ForgeColor.lua"/>
     <Script Name="ForgeOptions\ForgeOptions.lua"/>
     <!-- libraries -->

@@ -20,44 +20,66 @@ function ForgeUI:InitComm()
 end
 
 function ForgeUI:OnMessageSent(iccomm, eResult, idMessage)
+	if not self.tSettings.bNetworking then return end
 
+	-- debug
+	self:Debug("ForgeComm - message sent: " .. idMessage)
 end
 
 function ForgeUI:OnMessageReceived(channel, strMessage, idMessage)
 	if not self.tSettings.bNetworking then return end
 
-	local tMsg = LibJSON.decode(strMessage)
+	-- debug
+	self:Debug("ForgeComm - message received: " .. idMessage .. " - " .. strMessage)
 	
-	if tMsg.strMessageSign == "command" then
-		if tMsg.tMessage.strCommand == "returnVersion" then
-			local tNewMsg = {
-				author = GameLib.GetPlayerUnit():GetName(),
-				strMessageSign = "print",
-				tMessage = {
-					strText = GameLib.GetPlayerUnit():GetName() .. " - " .. ForgeUI.version
-				}
-			}
-			
-			self.icComm:SendPrivateMessage(tMsg.strAuthor, LibJSON.encode(tNewMsg))
+	local tMessage = LibJSON.decode(strMessage)
+	local tMsg = tMessage.tMsg
+	
+	if tMessage.strSign == "cmd" then
+		if not tMsg.strCommand then return end
+		
+		if tMsg.strCommand == "returnVersion" then
+			self:SendPrivateMessage(tMessage.strAuthor, "print", { strText = "ForgeComm [returnVersion] - " .. GameLib.GetPlayerUnit():GetName() .. " - " .. ForgeUI.sVersion })
 		end
-	elseif tMsg.strMessageSign == "print" then
-		Print(tMsg.tMessage.strText)
+	elseif tMessage.strSign == "print" then
+		self:Print(tMsg.strText)
 	end
 end
 
-function ForgeUI:SendMessage(strMsgSign, tMsg)
+function ForgeUI:SendMessage(strSign, tMsg)
 	if not self.tSettings.bNetworking then return end
 
 	local tMessage = {
 		strAuthor = GameLib.GetPlayerUnit():GetName(),
-		strMessageSign = strMsgSign,
-		tMessage = {
-			strCommand = "returnVersion"
-		}
+		strSign = strSign,
+		tMsg = tMsg
 	}
 	
 	strMessage = LibJSON.encode(tMessage)
+	
 	self.icComm:SendMessage(strMessage)
+	
+	if self.tSettings.bNetworkLoop then
+		self:OnMessageReceived(self.icComm, strMessage, -1)
+	end
+end
+
+function ForgeUI:SendPrivateMessage(strPlayer, strSign, tMsg)
+	if not self.tSettings.bNetworking then return end
+
+	local tMessage = {
+		strAuthor = GameLib.GetPlayerUnit():GetName(),
+		strSign = strSign,
+		tMsg = tMsg
+	}
+	
+	strMessage = LibJSON.encode(tMessage)
+	
+	self.icComm:SendPrivateMessage(strPlayer, strMessage)
+	
+	if self.tSettings.bNetworkLoop then
+		self:OnMessageReceived(self.icComm, strMessage, -1)
+	end
 end
 
 
