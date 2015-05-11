@@ -124,7 +124,7 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 		nTotalDamage = nDamage + nShieldDamaged
 	end
 	
-	if nTotalDamage < Inst.tSettings.tDamageHealing.nIgnoreThreshold then return end
+	if nTotalDamage <= Inst.tSettings.tDamageHealing.nIgnoreThreshold then return end
 
 	local tTextOption = self:GetDefaultTextOption()
 	local tTextOptionAbsorb = self:GetDefaultTextOption()
