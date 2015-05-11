@@ -1,6 +1,8 @@
 local ForgeUI = Apollo.GetAddon('ForgeUI')
 local ForgeUI_Nameplates = Apollo.GetAddon('ForgeUI_Nameplates')
 
+local ForgeOptions = Apollo.GetPackage("ForgeOptions").tPackage
+
 function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 	Apollo.SetConsoleVariable("ui.occludeNameplatePositions", false)
 	
@@ -82,4 +84,8 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
 	
 	self.tStylers["LoadStyle_Nameplates"]["LoadStyle_Nameplates"](self)
 	self:UpdateAllNameplates()
+	
+	-- advanced options
+	ForgeOptions:API_AddAdvancedOption(self, "Nameplates", "Nameplates pool limit", "number", self.tSettings, "knNameplatePoolLimit")
+	ForgeOptions:API_AddAdvancedOption(self, "Nameplates", "Target distance limit", "number", self.tSettings, "knTargetRange")
 end

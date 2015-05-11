@@ -2,6 +2,7 @@ require "Window"
  
 local ForgeUI = {}
 local ForgeColor
+local ForgeOptions
 local ForgeComm
  
 -----------------------------------------------------------------------------------------------
@@ -28,6 +29,8 @@ local tStylers = {}
 
 local tRegisteredWindows = {} -- saving windows for repositioning them later
 
+local wndAdvancedBtn
+
 -----------------------------------------------------------------------------------------------
 -- Settings
 -----------------------------------------------------------------------------------------------
@@ -46,7 +49,7 @@ function ForgeUI:new(o)
 	
 	 -- mandatory 
     self.api_version = 2
-	self.version = "0.4.2"
+	self.version = "0.4.3"
 
 	self.author = "WintyBadass"
 	self.strAddonName = "~ForgeUI"
@@ -54,12 +57,16 @@ function ForgeUI:new(o)
 	
 	self.wndContainers  = {}
 	
+	self.tStylers = {}
+	
 	-- optional
 	self.settings_version = 1
     self.tSettings = {
 		crMain = "FFFF0000",
 		crTest = "FFFFFFFF",
 		bNetworking = true,
+		bNotifications = true,
+		bAdvanced = false,
 		b24HourFormat = true,
 		tClassColors = {
 			crEngineer = "FFEFAB48",
@@ -89,17 +96,20 @@ end
 -- ForgeUI OnLoad
 -----------------------------------------------------------------------------------------------
 function ForgeUI:OnLoad()
-	self.xmlDoc = XmlDoc.CreateFromFile("ForgeUI.xml")
-	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
+	self.xmlMain = XmlDoc.CreateFromFile("ForgeUI.xml")
+	self.xmlUI = XmlDoc.CreateFromFile("ForgeUI_UIElements.xml")
+	
+	self.xmlMain:RegisterCallback("OnDocLoaded", self)
 end
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI OnDocLoaded
 -----------------------------------------------------------------------------------------------
 function ForgeUI:OnDocLoaded()
-	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
+	if self.xmlMain == nil or not self.xmlMain:IsLoaded() then return end
 	
 	ForgeColor = Apollo.GetPackage("ForgeColor").tPackage
+	ForgeOptions = Apollo.GetPackage("ForgeOptions").tPackage
 	
 	--self:InitComm()
 	
@@ -108,34 +118,38 @@ function ForgeUI:OnDocLoaded()
 	Apollo.LoadSprites("ForgeUI_Icons.xml", "ForgeUI_Icons")
 	
 	-- tratums
-	self.WorldStratum0 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
-	self.WorldStratum1 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
+	self.WorldStratum0 = Apollo.LoadForm(self.xmlMain, "ForgeUI_Stratum", nil, self)
+	self.WorldStratum1 = Apollo.LoadForm(self.xmlMain, "ForgeUI_Stratum", nil, self)
 	
-	self.HudStratum0 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
-	self.HudStratum1 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
-	self.HudStratum2 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
-	self.HudStratum3 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
-	self.HudStratum4 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
-	self.HudStratum5 = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Stratum", nil, self)
+	self.HudStratum0 = Apollo.LoadForm(self.xmlMain, "ForgeUI_Stratum", nil, self)
+	self.HudStratum1 = Apollo.LoadForm(self.xmlMain, "ForgeUI_Stratum", nil, self)
+	self.HudStratum2 = Apollo.LoadForm(self.xmlMain, "ForgeUI_Stratum", nil, self)
+	self.HudStratum3 = Apollo.LoadForm(self.xmlMain, "ForgeUI_Stratum", nil, self)
+	self.HudStratum4 = Apollo.LoadForm(self.xmlMain, "ForgeUI_Stratum", nil, self)
+	self.HudStratum5 = Apollo.LoadForm(self.xmlMain, "ForgeUI_Stratum", nil, self)
 	
 	-- main window
-    self.wndMain = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Form", nil, self)
+    self.wndMain = Apollo.LoadForm(self.xmlMain, "ForgeUI_Form", nil, self)
 	self.wndMain:FindChild("Version"):FindChild("Text"):SetText(self.version)
 	self.wndMain:FindChild("Author"):FindChild("Text"):SetText(AUTHOR_LONG)
 	
 	-- addons list
-	self.wndAddons = Apollo.LoadForm(self.xmlDoc, "ForgeUI_AddonsForm", self.wndMain, self)
+	self.wndAddons = Apollo.LoadForm(self.xmlMain, "ForgeUI_AddonsForm", self.wndMain, self)
 	
 	-- movables
-	self.wndMovables = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Movables", nil, self)
+	self.wndMovables = Apollo.LoadForm(self.xmlMain, "ForgeUI_Movables", nil, self)
 	
 	-- item list & container
 	self.wndItemList = self.wndMain:FindChild("ForgeUI_Form_ItemList")
 	self.wndItemContainer = self.wndMain:FindChild("ForgeUI_Form_ItemContainer")
 	
-	self.wndMainItemListHolder = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ListHolder", self.wndItemList, self)
+	self.wndMainItemListHolder = Apollo.LoadForm(self.xmlMain, "ForgeUI_ListHolder", self.wndItemList, self)
 	self.wndMainItemListHolder:Show(true, true)
 
+	-- load modules
+	
+	ForgeOptions:Init()
+	
 	-- slash commands
 	Apollo.RegisterSlashCommand("forgeui", "OnForgeUIcmd", self)
 	Apollo.RegisterSlashCommand("focus", "OnFocusCmd", self)
@@ -156,8 +170,8 @@ function ForgeUI:OnDocLoaded()
 end
 
 function ForgeUI:ForgeAPI_AfterRegistration()
-	ForgeUI.API_AddItemButton(self, "Home", { bDefault = true, strContainer = "ForgeUI_Home" })
-	ForgeUI.API_AddItemButton(self, "General", { strContainer = "ForgeUI_General" })
+	ForgeUI.API_AddItemButton(self, "Home", { bDefault = true, strContainer = "ForgeUI_Home", xmlDoc = self.xmlMain })
+	ForgeUI.API_AddItemButton(self, "General", { strContainer = "ForgeUI_General", xmlDoc = self.xmlMain })
 end
 
 function ForgeUI:ForgeAPI_AfterRestore()
@@ -170,8 +184,10 @@ function ForgeUI:ForgeAPI_AfterRestore()
 	
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.ForgeUI_Home:FindChild("TextColorBox"), self.tSettings, "crTest")
 	
-	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.ForgeUI_General:FindChild("bNetworking"), self.tSettings, "bNetworking")
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.ForgeUI_General:FindChild("b24HourFormat"):FindChild("CheckBox"), self.tSettings, "b24HourFormat")
+	
+	ForgeOptions:API_AddAdvancedOption(self, "General", "Allow networking", "boolean", self.tSettings, "bNetworking", nil, {})
+	ForgeOptions:API_AddAdvancedOption(self, "General", "Enable notifications", "boolean", self.tSettings, "bNotifications", nil, {})
 end
 
 -----------------------------------------------------------------------------------------------
@@ -236,7 +252,7 @@ function ForgeUI.API_RegisterAddon(tAddon)
 			tAddon:ForgeAPI_Initialization() -- Forge API Initialization
 		end
 		
-		local wndAddon = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_AddonForm", ForgeUIInst.wndAddons:FindChild("Container"), ForgeUIInst)
+		local wndAddon = Apollo.LoadForm(ForgeUIInst.xmlMain, "ForgeUI_AddonForm", ForgeUIInst.wndAddons:FindChild("Container"), ForgeUIInst)
 		wndAddon:FindChild("AddonName"):SetText(tAddon.strDisplayName)
 		
 		wndAddon:SetData(tAddon)
@@ -294,11 +310,11 @@ end
 -- ForgeUI ItemList API
 -----------------------------------------------------------------------------------------------
 function ForgeUI.API_AddItemButton(tAddon, strDisplayName, tOptions)
-	local wndButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Item", ForgeUIInst.wndMainItemListHolder, ForgeUIInst):FindChild("ForgeUI_Item_Button")
+	local wndButton = Apollo.LoadForm(ForgeUIInst.xmlMain, "ForgeUI_Item", ForgeUIInst.wndMainItemListHolder, ForgeUIInst):FindChild("ForgeUI_Item_Button")
 	wndButton:GetParent():FindChild("ForgeUI_Item_Text"):SetText(strDisplayName)
 	
 	local tData = {}
-	tData.parentContainer = ForgeUIInst.wndMainItemListHolder
+	tData.wndParentContainer = ForgeUIInst.wndMainItemListHolder
 	
 	if tOptions == nil then
 		wndButton:SetData(tData)
@@ -306,8 +322,8 @@ function ForgeUI.API_AddItemButton(tAddon, strDisplayName, tOptions)
 		return wndButton
 	end
 	
-	if tOptions.strContainer ~= nil then
-		if tOptions.xmlDoc ~= nil then
+	if tOptions.strContainer then
+		if tOptions.xmlDoc then
 			tAddon.wndContainers[tOptions.strContainer] = Apollo.LoadForm(tOptions.xmlDoc, tOptions.strContainer, ForgeUIInst.wndItemContainer, ForgeUIInst)
 			tAddon.wndContainers[tOptions.strContainer]:Show(false, true)
 			tData.itemContainer = tAddon.wndContainers[tOptions.strContainer]
@@ -318,11 +334,15 @@ function ForgeUI.API_AddItemButton(tAddon, strDisplayName, tOptions)
 		end
 	end
 	
-	if tOptions.bDefault ~= nil then
+	if tOptions.bDefault then
 		tData.bDefault = tOptions.bDefault
 	end
 	
 	wndButton:SetData(tData)
+	
+	if tOptions.bShow ~= nil then
+		wndButton:GetParent():Show(tOptions.bShow, true)
+	end
 	
 	ForgeUIInst.wndMainItemListHolder:ArrangeChildrenVert()
 	
@@ -333,19 +353,25 @@ function ForgeUI.API_AddItemButton(tAddon, strDisplayName, tOptions)
 	return wndButton
 end
 
+function ForgeUI.API_ToggleItemButton(wndButton, bShow)
+	wndButton:GetParent():Show(bShow, true)
+	
+	wndButton:GetData().wndParentContainer:ArrangeChildrenVert()
+end
+
 function ForgeUI.API_AddListItemToButton(tAddon, wndBtn, strDisplayName, tOptions)
 	local tData = wndBtn:GetData()
 	local tNewData = {}
 	
 	local wndList
 	if tData.itemList == nil then
-		wndList = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_ListHolder", ForgeUIInst.wndItemList, ForgeUI)
+		wndList = Apollo.LoadForm(ForgeUIInst.xmlMain, "ForgeUI_ListHolder", ForgeUIInst.wndItemList, ForgeUI)
 		
-		local wndHomeButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Item", wndList, ForgeUIInst):FindChild("ForgeUI_Item_Button")
+		local wndHomeButton = Apollo.LoadForm(ForgeUIInst.xmlMain, "ForgeUI_Item", wndList, ForgeUIInst):FindChild("ForgeUI_Item_Button")
 		wndHomeButton:GetParent():FindChild("ForgeUI_Item_Text"):SetText("Home")
 		
 		local tHomeData = {}
-		tHomeData.parentContainer = wndList
+		tHomeData.wndParentContainer = wndList
 		tHomeData.itemList = ForgeUIInst.wndMainItemListHolder
 		
 		wndHomeButton:SetData(tHomeData)
@@ -355,10 +381,10 @@ function ForgeUI.API_AddListItemToButton(tAddon, wndBtn, strDisplayName, tOption
 		wndList = tData.itemList
 	end
 	
-	local wndButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Item", wndList, ForgeUIInst):FindChild("ForgeUI_Item_Button")
+	local wndButton = Apollo.LoadForm(ForgeUIInst.xmlMain, "ForgeUI_Item", wndList, ForgeUIInst):FindChild("ForgeUI_Item_Button")
 	wndButton:GetParent():FindChild("ForgeUI_Item_Text"):SetText(strDisplayName)
 	
-	tNewData.parentContainer = wndList
+	tNewData.wndParentContainer = wndList
 	
 	if tOptions == nil then
 		wndButton:SetData(tNewData)
@@ -390,7 +416,7 @@ end
 function ForgeUI:SetActiveItem(wndControl)
 	local data = wndControl:GetData()
 	
-	for _, wndButton in pairs(data.parentContainer:GetChildren()) do
+	for _, wndButton in pairs(data.wndParentContainer:GetChildren()) do
 		wndButton:FindChild("ForgeUI_Item_Text"):SetTextColor("FFFFFFFF")
 		if wndButton:FindChild("ForgeUI_Item_Button"):GetData().itemContainer ~= nil then
 			wndButton:FindChild("ForgeUI_Item_Button"):GetData().itemContainer:Show(false, true)
@@ -445,18 +471,18 @@ function ForgeUI.API_RegisterWindow(tAddon, wnd, strName, tSettings)
 	local wndMovable
 	if tSettings ~= nil then
 		if tSettings.strParent ~= nil then
-			wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", _tRegisteredWindows[tAddon.strAddonName][tSettings.strParent].movable, ForgeUIInst)
+			wndMovable = Apollo.LoadForm(ForgeUIInst.xmlMain, "ForgeUI_Movable", _tRegisteredWindows[tAddon.strAddonName][tSettings.strParent].movable, ForgeUIInst)
 			_tRegisteredWindows[tAddon.strAddonName][strName].strParent = tSettings.strParent
 		elseif tSettings.nLevel ~= nil then
 			if tSettings.nLevel > 0 and tSettings.nLevel < 5 then
-				wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables" .. tSettings.nLevel), ForgeUIInst)
+				wndMovable = Apollo.LoadForm(ForgeUIInst.xmlMain, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables" .. tSettings.nLevel), ForgeUIInst)
 			else
-				wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables"), ForgeUIInst)
+				wndMovable = Apollo.LoadForm(ForgeUIInst.xmlMain, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables"), ForgeUIInst)
 			end
 		end
 	end
 	if wndMovable == nil then
-		wndMovable = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables"), ForgeUIInst)
+		wndMovable = Apollo.LoadForm(ForgeUIInst.xmlMain, "ForgeUI_Movable", ForgeUIInst.wndMovables:FindChild("Movables"), ForgeUIInst)
 	end
 	wndMovable:SetAnchorOffsets(wnd:GetAnchorOffsets())
 	wndMovable:SetAnchorPoints(wnd:GetAnchorPoints())
@@ -875,11 +901,11 @@ end
 -- Dropdown
 -----------------------------------------------------------------------------------------------
 function ForgeUI.API_RegisterDropdown(tAddon, wndControl, tSettings, strValue, tOptions, strCallback)
-	local wndDropdown = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_Dropdown", wndControl, ForgeUIInst)
+	local wndDropdown = Apollo.LoadForm(ForgeUIInst.xmlUI, "ForgeUI_Dropdown", wndControl, ForgeUIInst)
 	wndDropdown:FindChild("Value"):SetText(tOptions[tSettings[strValue]])
 	
 	for k, v in pairs(tOptions) do
-		local wndButton = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_DropdownButton", wndDropdown:FindChild("OptionsHolder"), ForgeUIInst)
+		local wndButton = Apollo.LoadForm(ForgeUIInst.xmlUI, "ForgeUI_DropdownButton", wndDropdown:FindChild("OptionsHolder"), ForgeUIInst)
 		
 		local tData = {
 			tAddon = tAddon,
@@ -1082,7 +1108,7 @@ function ForgeUI:ForgeUI_ConfirmWindow( wndHandler, wndControl, eMouseButton )
 end
 
 function ForgeUI.CreateConfirmWindow(self, fCallback)
-	local wndConfirmWindow = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_ConfirmWindow", nil, ForgeUIInst)
+	local wndConfirmWindow = Apollo.LoadForm(ForgeUIInst.xmlUI, "ForgeUI_ConfirmWindow", nil, ForgeUIInst)
 	wndConfirmWindow:FindChild("YesButton"):SetData(fCallback)
 end
 
@@ -1104,7 +1130,7 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function ForgeUI.ShowWarning(strText)
-	local wnd = Apollo.LoadForm(ForgeUIInst.xmlDoc, "ForgeUI_WarningWindow", nil, ForgeUIInst)
+	local wnd = Apollo.LoadForm(ForgeUIInst.xmlUI, "ForgeUI_WarningWindow", nil, ForgeUIInst)
 	wnd:FindChild("Text"):SetText(strText)
 end
 
