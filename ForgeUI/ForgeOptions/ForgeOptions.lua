@@ -31,7 +31,7 @@ function ForgeOptions:new(o)
     self.api_version = 2
 	self.version = "1.0.0"
 	self.author = "WintyBadass"
-	self.strAddonName = "ForgeUI_Advanced"
+	self.strAddonName = "ForgeUI_Options"
 	self.strDisplayName = "Advanced options"
 	
 	self.wndContainers = {}

@@ -8,6 +8,7 @@
 	<Script Name="ForgeComm.lua"/>
     <Script Name="ForgeColor\ForgeColor.lua"/>
     <Script Name="ForgeOptions\ForgeOptions.lua"/>
+	<Script Name="ForgeNotifications\ForgeNotifications.lua"/>
     <!-- libraries -->
     <Script Name="Libs\LibJSON\LibJSON-2.5.lua"/>
 </Addon>

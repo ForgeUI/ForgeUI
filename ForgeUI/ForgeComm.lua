@@ -40,9 +40,17 @@ function ForgeUI:OnMessageReceived(channel, strMessage, idMessage)
 		
 		if tMsg.strCommand == "returnVersion" then
 			self:SendPrivateMessage(tMessage.strAuthor, "print", { strText = "ForgeComm [returnVersion] - " .. GameLib.GetPlayerUnit():GetName() .. " - " .. ForgeUI.sVersion })
+		elseif tMsg.strCommand == "getNewerVersion" then
+			if tMsg.nVersion < self.nVersion then
+				self:SendPrivateMessage(tMessage.strAuthor, "func", { strFunc = "IsNewVersion" })	
+			end
 		end
 	elseif tMessage.strSign == "print" then
 		self:Print(tMsg.strText)
+	elseif tMessage.strSign == "func" then
+		if ForgeUI[tMsg.strFunc] then
+			ForgeUI[tMsg.strFunc]()
+		end
 	end
 end
 

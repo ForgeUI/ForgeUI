@@ -3,6 +3,7 @@ require "Window"
 local ForgeUI = {}
 local ForgeColor
 local ForgeOptions
+local ForgeNotifications
 local ForgeComm
 
 local WildShell = Apollo.GetAddon("WildShell")
@@ -71,6 +72,7 @@ function ForgeUI:new(o)
 		bNotifications = true,
 		bAdvanced = false,
 		b24HourFormat = true,
+		fNotificationDuration = 5.0,
 		tClassColors = {
 			crEngineer = "FFEFAB48",
 			crEsper = "FF1591DB",
@@ -115,6 +117,7 @@ function ForgeUI:OnDocLoaded()
 	
 	ForgeColor = Apollo.GetPackage("ForgeColor").tPackage
 	ForgeOptions = Apollo.GetPackage("ForgeOptions").tPackage
+	ForgeNotifications = Apollo.GetPackage("ForgeNotifications").tPackage
 	
 	self:InitComm()
 	
@@ -154,6 +157,7 @@ function ForgeUI:OnDocLoaded()
 	-- load modules
 	
 	ForgeOptions:Init()
+	ForgeNotifications:Init()
 	
 	-- slash commands
 	Apollo.RegisterSlashCommand("forgeui", "OnForgeUIcmd", self)
