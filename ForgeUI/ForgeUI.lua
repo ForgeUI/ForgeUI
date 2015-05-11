@@ -1157,10 +1157,14 @@ end
 ---------------------------------------------------------------------------------------------------
 -- Libraries
 ---------------------------------------------------------------------------------------------------
-function ForgeUI:Debug(strText)
+function ForgeUI:Debug(strText, crText)
 	if not self.tSettings.bDebug or not WildShell then return end
 	
-	WildShell:AppendText(strText, "FFBBBBBB")
+	if crText then
+		WildShell:AppendText(strText, crText)
+	else
+		WildShell:AppendText(strText, "FFBBBBBB")
+	end
 end
 
 function ForgeUI:Print(strText)

@@ -1,8 +1,8 @@
 require "ICComm"
 
-local LibJSON
-
 local ForgeUI = Apollo.GetAddon("ForgeUI")
+
+local LibJSON
 
 function ForgeUI:InitComm()
 	LibJSON = Apollo.GetPackage("Lib:dkJSON-2.5").tPackage
@@ -10,23 +10,32 @@ function ForgeUI:InitComm()
 	self.icComm = ICCommLib.JoinChannel("ForgeUI", ICCommLib.CodeEnumICCommChannelType.Global);
 	
 	self.icComm:SetSendMessageResultFunction("OnMessageSent", self)
-	self.icComm:SetReceivedMessageFunction("OnMessageReceived", self);
+	self.icComm:SetReceivedMessageFunction("OnMessageReceived", self)
+	self.icComm:SetThrottledFunction("OnMessageThrottled", self) 
 end
 
 function ForgeUI:OnMessageSent(iccomm, eResult, idMessage)
 	if not self.tSettings.bNetworking then return end
 
 	-- debug
-	self:Debug("ForgeComm - message sent: " .. idMessage)
+	self:Debug("ForgeComm - sent: " .. idMessage)
+end
+
+function ForgeUI:OnMessageThrottled(iccomm, strSender, idMessage)
+	self:Debug("ForgeComm - throttled: " .. strSender .. " | " .. idMessage)
 end
 
 function ForgeUI:OnMessageReceived(channel, strMessage, idMessage)
 	if not self.tSettings.bNetworking then return end
 
 	-- debug
-	self:Debug("ForgeComm - message received: " .. idMessage .. " - " .. strMessage)
+	self:Debug("ForgeComm - received: " .. strMessage)
 	
 	local tMessage = LibJSON.decode(strMessage)
+	if not tMessage then 
+		self:Debug("ForgeComm - ERR: " .. strMessage, "FFC12A0F")
+		return
+	end
 	local tMsg = tMessage.tMsg
 	
 	if tMessage.strSign == "cmd" then
