@@ -90,7 +90,7 @@ end
 local bCheckedForVersion = false
 local fnIsNewVersion = function()
 	if not bCheckedForVersion then
-		ForgeNotificationsInst:API_ShowNotification(self, "New version", "New version of ForgeUI is availible on curse.com!", 10)
+		ForgeNotificationsInst:API_ShowNotification(self, "New version", "New version of ForgeUI is available on curse.com!", 10)
 		ForgeUI.wndMain:FindChild("NewVersion"):Show(true)
 	end
 
