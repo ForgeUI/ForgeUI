@@ -34,7 +34,12 @@ function ForgeUI_FloatText:new(o)
 		tDamageHealing = {
 			strLocation = "Bottom",
 			strCollision = "IgnoreCollision",
-			nIgnoreThreshold = 0,
+			nDamageThreshold = 0,
+			nHealThreshold = 0,
+		},
+		tPlayerDamageHealing = {
+			nDamageThreshold = 0,
+			nHealThreshold = 0,
 		}
 	}
 
@@ -50,6 +55,13 @@ function ForgeUI_FloatText:Init()
 end
  
 function ForgeUI_FloatText:OnLoad()
+	self.xmlDoc = XmlDoc.CreateFromFile("ForgeUI_FloatText.xml")
+	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
+end
+
+function ForgeUI_FloatText:OnDocLoaded()
+	if self.xmlDoc == nil and not self.xmlDoc:IsLoaded() then return end
+	
 	if ForgeUI == nil then -- forgeui loaded
 		ForgeUI = Apollo.GetAddon("ForgeUI")
 	end
@@ -71,6 +83,15 @@ function ForgeUI_FloatText:ForgeAPI_AfterRegistration()
 	
 	FloatText.OnGenericFloater = self.OnGenericFloater
 	FloatText.OnUnitEvaded = self.OnUnitEvaded
+	
+	ForgeUI.API_AddItemButton(self, "Float text", { strContainer = "Container" })
+end
+
+function ForgeUI_FloatText:ForgeAPI_AfterRestore()
+	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container"]:FindChild("nIncomingDamage"):FindChild("EditBox"), self.tSettings.tPlayerDamageHealing, "nDamageThreshold", { nMin = 0 })
+	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container"]:FindChild("nIncomingHeal"):FindChild("EditBox"), self.tSettings.tPlayerDamageHealing, "nHealThreshold", { nMin = 0 })
+	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container"]:FindChild("nOutcomingDamage"):FindChild("EditBox"), self.tSettings.tDamageHealing, "nDamageThreshold", { nMin = 0 })
+	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container"]:FindChild("nOutcomingHeal"):FindChild("EditBox"), self.tSettings.tDamageHealing, "nHealThreshold", { nMin = 0 })
 end
 
 function ForgeUI_FloatText:GetDefaultTextOption()
@@ -124,7 +145,10 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 		nTotalDamage = nDamage + nShieldDamaged
 	end
 	
-	if nTotalDamage <= Inst.tSettings.tDamageHealing.nIgnoreThreshold then return end
+	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields
+	
+	if bHeal and nTotalDamage <= Inst.tSettings.tDamageHealing.nHealThreshold then return end
+	if not bHeal and nTotalDamage <= Inst.tSettings.tDamageHealing.nDamageThreshold then return end
 
 	local tTextOption = self:GetDefaultTextOption()
 	local tTextOptionAbsorb = self:GetDefaultTextOption()
@@ -147,8 +171,7 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 			[5] = {					fTime = 0.9,	fAlpha = 0.0,},
 		}
 	end
-
-	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields
+	
 	local nBaseColor = 0x00ffff
 	local fMaxSize = 0.8
 	local nOffsetDirection = 95
@@ -262,6 +285,10 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 	end
 
 	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields
+	
+	if bHeal and nDamage <= Inst.tSettings.tPlayerDamageHealing.nHealThreshold then return end
+	if not bHeal and nDamage <= Inst.tSettings.tPlayerDamageHealing.nDamageThreshold then return end
+	
 	local nBaseColor = 0xff6d6d
 	local nHighlightColor = 0xff6d6d
 	local fMaxSize = 0.8
