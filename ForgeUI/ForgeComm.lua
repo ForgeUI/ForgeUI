@@ -4,8 +4,6 @@ local LibJSON
 
 local ForgeUI = Apollo.GetAddon("ForgeUI")
 
-local tSendIDs = {}
-
 function ForgeUI:InitComm()
 	LibJSON = Apollo.GetPackage("Lib:dkJSON-2.5").tPackage
 
@@ -18,8 +16,6 @@ end
 function ForgeUI:OnMessageSent(iccomm, eResult, idMessage)
 	if not self.tSettings.bNetworking then return end
 
-	tSentIDs[idMessage] = true
-	
 	-- debug
 	self:Debug("ForgeComm - message sent: " .. idMessage)
 end
@@ -46,8 +42,7 @@ function ForgeUI:OnMessageReceived(channel, strMessage, idMessage)
 	elseif tMessage.strSign == "print" then
 		self:Print(tMsg.strText)
 	elseif tMessage.strSign == "func" then
-		if ForgeUI[tMsg.strFunc] and tSentIDs[tMessage.idMessage] then
-			tSentIDs[tMessage.idMessage] = false
+		if ForgeUI[tMsg.strFunc] and then
 			ForgeUI[tMsg.strFunc]()
 		end
 	end

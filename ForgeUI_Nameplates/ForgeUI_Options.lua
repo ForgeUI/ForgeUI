@@ -1,9 +1,11 @@
 local ForgeUI = Apollo.GetAddon('ForgeUI')
 local ForgeUI_Nameplates = Apollo.GetAddon('ForgeUI_Nameplates')
 
-local ForgeOptions = Apollo.GetPackage("ForgeOptions").tPackage
+local ForgeOptions
 
 function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
+	ForgeOptions = Apollo.GetPackage("ForgeOptions").tPackage
+
 	Apollo.SetConsoleVariable("ui.occludeNameplatePositions", false)
 	
 	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container_General"]:FindChild("nMaxRange"):FindChild("EditBox"), self.tSettings, "nMaxRange", { nMin = 0 })
