@@ -42,7 +42,7 @@ function ForgeUI:OnMessageReceived(channel, strMessage, idMessage)
 	elseif tMessage.strSign == "print" then
 		self:Print(tMsg.strText)
 	elseif tMessage.strSign == "func" then
-		if ForgeUI[tMsg.strFunc] and then
+		if ForgeUI[tMsg.strFunc] then
 			ForgeUI[tMsg.strFunc]()
 		end
 	end
