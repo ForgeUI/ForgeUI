@@ -4,11 +4,7 @@ local LibJSON
 
 local ForgeUI = Apollo.GetAddon("ForgeUI")
 
-local tMessageFormat = {
-	strAuthor = "",
-	strMessageSign = "",
-	tMessage = {}
-}
+local tSendIDs = {}
 
 function ForgeUI:InitComm()
 	LibJSON = Apollo.GetPackage("Lib:dkJSON-2.5").tPackage
@@ -22,6 +18,8 @@ end
 function ForgeUI:OnMessageSent(iccomm, eResult, idMessage)
 	if not self.tSettings.bNetworking then return end
 
+	tSentIDs[idMessage] = true
+	
 	-- debug
 	self:Debug("ForgeComm - message sent: " .. idMessage)
 end
@@ -39,16 +37,17 @@ function ForgeUI:OnMessageReceived(channel, strMessage, idMessage)
 		if not tMsg.strCommand then return end
 		
 		if tMsg.strCommand == "returnVersion" then
-			self:SendPrivateMessage(tMessage.strAuthor, "print", { strText = "ForgeComm [returnVersion] - " .. GameLib.GetPlayerUnit():GetName() .. " - " .. ForgeUI.sVersion })
+			self:SendPrivateMessage(tMessage.strAuthor, idMessage, "print", { strText = "ForgeComm [returnVersion] - " .. GameLib.GetPlayerUnit():GetName() .. " - " .. ForgeUI.sVersion })
 		elseif tMsg.strCommand == "getNewerVersion" then
 			if tMsg.nVersion < self.nVersion then
-				self:SendPrivateMessage(tMessage.strAuthor, "func", { strFunc = "IsNewVersion" })	
+				self:SendPrivateMessage(tMessage.strAuthor, idMessage, "func", { strFunc = "IsNewVersion" })	
 			end
 		end
 	elseif tMessage.strSign == "print" then
 		self:Print(tMsg.strText)
 	elseif tMessage.strSign == "func" then
-		if ForgeUI[tMsg.strFunc] then
+		if ForgeUI[tMsg.strFunc] and tSentIDs[tMessage.idMessage] then
+			tSentIDs[tMessage.idMessage] = false
 			ForgeUI[tMsg.strFunc]()
 		end
 	end
@@ -72,11 +71,12 @@ function ForgeUI:SendMessage(strSign, tMsg)
 	end
 end
 
-function ForgeUI:SendPrivateMessage(strPlayer, strSign, tMsg)
+function ForgeUI:SendPrivateMessage(strPlayer, idMessage, strSign, tMsg)
 	if not self.tSettings.bNetworking then return end
 
 	local tMessage = {
 		strAuthor = GameLib.GetPlayerUnit():GetName(),
+		idMessage = idMessage,
 		strSign = strSign,
 		tMsg = tMsg
 	}
