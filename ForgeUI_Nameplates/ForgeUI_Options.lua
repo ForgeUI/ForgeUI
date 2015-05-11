@@ -1,9 +1,10 @@
-local ForgeUI = Apollo.GetAddon('ForgeUI')
 local ForgeUI_Nameplates = Apollo.GetAddon('ForgeUI_Nameplates')
 
+local ForgeUI
 local ForgeOptions
 
 function ForgeUI_Nameplates:ForgeAPI_AfterRestore()
+	ForgeUI = Apollo.GetAddon('ForgeUI')
 	ForgeOptions = Apollo.GetPackage("ForgeOptions").tPackage
 
 	Apollo.SetConsoleVariable("ui.occludeNameplatePositions", false)
