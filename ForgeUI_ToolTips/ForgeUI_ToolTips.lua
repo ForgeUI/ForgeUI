@@ -1,10 +1,11 @@
 require "Window"
  
 local ForgeUI
+local ForgeOptions
 local ForgeUI_ToolTips = {}
 
+local ToolTips
 local ToolTips_OnDocumentReady = nil
-local ToolTips = Apollo.GetAddon("ToolTips")
 
 local ktClassToIcon = {
 	[GameLib.CodeEnumClass.Medic]       	= "ForgeUI_Medic",
@@ -33,7 +34,10 @@ function ForgeUI_ToolTips:new(o)
 	
 	-- optional
 	self.settings_version = 1
-    self.tSettings = {}
+    self.tSettings = {
+		strTooltipPosition = "TPT_NavText", -- TPT_OnCursor
+		bShowInCombat = false,
+	}
 
 
     return o
@@ -69,11 +73,31 @@ local origGenerateSpellTooltipForm
 local origGenerateItemTooltipForm
 
 function ForgeUI_ToolTips:ForgeAPI_AfterRegistration()
+	ToolTips = Apollo.GetAddon("ToolTips")
+	ForgeOptions = Apollo.GetPackage("ForgeOptions").tPackage
+
 	ToolTips_OnDocumentReady = ToolTips.OnDocumentReady
 	ToolTips.OnDocumentReady = ForgeUI_ToolTips.TooltipsHook_OnDocumentReady
 	
 	-- hooks
 	ToolTips.UnitTooltipGen = self.UnitTooltipGen
+end
+
+function ForgeUI_ToolTips:ForgeAPI_AfterRestore()
+	ForgeOptions:API_AddAdvancedOption(self, "ToolTips", "Show tooltips in combat", "boolean", self.tSettings, "bShowInCombat", "OnOptionChanged", {})
+	ForgeOptions:API_AddAdvancedOption(self, "ToolTips", "Unit's tooltip position", "dropdown", self.tSettings, "strTooltipPosition", "Testicek", {
+		tDropdown = {
+			["TPT_OnCursor"] = "Cursor",
+			["TPT_NavText"] = "Fixed",
+		}
+	})
+end
+
+function ForgeUI_ToolTips.Testicek()
+	Print("A")
+
+	local wndContainer = GameLib.GetWorldTooltipContainer()
+	wndContainer:SetTooltipType(Window[ForgeUI_ToolTipsInst.tSettings.strTooltipPosition])
 end
 
 function ForgeUI_ToolTips.TooltipsHook_OnDocumentReady(tooltips)
@@ -91,6 +115,9 @@ function ForgeUI_ToolTips.TooltipsHook_OnDocumentReady(tooltips)
 	
 	origGenerateItemTooltipForm = Tooltip.GetItemTooltipForm
 	Tooltip.GetItemTooltipForm = GenerateItemTooltipForm
+	
+	local wndContainer = GameLib.GetWorldTooltipContainer()
+	wndContainer:SetTooltipType(Window[ForgeUI_ToolTipsInst.tSettings.strTooltipPosition])
 end
 
 -----------------------------------------------------------------------------------------------
@@ -165,6 +192,12 @@ end
 
 local b = true
 GenerateUnitTooltipForm = function(luaCaller, wndContainer, unitSource, strProp)
+	if not GameLib.GetPlayerUnit() then return end
+	if not ForgeUI_ToolTipsInst.tSettings.bShowInCombat and GameLib.GetPlayerUnit():IsInCombat() then
+		ToolTips.wndUnitTooltip:Show(false, true)
+		return
+	end
+
 	origGenerateUnitTooltipForm(luaCaller, wndContainer, unitSource, strProp)
 	
 	local wndUnitTooltip = ToolTips.wndUnitTooltip

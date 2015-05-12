@@ -121,6 +121,10 @@ function ForgeOptions:API_AddAdvancedOption(tAddon, strGroup, strText, strType, 
 		wndOption:FindChild("NumberBox"):Show(true, true)
 		
 		ForgeUI.API_RegisterNumberBox(tAddon, wndOption:FindChild("NumberBox"):FindChild("EditBox"), tSettings, strKey, strCallback)
+	elseif strType == "dropdown" then
+		wndOption:FindChild("Dropdown"):Show(true, true)
+		
+		ForgeUI.API_RegisterDropdown(self, wndOption:FindChild("Dropdown"), tSettings, strKey, tOptions.tDropdown, strCallback)
 	end
 	
 	wndOption:SetData(tData)

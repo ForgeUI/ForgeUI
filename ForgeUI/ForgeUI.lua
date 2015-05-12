@@ -935,8 +935,13 @@ function ForgeUI.API_RegisterDropdown(tAddon, wndControl, tSettings, strValue, t
 		wndButton:FindChild("DropdownButton"):SetData(tData)
 	end
 	
+	local i = 0
+	for _,_ in pairs(tOptions) do
+		i = i + 1
+	end
+	
 	local nLeft, nTop, nRight, nBottom = wndDropdown:FindChild("OptionsHolder"):GetAnchorOffsets()
-	wndDropdown:FindChild("OptionsHolder"):SetAnchorOffsets(nLeft, nTop, nRight, 27 * (#tOptions + 1) + 2)
+	wndDropdown:FindChild("OptionsHolder"):SetAnchorOffsets(nLeft, nTop, nRight, 27 * (i) + 2)
 	
 	wndDropdown:FindChild("OptionsHolder"):ArrangeChildrenVert()
 end
