@@ -12,6 +12,7 @@ local tFunctions = {}
 
 local tSentMessages = {}
 local tReceivedMessages = {}
+local tErrorMessages = {}
 
 -- functions
 local fnCreateMessage
@@ -21,7 +22,7 @@ local fnReturnVersion
 function ForgeUI:InitComm()
 	LibJSON = Apollo.GetPackage("Lib:dkJSON-2.5").tPackage
 
-	ForgeComm = ICCommLib.JoinChannel("ForgeComm", ICCommLib.CodeEnumICCommChannelType.Global);
+	ForgeComm = ICCommLib.JoinChannel("ForgeUI", ICCommLib.CodeEnumICCommChannelType.Global);
 	
 	ForgeComm:SetSendMessageResultFunction("OnMessageSent", self)
 	ForgeComm:SetReceivedMessageFunction("OnMessageReceived", self)
@@ -113,8 +114,9 @@ fnReceivedMessage = function(strMessage)
 	
 	local tMessage = LibJSON.decode(strMessage)
 	
-	if not tMessage then
-		self:Debug(strMessage, "FFFF0000")
+	if not tMessage or not tMessage._strHash or not tMessage._strSender or not tMessage.strType then
+		ForgeUI:Debug("ForgeComm [err-format]: " .. strMessage, "FFFF0000")
+		table.insert(tErrorMessages, strMessage)
 		return
 	end
 	
@@ -154,7 +156,11 @@ function ForgeUI:DebugMessages()
 	end
 	self:Debug(" --- received messages ---")
 	for k, v in pairs(tReceivedMessages) do
-		self:Debug("[" .. tostring(k) .. ", " .. tostring(v.strTarget) .. ", " .. tostring(v.bSent) .."] " .. v.strMessage)
+		self:Debug("[" .. tostring(k) .. ", " .. tostring(v.strTarget) .. ", " .. tostring(v.bSent) .."] " .. tostring(v.strMessage))
+	end
+	self:Debug(" --- error messages ---")
+	for k, v in pairs(tErrorMessages) do
+		self:Debug("[" .. k .. "] " .. v)
 	end
 end
 
