@@ -52,7 +52,7 @@ function ForgeUI:new(o)
 	
 	 -- mandatory 
     self.api_version = 2
-	self.sVersion = "0.4.3"
+	self.sVersion = "0.4.3a"
 	self.nVersion = 1
 
 	self.author = "WintyBadass"

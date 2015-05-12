@@ -26,7 +26,7 @@ function ForgeUI:OnMessageThrottled(iccomm, strSender, idMessage)
 end
 
 function ForgeUI:OnMessageReceived(channel, strMessage, idMessage)
-	if not self.tSettings.bNetworking then return end
+	if not self.tSettings.bNetworking or not strMessage then return end
 
 	-- debug
 	self:Debug("ForgeComm - received: " .. strMessage)
