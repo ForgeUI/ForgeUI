@@ -52,7 +52,7 @@ function ForgeUI:new(o)
 	
 	 -- mandatory 
     self.api_version = 2
-	self.sVersion = "0.4.3a"
+	self.sVersion = "0.4.3b"
 	self.nVersion = 1
 
 	self.author = "WintyBadass"
@@ -115,11 +115,11 @@ end
 function ForgeUI:OnDocLoaded()
 	if self.xmlMain == nil or not self.xmlMain:IsLoaded() then return end
 	
+	self:InitComm()
+	
 	ForgeColor = Apollo.GetPackage("ForgeColor").tPackage
 	ForgeOptions = Apollo.GetPackage("ForgeOptions").tPackage
 	ForgeNotifications = Apollo.GetPackage("ForgeNotifications").tPackage
-	
-	self:InitComm()
 	
 	-- sprites
 	Apollo.LoadSprites("ForgeUI_Sprite.xml", "ForgeUI_Sprite")
@@ -1286,6 +1286,16 @@ function ForgeUI.GenerateGradient(strColorStart, strColorEnd, nSteps, nStep, bAl
     else
 	   return string.format("%02x%02x%02x", colorR, colorG, colorB)
     end
+end
+
+function ForgeUI.MakeString(l)
+    if l < 1 then return nil end
+    local s = ""
+    for i = 1, l do
+        n = math.random(97, 122)
+        s = s .. string.char(n)
+    end
+    return s
 end
 
 ForgeUIInst:Init() 

@@ -8,9 +8,14 @@ if APkg and (APkg.nVersion or 0) >= MINOR then return end
 local ForgeUI = Apollo.GetAddon("ForgeUI")
 local ForgeNotifications = APkg and APkg.tPackage or {}
 
-local ForgeNotificationsInst
+local Inst
 
-local ipairs, pairs, strmatch, strlen = ipairs, pairs, string.match, string.len
+-- variables
+local bCheckedForVersion = false
+
+-- local functions
+local fnVersionCheck
+local fnIsNewVersion
 
 function ForgeNotifications:new(o)
 	o = o or {}
@@ -36,7 +41,7 @@ function ForgeNotifications:OnLoad()
 	local strPrefix = Apollo.GetAssetFolder()
 	local tToc = XmlDoc.CreateFromFile("toc.xml"):ToTable()
 	for k,v in ipairs(tToc) do
-		local strPath = strmatch(v.Name, "(.*)[\\/]ForgeNotifications")
+		local strPath = string.match(v.Name, "(.*)[\\/]ForgeNotifications")
 		if strPath ~= nil and strPath ~= "" then
 			strPrefix = strPrefix .. "\\" .. strPath .. "\\"
 			break
@@ -47,6 +52,9 @@ function ForgeNotifications:OnLoad()
 end
 
 function ForgeNotifications:Init()
+	ForgeUI:CommAPI_RegisterFunction("VersionCheck", fnVersionCheck)
+	ForgeUI:CommAPI_RegisterFunction("IsNewVersion", fnIsNewVersion)
+
 	self.wndHolder = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Notifications", nil, self)
 
 	Apollo.RegisterTimerHandler("StartupTimer", "OnStartupTimer", self)
@@ -87,10 +95,10 @@ function ForgeNotifications:OnNotificationTimer()
 	end
 end
 
-local bCheckedForVersion = false
-local fnIsNewVersion = function()
+-- comm - version checking
+fnIsNewVersion = function(strHash, strSender, tParams)
 	if not bCheckedForVersion then
-		ForgeNotificationsInst:API_ShowNotification(self, "New version", "New version of ForgeUI is available on curse.com!", 10)
+		Inst:API_ShowNotification(self, "New version", "New version of ForgeUI is available on curse.com!", 10)
 		ForgeUI.wndMain:FindChild("NewVersion"):Show(true)
 	end
 
@@ -98,9 +106,13 @@ local fnIsNewVersion = function()
 end
 
 function ForgeNotifications:CheckForVersions()
-	ForgeUI.IsNewVersion = fnIsNewVersion
+	ForgeUI:SendMessage("func", { strKey = "VersionCheck", tParams = { nVersion = ForgeUI.nVersion }})
+end
 
-	ForgeUI:SendMessage("cmd", { strCommand = "getNewerVersion", nVersion = ForgeUI.nVersion })
+fnVersionCheck = function(strHash, strSender, tParams)
+	if tParams.nVersion < ForgeUI.nVersion then
+		ForgeUI:SendPrivateMessage(strSender, "func", { strKey = "IsNewVersion" })
+	end
 end
 
 -- api
@@ -131,14 +143,6 @@ end
 ---------------------------------------------------------------------------------------------------
 -- ForgeUI_Notification Functions
 ---------------------------------------------------------------------------------------------------
-function ForgeNotifications:OnMouseButtonDown( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
-	if not wndControl:GetName() == "ForgeUI_Notification" then return end
-	
-	--wndControl:Show(false)
-	
-	self.wndHolder:ArrangeChildrenVert(2)
-end
-
 function ForgeNotifications:OnCloseButtonSignal( wndHandler, wndControl )
 	if not wndControl:GetName() == "CloseButton" then return end
 	
@@ -149,5 +153,5 @@ function ForgeNotifications:OnCloseButtonSignal( wndHandler, wndControl )
 	self.wndHolder:ArrangeChildrenVert(2)
 end
 
-ForgeNotificationsInst = ForgeNotifications:new()
-Apollo.RegisterPackage(ForgeNotificationsInst, MAJOR, MINOR, {})
+Inst = ForgeNotifications:new()
+Apollo.RegisterPackage(Inst, MAJOR, MINOR, {})

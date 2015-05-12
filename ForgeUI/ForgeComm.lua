@@ -2,95 +2,159 @@ require "ICComm"
 
 local ForgeUI = Apollo.GetAddon("ForgeUI")
 
+-- libraries
 local LibJSON
+
+-- variables
+local ForgeComm
+
+local tFunctions = {}
+
+local tSentMessages = {}
+local tReceivedMessages = {}
+
+-- functions
+local fnCreateMessage
+local fnReceivedMessage
+local fnReturnVersion
 
 function ForgeUI:InitComm()
 	LibJSON = Apollo.GetPackage("Lib:dkJSON-2.5").tPackage
 
-	self.icComm = ICCommLib.JoinChannel("ForgeUI", ICCommLib.CodeEnumICCommChannelType.Global);
+	ForgeComm = ICCommLib.JoinChannel("ForgeComm", ICCommLib.CodeEnumICCommChannelType.Global);
 	
-	self.icComm:SetSendMessageResultFunction("OnMessageSent", self)
-	self.icComm:SetReceivedMessageFunction("OnMessageReceived", self)
-	self.icComm:SetThrottledFunction("OnMessageThrottled", self) 
+	ForgeComm:SetSendMessageResultFunction("OnMessageSent", self)
+	ForgeComm:SetReceivedMessageFunction("OnMessageReceived", self)
+	
+	self:CommAPI_RegisterFunction("ReturnVersion", fnReturnVersion)
 end
 
 function ForgeUI:OnMessageSent(iccomm, eResult, idMessage)
 	if not self.tSettings.bNetworking then return end
-
-	-- debug
-	self:Debug("ForgeComm - sent: " .. idMessage)
+	
+	self:Debug("ForgeComm [sent]: " .. tSentMessages[idMessage].strMessage)
+	
+	tSentMessages[idMessage].bSent = true
+	
+	if self.tSettings.bNetworkLoop then
+		self:OnMessageReceived(ForgeComm, tSentMessages[idMessage].strMessage, GameLib.GetPlayerUnit():GetName())
+	end
 end
 
-function ForgeUI:OnMessageThrottled(iccomm, strSender, idMessage)
-	self:Debug("ForgeComm - throttled: " .. strSender .. " | " .. idMessage)
-end
-
-function ForgeUI:OnMessageReceived(channel, strMessage, idMessage)
+function ForgeUI:OnMessageReceived(iccomm, strMessage, strSender)
 	if not self.tSettings.bNetworking or not strMessage then return end
 
-	-- debug
-	self:Debug("ForgeComm - received: " .. strMessage)
+	self:Debug("ForgeComm [received]: " .. strMessage)
+	
+	fnReceivedMessage(strMessage)
+end
+
+function ForgeUI:SendMessage(strType, tBody)
+	if not self.tSettings.bNetworking then return end
+
+	local tMessage = fnCreateMessage(strType, tBody)
+	
+	if tMessage then
+		self:Debug("ForgeComm [queue]: " .. tMessage.strMessage)
+	end
+end
+
+function ForgeUI:SendPrivateMessage(strTarget, strType, tBody)
+	if not self.tSettings.bNetworking then return end
+
+	local tMessage = fnCreateMessage(strType, tBody, strTarget)
+	
+	if tMessage then
+		self:Debug("ForgeComm [queue]: " .. tMessage.strMessage)
+	end
+end
+
+-- api
+function ForgeUI:CommAPI_RegisterFunction(strKey, fnFunction)
+	tFunctions[strKey] = fnFunction
+end
+
+-- local functions for security
+fnCreateMessage = function(strType, tBody, strTarget)
+	if not strType or not tBody or not GameLib.GetPlayerUnit() then return end
+
+	local strSender = GameLib.GetPlayerUnit():GetName()
+	local strHash = ForgeUI.MakeString(8)
+	
+	local tMessage = {
+		_strSender = strSender,
+		_strHash = strHash,
+		strType = strType,
+		tBody = tBody,
+	}
+	
+	local strMessage = LibJSON.encode(tMessage)
+	local id
+	
+	if strTarget then
+		id = ForgeComm:SendPrivateMessage(strTarget, strMessage)
+	else
+		id = ForgeComm:SendMessage(strMessage)
+	end
+	
+	tSentMessages[id] = {
+		_id = id,
+		_strHash = strHash,
+		strTarget = strTarget,
+		bSent = false,
+		strMessage = strMessage,
+	}
+	
+	return tSentMessages[id]
+end
+
+fnReceivedMessage = function(strMessage)
+	if not strMessage then return end
 	
 	local tMessage = LibJSON.decode(strMessage)
-	if not tMessage then 
-		self:Debug("ForgeComm - ERR: " .. strMessage, "FFC12A0F")
+	
+	if not tMessage then
+		self:Debug(strMessage, "FFFF0000")
 		return
 	end
-	local tMsg = tMessage.tMsg
 	
-	if tMessage.strSign == "cmd" then
-		if not tMsg.strCommand then return end
-		
-		if tMsg.strCommand == "returnVersion" then
-			self:SendPrivateMessage(tMessage.strAuthor, idMessage, "print", { strText = "ForgeComm [returnVersion] - " .. GameLib.GetPlayerUnit():GetName() .. " - " .. ForgeUI.sVersion })
-		elseif tMsg.strCommand == "getNewerVersion" then
-			if tMsg.nVersion < self.nVersion then
-				self:SendPrivateMessage(tMessage.strAuthor, idMessage, "func", { strFunc = "IsNewVersion" })	
-			end
-		end
-	elseif tMessage.strSign == "print" then
-		self:Print(tMsg.strText)
-	elseif tMessage.strSign == "func" then
-		if ForgeUI[tMsg.strFunc] then
-			ForgeUI[tMsg.strFunc]()
+	tReceivedMessages[tMessage._strHash] = {
+		_strHash = tMessage._strHash,
+		_strSender = tMessage._strSender,
+		strType = tMessage.strType,
+		tBody = tMessage.tBody,
+	}
+	
+	local tBody = tMessage.tBody
+	
+	if tMessage.strType == "print" then
+		ForgeUI:Print(tostring(tBody.strText))
+	elseif tMessage.strType == "func" then
+		if tFunctions[tostring(tBody.strKey)] then
+			tFunctions[tostring(tBody.strKey)](tMessage._strHash, tMessage._strSender, tBody.tParams)
 		end
 	end
 end
 
-function ForgeUI:SendMessage(strSign, tMsg)
-	if not self.tSettings.bNetworking then return end
+-- net functions
+fnReturnVersion = function(strHash, strSender, tParams)
+	if not GameLib.GetPlayerUnit() then return end
+	
+	local strPlayerName = GameLib.GetPlayerUnit():GetName()
+	local strVersion = ForgeUI.sVersion
 
-	local tMessage = {
-		strAuthor = GameLib.GetPlayerUnit():GetName(),
-		strSign = strSign,
-		tMsg = tMsg
-	}
-	
-	strMessage = LibJSON.encode(tMessage)
-	
-	self.icComm:SendMessage(strMessage)
-	
-	if self.tSettings.bNetworkLoop then
-		self:OnMessageReceived(self.icComm, strMessage, -1)
-	end
+	ForgeUI:SendPrivateMessage(strSender, "print", { strText = "ForgeComm [returnVersion]: " ..  strPlayerName .. " | " .. strVersion })
 end
 
-function ForgeUI:SendPrivateMessage(strPlayer, idMessage, strSign, tMsg)
-	if not self.tSettings.bNetworking then return end
-
-	local tMessage = {
-		strAuthor = GameLib.GetPlayerUnit():GetName(),
-		idMessage = idMessage,
-		strSign = strSign,
-		tMsg = tMsg
-	}
-	
-	strMessage = LibJSON.encode(tMessage)
-	
-	self.icComm:SendPrivateMessage(strPlayer, strMessage)
-	
-	if self.tSettings.bNetworkLoop then
-		self:OnMessageReceived(self.icComm, strMessage, -1)
+-- debug functions
+function ForgeUI:DebugMessages()
+	self:Debug(" --- sent messages ---")
+	for k, v in pairs(tSentMessages) do
+		self:Debug("[" .. tostring(k) .. ", " .. tostring(v.strTarget) .. ", " .. tostring(v.bSent) .."] " .. v.strMessage)
+	end
+	self:Debug(" --- received messages ---")
+	for k, v in pairs(tReceivedMessages) do
+		self:Debug("[" .. tostring(k) .. ", " .. tostring(v.strTarget) .. ", " .. tostring(v.bSent) .."] " .. v.strMessage)
 	end
 end
 
