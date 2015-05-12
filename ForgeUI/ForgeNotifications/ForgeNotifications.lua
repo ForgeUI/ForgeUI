@@ -14,6 +14,7 @@ local Inst
 local bCheckedForVersion = false
 
 -- local functions
+local fnCustomNotification
 local fnVersionCheck
 local fnIsNewVersion
 
@@ -54,6 +55,7 @@ end
 function ForgeNotifications:Init()
 	ForgeUI:CommAPI_RegisterFunction("VersionCheck", fnVersionCheck)
 	ForgeUI:CommAPI_RegisterFunction("IsNewVersion", fnIsNewVersion)
+	ForgeUI:CommAPI_RegisterFunction("CustomNotification", fnCustomNotification)
 
 	self.wndHolder = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Notifications", nil, self)
 
@@ -97,8 +99,10 @@ end
 
 -- comm - version checking
 fnIsNewVersion = function(strHash, strSender, tParams)
+	if not ForgeUI.tSettings.bNotifications then return end
+
 	if not bCheckedForVersion then
-		Inst:API_ShowNotification(self, "New version", "New version of ForgeUI is available on curse.com!", 10)
+		Inst:API_ShowNotification(ForgeUI, "New version", "New version of ForgeUI is available on curse.com!", 10)
 		ForgeUI.wndMain:FindChild("NewVersion"):Show(true)
 	end
 
@@ -113,6 +117,20 @@ fnVersionCheck = function(strHash, strSender, tParams)
 	if tParams.nVersion < ForgeUI.nVersion then
 		ForgeUI:SendPrivateMessage(strSender, "func", { strKey = "IsNewVersion" })
 	end
+end
+
+fnCustomNotification = function(strHash, strSender, tParams)
+	if not ForgeUI.tSettings.bCustomNotifications then return end
+	
+	if not strHash or not strSender or not tParams then return end
+	
+	local strTitle = tParams.strTitle
+	local strText = tParams.strText
+	local fDuration = tParams.fDuration
+	
+	if not strTitle or not strText then return end
+	
+	Inst:API_ShowNotification(ForgeUI, strTitle, strText, fDuration or 3)
 end
 
 -- api

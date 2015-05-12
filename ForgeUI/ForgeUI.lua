@@ -52,7 +52,7 @@ function ForgeUI:new(o)
 	
 	 -- mandatory 
     self.api_version = 2
-	self.sVersion = "0.4.3b"
+	self.sVersion = "0.4.3c"
 	self.nVersion = 1
 
 	self.author = "WintyBadass"
@@ -70,6 +70,7 @@ function ForgeUI:new(o)
 		crTest = "FFFFFFFF",
 		bNetworking = true,
 		bNotifications = true,
+		bCustomNotifications = true,
 		bAdvanced = false,
 		b24HourFormat = true,
 		fNotificationDuration = 5.0,
@@ -196,7 +197,8 @@ function ForgeUI:ForgeAPI_AfterRestore()
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.ForgeUI_General:FindChild("b24HourFormat"):FindChild("CheckBox"), self.tSettings, "b24HourFormat")
 	
 	ForgeOptions:API_AddAdvancedOption(self, "General", "Allow networking", "boolean", self.tSettings, "bNetworking", nil, {})
-	ForgeOptions:API_AddAdvancedOption(self, "General", "Enable notifications", "boolean", self.tSettings, "bNotifications", nil, {})
+	ForgeOptions:API_AddAdvancedOption(self, "General", "Enable ForgeUI notifications", "boolean", self.tSettings, "bNotifications", nil, {})
+	ForgeOptions:API_AddAdvancedOption(self, "General", "Enable custom notifications", "boolean", self.tSettings, "bCustomNotifications", nil, {})
 	
 	ForgeOptions:API_AddAdvancedOption(self, "Debug", "Enable debugging", "boolean", self.tSettings, "bDebug", nil, {})
 	if GameLib.GetPlayerUnit() and GameLib.GetPlayerUnit():GetName() == "Winty Badass" then
@@ -1049,13 +1051,6 @@ function ForgeUI:OnForgeUIcmd(cmd, args)
 		self:OnForgeUIOn()
 	elseif tParams[1] == "reset" then
 		self:ResetDefaults()
-	elseif tParams[1] == "comm" then
-		if tParams[2] == "returnVersion" then
-			Print("Sending 'returnVersion' command")
-			self:SendMessage("cmd", { strCommand = "returnVersion" })
-		elseif tParams[2] == "print" then
-			self:SendMessage("print", { strText = tParams[3] })
-		end
 	end
 end
 

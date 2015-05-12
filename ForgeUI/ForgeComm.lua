@@ -6,7 +6,7 @@ local ForgeUI = Apollo.GetAddon("ForgeUI")
 local LibJSON
 
 -- variables
-local ForgeComm
+--local ForgeComm -- has to be part of the forgeui :(
 
 local tFunctions = {}
 
@@ -22,10 +22,10 @@ local fnReturnVersion
 function ForgeUI:InitComm()
 	LibJSON = Apollo.GetPackage("Lib:dkJSON-2.5").tPackage
 
-	ForgeComm = ICCommLib.JoinChannel("ForgeUI", ICCommLib.CodeEnumICCommChannelType.Global);
+	ForgeUI.ForgeComm = ICCommLib.JoinChannel("ForgeUI", ICCommLib.CodeEnumICCommChannelType.Global);
 	
-	ForgeComm:SetSendMessageResultFunction("OnMessageSent", self)
-	ForgeComm:SetReceivedMessageFunction("OnMessageReceived", self)
+	ForgeUI.ForgeComm:SetSendMessageResultFunction("OnMessageSent", self)
+	ForgeUI.ForgeComm:SetReceivedMessageFunction("OnMessageReceived", self)
 	
 	self:CommAPI_RegisterFunction("ReturnVersion", fnReturnVersion)
 end
@@ -93,9 +93,9 @@ fnCreateMessage = function(strType, tBody, strTarget)
 	local id
 	
 	if strTarget then
-		id = ForgeComm:SendPrivateMessage(strTarget, strMessage)
+		id = ForgeUI.ForgeComm:SendPrivateMessage(strTarget, strMessage)
 	else
-		id = ForgeComm:SendMessage(strMessage)
+		id = ForgeUI.ForgeComm:SendMessage(strMessage)
 	end
 	
 	tSentMessages[id] = {
