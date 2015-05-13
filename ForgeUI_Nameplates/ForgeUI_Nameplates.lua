@@ -1313,8 +1313,7 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	nLeft = -(tStyle.nBarHeight / 2)
 	nRight = (tStyle.nBarHeight / 2)
 	
-	nTop = 70 -(tStyle.nBarWidth / 2)
-	nBottom = 70 + (tStyle.nBarWidth / 2)
+	nBottom = nTop + tStyle.nBarWidth
 	
 	wndNameplate:FindChild("Container"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 	
