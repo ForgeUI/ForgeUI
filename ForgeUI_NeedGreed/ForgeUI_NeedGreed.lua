@@ -197,7 +197,16 @@ function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
 		wndLoot:FindChild("TimeLeftText"):SetText(strTimeLeft)
 	end
 	
-	self.wndContainer:ArrangeChildrenVert(2)
+	self:ArrangeLoot()
+end
+
+function ForgeUI_NeedGreed:ArrangeLoot()
+	local i = 1
+	
+	for k, v in pairs(self.wndContainer:GetChildren()) do
+		v:SetAnchorOffsets(0, -45 * i, 0, -45 * (i - 1))
+		i = i + 1
+	end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -267,7 +276,7 @@ function ForgeUI_NeedGreed:OnNeedBtn(wndHandler, wndControl)
 	self:UpdateKnownLoot()
 	wndLoot:Destroy()
 	
-	self.wndContainer:ArrangeChildrenVert(2)
+	self:ArrangeLoot()
 end
 
 function ForgeUI_NeedGreed:OnGreedBtn(wndHandler, wndControl)
@@ -277,7 +286,7 @@ function ForgeUI_NeedGreed:OnGreedBtn(wndHandler, wndControl)
 	self:UpdateKnownLoot()
 	wndLoot:Destroy()
 	
-	self.wndContainer:ArrangeChildrenVert(2)
+	self:ArrangeLoot()
 end
 
 function ForgeUI_NeedGreed:OnPassBtn(wndHandler, wndControl)
@@ -287,7 +296,7 @@ function ForgeUI_NeedGreed:OnPassBtn(wndHandler, wndControl)
 	self:UpdateKnownLoot()
 	wndLoot:Destroy()
 	
-	self.wndContainer:ArrangeChildrenVert(2)
+	self:ArrangeLoot()
 end
 
 function ForgeUI_NeedGreed:HelperBuildItemTooltip(wndArg, itemCurr, itemModData, tGlyphData)
