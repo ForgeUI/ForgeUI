@@ -5,8 +5,6 @@ local ForgeColor
 local ForgeOptions
 local ForgeNotifications
 local ForgeComm
-
-local WildShell = Apollo.GetAddon("WildShell")
  
 -----------------------------------------------------------------------------------------------
 -- Constants
@@ -1157,20 +1155,20 @@ end
 ---------------------------------------------------------------------------------------------------
 -- Libraries
 ---------------------------------------------------------------------------------------------------
-function ForgeUI:Debug(strText, crText)
+function ForgeUI:Debug(strKey, strText, crText)
 	if not self.tSettings.bDebug or not WildShell then return end
 	
 	if crText then
-		WildShell:AppendText(strText, crText)
+		WildShell:Debug(strKey, strText, crText)
 	else
-		WildShell:AppendText(strText, "FFBBBBBB")
+		WildShell:Debug(strKey, strText, "FFBBBBBB")
 	end
 end
 
-function ForgeUI:Print(strText)
+function ForgeUI:Print(strKey, strText)
 	if not WildShell then return end
 	
-	WildShell:AppendText(strText, "FF98C723")
+	WildShell:Debug(strKey, strText, "FF98C723")
 end
 
 function ForgeUI.ReturnTestStr()
