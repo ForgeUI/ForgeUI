@@ -80,6 +80,9 @@ function ForgeUI:new(o)
 			crStalker = "FFD23EF4",
 			crWarrior = "FFF54F4F"
 		},
+		tThemes = {
+			["SupplySatchel"] = true,
+		},
 		bDebug = false,
 		bNetworkLoop = false,
 	}	
@@ -89,14 +92,7 @@ end
 
 local ForgeUIInst = ForgeUI:new()
 
-function ForgeUI:Init()
-	local bHasConfigureFunction = true
-	local strConfigureButtonText = "ForgeUI"
-	local tDependencies = {
-
-	}
-    Apollo.RegisterAddon(self, bHasConfigureFunction, strConfigureButtonText, tDependencies)
-end
+function ForgeUI:Init() Apollo.RegisterAddon(self, true, "ForgeUI", {}) end
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI OnLoad
@@ -106,6 +102,12 @@ function ForgeUI:OnLoad()
 	self.xmlUI = XmlDoc.CreateFromFile("ForgeUI_UIElements.xml")
 	
 	self.xmlMain:RegisterCallback("OnDocLoaded", self)
+	
+	for k, v in pairs(self.tThemes) do
+		if self.tSettings.tThemes[k] then
+			v:Init()
+		end
+	end
 end
 
 -----------------------------------------------------------------------------------------------

@@ -5,10 +5,13 @@
     <Form Name="ForgeUI.xml"/>
     <Form Name="ForgeUI_UIElements.xml"/>
     <!-- modules -->
-	<Script Name="ForgeComm.lua"/>
+    <Script Name="ForgeComm.lua"/>
     <Script Name="ForgeColor\ForgeColor.lua"/>
+    <Script Name="ForgeThemes\ForgeThemes.lua"/>
     <Script Name="ForgeOptions\ForgeOptions.lua"/>
-	<Script Name="ForgeNotifications\ForgeNotifications.lua"/>
+    <Script Name="ForgeNotifications\ForgeNotifications.lua"/>
+    <!-- themes -->
+    <Script Name="Themes\SupplySatchel\SupplySatchel.lua"/>
     <!-- libraries -->
     <Script Name="Libs\LibJSON\LibJSON-2.5.lua"/>
 </Addon>
