@@ -194,7 +194,9 @@ local b = true
 GenerateUnitTooltipForm = function(luaCaller, wndContainer, unitSource, strProp)
 	if not GameLib.GetPlayerUnit() then return end
 	if not ForgeUI_ToolTipsInst.tSettings.bShowInCombat and GameLib.GetPlayerUnit():IsInCombat() then
-		ToolTips.wndUnitTooltip:Show(false, true)
+		if ToolTips.wndUnitTooltip then
+			ToolTips.wndUnitTooltip:Show(false, true)
+		end
 		return
 	end
 
