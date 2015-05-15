@@ -3,11 +3,12 @@ ForgeUI.tThemes = {}
 
 local Theme = {}
 Theme.__index = Prototype 
-function Theme:new(strAddon)
+function Theme:new(strAddon, bCarbine)
    	local o = {}
    	setmetatable(o, Prototype)
    
 	o.strAddon = strAddon
+	o.bCarbine = bCarbine
 
    	return o
 end
@@ -15,13 +16,20 @@ end
 function Theme:Init()
 end
 
-function Theme:ForgeAPI_AfterDocLoaded()
+function Theme:OnLoad()
+end
+
+function Theme:OnUnload()
 end
 
 -- ForgeUI API
-function ForgeUI:API_RegisterTheme(strAddon)
-	local tTheme = Theme:new(strAddon)
+function ForgeUI:API_RegisterTheme(strAddon, bCarbine)
+	local tTheme = Theme:new(strAddon, bCarbine)
 
+	if self.tSettings.tThemes[strAddon] == nil then
+		self.tSettings.tThemes[strAddon] = true
+	end
+	
 	ForgeUI.tThemes[strAddon] = tTheme
 
 	return tTheme

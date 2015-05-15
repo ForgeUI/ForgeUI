@@ -80,9 +80,7 @@ function ForgeUI:new(o)
 			crStalker = "FFD23EF4",
 			crWarrior = "FFF54F4F"
 		},
-		tThemes = {
-			["SupplySatchel"] = true,
-		},
+		tThemes = {},
 		bDebug = false,
 		bNetworkLoop = false,
 	}	
@@ -98,16 +96,14 @@ function ForgeUI:Init() Apollo.RegisterAddon(self, true, "ForgeUI", {}) end
 -- ForgeUI OnLoad
 -----------------------------------------------------------------------------------------------
 function ForgeUI:OnLoad()
+	for k, v in pairs(self.tThemes) do
+		v:Init()
+	end
+
 	self.xmlMain = XmlDoc.CreateFromFile("ForgeUI.xml")
 	self.xmlUI = XmlDoc.CreateFromFile("ForgeUI_UIElements.xml")
 	
 	self.xmlMain:RegisterCallback("OnDocLoaded", self)
-	
-	for k, v in pairs(self.tThemes) do
-		if self.tSettings.tThemes[k] then
-			v:Init()
-		end
-	end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -156,7 +152,6 @@ function ForgeUI:OnDocLoaded()
 	self.wndMainItemListHolder:Show(true, true)
 
 	-- load modules
-	
 	ForgeOptions:Init()
 	ForgeNotifications:Init()
 	
@@ -182,6 +177,7 @@ end
 function ForgeUI:ForgeAPI_AfterRegistration()
 	ForgeUI.API_AddItemButton(self, "Home", { bDefault = true, strContainer = "ForgeUI_Home", xmlDoc = self.xmlMain })
 	ForgeUI.API_AddItemButton(self, "General", { strContainer = "ForgeUI_General", xmlDoc = self.xmlMain })
+	ForgeUI.API_AddItemButton(self, "Themes", { strContainer = "ForgeUI_Themes", xmlDoc = self.xmlMain })
 end
 
 function ForgeUI:ForgeAPI_AfterRestore()
@@ -203,6 +199,31 @@ function ForgeUI:ForgeAPI_AfterRestore()
 	ForgeOptions:API_AddAdvancedOption(self, "Debug", "Enable debugging", "boolean", self.tSettings, "bDebug", nil, {})
 	if GameLib.GetPlayerUnit() and GameLib.GetPlayerUnit():GetName() == "Winty Badass" then
 		ForgeOptions:API_AddAdvancedOption(self, "Debug", "Enable network loop", "boolean", self.tSettings, "bNetworkLoop", nil, {})
+	end
+	
+	-- load themes
+	for strAddon, tAddon in pairs(self.tThemes) do
+		if tAddon.bCarbine then
+			local wndTheme = Apollo.LoadForm(self.xmlMain, "ForgeUI_Theme", self.wndContainers["ForgeUI_Themes"]:FindChild("CarbineHolder"), self)
+			
+			wndTheme:SetData(strAddon)
+			
+			wndTheme:FindChild("Name"):SetText(strAddon)
+			wndTheme:FindChild("Button"):SetCheck(self.tSettings.tThemes[strAddon])
+		else
+			local wndTheme = Apollo.LoadForm(self.xmlMain, "ForgeUI_Theme", self.wndContainers["ForgeUI_Themes"]:FindChild("AddonHolder"), self)
+			
+			wndTheme:SetData(strAddon)
+			
+			wndTheme:FindChild("Name"):SetText(strAddon)
+			wndTheme:FindChild("Button"):SetCheck(self.tSettings.tThemes[strAddon])
+		end
+		
+		if self.tSettings.tThemes[strAddon] then
+			tAddon.OnLoad(Apollo.GetAddon(strAddon))
+		else
+			tAddon.OnUnload(Apollo.GetAddon(strAddon))
+		end
 	end
 end
 
@@ -736,6 +757,18 @@ end
 
 function ForgeUI:OnMovablesClose( wndHandler, wndControl, eMouseButton )
 	self:OnLockElements()
+end
+
+---------------------------------------------------------------------------------------------------
+-- ForgeUI_Theme Functions
+---------------------------------------------------------------------------------------------------
+
+function ForgeUI:OnThemeButtonCheck( wndHandler, wndControl, eMouseButton )
+	if wndControl:GetParent():GetName() == "ForgeUI_Theme" and wndControl:GetName() == "Button" then
+		local tData = wndControl:GetParent():GetData()
+		
+		self.tSettings.tThemes[tData] = wndControl:IsChecked()
+	end
 end
 
 -----------------------------------------------------------------------------------------------
