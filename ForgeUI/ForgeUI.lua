@@ -40,18 +40,22 @@ function Addon:OnLoad()
     self.xmlDoc = XmlDoc.CreateFromFile("ForgeUI.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 	
+	self.xmlOptions = XmlDoc.CreateFromFile("ForgeUI_Options.xml")
+	
 	self.xmlTextures = XmlDoc.CreateFromFile("\\media\\textures\\ForgeUI_Textures.xml")
 end
 
 function Addon:OnDocLoaded()
 	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
-
+	
 	Apollo.LoadSprites(self.xmlTextures)
+	
+	_G["ForgeLibs"][4]:Init() -- GUI library initialization
 	
 	-- ForgeUI window initialization
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Form", nil, self)
 	self.wndMenuHolder = self.wndMain:FindChild("ItemList")
-	self.wndOptionsHolder = self.wndMain:FindChild("ItemHolder")
+	self.wndOptionsHolder = self.wndMain:FindChild("ItemContainer")
 	
 	self.wndMain:FindChild("AuthorText"):SetText(AUTHOR)
 	self.wndMain:FindChild("VersionText"):SetText(VERSION)
@@ -63,11 +67,19 @@ function Addon:OnConfigure() self:OnForgeUIOn() end
 function Addon:OnForgeUIOn() self.wndMain:Invoke() end
 
 ---------------------------------------------------------------------------------------------------
+-- ForgeUI_Form Functions
+---------------------------------------------------------------------------------------------------
+function Addon:OnSaveButtonPressed() ForgeUI:Save() end
+function Addon:OnUnlockButtonPressed() end
+function Addon:OnDefaultsButtonPressed() ForgeUI:Reset() end
+
+---------------------------------------------------------------------------------------------------
 -- ForgeUI_Item Functions
 ---------------------------------------------------------------------------------------------------
 function Addon:ItemListPressed( wndHandler, wndControl, eMouseButton )
 	wndControl:SetCheck(true)
-
+	
+	-- menu item selection
 	for _, v in pairs(self.wndMenuHolder:GetChildren()) do
 		if v:FindChild("Button") ~= wndControl then
 			v:FindChild("Button"):SetCheck(false)
@@ -99,6 +111,18 @@ function Addon:ItemListPressed( wndHandler, wndControl, eMouseButton )
 		
 		Inst.wndMenuHolder:ArrangeChildrenVert()
 	end
+	
+	-- options window
+	for k, v in pairs(self.wndOptionsHolder:GetChildren()) do
+		v:Show(false, true)
+	end
+	
+	local tData = wndControl:GetParent():GetData()
+	
+	if tData.wndOptions and not wndControl:FindChild("Sign"):IsShown() then
+		tData.wndOptions:Show(true, false)
+	end
+	
 end
 
 -----------------------------------------------------------------------------------------------
@@ -118,8 +142,17 @@ function ForgeUI:API_AddMenuItem(tModule, strText, strWindow)
 	wndItem:AddEventHandler("ButtonUncheck", "ItemListPressed", Inst)
 	
 	local tData = {}
-	
 	if strWindow then
+		if tModule.xmlDoc then
+		else
+			local wnd = Apollo.LoadForm(Inst.xmlOptions, strWindow, Inst.wndOptionsHolder, Inst)
+			wnd:Show(false)
+			
+			if not tModule.tOptionHolders then tModule.tOptionHolders = {} end
+			tModule.tOptionHolders[strWindow] = wnd
+			
+			tData.wndOptions = wnd
+		end
 	end
 	
 	wndItem:SetData(tData)

@@ -6,7 +6,7 @@
 -- about:		ForgeUI skin for Carbine's Taxi addon
 -----------------------------------------------------------------------------------------------
 
-local F, A, M = unpack(_G["ForgeLibs"])
+local F, A, M, G = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI
 local Skins = F:API_GetModule("skins")
 
 local Addon

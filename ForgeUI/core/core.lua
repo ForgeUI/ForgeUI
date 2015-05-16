@@ -6,7 +6,7 @@
 -- about:		ForgeUI core script
 -----------------------------------------------------------------------------------------------
 
-local F, A, M = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module
+local F, A, M, G = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition
@@ -29,24 +29,11 @@ local Core = {
 }
 
 -----------------------------------------------------------------------------------------------
--- Module variables
------------------------------------------------------------------------------------------------
-Core.tModules = {}
-
-Core.bInit = false
-
------------------------------------------------------------------------------------------------
 -- Local variables
 -----------------------------------------------------------------------------------------------
-
-
------------------------------------------------------------------------------------------------
--- Settings
------------------------------------------------------------------------------------------------
-local bResetDefaults = false
-
-local tSettings_addons = {}
-local tSettings_windows = {}
+local tModules = {}
+local bInit = false
+local bResetSettings = false
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI module functions
@@ -54,7 +41,11 @@ local tSettings_windows = {}
 function Core:Init()
 	Print("ForgeUI v" .. self.strVersion .. " has been loaded")
 	
-	F:API_AddMenuItem(self, "Home")
+	local wndHome = F:API_AddMenuItem(self, "Home", "ForgeUI_Home")
+	local wndHomeContainer = self.tOptionHolders["ForgeUI_Home"]
+	
+	G:API_AddText(self, wndHomeContainer, "TestText", { tOffsets = { 50, 50, 200, 75 } })
+	
 	local wndGeneral = F:API_AddMenuItem(self, "General")
 	F:API_AddMenuToMenuItem(self, wndGeneral, "Colors")
 	F:API_AddMenuToMenuItem(self, wndGeneral, "Style")
@@ -66,16 +57,16 @@ end
 -- ForgeUI public API
 -----------------------------------------------------------------------------------------------
 function F:API_NewModule(t, strName, tParams)
-	if Core.tModules[strName] then return end
+	if tModules[strName] then return end
 
 	local module = M.new(t, strName)
 	
-	Core.tModules[strName] = {
+	tModules[strName] = {
         ["tModule"] = module,
         ["tParams"] = tParams,
     }
 	
-	if Core.bInit then
+	if bInit then
 		module:Init()
 		module.bInit = true
 	end
@@ -84,15 +75,15 @@ function F:API_NewModule(t, strName, tParams)
 end
 
 function F:API_GetModule(strName)
-    if Core.tModules[strName].tParams.bGlobal then
-        return Core.tModules[strName].tModule
+    if not tModules[strName].tParams.bLocal then
+        return tModules[strName].tModule
     else
         return nil
     end
 end
 
 function F:API_ListModules()
-	for k, v in pairs(Core.tModules) do
+	for k, v in pairs(tModules) do
 		Print(k)
 	end
 end
@@ -101,11 +92,11 @@ end
 -- ForgeUI intern API
 -----------------------------------------------------------------------------------------------
 function F:Init()
-	if Core.bInit then return end
+	if bInit then return end
 
-	Core.bInit = true
+	bInit = true
 	
-	for k, v in pairs(Core.tModules) do
+	for k, v in pairs(tModules) do
 		if not v.tModule.Init then
 			Print("ERR: " .. k .. " module cannot be loaded!")
 		else
@@ -115,16 +106,21 @@ function F:Init()
 	end
 end
 
+function F:Save() RequestReloadUI() end
+function F:Reset() bResetSettings = true; F:Save(); end
+
 -----------------------------------------------------------------------------------------------
 -- OnSave/OnRestore
 -----------------------------------------------------------------------------------------------
 function F:OnSave(eType)
+	if bResetSettings then return {} end
+
 	local Util = F:API_GetModule("util")
 
 	if eType == GameLib.CodeEnumAddonSaveLevel.Character then
 		local tData = {}
 		
-		for k, v in pairs(Core.tModules) do
+		for k, v in pairs(tModules) do
 			tData[k] = {}
 		
 			if v.tModule.tCharSettings then
@@ -138,7 +134,7 @@ function F:OnSave(eType)
 	elseif eType == GameLib.CodeEnumAddonSaveLevel.General then
 		local tData = {}
 		
-		for k, v in pairs(Core.tModules) do
+		for k, v in pairs(tModules) do
 			tData[k] = {}
 		
 			if v.tModule.tGlobalSettings then
@@ -157,14 +153,14 @@ function F:OnRestore(eType, tData)
 	
 	if eType == GameLib.CodeEnumAddonSaveLevel.Character then
 		for k, v in pairs(tData) do
-			Core.tModules[k].tModule.tCharSettings = Util:CopyTable(Core.tModules[k].tModule.tCharSettings, v.tCharSettings)
+			tModules[k].tModule.tCharSettings = Util:CopyTable(tModules[k].tModule.tCharSettings, v.tCharSettings)
 		end
 	elseif eType == GameLib.CodeEnumAddonSaveLevel.General then
 		for k, v in pairs(tData) do
-			Core.tModules[k].tModule.tGlobalSettings = Util:CopyTable(Core.tModules[k].tModule.tGlobalSettings, v.tGlobalSettings)
+			tModules[k].tModule.tGlobalSettings = Util:CopyTable(tModules[k].tModule.tGlobalSettings, v.tGlobalSettings)
 		end
 	end
 end
 
-Core = F:API_NewModule(Core, "core")
+Core = F:API_NewModule(Core, "core", { bLocal = true })
 

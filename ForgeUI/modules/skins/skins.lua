@@ -6,7 +6,7 @@
 -- about:		ForgeUI skins module
 -----------------------------------------------------------------------------------------------
 
-local F, A, M = unpack(_G["ForgeLibs"])
+local F, A, M, G = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition
