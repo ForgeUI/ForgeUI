@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Addon Author="WintyBadass" APIVersion="10" Name="ForgeUI" Description="">
+    <!-- addon script -->
     <Script Name="ForgeUI.lua"/>
+    <!-- addon xml -->
     <Form Name="ForgeUI.xml"/>
-    <Script Name="core\module_prototype.lua"/>
+    <Form Name="ForgeUI_Options.xml"/>
+	<!-- forge libraries -->
+	<Script Name="core\module_prototype.lua"/>
+	<Script Name="interface\gui.lua"/>
+    <!-- core scripts -->
     <Script Name="core\core.lua"/>
     <Script Name="core\util.lua"/>
+    <!-- modules -->
+    <!-- skins -->
     <Script Name="modules\skins\skins.lua"/>
     <Script Name="modules\skins\carbine\taxi.lua"/>
     <Script Name="modules\skins\carbine\character.lua"/>
