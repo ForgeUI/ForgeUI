@@ -1,17 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Addon Author="WintyBadass" APIVersion="10" Name="ForgeUI" Description="">
     <Script Name="ForgeUI.lua"/>
-    <!-- xmls -->
     <Form Name="ForgeUI.xml"/>
-    <Form Name="ForgeUI_UIElements.xml"/>
-    <!-- modules -->
-    <Script Name="ForgeComm.lua"/>
-    <Script Name="ForgeColor\ForgeColor.lua"/>
-    <Script Name="ForgeThemes\ForgeThemes.lua"/>
-    <Script Name="ForgeOptions\ForgeOptions.lua"/>
-    <Script Name="ForgeNotifications\ForgeNotifications.lua"/>
-    <!-- themes -->
-    <Script Name="Themes\SupplySatchel\SupplySatchel.lua"/>
-    <!-- libraries -->
-    <Script Name="Libs\LibJSON\LibJSON-2.5.lua"/>
+    <Script Name="core\module_prototype.lua"/>
+    <Script Name="core\core.lua"/>
+    <Script Name="core\util.lua"/>
+    <Script Name="modules\skins\skins.lua"/>
+    <Script Name="modules\skins\carbine\taxi.lua"/>
 </Addon>

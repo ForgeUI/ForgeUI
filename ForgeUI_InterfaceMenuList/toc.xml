@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Addon Author="WintyBadass" APIVersion="10" Name="ForgeUI_InterfaceMenuList" Description="" Version="0.0.1">
-    <Script Name="ForgeUI_InterfaceMenuList.lua"/>
-    <Form Name="ForgeUI_InterfaceMenuList.xml"/>
-    <ReplaceAddon Name="InterfaceMenuList"/>
-</Addon>
