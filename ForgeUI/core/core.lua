@@ -1,4 +1,4 @@
------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------
 -- Client Lua Script for ForgeUI
 --
 -- name: 		core.lua
@@ -6,8 +6,7 @@
 -- about:		ForgeUI core script
 -----------------------------------------------------------------------------------------------
 
-local ForgeUI = ForgeUI
-local module_prototype = ForgeUI["module_prototype"]
+local F, A, M = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition
@@ -54,15 +53,22 @@ local tSettings_windows = {}
 -----------------------------------------------------------------------------------------------
 function Core:Init()
 	Print("ForgeUI v" .. self.strVersion .. " has been loaded")
+	
+	F:API_AddMenuItem(self, "Home")
+	local wndGeneral = F:API_AddMenuItem(self, "General")
+	F:API_AddMenuToMenuItem(self, wndGeneral, "Colors")
+	F:API_AddMenuToMenuItem(self, wndGeneral, "Style")
+	F:API_AddMenuToMenuItem(self, wndGeneral, "Layout")
+	F:API_AddMenuItem(self, "Advanced")
 end
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI public API
 -----------------------------------------------------------------------------------------------
-function ForgeUI:API_NewModule(t, strName, tParams)
+function F:API_NewModule(t, strName, tParams)
 	if Core.tModules[strName] then return end
 
-	local module = module_prototype.new(t, strName)
+	local module = M.new(t, strName)
 	
 	Core.tModules[strName] = {
         ["tModule"] = module,
@@ -77,7 +83,7 @@ function ForgeUI:API_NewModule(t, strName, tParams)
 	return module
 end
 
-function ForgeUI:API_GetModule(strName)
+function F:API_GetModule(strName)
     if Core.tModules[strName].tParams.bGlobal then
         return Core.tModules[strName].tModule
     else
@@ -85,7 +91,7 @@ function ForgeUI:API_GetModule(strName)
     end
 end
 
-function ForgeUI:API_ListModules()
+function F:API_ListModules()
 	for k, v in pairs(Core.tModules) do
 		Print(k)
 	end
@@ -94,7 +100,7 @@ end
 -----------------------------------------------------------------------------------------------
 -- ForgeUI intern API
 -----------------------------------------------------------------------------------------------
-function ForgeUI:Init()
+function F:Init()
 	if Core.bInit then return end
 
 	Core.bInit = true
@@ -112,8 +118,8 @@ end
 -----------------------------------------------------------------------------------------------
 -- OnSave/OnRestore
 -----------------------------------------------------------------------------------------------
-function ForgeUI:OnSave(eType)
-	local Util = ForgeUI:API_GetModule("util")
+function F:OnSave(eType)
+	local Util = F:API_GetModule("util")
 
 	if eType == GameLib.CodeEnumAddonSaveLevel.Character then
 		local tData = {}
@@ -146,8 +152,8 @@ function ForgeUI:OnSave(eType)
 	end
 end
 
-function ForgeUI:OnRestore(eType, tData)
-	local Util = ForgeUI:API_GetModule("util")
+function F:OnRestore(eType, tData)
+	local Util = F:API_GetModule("util")
 	
 	if eType == GameLib.CodeEnumAddonSaveLevel.Character then
 		for k, v in pairs(tData) do
@@ -160,5 +166,5 @@ function ForgeUI:OnRestore(eType, tData)
 	end
 end
 
-Core = ForgeUI:API_NewModule(Core, "core")
+Core = F:API_NewModule(Core, "core")
 

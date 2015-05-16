@@ -6,9 +6,10 @@
 -- about:		ForgeUI util libraries
 -----------------------------------------------------------------------------------------------
 
+local F, A, M = unpack(_G["ForgeLibs"])
+
 local Util = {}
 
-local ForgeUI = ForgeUI
 local WildShell = WildShell
 
 -----------------------------------------------------------------------------------------------
@@ -108,13 +109,6 @@ function Util:Round(num, idp)
   return math.floor(num * mult + 0.5) / mult
 end
 
-function ForgeUI.InTable(tbl, item)
-    for key, value in pairs(tbl) do
-        if value == item then return key end
-    end
-    return false
-end
-
 function Util:ConvertAlpha(value)	
 	return string.format("%02X", math.floor(value * 255 + 0.5))
 end
@@ -160,4 +154,4 @@ function Util:MakeString(l)
     return s
 end
 
-Util = ForgeUI:API_NewModule(Util, "util", { bGlobal = true })
+Util = F:API_NewModule(Util, "util", { bGlobal = true })

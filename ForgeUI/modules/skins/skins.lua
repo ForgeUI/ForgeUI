@@ -6,7 +6,7 @@
 -- about:		ForgeUI skins module
 -----------------------------------------------------------------------------------------------
 
-local ForgeUI = ForgeUI
+local F, A, M = unpack(_G["ForgeLibs"])
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition
@@ -28,7 +28,6 @@ local tSkins = {}
 function Skins:Init()
 	for k, v in pairs(tSkins) do
 		if Apollo.GetAddon(k) and self.tCharSettings.tLoadSkins[k] then
-			Print(k)
 			v()
 		end
 	end
@@ -64,5 +63,5 @@ function Skins:HandleButton(wndButton, tOptions)
 	wndButton:SetFlybyTextColor("FFFFFFFF")
 end
 
-Skins = ForgeUI:API_NewModule(Skins, "skins", { bGlobal = true })
+Skins = F:API_NewModule(Skins, "skins", { bGlobal = true })
 

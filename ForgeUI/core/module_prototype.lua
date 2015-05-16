@@ -34,5 +34,5 @@ function Prototype:Init()
 	Print("ON PROTOTYPE INIT (" .. self.strName .. ") - please overwrite this function in your module")
 end
 
-ForgeUI["module_prototype"] = Prototype
+_G["ForgeLibs"][3] = Prototype
 
