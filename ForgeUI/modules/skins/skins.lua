@@ -28,6 +28,7 @@ local tSkins = {}
 function Skins:Init()
 	for k, v in pairs(tSkins) do
 		if Apollo.GetAddon(k) and self.tCharSettings.tLoadSkins[k] then
+			Print(k)
 			v()
 		end
 	end
@@ -40,18 +41,27 @@ function Skins:NewCarbineSkin(strAddon, fLoadSkin)
 	end
 end
 
-function Skins:HandleCloseButton(wndButton, tPostition)
+function Skins:HandleCloseButton(wndButton, tOptions)
 	wndButton:ChangeArt("ForgeUI_Button")
 	wndButton:SetText("X")
 	wndButton:SetFont("Nameplates")
 	
 	wndButton:SetStyle("AutoScaleTextOff", true)
 	
-	if tPostition then
+	if tOptions then
 	else
 		wndButton:SetAnchorPoints(1, 0, 1, 0)
 		wndButton:SetAnchorOffsets(-26, 5, -5, 26)
 	end
+end
+
+function Skins:HandleButton(wndButton, tOptions)
+	wndButton:ChangeArt("ForgeUI_Button")
+	wndButton:SetDisabledTextColor("FF333333") -- TODO: Replace with variable from settings
+	wndButton:SetNormalTextColor("FFFFFFFF")
+	wndButton:SetPressedTextColor("FFFF0000")
+	wndButton:SetPressedFlybyTextColor("FFFF0000")
+	wndButton:SetFlybyTextColor("FFFFFFFF")
 end
 
 Skins = ForgeUI:API_NewModule(Skins, "skins", { bGlobal = true })
