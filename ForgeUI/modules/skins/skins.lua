@@ -25,7 +25,7 @@ local tSkins = {}
 -----------------------------------------------------------------------------------------------
 -- Module functions
 -----------------------------------------------------------------------------------------------
-function Skins:Init()
+function Skins:ForgeAPI_Init()
 	for k, v in pairs(tSkins) do
 		if Apollo.GetAddon(k) and self.tCharSettings.tLoadSkins[k] then
 			v()

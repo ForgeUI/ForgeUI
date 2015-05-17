@@ -20,7 +20,7 @@ local function LoadSkin()
 	Addon = Apollo.GetAddon("TaxiMap")
 	
 	if Addon.xmlDoc:IsLoaded() then
-		fnUseSkin(Addon)
+		fnUseSkin(Addon) 
 	end
 	
 	fnOnDocumentReadyOrig = Addon.OnDocumentReady

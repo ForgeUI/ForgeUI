@@ -1,25 +1,35 @@
 -----------------------------------------------------------------------------------------------
 -- Client Lua Script for ForgeUI
 --
--- name: 		util.lua
+-- name: 		module.lua
 -- author:		Winty Badass@Jabbit
 -- about:		ForgeUI module protype class
 -----------------------------------------------------------------------------------------------
 
+-----------------------------------------------------------------------------------------------
+-- ForgeUI Library Definition
+-----------------------------------------------------------------------------------------------
+local Module = {}
 local Prototype = {}
 
-local ForgeUI = ForgeUI
+-----------------------------------------------------------------------------------------------
+-- ForgeUI Library Initialization
+-----------------------------------------------------------------------------------------------
+local new = function(self, o)
+	o = o or {}
+	setmetatable(o, self)
+	self.__index = self
+	
+	return o
+end
+
+function Module:NewModule(...) return Prototype:new(...) end
 
 -----------------------------------------------------------------------------------------------
--- Local variables
+-- Module prototype
 -----------------------------------------------------------------------------------------------
-
------------------------------------------------------------------------------------------------
--- ForgeUI module functions
------------------------------------------------------------------------------------------------
-
 Prototype.__index = Prototype 
-function Prototype.new(t, strName)
+function Prototype:new(t, strName)
    	local t = t or {}
    	setmetatable(t, Prototype)
    
@@ -30,9 +40,9 @@ function Prototype.new(t, strName)
    	return t
 end
 
-function Prototype:Init()
+function Prototype:ForgeAPI_Init()
 	Print("ON PROTOTYPE INIT (" .. self.strName .. ") - please overwrite this function in your module")
 end
 
-_G["ForgeLibs"][3] = Prototype
+_G["ForgeLibs"][3] = new(Module)
 

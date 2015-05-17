@@ -32,13 +32,14 @@ local Core = {
 -- Local variables
 -----------------------------------------------------------------------------------------------
 local tModules = {}
+local tAddons = {}
 local bInit = false
 local bResetSettings = false
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI module functions
 -----------------------------------------------------------------------------------------------
-function Core:Init()
+function Core:ForgeAPI_Init()
 	Print("ForgeUI v" .. self.strVersion .. " has been loaded")
 	
 	local wndHome = F:API_AddMenuItem(self, "Home", "ForgeUI_Home")
@@ -56,18 +57,44 @@ end
 -----------------------------------------------------------------------------------------------
 -- ForgeUI public API
 -----------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------
+-- ForgeUI Addon API
+-----------------------------------------------------------------------------------------------
+function F:API_NewAddon(tAddon, strName, tParams)
+	if tAddons[strName] then return end
+
+	local addon = A:NewAddon(tAddon, strName, tParams)
+	Apollo.RegisterAddon(addon)
+	
+	tAddons[strName] = {
+        ["tAddon"] = addon,
+        ["tParams"] = tParams,
+    }
+	
+	if bInit and addon.ForgeAPI_Init then
+		addon:ForgeAPI_Init(addon)
+		addon.bInit = true
+	end
+	
+	return addon
+end
+
+-----------------------------------------------------------------------------------------------
+-- ForgeUI Module API
+-----------------------------------------------------------------------------------------------
 function F:API_NewModule(t, strName, tParams)
 	if tModules[strName] then return end
 
-	local module = M.new(t, strName)
+	local module = M:NewModule(t, strName)
 	
 	tModules[strName] = {
         ["tModule"] = module,
         ["tParams"] = tParams,
     }
 	
-	if bInit then
-		module:Init()
+	if bInit and module.ForgeAPI_Init then
+		module:ForgeAPI_Init()
 		module.bInit = true
 	end
 	
@@ -97,11 +124,20 @@ function F:Init()
 	bInit = true
 	
 	for k, v in pairs(tModules) do
-		if not v.tModule.Init then
+		if not v.tModule.ForgeAPI_Init then
 			Print("ERR: " .. k .. " module cannot be loaded!")
 		else
-			v.tModule:Init()
+			v.tModule:ForgeAPI_Init()
 			v.tModule.bInit = true
+		end
+	end
+	
+	for k, v in pairs(tAddons) do
+		if not v.tAddon.ForgeAPI_Init then
+			Print("ERR: " .. k .. " addon cannot be loaded!")
+		else
+			v.tAddon:ForgeAPI_Init(v.tAddon)
+			v.tAddon.bInit = true
 		end
 	end
 end

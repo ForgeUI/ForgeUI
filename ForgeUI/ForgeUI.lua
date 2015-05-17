@@ -13,7 +13,7 @@ require "Window"
 -----------------------------------------------------------------------------------------------
 local ForgeUI = {}
 local Addon = {}
- 
+
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
@@ -34,23 +34,25 @@ end
 
 local Inst = Addon:new()
 
-function Addon:Init() Apollo.RegisterAddon(self, true, "ForgeUI", {}) end
-
 function Addon:OnLoad()
     self.xmlDoc = XmlDoc.CreateFromFile("ForgeUI.xml")
+	self.xmlOptions = XmlDoc.CreateFromFile("ForgeUI_Options.xml")
+	self.xmlTextures = XmlDoc.CreateFromFile("\\media\\textures\\ForgeUI_Textures.xml")
+	
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 	
-	self.xmlOptions = XmlDoc.CreateFromFile("ForgeUI_Options.xml")
-	
-	self.xmlTextures = XmlDoc.CreateFromFile("\\media\\textures\\ForgeUI_Textures.xml")
+	-- init ForgeLibs
+	for _, v in pairs(_G["ForgeLibs"]) do
+		if v.ForgeAPI_Init then
+			v:ForgeAPI_Init ()
+		end
+	end
 end
 
 function Addon:OnDocLoaded()
 	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
 	
 	Apollo.LoadSprites(self.xmlTextures)
-	
-	_G["ForgeLibs"][4]:Init() -- GUI library initialization
 	
 	-- ForgeUI window initialization
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Form", nil, self)
@@ -60,11 +62,13 @@ function Addon:OnDocLoaded()
 	self.wndMain:FindChild("AuthorText"):SetText(AUTHOR)
 	self.wndMain:FindChild("VersionText"):SetText(VERSION)
 	
+	-- init Modules
 	ForgeUI:Init()
 end
 
 function Addon:OnConfigure() self:OnForgeUIOn() end
 function Addon:OnForgeUIOn() self.wndMain:Invoke() end
+function Addon:OnForgeUIOff() self.wndMain:Close() end
 
 ---------------------------------------------------------------------------------------------------
 -- ForgeUI_Form Functions
@@ -184,9 +188,10 @@ function ForgeUI:API_AddMenuToMenuItem(tModule, wndParent, strText, strWindow)
 	return wndItem
 end
 
-Inst:Init()
-
 -- ForgeLibs initialization
 _G["ForgeLibs"] = {}
 _G["ForgeLibs"][1] = ForgeUI
-_G["ForgeLibs"][2] = Inst
+
+Apollo.RegisterAddon(Inst, true, "ForgeUI", {})
+
+

@@ -6,7 +6,8 @@
     <Form Name="ForgeUI.xml"/>
     <Form Name="ForgeUI_Options.xml"/>
 	<!-- forge libraries -->
-	<Script Name="core\module_prototype.lua"/>
+	<Script Name="core\addon.lua"/>
+	<Script Name="core\module.lua"/>
 	<Script Name="interface\gui.lua"/>
     <!-- core scripts -->
     <Script Name="core\core.lua"/>

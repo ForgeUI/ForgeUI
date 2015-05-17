@@ -3,23 +3,31 @@
 --
 -- name: 		hui.lua
 -- author:		Winty Badass@Jabbit
--- about:		ForgeUI GUI handler
+-- about:		ForgeUI GUI library
 -----------------------------------------------------------------------------------------------
 
-local F, A, M, G = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI
+require "Window"
 
 -----------------------------------------------------------------------------------------------
--- ForgeUI Module Definition
+-- ForgeUI Library Definition
 -----------------------------------------------------------------------------------------------
 local Gui = {}
 
 -----------------------------------------------------------------------------------------------
--- ForgeUI Module Initialization
+-- ForgeUI Library Initialization
 -----------------------------------------------------------------------------------------------
 local strPrefix
 local xmlDoc = nil
 
-function Gui:Init()
+local new = function(self, o)
+	o = o or {}
+	setmetatable(o, self)
+	self.__index = self
+	
+	return o
+end
+
+function Gui:ForgeAPI_Init()
 	strPrefix = Apollo.GetAssetFolder()
 	local tToc = XmlDoc.CreateFromFile("toc.xml"):ToTable()
 	for k,v in ipairs(tToc) do
@@ -38,7 +46,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------------------------
--- ForgeUI Holder
+-- Holder
 -----------------------------------------------------------------------------------------------
 function Gui:API_AddHolder(tModule, wnd, tOptions)
 	local wndText = Apollo.LoadForm(xmlDoc, "ForgeUI_Holder", wnd, self)
@@ -47,7 +55,7 @@ function Gui:API_AddHolder(tModule, wnd, tOptions)
 end
 
 -----------------------------------------------------------------------------------------------
--- ForgeUI Text
+-- Text
 -----------------------------------------------------------------------------------------------
 function Gui:API_AddText(tModule, wnd, strText, tOptions)
 	local wndText = Apollo.LoadForm(xmlDoc, "ForgeUI_Text", wnd, self)
@@ -62,5 +70,5 @@ function Gui:API_AddText(tModule, wnd, strText, tOptions)
 	return wndText
 end
 
-_G["ForgeLibs"][4] = Gui
+_G["ForgeLibs"][4] = new(Gui)
 
