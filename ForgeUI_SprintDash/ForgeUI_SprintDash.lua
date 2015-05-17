@@ -23,7 +23,7 @@ local ForgeUI_SprintDash = {
 		bShowSprint = false,
 		bShowDash = false,
 		crBorder = "FF000000",
-		crBackground = "FFFF101010",
+		crBackground = "FF101010",
 		crSprint = "FFCCCCCC",
 		crDash = "FF00AAFF",
 		crDash2 = "FF003388",
@@ -51,7 +51,16 @@ end
 function ForgeUI_SprintDash:ForgeAPI_PopulateOptions()
 	local wndGeneral = self.tOptionHolders["General"]
 	
+	-- color boxes
 	G:AddColorBox(self, wndGeneral, "Border color", self.tCharSettings, "crBorder")
+	G:AddColorBox(self, wndGeneral, "Background color", self.tCharSettings, "crBackground", { tMove = { 0, 30 }})
+	G:AddColorBox(self, wndGeneral, "Sprint color", self.tCharSettings, "crSprint", { tMove = { 0, 90 }, fnCallback = self.RefreshStyle_SprintBar })
+	G:AddColorBox(self, wndGeneral, "Dash color", self.tCharSettings, "crDash", { tMove = { 0, 150 }})
+	G:AddColorBox(self, wndGeneral, "Dash color (not full)", self.tCharSettings, "crDash2", { tMove = { 0, 180 }})
+	
+	-- check boxes
+	G:AddCheckBox(self, wndGeneral, "Sprint meter permanently", self.tCharSettings, "bShowSprint", { tMove = { 205, 0 } })
+	G:AddCheckBox(self, wndGeneral, "Dash meter permanently", self.tCharSettings, "bShowDash", { tMove = { 205, 30 } })
 end
 
 -----------------------------------------------------------------------------------------------
@@ -64,6 +73,8 @@ function ForgeUI_SprintDash:OnDocLoaded()
 	self.wndDashMeter = Apollo.LoadForm(self.xmlDoc, "DashMeter", nil, self)
 	
 	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnNextFrame", self)
+	
+	self:RefreshStyle_SprintBar()
 end
 
 -------------------------------------------------------------------------------
@@ -113,11 +124,40 @@ function ForgeUI_SprintDash:OnNextFrame()
 			
 			self.wndDashMeter:FindChild("Bar_A"):SetMax(nDashMax / 2)
 			self.wndDashMeter:FindChild("Bar_A"):SetProgress(nDashMax / 2)
-		end	
+		end
+		
+		self:RefreshStyle_DashBar(nDashCurr, nDashMax)
 	end
 	
 	if self.wndDashMeter:IsShown() ~= bShowDash then
 		self.wndDashMeter:Show(bShowDash, true)
+	end
+end
+
+---------------------------------------------------------------------------------------------------
+-- Styles
+---------------------------------------------------------------------------------------------------
+function ForgeUI_SprintDash:LoadStyle_SprintBar()
+	
+end
+
+function ForgeUI_SprintDash:RefreshStyle_SprintBar()
+	self.wndSprintMeter:FindChild("Bar"):SetBarColor(self.tCharSettings.crSprint)
+end
+
+function ForgeUI_SprintDash:LoadStyle_DashBar()
+	
+end
+
+function ForgeUI_SprintDash:RefreshStyle_DashBar(nDashCurr, nDashMax)
+	if nDashCurr < 100 then
+		self.wndDashMeter:FindChild("Bar_A"):SetBarColor(self.tCharSettings.crDash2)
+	elseif nDashCurr < nDashMax then
+		self.wndDashMeter:FindChild("Bar_A"):SetBarColor(self.tCharSettings.crDash)
+		self.wndDashMeter:FindChild("Bar_B"):SetBarColor(self.tCharSettings.crDash2)
+	else
+		self.wndDashMeter:FindChild("Bar_A"):SetBarColor(self.tCharSettings.crDash)
+		self.wndDashMeter:FindChild("Bar_B"):SetBarColor(self.tCharSettings.crDash)
 	end
 end
 

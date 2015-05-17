@@ -115,6 +115,16 @@ function Gui:AddColorBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 		if tOptions.tOffsets then
 			wndColorBox:SetAnchorOffsets(unpack(tOptions.tOffsets))
 		end
+		
+		if tOptions.tMove then
+			local nLeft, nTop, nRight, nBottom = wndColorBox:GetAnchorOffsets()
+			nLeft = nLeft + tOptions.tMove[1]
+			nTop = nTop + tOptions.tMove[2]
+			nRight = nRight + tOptions.tMove[1]
+			nBottom = nBottom + tOptions.tMove[2]
+			wndColorBox:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+		end
+		
 		if tOptions.fnCallback then
 			tData.fnCallback = tOptions.fnCallback
 		end
@@ -151,10 +161,6 @@ function Gui:SetColorBox(wndControl, bChangeText)
 	if tData.tSettings and tData.strKey then
 		tData.tSettings[tData.strKey] = tData.strColor
 	end
-	
-	if tData.fnCallback then
-		tData.fnCallback(tData.tModule)
-	end
 end
 
 function Gui:OnColorBoxChanged(wndHandler, wndControl, strText)
@@ -175,6 +181,86 @@ function Gui:OnColorBoxChanged(wndHandler, wndControl, strText)
 	end
 	
 	self:SetColorBox(wndControl:GetParent())
+	
+	if tData.fnCallback then
+		tData.fnCallback(tData.tModule)
+	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- CheckBox
+-----------------------------------------------------------------------------------------------
+function Gui:AddCheckBox(tModule, wnd, strText, tSettings, strKey, tOptions)
+	-- defaults
+	local tData = {
+		tModule = tModule,
+		tSettings = tSettings,
+		strKey = strKey,
+		bCheck = tSettings[strKey],
+	}
+	
+	local strFont = self.tDefaults.strFont
+	local strText = strText
+
+	-- load wnnd
+	local wndCheckBox = Apollo.LoadForm(xmlDoc, "ForgeUI_CheckBox", wnd, self)
+	
+	-- event handlers
+	wndCheckBox:AddEventHandler("ButtonCheck", "OnCheckBoxCheck", self)
+	wndCheckBox:AddEventHandler("ButtonUncheck", "OnCheckBoxCheck", self)
+	
+	-- options
+	if tOptions then
+		if tOptions.tOffsets then
+			wndCheckBox:SetAnchorOffsets(unpack(tOptions.tOffsets))
+		end
+		
+		if tOptions.tMove then
+			local nLeft, nTop, nRight, nBottom = wndCheckBox:GetAnchorOffsets()
+			nLeft = nLeft + tOptions.tMove[1]
+			nTop = nTop + tOptions.tMove[2]
+			nRight = nRight + tOptions.tMove[1]
+			nBottom = nBottom + tOptions.tMove[2]
+			wndCheckBox:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+		end
+		
+		if tOptions.fnCallback then
+			tData.fnCallback = tOptions.fnCallback
+		end
+	end
+	
+	-- data
+	wndCheckBox:SetData(tData)
+	
+	-- set wnd
+	wndCheckBox:FindChild("Text"):SetFont(strFont)
+	wndCheckBox:FindChild("Text"):SetText(strText)
+	
+	self:SetCheckBox(wndCheckBox)
+	
+	return wndCheckBox
+end
+
+function Gui:SetCheckBox(wndControl)
+	local tData = wndControl:GetData()
+	
+	wndControl:FindChild("CheckBox"):SetCheck(tData.bCheck)
+	
+	if tData.tSettings and tData.strKey then
+		tData.tSettings[tData.strKey] = tData.bCheck
+	end
+end
+
+function Gui:OnCheckBoxCheck(wndHandler, wndControl, eMouseButton)
+	local tData = wndControl:GetParent():GetData()
+	
+	tData.bCheck = wndControl:IsChecked()
+	
+	self:SetCheckBox(wndControl:GetParent())
+	
+	if tData.fnCallback then
+		tData.fnCallback(tData.tModule)
+	end
 end
 
 _G["ForgeLibs"][4] = new(Gui)
