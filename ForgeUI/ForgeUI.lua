@@ -147,16 +147,13 @@ function ForgeUI:API_AddMenuItem(tModule, strText, strWindow)
 	
 	local tData = {}
 	if strWindow then
-		if tModule.xmlDoc then
-		else
-			local wnd = Apollo.LoadForm(Inst.xmlOptions, strWindow, Inst.wndOptionsHolder, Inst)
-			wnd:Show(false)
-			
-			if not tModule.tOptionHolders then tModule.tOptionHolders = {} end
-			tModule.tOptionHolders[strWindow] = wnd
-			
-			tData.wndOptions = wnd
-		end
+		local wnd = Apollo.LoadForm(Inst.xmlOptions, "ForgeUI_Container", Inst.wndOptionsHolder, Inst)
+		wnd:SetName(strWindow)
+		
+		if not tModule.tOptionHolders then tModule.tOptionHolders = {} end
+		tModule.tOptionHolders[strWindow] = wnd
+		
+		tData.wndOptions = wnd
 	end
 	
 	wndItem:SetData(tData)

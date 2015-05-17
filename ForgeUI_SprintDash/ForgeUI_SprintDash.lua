@@ -44,6 +44,14 @@ function ForgeUI_SprintDash:ForgeAPI_Init()
 
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_SprintDash//ForgeUI_SprintDash.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
+	
+	F:API_AddMenuItem(self, self.strDisplayName, "General")
+end
+
+function ForgeUI_SprintDash:ForgeAPI_PopulateOptions()
+	local wndGeneral = self.tOptionHolders["General"]
+	
+	G:AddColorBox(self, wndGeneral, "Border color", self.tCharSettings, "crBorder")
 end
 
 -----------------------------------------------------------------------------------------------
@@ -90,6 +98,7 @@ function ForgeUI_SprintDash:OnNextFrame()
 		if nDashCurr < 100 then
 			self.wndDashMeter:FindChild("Bar_A"):SetMax(nDashMax / 2)
 			self.wndDashMeter:FindChild("Bar_A"):SetProgress(nDashCurr)
+			self.wndDashMeter:FindChild("Bar_A"):SetBarColor(self.tCharSettings.crBorder)
 			
 			self.wndDashMeter:FindChild("Bar_B"):SetProgress(0)
 		elseif nDashCurr < nDashMax then

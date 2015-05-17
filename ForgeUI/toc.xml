@@ -5,10 +5,10 @@
     <!-- addon xml -->
     <Form Name="ForgeUI.xml"/>
     <Form Name="ForgeUI_Options.xml"/>
-	<!-- forge libraries -->
-	<Script Name="core\addon.lua"/>
-	<Script Name="core\module.lua"/>
-	<Script Name="interface\gui.lua"/>
+    <!-- forge libraries -->
+    <Script Name="core\addon.lua"/>
+    <Script Name="core\module.lua"/>
+    <Script Name="interface\gui.lua"/>
     <!-- core scripts -->
     <Script Name="core\core.lua"/>
     <Script Name="core\util.lua"/>

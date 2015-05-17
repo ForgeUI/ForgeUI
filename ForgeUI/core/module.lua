@@ -44,5 +44,8 @@ function Prototype:ForgeAPI_Init()
 	Print("ON PROTOTYPE INIT (" .. self.strName .. ") - please overwrite this function in your module")
 end
 
+function Prototype:ForgeAPI_PopulateOptions()
+end
+
 _G["ForgeLibs"][3] = new(Module)
 

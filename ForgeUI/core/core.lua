@@ -41,17 +41,6 @@ local bResetSettings = false
 -----------------------------------------------------------------------------------------------
 function Core:ForgeAPI_Init()
 	Print("ForgeUI v" .. self.strVersion .. " has been loaded")
-	
-	local wndHome = F:API_AddMenuItem(self, "Home", "ForgeUI_Home")
-	local wndHomeContainer = self.tOptionHolders["ForgeUI_Home"]
-	
-	G:API_AddText(self, wndHomeContainer, "TestText", { tOffsets = { 50, 50, 200, 75 } })
-	
-	local wndGeneral = F:API_AddMenuItem(self, "General")
-	F:API_AddMenuToMenuItem(self, wndGeneral, "Colors")
-	F:API_AddMenuToMenuItem(self, wndGeneral, "Style")
-	F:API_AddMenuToMenuItem(self, wndGeneral, "Layout")
-	F:API_AddMenuItem(self, "Advanced")
 end
 
 -----------------------------------------------------------------------------------------------
@@ -73,8 +62,12 @@ function F:API_NewAddon(tAddon, strName, tParams)
     }
 	
 	if bInit and addon.ForgeAPI_Init then
-		addon:ForgeAPI_Init(addon)
+		addon:ForgeAPI_Init()
 		addon.bInit = true
+	end
+	
+	if bInit and addon.ForgeAPI_PopulateOptions then
+		addon:ForgeAPI_PopulateOptions()
 	end
 	
 	return addon
@@ -96,6 +89,10 @@ function F:API_NewModule(t, strName, tParams)
 	if bInit and module.ForgeAPI_Init then
 		module:ForgeAPI_Init()
 		module.bInit = true
+	end
+	
+	if bInit and module.ForgeAPI_PopulateOptions then
+		module:ForgeAPI_PopulateOptions()
 	end
 	
 	return module
@@ -130,6 +127,10 @@ function F:Init()
 			v.tModule:ForgeAPI_Init()
 			v.tModule.bInit = true
 		end
+		
+		if v.tModule.ForgeAPI_PopulateOptions then
+			v.tModule:ForgeAPI_PopulateOptions()
+		end
 	end
 	
 	for k, v in pairs(tAddons) do
@@ -138,6 +139,10 @@ function F:Init()
 		else
 			v.tAddon:ForgeAPI_Init(v.tAddon)
 			v.tAddon.bInit = true
+		end
+		
+		if v.tAddon.ForgeAPI_PopulateOptions then
+			v.tAddon:ForgeAPI_PopulateOptions()
 		end
 	end
 end
@@ -156,13 +161,23 @@ function F:OnSave(eType)
 	if eType == GameLib.CodeEnumAddonSaveLevel.Character then
 		local tData = {}
 		
+		tData.tModules = {}
 		for k, v in pairs(tModules) do
-			tData[k] = {}
-		
 			if v.tModule.tCharSettings then
-				tData[k].tCharSettings = {}
+				tData.tModules[k] = {}
+				tData.tModules[k].tCharSettings = {}
 				
-				tData[k].tCharSettings = Util:CopyTable(tData[k].tCharSettings , v.tModule.tCharSettings)
+				tData.tModules[k].tCharSettings = Util:CopyTable(tData.tModules[k].tCharSettings , v.tModule.tCharSettings)
+			end
+		end
+		
+		tData.tAddons = {}
+		for k, v in pairs(tAddons) do
+			if v.tAddon.tCharSettings then
+				tData.tAddons[k] = {}
+				tData.tAddons[k].tCharSettings = {}
+				
+				tData.tAddons[k].tCharSettings = Util:CopyTable(tData.tAddons[k].tCharSettings , v.tAddon.tCharSettings)
 			end
 		end
 		
@@ -170,13 +185,23 @@ function F:OnSave(eType)
 	elseif eType == GameLib.CodeEnumAddonSaveLevel.General then
 		local tData = {}
 		
+		tData.tModules = {}
 		for k, v in pairs(tModules) do
-			tData[k] = {}
-		
 			if v.tModule.tGlobalSettings then
-				tData[k].tGlobalSettings = {}
+				tData.tModules[k] = {}
+				tData.tModules[k].tGlobalSettings = {}
 				
-				tData[k].tGlobalSettings = Util:CopyTable(tData[k].tGlobalSettings , v.tModule.tGlobalSettings)
+				tData.tModules[k].tGlobalSettings = Util:CopyTable(tData.tModules[k].tGlobalSettings , v.tModule.tGlobalSettings )
+			end
+		end
+		
+		tData.tAddons = {}
+		for k, v in pairs(tAddons) do
+			if v.tAddon.tGlobalSettings then
+				tData.tAddons[k] = {}
+				tData.tAddons[k].tGlobalSettings = {}
+				
+				tData.tAddons[k].tGlobalSettings = Util:CopyTable(tData.tAddons[k].tGlobalSettings , v.tAddon.tGlobalSettings )
 			end
 		end
 		
@@ -188,12 +213,26 @@ function F:OnRestore(eType, tData)
 	local Util = F:API_GetModule("util")
 	
 	if eType == GameLib.CodeEnumAddonSaveLevel.Character then
-		for k, v in pairs(tData) do
-			tModules[k].tModule.tCharSettings = Util:CopyTable(tModules[k].tModule.tCharSettings, v.tCharSettings)
+		if tData.tModules then
+			for k, v in pairs(tData.tModules) do
+				tModules[k].tModule.tCharSettings = Util:CopyTable(tModules[k].tModule.tCharSettings, v.tCharSettings)
+			end
+		end
+		if tData.tAddons then
+			for k, v in pairs(tData.tAddons) do
+				tAddons[k].tAddon.tCharSettings = Util:CopyTable(tAddons[k].tAddon.tCharSettings, v.tCharSettings)
+			end
 		end
 	elseif eType == GameLib.CodeEnumAddonSaveLevel.General then
-		for k, v in pairs(tData) do
-			tModules[k].tModule.tGlobalSettings = Util:CopyTable(tModules[k].tModule.tGlobalSettings, v.tGlobalSettings)
+		if tData.tModules then
+			for k, v in pairs(tData.tModules) do
+				tModules[k].tModule.tGlobalSettings = Util:CopyTable(tModules[k].tModule.tGlobalSettings , v.tGlobalSettings )
+			end
+		end
+		if tData.tAddons then
+			for k, v in pairs(tData.tAddons) do
+				tAddons[k].tAddon.tGlobalSettings = Util:CopyTable(tAddons[k].tAddon.tGlobalSettings , v.tGlobalSettings )
+			end
 		end
 	end
 end
