@@ -44,7 +44,7 @@ function Addon:OnLoad()
 	-- init ForgeLibs
 	for _, v in pairs(_G["ForgeLibs"]) do
 		if v.ForgeAPI_Init then
-			v:ForgeAPI_Init ()
+			v:ForgeAPI_Init()
 		end
 	end
 end

@@ -52,7 +52,7 @@ end
 -----------------------------------------------------------------------------------------------
 -- Holder
 -----------------------------------------------------------------------------------------------
-function Gui:AddHolder(tModule, wnd, tOptions)
+function Gui:API_AddHolder(tModule, wnd, tOptions)
 	local wndText = Apollo.LoadForm(xmlDoc, "ForgeUI_Holder", wnd, self)
 	
 	return wndText
@@ -61,7 +61,7 @@ end
 -----------------------------------------------------------------------------------------------
 -- Text
 -----------------------------------------------------------------------------------------------
-function Gui:AddText(tModule, wnd, strText, tOptions)
+function Gui:API_AddText(tModule, wnd, strText, tOptions)
 	-- defaults
 	local strFont = self.tDefaults.strFont
 	local strText = strText
@@ -91,7 +91,7 @@ end
 -----------------------------------------------------------------------------------------------
 -- ColorBox
 -----------------------------------------------------------------------------------------------
-function Gui:AddColorBox(tModule, wnd, strText, tSettings, strKey, tOptions)
+function Gui:API_AddColorBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 	-- defaults
 	local tData = {
 		tModule = tModule,
@@ -190,7 +190,7 @@ end
 -----------------------------------------------------------------------------------------------
 -- CheckBox
 -----------------------------------------------------------------------------------------------
-function Gui:AddCheckBox(tModule, wnd, strText, tSettings, strKey, tOptions)
+function Gui:API_AddCheckBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 	-- defaults
 	local tData = {
 		tModule = tModule,

@@ -51,6 +51,14 @@ local bResetSettings = false
 -----------------------------------------------------------------------------------------------
 function Core:ForgeAPI_Init()
 	Print("ForgeUI v" .. self.strVersion .. " has been loaded")
+	
+	F:API_AddMenuItem(self, "Profiles", "Profiles")
+end
+
+function Core:ForgeAPI_PopulateOptions()
+	local wndProfiles = self.tOptionHolders["Profiles"]
+	
+	G:API_AddText(self, wndProfiles, "Current profile: " .. P:API_GetProfileName())
 end
 
 -----------------------------------------------------------------------------------------------
@@ -179,23 +187,25 @@ function F:OnSave(eType)
 		local tData = P:API_GetProfile(tForgeSavedData.tCharacter)
 		local tNewData = {}
 		
-		tData.tModules = {}
-		for k, v in pairs(tModules) do
-			if v.tModule.tCharSettings then
-				tData.tModules[k] = {}
-				tData.tModules[k].tCharSettings = {}
-				
-				tData.tModules[k].tCharSettings = v.tModule.tCharSettings
+		if tData then
+			tData.tModules = {}
+			for k, v in pairs(tModules) do
+				if v.tModule.tCharSettings then
+					tData.tModules[k] = {}
+					tData.tModules[k].tCharSettings = {}
+					
+					tData.tModules[k].tCharSettings = v.tModule.tCharSettings
+				end
 			end
-		end
-		
-		tData.tAddons = {}
-		for k, v in pairs(tAddons) do
-			if v.tAddon.tCharSettings then
-				tData.tAddons[k] = {}
-				tData.tAddons[k].tCharSettings = {}
-				
-				tData.tAddons[k].tCharSettings = v.tAddon.tCharSettings
+			
+			tData.tAddons = {}
+			for k, v in pairs(tAddons) do
+				if v.tAddon.tCharSettings then
+					tData.tAddons[k] = {}
+					tData.tAddons[k].tCharSettings = {}
+					
+					tData.tAddons[k].tCharSettings = v.tAddon.tCharSettings
+				end
 			end
 		end
 		

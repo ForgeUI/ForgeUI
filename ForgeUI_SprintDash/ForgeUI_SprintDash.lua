@@ -50,15 +50,15 @@ function ForgeUI_SprintDash:ForgeAPI_PopulateOptions()
 	local wndGeneral = self.tOptionHolders["General"]
 	
 	-- color boxes
-	G:AddColorBox(self, wndGeneral, "Border color", self.tCharSettings, "crBorder")
-	G:AddColorBox(self, wndGeneral, "Background color", self.tCharSettings, "crBackground", { tMove = { 0, 30 }})
-	G:AddColorBox(self, wndGeneral, "Sprint color", self.tCharSettings, "crSprint", { tMove = { 0, 90 }, fnCallback = self.RefreshStyle_SprintBar })
-	G:AddColorBox(self, wndGeneral, "Dash color", self.tCharSettings, "crDash", { tMove = { 0, 150 }})
-	G:AddColorBox(self, wndGeneral, "Dash color (not full)", self.tCharSettings, "crDash2", { tMove = { 0, 180 }})
+	G:API_AddColorBox(self, wndGeneral, "Border color", self.tCharSettings, "crBorder")
+	G:API_AddColorBox(self, wndGeneral, "Background color", self.tCharSettings, "crBackground", { tMove = { 0, 30 }})
+	G:API_AddColorBox(self, wndGeneral, "Sprint color", self.tCharSettings, "crSprint", { tMove = { 0, 90 }, fnCallback = self.RefreshStyle_SprintBar })
+	G:API_AddColorBox(self, wndGeneral, "Dash color", self.tCharSettings, "crDash", { tMove = { 0, 150 }})
+	G:API_AddColorBox(self, wndGeneral, "Dash color (not full)", self.tCharSettings, "crDash2", { tMove = { 0, 180 }})
 	
 	-- check boxes
-	G:AddCheckBox(self, wndGeneral, "Sprint meter permanently", self.tCharSettings, "bShowSprint", { tMove = { 205, 0 } })
-	G:AddCheckBox(self, wndGeneral, "Dash meter permanently", self.tCharSettings, "bShowDash", { tMove = { 205, 30 } })
+	G:API_AddCheckBox(self, wndGeneral, "Sprint meter permanently", self.tCharSettings, "bShowSprint", { tMove = { 205, 0 } })
+	G:API_AddCheckBox(self, wndGeneral, "Dash meter permanently", self.tCharSettings, "bShowDash", { tMove = { 205, 30 } })
 end
 
 -----------------------------------------------------------------------------------------------
