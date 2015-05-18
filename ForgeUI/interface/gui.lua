@@ -53,6 +53,14 @@ end
 -----------------------------------------------------------------------------------------------
 -- ForgeUI GUI elements
 -----------------------------------------------------------------------------------------------
+local EnumWindowType = {
+	["Holder"] = 1,
+	["Text"] = 2,
+	["ColorBox"] = 3,
+	["CheckBox"] = 4,
+	["ComboBox"] = 5,
+	["ComboBoxItem"] = 6,
+}
 
 -----------------------------------------------------------------------------------------------
 -- Holder
@@ -103,6 +111,7 @@ function Gui:API_AddColorBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 		tSettings = tSettings,
 		strKey = strKey,
 		strColor = tSettings[strKey],
+		eType = EnumWindowType.ColorBox,
 	}
 	
 	local strFont = self.tDefaults.strFont
@@ -201,6 +210,7 @@ function Gui:API_AddCheckBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 		tSettings = tSettings,
 		strKey = strKey,
 		bCheck = tSettings[strKey],
+		eType = EnumWindowType.CheckBox,
 	}
 	
 	local strFont = self.tDefaults.strFont
@@ -264,6 +274,222 @@ function Gui:OnCheckBoxCheck(wndHandler, wndControl, eMouseButton)
 	
 	if tData.fnCallback then
 		tData.fnCallback(tData.tModule)
+	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- CheckBox
+-----------------------------------------------------------------------------------------------
+function Gui:API_AddComboBox(tModule, wnd, strText, tSettings, strKey, tOptions)
+	-- defaults
+	local tData = {
+		tModule = tModule,
+		tSettings = tSettings,
+		strKey = strKey,
+		eType = EnumWindowType.ComboBox,
+	}
+	
+	local strFont = self.tDefaults.strFont
+	local strText = strText
+
+	-- load wnnd
+	local wndComboBox = Apollo.LoadForm(xmlDoc, "ForgeUI_ComboBox", wnd, self)
+	
+	-- event handlers
+	wndComboBox:FindChild("Button"):AddEventHandler("ButtonSignal", "OnComboBoxButton", self)
+	
+	-- options
+	if tOptions then
+		if tOptions.tOffsets then
+			wndComboBox:SetAnchorOffsets(unpack(tOptions.tOffsets))
+		end
+		
+		if tOptions.tWidths then
+			local nLeft, nTop, nRight, nBottom = wndComboBox:GetAnchorOffsets()
+			wndComboBox:SetAnchorOffsets(nLeft, nTop, nLeft + tOptions.tWidths[1] + tOptions.tWidths[2] + 5, nBottom)
+			
+			nLeft, nTop, nRight, nBottom = wndComboBox:FindChild("ComboBox"):GetAnchorOffsets()
+			wndComboBox:FindChild("ComboBox"):SetAnchorOffsets(nLeft, nTop, tOptions.tWidths[1], nBottom)
+			
+			nLeft, nTop, nRight, nBottom = wndComboBox:FindChild("Text"):GetAnchorOffsets()
+			wndComboBox:FindChild("Text"):SetAnchorOffsets(- tOptions.tWidths[2], nTop, nRight, nBottom)
+		end
+		
+		if tOptions.tMove then
+			local nLeft, nTop, nRight, nBottom = wndComboBox:GetAnchorOffsets()
+			nLeft = nLeft + tOptions.tMove[1]
+			nTop = nTop + tOptions.tMove[2]
+			nRight = nRight + tOptions.tMove[1]
+			nBottom = nBottom + tOptions.tMove[2]
+			wndComboBox:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+		end
+		
+		if tOptions.fnCallback then
+			tData.fnCallback = tOptions.fnCallback
+		end
+	end
+	
+	-- data
+	wndComboBox:SetData(tData)
+	
+	-- set wnd
+	if tOptions and tOptions.bInnerText then
+		wndComboBox:FindChild("EditBox"):SetFont(strFont)
+		wndComboBox:FindChild("EditBox"):SetText(strText)
+	else
+		wndComboBox:FindChild("Text"):SetFont(strFont)
+		wndComboBox:FindChild("Text"):SetText(strText)
+	end
+	
+	return wndComboBox
+end
+
+function Gui:API_AddOptionToComboBox(tModule, wnd, strText, vValue, tOptions)
+	if wnd:GetData().eType ~= EnumWindowType.ComboBox then return end
+
+	-- defaults
+	local tData = {
+		tModule = tModule,
+		vValue = vValue,
+		eType = EnumWindowType.ComboBoxItem,
+		wndParent = wnd,
+		tParentData = wnd:GetData(),
+	}
+	
+	if wnd:GetData().tSettings and wnd:GetData().strKey then
+		if vValue == wnd:GetData().tSettings[wnd:GetData().strKey] then
+			wnd:FindChild("EditBox"):SetText(tostring(strText))
+		end
+	elseif tOptions and tOptions.bDefault then
+		wnd:FindChild("EditBox"):SetText(tostring(strText))
+	end
+	
+	local strFont = self.tDefaults.strFont
+	local strText = strText
+
+	-- load wnnd
+	local wndItem = Apollo.LoadForm(xmlDoc, "ForgeUI_ComboBoxItem", wnd:FindChild("Menu"), self)
+	
+	-- event handlers
+	wndItem:FindChild("Button"):AddEventHandler("ButtonSignal", "OnComboBoxItemButton", self)
+	
+	-- data
+	wndItem:SetData(tData)
+	
+	-- set wnd
+	wndItem:FindChild("Button"):SetFont(strFont)
+	wndItem:FindChild("Button"):SetText(strText)
+	
+	local wndMenu = wnd:FindChild("Menu")
+	local nLeft, nTop, nRight, nBottom = wndMenu:GetAnchorOffsets()
+	wndMenu:SetAnchorOffsets(nLeft, nTop, nRight, nTop + 25 * #wndMenu:GetChildren() + 4)
+	wndMenu:ArrangeChildrenVert()
+	
+	return wndItem
+end
+
+function Gui:OnComboBoxButton(wndHandler, wndControl, eMouseButton)
+	wndControl:GetParent():FindChild("Menu"):Show(true)
+end
+
+function Gui:OnComboBoxItemButton(wndHandler, wndControl, eMouseButton)
+	local tData = wndControl:GetParent():GetData()
+	local tParentData = tData.tParentData
+	
+	tData.wndParent:FindChild("EditBox"):SetText(wndControl:GetText())
+	
+	if tParentData.tSettings and tParentData.strKey then
+		tParentData.tSettings[tParentData.strKey] = tData.vValue
+	end
+	
+	if tParentData.fnCallback then
+		tParentData.fnCallback(tParentData.tModule, "combobox", tParentData.strKey, tData.vValue)
+	end
+	
+	wndControl:GetParent():GetParent():Show(false)
+end
+
+-----------------------------------------------------------------------------------------------
+-- EditBox
+-----------------------------------------------------------------------------------------------
+function Gui:API_EditBox(tModule, wnd, strText, tSettings, strKey, tOptions)
+	-- defaults
+	local tData = {
+		tModule = tModule,
+		tSettings = tSettings,
+		strKey = strKey,
+		eType = EnumWindowType.ComboBox,
+	}
+	
+	local strFont = self.tDefaults.strFont
+	local strText = strText
+
+	-- load wnnd
+	local wndEditBox = Apollo.LoadForm(xmlDoc, "ForgeUI_EditBox", wnd, self)
+	
+	-- event handlers
+	wndEditBox:FindChild("EditBox"):AddEventHandler("EditBoxChanged", "OnEditBoxChanged", self)
+	wndEditBox:FindChild("EditBox"):AddEventHandler("EditBoxReturn", "OnEditBoxReturn", self)
+	
+	-- options
+	if tOptions then
+		if tOptions.tOffsets then
+			wndEditBox:SetAnchorOffsets(unpack(tOptions.tOffsets))
+		end
+		
+		if tOptions.tWidths then
+			local nLeft, nTop, nRight, nBottom = wndEditBox:GetAnchorOffsets()
+			wndEditBox:SetAnchorOffsets(nLeft, nTop, nLeft + tOptions.tWidths[1] + tOptions.tWidths[2] + 5, nBottom)
+			
+			nLeft, nTop, nRight, nBottom = wndEditBox:FindChild("Background"):GetAnchorOffsets()
+			wndEditBox:FindChild("Background"):SetAnchorOffsets(nLeft, nTop, tOptions.tWidths[1], nBottom)
+			
+			nLeft, nTop, nRight, nBottom = wndEditBox:FindChild("Text"):GetAnchorOffsets()
+			wndEditBox:FindChild("Text"):SetAnchorOffsets(- tOptions.tWidths[2], nTop, nRight, nBottom)
+		end
+		
+		if tOptions.tMove then
+			local nLeft, nTop, nRight, nBottom = wndEditBox:GetAnchorOffsets()
+			nLeft = nLeft + tOptions.tMove[1]
+			nTop = nTop + tOptions.tMove[2]
+			nRight = nRight + tOptions.tMove[1]
+			nBottom = nBottom + tOptions.tMove[2]
+			wndEditBox:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+		end
+		
+		if tOptions.fnCallback then
+			tData.fnCallback = tOptions.fnCallback
+		end
+		
+		if tOptions.fnCallbackReturn then
+			tData.fnCallbackReturn = tOptions.fnCallbackReturn
+		end
+		
+		if tOptions.strHint then
+			wndEditBox:FindChild("EditBox"):SetPrompt(tOptions.strHint)
+		end
+	end
+	
+	-- data
+	wndEditBox:SetData(tData)
+	
+	-- set wnd
+	if tOptions and tOptions.bInnerText then
+		wndEditBox:FindChild("EditBox"):SetFont(strFont)
+		wndEditBox:FindChild("EditBox"):SetText(strText)
+	else
+		wndEditBox:FindChild("Text"):SetFont(strFont)
+		wndEditBox:FindChild("Text"):SetText(strText)
+	end
+	
+	return wndComboBox
+end
+
+function Gui:OnEditBoxReturn(wndHandler, wndControl, strText)
+	local tData = wndControl:GetParent():GetParent():GetData()
+	
+	if tData.tModule and tData.fnCallbackReturn then
+		tData.fnCallbackReturn(tData.tModule, "textobox_return", tData.strKey, strText) 
 	end
 end
 

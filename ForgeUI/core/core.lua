@@ -51,14 +51,6 @@ local bResetSettings = false
 -----------------------------------------------------------------------------------------------
 function Core:ForgeAPI_Init()
 	Print("ForgeUI v" .. self.strVersion .. " has been loaded")
-	
-	F:API_AddMenuItem(self, "Profiles", "Profiles")
-end
-
-function Core:ForgeAPI_PopulateOptions()
-	local wndProfiles = self.tOptionHolders["Profiles"]
-	
-	G:API_AddText(self, wndProfiles, "Current profile: " .. P:API_GetProfileName())
 end
 
 -----------------------------------------------------------------------------------------------
@@ -82,6 +74,10 @@ function F:API_NewAddon(tAddon, strName, tParams)
 	if bInit and addon.ForgeAPI_Init then
 		addon:ForgeAPI_Init()
 		addon.bInit = true
+	end
+	
+	if bInit and addon.ForgeAPI_LoadSettings then
+		addon:ForgeAPI_LoadSettings()
 	end
 	
 	if bInit and addon.ForgeAPI_PopulateOptions then
@@ -113,6 +109,10 @@ function F:API_NewModule(t, strName, tParams)
 	if bInit and module.ForgeAPI_Init then
 		module:ForgeAPI_Init()
 		module.bInit = true
+	end
+	
+	if bInit and module.ForgeAPI_LoadSettings then
+		module:ForgeAPI_LoadSettings()
 	end
 	
 	if bInit and module.ForgeAPI_PopulateOptions then
@@ -153,6 +153,10 @@ function F:Init()
 			v.tModule.bInit = true
 		end
 		
+		if v.tModule.ForgeAPI_LoadSettings then
+			v.tModule:ForgeAPI_LoadSettings()
+		end
+		
 		if v.tModule.ForgeAPI_PopulateOptions then
 			v.tModule:ForgeAPI_PopulateOptions()
 		end
@@ -164,6 +168,10 @@ function F:Init()
 		else
 			v.tAddon:ForgeAPI_Init(v.tAddon)
 			v.tAddon.bInit = true
+		end
+		
+		if v.tAddon.ForgeAPI_LoadSettings then
+			v.tAddon:ForgeAPI_LoadSettings()
 		end
 		
 		if v.tAddon.ForgeAPI_PopulateOptions then

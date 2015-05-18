@@ -19,7 +19,7 @@ local ForgeUI_SprintDash = {
 	strDisplayName = "Sprint / dash meter",
 	
 	settings_version = 1,
-    tCharSettings = {
+    tGlobalSettings = {
 		bShowSprint = false,
 		bShowDash = false,
 		crBorder = "FF000000",
@@ -46,19 +46,23 @@ function ForgeUI_SprintDash:ForgeAPI_Init()
 	F:API_AddMenuItem(self, self.strDisplayName, "General")
 end
 
+function ForgeUI_SprintDash:ForgeAPI_LoadSettings()
+	
+end
+
 function ForgeUI_SprintDash:ForgeAPI_PopulateOptions()
 	local wndGeneral = self.tOptionHolders["General"]
 	
 	-- color boxes
-	G:API_AddColorBox(self, wndGeneral, "Border color", self.tCharSettings, "crBorder")
-	G:API_AddColorBox(self, wndGeneral, "Background color", self.tCharSettings, "crBackground", { tMove = { 0, 30 }})
-	G:API_AddColorBox(self, wndGeneral, "Sprint color", self.tCharSettings, "crSprint", { tMove = { 0, 90 }, fnCallback = self.RefreshStyle_SprintBar })
-	G:API_AddColorBox(self, wndGeneral, "Dash color", self.tCharSettings, "crDash", { tMove = { 0, 150 }})
-	G:API_AddColorBox(self, wndGeneral, "Dash color (not full)", self.tCharSettings, "crDash2", { tMove = { 0, 180 }})
+	G:API_AddColorBox(self, wndGeneral, "Border color", self.tGlobalSettings, "crBorder")
+	G:API_AddColorBox(self, wndGeneral, "Background color", self.tGlobalSettings, "crBackground", { tMove = { 0, 30 }})
+	G:API_AddColorBox(self, wndGeneral, "Sprint color", self.tGlobalSettings, "crSprint", { tMove = { 0, 90 }, fnCallback = self.RefreshStyle_SprintBar })
+	G:API_AddColorBox(self, wndGeneral, "Dash color", self.tGlobalSettings, "crDash", { tMove = { 0, 150 }})
+	G:API_AddColorBox(self, wndGeneral, "Dash color (not full)", self.tGlobalSettings, "crDash2", { tMove = { 0, 180 }})
 	
 	-- check boxes
-	G:API_AddCheckBox(self, wndGeneral, "Sprint meter permanently", self.tCharSettings, "bShowSprint", { tMove = { 205, 0 } })
-	G:API_AddCheckBox(self, wndGeneral, "Dash meter permanently", self.tCharSettings, "bShowDash", { tMove = { 205, 30 } })
+	G:API_AddCheckBox(self, wndGeneral, "Sprint meter permanently", self.tGlobalSettings, "bShowSprint", { tMove = { 205, 0 } })
+	G:API_AddCheckBox(self, wndGeneral, "Dash meter permanently", self.tGlobalSettings, "bShowDash", { tMove = { 205, 30 } })
 end
 
 -----------------------------------------------------------------------------------------------
@@ -86,7 +90,7 @@ function ForgeUI_SprintDash:OnNextFrame()
 	local nSprintCurr = unitPlayer:GetResource(sprintResource)
 	local nSprintMax = unitPlayer:GetMaxResource(sprintResource)
 	local bSprintFull = nSprintCurr == nSprintMax or unitPlayer:IsDead()
-	local bShowSprint = not bSprintFull or self.tCharSettings.bShowSprint
+	local bShowSprint = not bSprintFull or self.tGlobalSettings.bShowSprint
 
 	if bShowSprint then
 		self.wndSprintMeter:FindChild("Bar"):SetMax(unitPlayer:GetMaxResource(sprintResource))
@@ -101,13 +105,13 @@ function ForgeUI_SprintDash:OnNextFrame()
 	local nDashCurr = unitPlayer:GetResource(dashResource)
 	local nDashMax = unitPlayer:GetMaxResource(dashResource)
 	local bDashFull = nDashCurr == nDashMax or unitPlayer:IsDead()
-	local bShowDash = not bDashFull or self.tCharSettings.bShowDash
+	local bShowDash = not bDashFull or self.tGlobalSettings.bShowDash
 	
 	if bShowDash then
 		if nDashCurr < 100 then
 			self.wndDashMeter:FindChild("Bar_A"):SetMax(nDashMax / 2)
 			self.wndDashMeter:FindChild("Bar_A"):SetProgress(nDashCurr)
-			self.wndDashMeter:FindChild("Bar_A"):SetBarColor(self.tCharSettings.crBorder)
+			self.wndDashMeter:FindChild("Bar_A"):SetBarColor(self.tGlobalSettings.crBorder)
 			
 			self.wndDashMeter:FindChild("Bar_B"):SetProgress(0)
 		elseif nDashCurr < nDashMax then
@@ -140,7 +144,7 @@ function ForgeUI_SprintDash:LoadStyle_SprintBar()
 end
 
 function ForgeUI_SprintDash:RefreshStyle_SprintBar()
-	self.wndSprintMeter:FindChild("Bar"):SetBarColor(self.tCharSettings.crSprint)
+	self.wndSprintMeter:FindChild("Bar"):SetBarColor(self.tGlobalSettings.crSprint)
 end
 
 function ForgeUI_SprintDash:LoadStyle_DashBar()
@@ -149,13 +153,13 @@ end
 
 function ForgeUI_SprintDash:RefreshStyle_DashBar(nDashCurr, nDashMax)
 	if nDashCurr < 100 then
-		self.wndDashMeter:FindChild("Bar_A"):SetBarColor(self.tCharSettings.crDash2)
+		self.wndDashMeter:FindChild("Bar_A"):SetBarColor(self.tGlobalSettings.crDash2)
 	elseif nDashCurr < nDashMax then
-		self.wndDashMeter:FindChild("Bar_A"):SetBarColor(self.tCharSettings.crDash)
-		self.wndDashMeter:FindChild("Bar_B"):SetBarColor(self.tCharSettings.crDash2)
+		self.wndDashMeter:FindChild("Bar_A"):SetBarColor(self.tGlobalSettings.crDash)
+		self.wndDashMeter:FindChild("Bar_B"):SetBarColor(self.tGlobalSettings.crDash2)
 	else
-		self.wndDashMeter:FindChild("Bar_A"):SetBarColor(self.tCharSettings.crDash)
-		self.wndDashMeter:FindChild("Bar_B"):SetBarColor(self.tCharSettings.crDash)
+		self.wndDashMeter:FindChild("Bar_A"):SetBarColor(self.tGlobalSettings.crDash)
+		self.wndDashMeter:FindChild("Bar_B"):SetBarColor(self.tGlobalSettings.crDash)
 	end
 end
 
