@@ -15,7 +15,7 @@
     <Script Name="core\util.lua"/>
     <!-- modules -->
     <Script Name="modules\forgecolor\forgecolor.lua"/>
-	<Script Name="modules\profiles_module.lua"/>
+    <Script Name="modules\profiles_module.lua"/>
     <!-- skins -->
     <Script Name="modules\skins\skins.lua"/>
     <Script Name="modules\skins\carbine\taxi.lua"/>

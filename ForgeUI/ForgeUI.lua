@@ -19,7 +19,7 @@ local Addon = {}
 -----------------------------------------------------------------------------------------------
 local AUTHOR = "Winty Badass@Jabbit"
 local VERSION = "0.5-alpha"
-local API_VERSION = 2
+local API_VERSION = 3
  
 -----------------------------------------------------------------------------------------------
 -- Initialization
@@ -142,7 +142,7 @@ function Addon:OnSave(...) return ForgeUI:OnSave(...) end
 function Addon:OnRestore(...) ForgeUI:OnRestore(...) end
 
 -----------------------------------------------------------------------------------------------
--- FOrgeUI public api
+-- ForgeUI public api
 -----------------------------------------------------------------------------------------------
 function ForgeUI:API_AddMenuItem(tModule, strText, strWindow)
 	local wndItem = Apollo.LoadForm(Inst.xmlDoc, "ForgeUI_Item", Inst.wndMenuHolder, Inst)
@@ -190,6 +190,8 @@ function ForgeUI:API_AddMenuToMenuItem(tModule, wndParent, strText, strWindow)
 	
 	return wndItem
 end
+
+function ForgeUI:API_GetApiVersion() return API_VERSION end
 
 -- ForgeLibs initialization
 _G["ForgeLibs"] = {}

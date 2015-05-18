@@ -147,16 +147,16 @@ function ForgeColor:UpdateColor()
 	self.wndPicker:FindChild("ColorBox"):SetTextColor(crNew)
 	self.wndPicker:FindChild("ColorBox"):SetText(crNew)
 	
-	if tAddon and fnCallback then
-		fnCallback(tAddon, "ForgeColor_callback", crNew, strKey)
-	end
-	
 	if tAddon and wndControl then
 		wndControl:SetBGColor(crNew)
 	end
 
 	if tAddon and tSettings and strKey then
 		tSettings[strKey] = crNew
+	end
+	
+	if tAddon and fnCallback then
+		fnCallback(tAddon, "ForgeColor_callback", crNew, strKey)
 	end
 end
 

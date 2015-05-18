@@ -14,9 +14,11 @@ local F, A, M, G = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GU
 -- ForgeUI Addon Definition
 -----------------------------------------------------------------------------------------------
 local ForgeUI_SprintDash = {
-    api_version = 3,
-	author = "WintyBadass",
-	strDisplayName = "Sprint / dash meter",
+    API_VERSION = 3, -- mandatory
+	VERSION = "1.0.0",
+	AUTHOR = "WintyBadass",
+	ADDON_NAME = "ForgeUI_SprintDash",
+	DISPLAY_NAME = "Sprint / dash meter",
 	
 	settings_version = 1,
     tGlobalSettings = {
@@ -43,7 +45,7 @@ function ForgeUI_SprintDash:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_SprintDash//ForgeUI_SprintDash.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 	
-	F:API_AddMenuItem(self, self.strDisplayName, "General")
+	F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 end
 
 function ForgeUI_SprintDash:ForgeAPI_LoadSettings()
@@ -166,4 +168,4 @@ end
 -----------------------------------------------------------------------------------------------
 -- ForgeUI addon registration
 -----------------------------------------------------------------------------------------------
-F:API_NewAddon(ForgeUI_SprintDash, "forgeui_sprintdash")
+F:API_NewAddon(ForgeUI_SprintDash)

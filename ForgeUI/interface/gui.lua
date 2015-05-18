@@ -176,30 +176,6 @@ function Gui:OnColorBoxDown(wndHandler, wndControl, eMouseButton)
 	})
 end
 
-function Gui:OnColorBoxChanged(wndHandler, wndControl, strText)
-	local tData = wndControl:GetParent():GetData()
-	
-	if tData.bShowAlpha and string.len(strText) > 8 then
-		strText = string.sub(strText, 1, 8)
-		wndControl:SetText(strText)
-	elseif not tData.bShowAlpha and string.len(strText) > 6 then
-		strText = string.sub(strText, 1, 6)
-		wndControl:SetText(strText)
-	end
-	
-	if tData.bShowAlpha and string.len(strText) == 8 then
-		tData.strColor = strText
-	elseif not tData.bShowAlpha and string.len(strText) == 6 then
-		tData.strColor = "FF" .. strText
-	end
-	
-	self:SetColorBox(wndControl:GetParent())
-	
-	if tData.fnCallback then
-		tData.fnCallback(tData.tModule)
-	end
-end
-
 -----------------------------------------------------------------------------------------------
 -- CheckBox
 -----------------------------------------------------------------------------------------------

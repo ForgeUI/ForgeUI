@@ -60,17 +60,22 @@ end
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Addon API
 -----------------------------------------------------------------------------------------------
-function F:API_NewAddon(tAddon, strName, tParams)
-	if tAddons[strName] then return end
+function F:API_NewAddon(tAddon, tParams)
+	if not tAddon.ADDON_NAME or tAddons[tAddon.ADDON_NAME] then return end
+	if tAddon.API_VERSION ~= F:API_GetApiVersion() then return end
 
-	local addon = A:NewAddon(tAddon, strName, tParams)
+	local addon = A:NewAddon(tAddon, tAddon.ADDON_NAME, tParams)
 	Apollo.RegisterAddon(addon)
 	
-	tAddons[strName] = {
+	tAddons[tAddon.ADDON_NAME] = {
         ["tAddon"] = addon,
         ["tParams"] = tParams,
     }
 	
+	if addon.ForgeAPI_PreInit then
+		addon:ForgeAPI_PreInit()
+	end
+
 	if bInit and addon.ForgeAPI_Init then
 		addon:ForgeAPI_Init()
 		addon.bInit = true
@@ -106,6 +111,10 @@ function F:API_NewModule(t, strName, tParams)
         ["tParams"] = tParams,
     }
 	
+	if module.ForgeAPI_PreInit then
+		module:ForgeAPI_PreInit()
+	end
+
 	if bInit and module.ForgeAPI_Init then
 		module:ForgeAPI_Init()
 		module.bInit = true
@@ -271,12 +280,16 @@ function F:AfterRestore()
 	
 	if tData.tModules then
 		for k, v in pairs(tData.tModules) do
-			tModules[k].tModule.tCharSettings = Util:CopyTable(tModules[k].tModule.tCharSettings, v.tCharSettings)
+			if tModules[k] then
+				tModules[k].tModule.tCharSettings = Util:CopyTable(tModules[k].tModule.tCharSettings, v.tCharSettings)
+			end
 		end
 	end
 	if tData.tAddons then
 		for k, v in pairs(tData.tAddons) do
-			tAddons[k].tAddon.tCharSettings = Util:CopyTable(tAddons[k].tAddon.tCharSettings, v.tCharSettings)
+			if tAddons[k] then
+				tAddons[k].tAddon.tCharSettings = Util:CopyTable(tAddons[k].tAddon.tCharSettings, v.tCharSettings)
+			end
 		end
 	end
 
@@ -285,12 +298,16 @@ function F:AfterRestore()
 	
 	if tData.tModules then
 		for k, v in pairs(tData.tModules) do
-			tModules[k].tModule.tGlobalSettings = Util:CopyTable(tModules[k].tModule.tGlobalSettings , v.tGlobalSettings )
+			if tModules[k] then
+				tModules[k].tModule.tGlobalSettings = Util:CopyTable(tModules[k].tModule.tGlobalSettings, v.tGlobalSettings)
+			end
 		end
 	end
 	if tData.tAddons then
 		for k, v in pairs(tData.tAddons) do
-			tAddons[k].tAddon.tGlobalSettings = Util:CopyTable(tAddons[k].tAddon.tGlobalSettings , v.tGlobalSettings )
+			if tAddons[k] then
+				tAddons[k].tAddon.tGlobalSettings = Util:CopyTable(tAddons[k].tAddon.tGlobalSettings, v.tGlobalSettings)
+			end
 		end
 	end
 end
