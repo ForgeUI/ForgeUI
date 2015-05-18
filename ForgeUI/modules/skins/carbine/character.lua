@@ -6,7 +6,7 @@
 -- about:		ForgeUI skin for Carbine's Character addon
 -----------------------------------------------------------------------------------------------
 
-local F, A, M, G = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI
+local F, A, M, G, P = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI, Profiles
 local Skins = F:API_GetModule("skins")
 
 local Addon

@@ -6,7 +6,7 @@
 -- about:		ForgeUI core script
 -----------------------------------------------------------------------------------------------
 
-local F, A, M, G = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI
+local F, A, M, G, P = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI, Profiles
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition
@@ -31,6 +31,16 @@ local Core = {
 -----------------------------------------------------------------------------------------------
 -- Local variables
 -----------------------------------------------------------------------------------------------
+local tForgeSavedData = {
+	tGeneral = {
+		_tInfo = {},
+		tProfiles = {},
+	},
+	tCharacter = {
+		tProfiles = {},
+	}
+}
+
 local tModules = {}
 local tAddons = {}
 local bInit = false
@@ -73,6 +83,12 @@ function F:API_NewAddon(tAddon, strName, tParams)
 	return addon
 end
 
+function F:API_GetAddon(strName)
+    if tAddons[strName] then
+        return tAddons[strName].tAddon
+	end
+end
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module API
 -----------------------------------------------------------------------------------------------
@@ -99,7 +115,7 @@ function F:API_NewModule(t, strName, tParams)
 end
 
 function F:API_GetModule(strName)
-    if not tModules[strName].tParams.bLocal then
+    if tModules[strName] and not tModules[strName].tParams.bLocal then
         return tModules[strName].tModule
     else
         return nil
@@ -117,8 +133,9 @@ end
 -----------------------------------------------------------------------------------------------
 function F:Init()
 	if bInit then return end
-
 	bInit = true
+	
+	F:AfterRestore()
 	
 	for k, v in pairs(tModules) do
 		if not v.tModule.ForgeAPI_Init then
@@ -159,7 +176,8 @@ function F:OnSave(eType)
 	local Util = F:API_GetModule("util")
 
 	if eType == GameLib.CodeEnumAddonSaveLevel.Character then
-		local tData = {}
+		local tData = P:API_GetProfile(tForgeSavedData.tCharacter)
+		local tNewData = {}
 		
 		tData.tModules = {}
 		for k, v in pairs(tModules) do
@@ -167,7 +185,7 @@ function F:OnSave(eType)
 				tData.tModules[k] = {}
 				tData.tModules[k].tCharSettings = {}
 				
-				tData.tModules[k].tCharSettings = Util:CopyTable(tData.tModules[k].tCharSettings , v.tModule.tCharSettings)
+				tData.tModules[k].tCharSettings = v.tModule.tCharSettings
 			end
 		end
 		
@@ -177,13 +195,16 @@ function F:OnSave(eType)
 				tData.tAddons[k] = {}
 				tData.tAddons[k].tCharSettings = {}
 				
-				tData.tAddons[k].tCharSettings = Util:CopyTable(tData.tAddons[k].tCharSettings , v.tAddon.tCharSettings)
+				tData.tAddons[k].tCharSettings = v.tAddon.tCharSettings
 			end
 		end
 		
-		return tData
+		tNewData = Util:CopyTable(tNewData, tForgeSavedData.tCharacter)
+		return tNewData
 	elseif eType == GameLib.CodeEnumAddonSaveLevel.General then
-		local tData = {}
+		P:OnSave(tForgeSavedData)
+	
+		local tData = P:API_GetProfile(tForgeSavedData.tGeneral)
 		
 		tData.tModules = {}
 		for k, v in pairs(tModules) do
@@ -191,7 +212,7 @@ function F:OnSave(eType)
 				tData.tModules[k] = {}
 				tData.tModules[k].tGlobalSettings = {}
 				
-				tData.tModules[k].tGlobalSettings = Util:CopyTable(tData.tModules[k].tGlobalSettings , v.tModule.tGlobalSettings )
+				tData.tModules[k].tGlobalSettings = v.tModule.tGlobalSettings
 			end
 		end
 		
@@ -201,38 +222,57 @@ function F:OnSave(eType)
 				tData.tAddons[k] = {}
 				tData.tAddons[k].tGlobalSettings = {}
 				
-				tData.tAddons[k].tGlobalSettings = Util:CopyTable(tData.tAddons[k].tGlobalSettings , v.tAddon.tGlobalSettings )
+				tData.tAddons[k].tGlobalSettings = v.tAddon.tGlobalSettings
 			end
 		end
 		
-		return tData
+		tNewData = Util:CopyTable(tNewData, tForgeSavedData.tGeneral)
+		return tNewData
 	end
 end
 
 function F:OnRestore(eType, tData)
 	local Util = F:API_GetModule("util")
 	
-	if eType == GameLib.CodeEnumAddonSaveLevel.Character then
-		if tData.tModules then
-			for k, v in pairs(tData.tModules) do
-				tModules[k].tModule.tCharSettings = Util:CopyTable(tModules[k].tModule.tCharSettings, v.tCharSettings)
-			end
+	if eType == GameLib.CodeEnumAddonSaveLevel.General then
+		tForgeSavedData.tGeneral = Util:CopyTable(tForgeSavedData.tGeneral, tData)
+	elseif eType == GameLib.CodeEnumAddonSaveLevel.Character then
+		tForgeSavedData.tCharacter = Util:CopyTable(tForgeSavedData.tCharacter, tData)
+	end
+end
+
+function F:AfterRestore()
+	P:AfterRestore(tForgeSavedData)
+
+	local Util = F:API_GetModule("util")
+	
+	local tData = {}
+	
+	-- character settings
+	tData = P:API_GetProfile(tForgeSavedData.tCharacter)
+	
+	if tData.tModules then
+		for k, v in pairs(tData.tModules) do
+			tModules[k].tModule.tCharSettings = Util:CopyTable(tModules[k].tModule.tCharSettings, v.tCharSettings)
 		end
-		if tData.tAddons then
-			for k, v in pairs(tData.tAddons) do
-				tAddons[k].tAddon.tCharSettings = Util:CopyTable(tAddons[k].tAddon.tCharSettings, v.tCharSettings)
-			end
+	end
+	if tData.tAddons then
+		for k, v in pairs(tData.tAddons) do
+			tAddons[k].tAddon.tCharSettings = Util:CopyTable(tAddons[k].tAddon.tCharSettings, v.tCharSettings)
 		end
-	elseif eType == GameLib.CodeEnumAddonSaveLevel.General then
-		if tData.tModules then
-			for k, v in pairs(tData.tModules) do
-				tModules[k].tModule.tGlobalSettings = Util:CopyTable(tModules[k].tModule.tGlobalSettings , v.tGlobalSettings )
-			end
+	end
+
+	-- global settings
+	tData = P:API_GetProfile(tForgeSavedData.tGeneral)
+	
+	if tData.tModules then
+		for k, v in pairs(tData.tModules) do
+			tModules[k].tModule.tGlobalSettings = Util:CopyTable(tModules[k].tModule.tGlobalSettings , v.tGlobalSettings )
 		end
-		if tData.tAddons then
-			for k, v in pairs(tData.tAddons) do
-				tAddons[k].tAddon.tGlobalSettings = Util:CopyTable(tAddons[k].tAddon.tGlobalSettings , v.tGlobalSettings )
-			end
+	end
+	if tData.tAddons then
+		for k, v in pairs(tData.tAddons) do
+			tAddons[k].tAddon.tGlobalSettings = Util:CopyTable(tAddons[k].tAddon.tGlobalSettings , v.tGlobalSettings )
 		end
 	end
 end

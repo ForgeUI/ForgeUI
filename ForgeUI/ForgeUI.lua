@@ -63,8 +63,14 @@ function Addon:OnDocLoaded()
 	self.wndMain:FindChild("VersionText"):SetText(VERSION)
 	
 	-- init Modules
-	ForgeUI:Init()
+	if GameLib.GetPlayerUnit() then
+		self:OnCharacterCreated()
+	else
+		Apollo.RegisterEventHandler("CharacterCreated", "OnCharacterCreated", self)
+	end
 end
+
+function Addon:OnCharacterCreated() ForgeUI:Init() end
 
 function Addon:OnConfigure() self:OnForgeUIOn() end
 function Addon:OnForgeUIOn() self.wndMain:Invoke() end

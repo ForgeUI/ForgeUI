@@ -6,7 +6,7 @@
 -- about:		ForgeUI skin for Carbine's Taxi addon
 -----------------------------------------------------------------------------------------------
 
-local F, A, M, G = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI
+local F, A, M, G, P = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI, Profiles
 local Skins = F:API_GetModule("skins")
 
 local Addon
@@ -19,7 +19,7 @@ local fnOnDocumentReadyOrig
 local function LoadSkin()
 	Addon = Apollo.GetAddon("TaxiMap")
 	
-	if Addon.xmlDoc:IsLoaded() then
+	if Addon.xmlDoc and Addon.xmlDoc:IsLoaded() then
 		fnUseSkin(Addon) 
 	end
 	

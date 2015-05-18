@@ -8,6 +8,7 @@
     <!-- forge libraries -->
     <Script Name="core\addon.lua"/>
     <Script Name="core\module.lua"/>
+	<Script Name="core\profiles.lua"/>
     <Script Name="interface\gui.lua"/>
     <!-- core scripts -->
     <Script Name="core\core.lua"/>

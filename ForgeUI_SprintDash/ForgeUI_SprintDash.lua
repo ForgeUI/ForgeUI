@@ -40,8 +40,6 @@ local dashResource = 7
 -- ForgeAPI
 -----------------------------------------------------------------------------------------------
 function ForgeUI_SprintDash:ForgeAPI_Init()
-	Print(Apollo.GetAssetFolder())
-
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_SprintDash//ForgeUI_SprintDash.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 	
