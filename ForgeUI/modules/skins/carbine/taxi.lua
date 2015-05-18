@@ -7,56 +7,38 @@
 -----------------------------------------------------------------------------------------------
 
 local F, A, M, G, P = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI, Profiles
+local Hook = Apollo.GetPackage("Gemini:Hook-1.0").tPackage
 local Skins = F:API_GetModule("skins")
-
-local Addon
 
 local fnUseSkin
 
-local fnOnDocumentReady
-local fnOnDocumentReadyOrig
-
 local function LoadSkin()
-	Addon = Apollo.GetAddon("TaxiMap")
+	local addon = Apollo.GetAddon("TaxiMap")
 	
-	if Addon.xmlDoc and Addon.xmlDoc:IsLoaded() then
-		fnUseSkin(Addon) 
+	Hook:PostHook(addon, "OnDocumentReady", function()
+		fnUseSkin(addon)
+	end)
+	
+	if addon.xmlDoc and addon.xmlDoc:IsLoaded() then
+		fnUseSkin(addon)
 	end
-	
-	fnOnDocumentReadyOrig = Addon.OnDocumentReady
-	Addon.OnDocumentReady = fnOnDocumentReady
-end
-
-fnOnDocumentReady = function()
-	fnOnDocumentReadyOrig(Addon)
-	
-	fnUseSkin(Addon)
 end
 
 fnUseSkin = function(addon)
 	if not addon.wndMain then return end
-
-	addon.wndMain:SetSprite("ForgeUI_Border")
-	addon.wndMain:SetBGColor("FF000000")
-	addon.wndMain:SetStyle("Picture", true)
-	addon.wndMain:SetStyle("Border", true)
+	
+	Skins:HandleFrame(addon.wndMain)
 	
 	addon.wndMain:FindChild("MainFrame"):SetStyle("Border", false)
 	
 	-- workaround for carbin's stupid name system
 	addon.wndMain:FindChild("Title"):SetName("TitleOuter")
-	addon.wndMain:FindChild("Title"):SetTextColor("FFFFFFFF")
+	addon.wndMain:FindChild("Title"):SetTextColor("FFFF0000")
 	addon.wndMain:FindChild("TitleOuter"):SetName("Title")
 	
-	addon.wndMain:FindChild("Title"):SetSprite("ForgeUI_InnerWindow")
-	addon.wndMain:FindChild("Title"):SetStyle("Picture", true)
-	addon.wndMain:FindChild("Title"):SetBGColor("FFFF0000") -- TODO: Replace with variable from settings
-	addon.wndMain:FindChild("Title"):SetAnchorOffsets(-200, 5, 200, 40)
+	Skins:HandleTitle(addon.wndMain:FindChild("Title"))
 	
-	addon.wndMain:FindChild("MetalFooter"):SetSprite("ForgeUI_InnerWindow")
-	addon.wndMain:FindChild("MetalFooter"):SetStyle("Picture", true)
-	addon.wndMain:FindChild("MetalFooter"):SetBGColor("FFFFFFFF")
-	addon.wndMain:FindChild("MetalFooter"):SetAnchorOffsets(5, -40, -5, -5)
+	Skins:HandleFooter(addon.wndMain:FindChild("MetalFooter"))
 	
 	addon.wndMain:FindChild("BGArt"):SetSprite("ForgeUI_InnerWindow")
 	addon.wndMain:FindChild("BGArt"):SetStyle("Picture", true)
@@ -67,10 +49,10 @@ fnUseSkin = function(addon)
 	
 	addon.wndMain:FindChild("MapContainer"):SetAnchorOffsets(1, 1, -1, -1)
 	
-	addon.wndMain:FindChild("CancelButton"):ChangeArt("ForgeUI_Button")
+	Skins:HandleButton(addon.wndMain:FindChild("CancelButton"))
 	addon.wndMain:FindChild("CancelButton"):SetAnchorOffsets(-175, -30, -5, -5)
 	
-	Skins:HandleCloseButton(addon.wndMain:FindChild("CloseButton"))
+	Skins:HandleCloseButton(addon.wndMain:FindChild("CloseButton"))	
 end
 
 Skins:NewCarbineSkin("TaxiMap", LoadSkin)

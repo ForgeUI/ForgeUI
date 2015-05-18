@@ -40,6 +40,30 @@ function Skins:NewCarbineSkin(strAddon, fLoadSkin)
 	end
 end
 
+-----------------------------------------------------------------------------------------------
+-- Handle functions
+-----------------------------------------------------------------------------------------------
+function Skins:HandleFrame(wndWindow, tOptions)
+	wndWindow:SetSprite("ForgeUI_Border")
+	wndWindow:SetBGColor("FF000000")
+	wndWindow:SetStyle("Picture", true)
+	wndWindow:SetStyle("Border", true)
+end
+
+function Skins:HandleTitle(wndWindow, tOptions)
+	wndWindow:FindChild("Title"):SetSprite("ForgeUI_InnerWindow")
+	wndWindow:FindChild("Title"):SetStyle("Picture", true)
+	wndWindow:FindChild("Title"):SetBGColor("FFFFFFFF") -- TODO: Replace with variable from settings
+	wndWindow:FindChild("Title"):SetAnchorOffsets(-200, 5, 200, 40)
+end
+
+function Skins:HandleFooter(wndWindow, tOptions)
+	wndWindow:FindChild("MetalFooter"):SetSprite("ForgeUI_InnerWindow")
+	wndWindow:FindChild("MetalFooter"):SetStyle("Picture", true)
+	wndWindow:FindChild("MetalFooter"):SetBGColor("FFFFFFFF")
+	wndWindow:FindChild("MetalFooter"):SetAnchorOffsets(5, -40, -5, -5)
+end
+
 function Skins:HandleCloseButton(wndButton, tOptions)
 	wndButton:ChangeArt("ForgeUI_Button")
 	wndButton:SetText("X")
@@ -56,12 +80,13 @@ end
 
 function Skins:HandleButton(wndButton, tOptions)
 	wndButton:ChangeArt("ForgeUI_Button")
+	wndButton:SetFont("Nameplates")
 	wndButton:SetDisabledTextColor("FF333333") -- TODO: Replace with variable from settings
 	wndButton:SetNormalTextColor("FFFFFFFF")
-	wndButton:SetPressedTextColor("FFFF0000")
-	wndButton:SetPressedFlybyTextColor("FFFF0000")
+	wndButton:SetPressedTextColor("FF888888")
+	wndButton:SetPressedFlybyTextColor("FF888888")
 	wndButton:SetFlybyTextColor("FFFFFFFF")
 end
 
-Skins = F:API_NewModule(Skins, "skins", { bGlobal = true })
+Skins = F:API_NewModule(Skins, "skins", {})
 

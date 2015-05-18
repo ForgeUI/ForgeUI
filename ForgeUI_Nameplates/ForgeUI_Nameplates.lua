@@ -278,6 +278,18 @@ function ForgeUI_Nameplates:ForgeAPI_Init()
 	self.xmlNameplate = XmlDoc.CreateFromFile("..//ForgeUI_Nameplates//ForgeUI_Nameplates.xml")
 	self.xmlNameplate:RegisterCallback("OptionsInit", self)
 	
+	local wndParent = F:API_AddMenuItem(self, self.DISPLAY_NAME)
+	F:API_AddMenuToMenuItem(self, wndParent, "General", "General")
+	F:API_AddMenuToMenuItem(self, wndParent, "Style", "Style")
+	F:API_AddMenuToMenuItem(self, wndParent, "Target", "Target")
+	F:API_AddMenuToMenuItem(self, wndParent, "Player", "Player")
+	F:API_AddMenuToMenuItem(self, wndParent, "Pary player", "PartyPlayer")
+	F:API_AddMenuToMenuItem(self, wndParent, "Friendly player", "FriendlyPlayer")
+	F:API_AddMenuToMenuItem(self, wndParent, "Hostile player", "HostilePlayer")
+	F:API_AddMenuToMenuItem(self, wndParent, "Friendly NPC", "FriendlyNPC")
+	F:API_AddMenuToMenuItem(self, wndParent, "Neutral NPC", "NeutralNPC")
+	F:API_AddMenuToMenuItem(self, wndParent, "Hostile NPC", "HostileNPC")
+	
 	self:NameplatesInit()
 end
 
