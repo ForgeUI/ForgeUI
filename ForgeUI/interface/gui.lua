@@ -8,6 +8,9 @@
 
 require "Window"
 
+local F, A, M, G, P = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI, Profiles
+local ForgeColor
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Library Definition
 -----------------------------------------------------------------------------------------------
@@ -32,6 +35,8 @@ local new = function(self, o)
 end
 
 function Gui:ForgeAPI_Init()
+	ForgeColor = F:API_GetModule("forgecolor")
+
 	strPrefix = Apollo.GetAssetFolder()
 	local tToc = XmlDoc.CreateFromFile("toc.xml"):ToTable()
 	for k,v in ipairs(tToc) do
@@ -97,7 +102,6 @@ function Gui:API_AddColorBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 		tModule = tModule,
 		tSettings = tSettings,
 		strKey = strKey,
-		bShowAlpha = false,
 		strColor = tSettings[strKey],
 	}
 	
@@ -108,7 +112,7 @@ function Gui:API_AddColorBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 	local wndColorBox = Apollo.LoadForm(xmlDoc, "ForgeUI_ColorBox", wnd, self)
 	
 	-- event handlers
-	wndColorBox:FindChild("EditBox"):AddEventHandler("EditBoxChanged", "OnColorBoxChanged", self)
+	wndColorBox:FindChild("ColorBox"):AddEventHandler("MouseButtonDown", "OnColorBoxDown", self)
 	
 	-- options
 	if tOptions then
@@ -131,7 +135,6 @@ function Gui:API_AddColorBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 	end
 	
 	-- set wnd
-	wndColorBox:FindChild("EditBox"):SetFont(strFont)
 	wndColorBox:FindChild("Text"):SetText(strText)
 	wndColorBox:FindChild("Text"):SetFont(strFont)
 	
@@ -146,21 +149,22 @@ end
 function Gui:SetColorBox(wndControl, bChangeText)
 	local tData = wndControl:GetData()
 	
-	if tData.bShowAlpha then
-		if bChangeText then
-			wndControl:FindChild("EditBox"):SetText(tData.strColor)
-		end
-		wndControl:FindChild("EditBox"):SetTextColor(tData.strColor)
-	else
-		if bChangeText then
-			wndControl:FindChild("EditBox"):SetText(string.sub(tData.strColor, 3, string.len(tData.strColor)))
-		end
-		wndControl:FindChild("EditBox"):SetTextColor(tData.strColor)
-	end
+	wndControl:FindChild("ColorBox"):SetBGColor(tData.strColor)
 	
 	if tData.tSettings and tData.strKey then
 		tData.tSettings[tData.strKey] = tData.strColor
 	end
+end
+
+function Gui:OnColorBoxDown(wndHandler, wndControl, eMouseButton)
+	local tData = wndControl:GetParent():GetParent():GetData()
+	
+	ForgeColor:API_ShowPicker(tData.tModule, tData.tSettings[tData.strKey], {
+		tSettings = tData.tSettings,
+		strKey = tData.strKey,
+		wndControl = wndControl,
+		fnCallback = tData.fnCallback,
+	})
 end
 
 function Gui:OnColorBoxChanged(wndHandler, wndControl, strText)
