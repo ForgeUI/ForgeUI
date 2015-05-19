@@ -15,44 +15,43 @@ local fnUseSkin
 local function LoadSkin()
 	local addon = Apollo.GetAddon("TaxiMap")
 	
-	Hook:PostHook(addon, "OnDocumentReady", function()
-		fnUseSkin(addon)
-	end)
+	Hook:PostHook(addon, "OnDocumentReady", fnUseSkin)
 	
 	if addon.xmlDoc and addon.xmlDoc:IsLoaded() then
 		fnUseSkin(addon)
 	end
 end
 
-fnUseSkin = function(addon)
-	if not addon.wndMain then return end
+fnUseSkin = function(luaCaller)
+	if not luaCaller.wndMain then return end
 	
-	Skins:HandleFrame(addon.wndMain)
+	Skins:HandleFrame(luaCaller.wndMain)
 	
-	addon.wndMain:FindChild("MainFrame"):SetStyle("Border", false)
+	luaCaller.wndMain:FindChild("MainFrame"):SetStyle("Border", false)
 	
 	-- workaround for carbin's stupid name system
-	addon.wndMain:FindChild("Title"):SetName("TitleOuter")
-	addon.wndMain:FindChild("Title"):SetTextColor("FFFF0000")
-	addon.wndMain:FindChild("TitleOuter"):SetName("Title")
+	luaCaller.wndMain:FindChild("Title"):SetName("TitleOuter")
+	luaCaller.wndMain:FindChild("Title"):SetTextColor("FFFF0000")
+	luaCaller.wndMain:FindChild("Title"):SetFont("Nameplates")
+	luaCaller.wndMain:FindChild("TitleOuter"):SetName("Title")
 	
-	Skins:HandleTitle(addon.wndMain:FindChild("Title"))
+	Skins:HandleTitle(luaCaller.wndMain:FindChild("Title"))
 	
-	Skins:HandleFooter(addon.wndMain:FindChild("MetalFooter"))
+	Skins:HandleFooter(luaCaller.wndMain:FindChild("MetalFooter"))
 	
-	addon.wndMain:FindChild("BGArt"):SetSprite("ForgeUI_InnerWindow")
-	addon.wndMain:FindChild("BGArt"):SetStyle("Picture", true)
-	addon.wndMain:FindChild("BGArt"):SetBGColor("FFFFFFFF")
-	addon.wndMain:FindChild("BGArt"):SetAnchorOffsets(5, 45, -5, -45)
+	luaCaller.wndMain:FindChild("BGArt"):SetSprite("ForgeUI_InnerWindow")
+	luaCaller.wndMain:FindChild("BGArt"):SetStyle("Picture", true)
+	luaCaller.wndMain:FindChild("BGArt"):SetBGColor("FFFFFFFF")
+	luaCaller.wndMain:FindChild("BGArt"):SetAnchorOffsets(5, 30, -5, -35)
 	
-	addon.wndMain:FindChild("BG_Backer"):Show(false)
+	luaCaller.wndMain:FindChild("BG_Backer"):Show(false)
 	
-	addon.wndMain:FindChild("MapContainer"):SetAnchorOffsets(1, 1, -1, -1)
+	luaCaller.wndMain:FindChild("MapContainer"):SetAnchorOffsets(1, 1, -1, -1)
 	
-	Skins:HandleButton(addon.wndMain:FindChild("CancelButton"))
-	addon.wndMain:FindChild("CancelButton"):SetAnchorOffsets(-175, -30, -5, -5)
+	Skins:HandleButton(luaCaller.wndMain:FindChild("CancelButton"))
+	luaCaller.wndMain:FindChild("CancelButton"):SetAnchorOffsets(-100, -25, 0, 0)
 	
-	Skins:HandleCloseButton(addon.wndMain:FindChild("CloseButton"))	
+	Skins:HandleCloseButton(luaCaller.wndMain:FindChild("CloseButton"))	
 end
 
 Skins:NewCarbineSkin("TaxiMap", LoadSkin)

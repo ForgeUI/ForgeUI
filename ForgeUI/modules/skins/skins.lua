@@ -52,16 +52,21 @@ end
 
 function Skins:HandleTitle(wndWindow, tOptions)
 	wndWindow:FindChild("Title"):SetSprite("ForgeUI_InnerWindow")
-	wndWindow:FindChild("Title"):SetStyle("Picture", true)
+	wndWindow:FindChild("Title"):SetStyle("Picture", false)
 	wndWindow:FindChild("Title"):SetBGColor("FFFFFFFF") -- TODO: Replace with variable from settings
-	wndWindow:FindChild("Title"):SetAnchorOffsets(-200, 5, 200, 40)
+	wndWindow:FindChild("Title"):SetAnchorOffsets(-200, 0, 200, 30)
 end
 
 function Skins:HandleFooter(wndWindow, tOptions)
-	wndWindow:FindChild("MetalFooter"):SetSprite("ForgeUI_InnerWindow")
-	wndWindow:FindChild("MetalFooter"):SetStyle("Picture", true)
-	wndWindow:FindChild("MetalFooter"):SetBGColor("FFFFFFFF")
+	wndWindow:FindChild("MetalFooter"):SetStyle("Picture", false)
 	wndWindow:FindChild("MetalFooter"):SetAnchorOffsets(5, -40, -5, -5)
+	
+	if tOptions then
+		if tOptions.bBackground then
+			wndWindow:FindChild("MetalFooter"):SetSprite("ForgeUI_InnerWindow")
+			wndWindow:FindChild("MetalFooter"):SetBGColor("FFFFFFFF")
+		end
+	end
 end
 
 function Skins:HandleCloseButton(wndButton, tOptions)
