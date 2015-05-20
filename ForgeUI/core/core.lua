@@ -92,8 +92,13 @@ function F:API_NewAddon(tAddon, tParams)
 		addon.bInit = true
 	end
 	
-	if bInit and addon.ForgeAPI_LoadSettings then
-		addon:ForgeAPI_LoadSettings()
+	if addon.OnDocLoaded then
+		GeminiHook:PostHook(addon, "OnDocLoaded", addon.ForgeAPI_LoadSettings)
+		tAddons[tAddon.NAME].bHooked = true
+	else
+		if bInit and addon.ForgeAPI_LoadSettings then
+			addon:ForgeAPI_LoadSettings()
+		end
 	end
 	
 	if bInit and addon.ForgeAPI_PopulateOptions then
@@ -113,6 +118,13 @@ function F:API_ListAddons()
 	for k, v in pairs(tAddons) do
 		Print(k)
 	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- ForgeUI API
+-----------------------------------------------------------------------------------------------
+function F:API_GetClassColor(strClass)
+	return Core.tGlobalSettings.tClassColors["cr" .. strClass]
 end
 
 -----------------------------------------------------------------------------------------------
@@ -201,7 +213,7 @@ function F:Init()
 			v.tAddon.bInit = true
 		end
 		
-		if v.tAddon.ForgeAPI_LoadSettings then
+		if v.tAddon.ForgeAPI_LoadSettings and not v.bHooked then
 			v.tAddon:ForgeAPI_LoadSettings()
 		end
 		

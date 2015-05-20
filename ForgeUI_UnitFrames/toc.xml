@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Addon Author="WintyBadass" APIVersion="10" Name="ForgeUI_UnitFrames" Description="">
+    <Script Name="ForgeUI_UnitFrames.lua"/>
+    <Form Name="ForgeUI_UnitFrames.xml"/>
+    <ReplaceAddon Name="TargetFrame"/>
+</Addon>

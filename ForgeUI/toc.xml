@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Addon Author="WintyBadass" APIVersion="10" Name="ForgeUI" Description="">
-	<!-- libraries -->
-	<Script Name="libs\GeminiHook-1.0\GeminiHook-1.0.lua"/>
+    <!-- libraries -->
+    <Script Name="libs\GeminiHook-1.0\GeminiHook-1.0.lua"/>
     <!-- addon script -->
     <Script Name="ForgeUI.lua"/>
     <!-- addon xml -->
