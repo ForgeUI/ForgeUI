@@ -13,7 +13,10 @@ local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition
 -----------------------------------------------------------------------------------------------
-local ProfilesModule = {}
+local ProfilesModule = {
+	NAME = "profiles_module",
+	API_VERSION = 3,
+}
 
 -----------------------------------------------------------------------------------------------
 -- Local variables
@@ -75,5 +78,5 @@ function ProfilesModule:OnNewProfile(strType, strKey, strValue)
 	P:API_ChangeProfile(strValue)
 end
 
-ProfilesModule = F:API_NewModule(ProfilesModule, "profiles_module")
+ProfilesModule = F:API_NewModule(ProfilesModule)
 

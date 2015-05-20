@@ -7,16 +7,21 @@
 -----------------------------------------------------------------------------------------------
 
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
-local P = _G["ForgeLibs"]["ForgeProfiles"] -- ForgeProfiles
-local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
+local P = _G["ForgeLibs"]["ForgeProfiles"] -- ForgeUI profiles library
+local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeUI GUI library
+local M = _G["ForgeLibs"]["ForgeModule"] -- ForgeUI module prototype
+local A = _G["ForgeLibs"]["ForgeAddon"] -- ForgeUI addon prototype
 
+-- libraries
 local GeminiHook = Apollo.GetPackage("Gemini:Hook-1.0").tPackage
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition
 -----------------------------------------------------------------------------------------------
 local Core = {
-	strVersion = "0.5.0alpha",
+	NAME = "core",
+	API_VERSION = 3,
+	VERSION = "1.0-alpha",
 
 	tGlobalSettings = {
 		bAdvanced = false,
@@ -35,7 +40,7 @@ local Core = {
 -----------------------------------------------------------------------------------------------
 -- Local variables
 -----------------------------------------------------------------------------------------------
-local tForgeSavedData = {
+local tForgeSavedData = { -- template for saving data
 	tGeneral = {
 		_tInfo = {},
 		tProfiles = {},
@@ -54,7 +59,7 @@ local bResetSettings = false
 -- ForgeUI module functions
 -----------------------------------------------------------------------------------------------
 function Core:ForgeAPI_Init()
-	Print("ForgeUI v" .. self.strVersion .. " has been loaded")
+	Print("ForgeUI v" .. F:API_GetVersion() .. " has been loaded")
 	
 	GeminiHook:Embed(F)
 end
@@ -67,13 +72,13 @@ end
 -- ForgeUI Addon API
 -----------------------------------------------------------------------------------------------
 function F:API_NewAddon(tAddon, tParams)
-	if not tAddon.ADDON_NAME or tAddons[tAddon.ADDON_NAME] then return end
+	if not tAddon.NAME or tAddons[tAddon.NAME] then return end
 	if tAddon.API_VERSION ~= F:API_GetApiVersion() then return end
 
-	local addon = F:NewAddon(tAddon, tAddon.ADDON_NAME, tParams)
+	local addon = A:NewAddon(tAddon)
 	Apollo.RegisterAddon(addon)
 	
-	tAddons[tAddon.ADDON_NAME] = {
+	tAddons[tAddon.NAME] = {
         ["tAddon"] = addon,
         ["tParams"] = tParams,
     }
@@ -104,17 +109,24 @@ function F:API_GetAddon(strName)
 	end
 end
 
+function F:API_ListAddons()
+	for k, v in pairs(tAddons) do
+		Print(k)
+	end
+end
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module API
 -----------------------------------------------------------------------------------------------
-function F:API_NewModule(t, strName, tParams)
-	if tModules[strName] then return end
+function F:API_NewModule(tModule, tParams)
+	if not tModule.NAME or tModules[tModule.NAME] then return end
+	if tModule.API_VERSION ~= F:API_GetApiVersion() then return end
 
-	local module = F:NewModule(t, strName)
+	local module = M:NewModule(tModule)
 	
-	tModules[strName] = {
+	tModules[tModule.NAME] = {
         ["tModule"] = module,
-        ["tParams"] = tParams,
+        ["tParams"] = tParams or {},
     }
 	
 	if module.ForgeAPI_PreInit then
@@ -147,7 +159,11 @@ end
 
 function F:API_ListModules()
 	for k, v in pairs(tModules) do
-		Print(k)
+		if v.tModule.VERSION then
+			Print(v.tModule.NAME .. " v" .. v.tModule.VERSION)
+		else
+			Print(v.tModule.NAME)
+		end
 	end
 end
 
@@ -318,5 +334,5 @@ function F:AfterRestore()
 	end
 end
 
-Core = F:API_NewModule(Core, "core", { bLocal = true })
+Core = F:API_NewModule(Core)
 

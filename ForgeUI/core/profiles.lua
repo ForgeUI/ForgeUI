@@ -25,7 +25,7 @@ local new = function(self, o)
 end
 
 function Profiles:ForgeAPI_Init()
-	ProfilesModule = F:API_NewModule(ProfilesModule, "profiles_module")
+
 end
 
 -----------------------------------------------------------------------------------------------

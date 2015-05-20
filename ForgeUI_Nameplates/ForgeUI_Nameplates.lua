@@ -63,6 +63,10 @@ local fnColorNameplate
 local fnRepositionNameplate
 
 local ForgeUI_Nameplates = {
+	NAME = "ForgeUI_Nameplates",
+	API_VERSION = 3,
+	VERSION = "3.0",
+
     tPreloadUnits = {},
 
 	arWindowPool = {},

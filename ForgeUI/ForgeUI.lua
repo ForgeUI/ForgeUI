@@ -54,6 +54,8 @@ function Addon:OnDocLoaded()
 	
 	Apollo.LoadSprites(self.xmlTextures)
 	
+	Apollo.RegisterSlashCommand("forgeui", "OnForgeUIOn", self)
+	
 	-- ForgeUI window initialization
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Form", nil, self)
 	self.wndMenuHolder = self.wndMain:FindChild("ItemList")
@@ -192,6 +194,7 @@ function ForgeUI:API_AddMenuToMenuItem(tModule, wndParent, strText, strWindow)
 end
 
 function ForgeUI:API_GetApiVersion() return API_VERSION end
+function ForgeUI:API_GetVersion() return VERSION end
 
 -- ForgeLibs initialization
 _G["ForgeLibs"] = {}

@@ -11,23 +11,30 @@ local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Library Definition
 -----------------------------------------------------------------------------------------------
+local Addon = {}
 local Prototype = {}
 
 -----------------------------------------------------------------------------------------------
--- ForgeUI Library functions
+-- ForgeUI Library Initialization
 -----------------------------------------------------------------------------------------------
-function F:NewAddon(...) return Prototype:new(...) end
+local new = function(self, o)
+	o = o or {}
+	setmetatable(o, self)
+	self.__index = self
+	
+	return o
+end
+
+function Addon:NewAddon(...) return Prototype:new(...) end
 
 -----------------------------------------------------------------------------------------------
 -- Addon prototype
 -----------------------------------------------------------------------------------------------
 Prototype.__index = Prototype 
-function Prototype:new(t, strName)
+function Prototype:new(t)
    	local t = t or {}
    	setmetatable(t, Prototype)
    
-	t.strName = strName
-
 	t.bInit = false
 
    	return t
@@ -44,4 +51,6 @@ end
 
 function Prototype:ForgeAPI_PopulateOptions()
 end
+
+_G["ForgeLibs"]["ForgeAddon"] = new(Addon)
 

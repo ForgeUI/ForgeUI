@@ -8,9 +8,15 @@
 
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 
-local Util = {}
-
 local WildShell = WildShell
+
+-----------------------------------------------------------------------------------------------
+-- ForgeUI Module Definition
+-----------------------------------------------------------------------------------------------
+local Util = {
+	NAME = "util",
+	API_VERSION = 3,
+}
 
 -----------------------------------------------------------------------------------------------
 -- Local variables
@@ -154,4 +160,4 @@ function Util:MakeString(l)
     return s
 end
 
-Util = F:API_NewModule(Util, "util", { bGlobal = true })
+Util = F:API_NewModule(Util)

@@ -12,6 +12,9 @@ local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 -- ForgeUI Module Definition
 -----------------------------------------------------------------------------------------------
 local Skins = {
+	NAME = "skins",
+	API_VERSION = 3,
+
 	tCharSettings = {
 		tLoadSkins = {}
 	}
@@ -93,5 +96,5 @@ function Skins:HandleButton(wndButton, tOptions)
 	wndButton:SetFlybyTextColor("FFFFFFFF")
 end
 
-Skins = F:API_NewModule(Skins, "skins", {})
+Skins = F:API_NewModule(Skins)
 
