@@ -6,7 +6,11 @@
 -- about:		ForgeUI core script
 -----------------------------------------------------------------------------------------------
 
-local F, A, M, G, P = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI, Profiles
+local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
+local P = _G["ForgeLibs"]["ForgeProfiles"] -- ForgeProfiles
+local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
+
+local GeminiHook = Apollo.GetPackage("Gemini:Hook-1.0").tPackage
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition
@@ -51,6 +55,8 @@ local bResetSettings = false
 -----------------------------------------------------------------------------------------------
 function Core:ForgeAPI_Init()
 	Print("ForgeUI v" .. self.strVersion .. " has been loaded")
+	
+	GeminiHook:Embed(F)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -64,7 +70,7 @@ function F:API_NewAddon(tAddon, tParams)
 	if not tAddon.ADDON_NAME or tAddons[tAddon.ADDON_NAME] then return end
 	if tAddon.API_VERSION ~= F:API_GetApiVersion() then return end
 
-	local addon = A:NewAddon(tAddon, tAddon.ADDON_NAME, tParams)
+	local addon = F:NewAddon(tAddon, tAddon.ADDON_NAME, tParams)
 	Apollo.RegisterAddon(addon)
 	
 	tAddons[tAddon.ADDON_NAME] = {
@@ -104,7 +110,7 @@ end
 function F:API_NewModule(t, strName, tParams)
 	if tModules[strName] then return end
 
-	local module = M:NewModule(t, strName)
+	local module = F:NewModule(t, strName)
 	
 	tModules[strName] = {
         ["tModule"] = module,

@@ -6,7 +6,7 @@
 -- about:		ForgeUI profiles library
 -----------------------------------------------------------------------------------------------
 
-local F, A, M, G, P = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI, Profiles
+local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Library Definition
@@ -108,5 +108,5 @@ function Profiles:API_GetProfiles()
 	return tProfiles
 end
 
-_G["ForgeLibs"][5] = new(Profiles)
+_G["ForgeLibs"]["ForgeProfiles"] = new(Profiles)
 

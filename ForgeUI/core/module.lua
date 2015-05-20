@@ -6,24 +6,17 @@
 -- about:		ForgeUI module protype class
 -----------------------------------------------------------------------------------------------
 
+local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Library Definition
 -----------------------------------------------------------------------------------------------
-local Module = {}
 local Prototype = {}
 
 -----------------------------------------------------------------------------------------------
--- ForgeUI Library Initialization
+-- ForgeUI Library Finctions
 -----------------------------------------------------------------------------------------------
-local new = function(self, o)
-	o = o or {}
-	setmetatable(o, self)
-	self.__index = self
-	
-	return o
-end
-
-function Module:NewModule(...) return Prototype:new(...) end
+function F:NewModule(...) return Prototype:new(...) end
 
 -----------------------------------------------------------------------------------------------
 -- Module prototype
@@ -40,12 +33,15 @@ function Prototype:new(t, strName)
    	return t
 end
 
+function Prototype:ForgeAPI_PreInit()
+end
+
 function Prototype:ForgeAPI_Init()
-	Print("ON PROTOTYPE INIT (" .. self.strName .. ") - please overwrite this function in your module")
+end
+
+function Prototype:ForgeAPI_LoadSettings()
 end
 
 function Prototype:ForgeAPI_PopulateOptions()
 end
-
-_G["ForgeLibs"][3] = new(Module)
 

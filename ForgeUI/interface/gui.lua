@@ -8,7 +8,7 @@
 
 require "Window"
 
-local F, A, M, G, P = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI, Profiles
+local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 local ForgeColor
 
 -----------------------------------------------------------------------------------------------
@@ -469,5 +469,5 @@ function Gui:OnEditBoxReturn(wndHandler, wndControl, strText)
 	end
 end
 
-_G["ForgeLibs"][4] = new(Gui)
+_G["ForgeLibs"]["ForgeGUI"] = new(Gui)
 

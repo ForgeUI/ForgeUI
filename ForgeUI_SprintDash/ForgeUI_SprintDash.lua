@@ -8,7 +8,8 @@
 
 require "Window"
 
-local F, A, M, G = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI
+local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
+local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Addon Definition

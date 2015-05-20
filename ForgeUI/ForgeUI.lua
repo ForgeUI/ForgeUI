@@ -195,7 +195,7 @@ function ForgeUI:API_GetApiVersion() return API_VERSION end
 
 -- ForgeLibs initialization
 _G["ForgeLibs"] = {}
-_G["ForgeLibs"][1] = ForgeUI
+_G["ForgeLibs"]["ForgeUI"] = ForgeUI
 
 Apollo.RegisterAddon(Inst, true, "ForgeUI", {})
 

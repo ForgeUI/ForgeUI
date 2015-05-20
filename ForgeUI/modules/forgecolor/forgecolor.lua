@@ -6,7 +6,7 @@
 -- about:		ForgeUI color wheel module
 -----------------------------------------------------------------------------------------------
 
-local F, A, M, G, P = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI, Profiles
+local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition

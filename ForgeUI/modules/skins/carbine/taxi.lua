@@ -3,11 +3,10 @@
 --
 -- name: 		taxi.lua
 -- author:		Winty Badass@Jabbit
--- about:		ForgeUI skin for Carbine's Taxi addon
+-- about:		ForgeUI skin for Carbine's TaxiMapdon
 -----------------------------------------------------------------------------------------------
 
-local F, A, M, G, P = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI, Profiles
-local Hook = Apollo.GetPackage("Gemini:Hook-1.0").tPackage
+local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 local Skins = F:API_GetModule("skins")
 
 local fnUseSkin
@@ -15,7 +14,7 @@ local fnUseSkin
 local function LoadSkin()
 	local addon = Apollo.GetAddon("TaxiMap")
 	
-	Hook:PostHook(addon, "OnDocumentReady", fnUseSkin)
+	F:PostHook(addon, "OnDocumentReady", fnUseSkin)
 	
 	if addon.xmlDoc and addon.xmlDoc:IsLoaded() then
 		fnUseSkin(addon)

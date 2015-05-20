@@ -6,7 +6,9 @@
 -- about:		ForgeUI profiles module for loading options into the main ForgeUI window
 -----------------------------------------------------------------------------------------------
 
-local F, A, M, G, P = unpack(_G["ForgeLibs"]) -- imports ForgeUI, Addon, Module, GUI, Profiles
+local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
+local P = _G["ForgeLibs"]["ForgeProfiles"] -- ForgeProfiles
+local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition
