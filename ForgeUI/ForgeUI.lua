@@ -38,6 +38,7 @@ function Addon:OnLoad()
     self.xmlDoc = XmlDoc.CreateFromFile("ForgeUI.xml")
 	self.xmlOptions = XmlDoc.CreateFromFile("ForgeUI_Options.xml")
 	self.xmlTextures = XmlDoc.CreateFromFile("\\media\\textures\\ForgeUI_Textures.xml")
+	self.xmlIcons = XmlDoc.CreateFromFile("\\media\\icons\\ForgeUI_Icons.xml")
 	
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 	
@@ -53,6 +54,7 @@ function Addon:OnDocLoaded()
 	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
 	
 	Apollo.LoadSprites(self.xmlTextures)
+	Apollo.LoadSprites(self.xmlIcons)
 	
 	Apollo.RegisterSlashCommand("forgeui", "OnForgeUIOn", self)
 	
