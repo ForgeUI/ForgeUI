@@ -31,26 +31,19 @@ function Addon:NewAddon(...) return Prototype:new(...) end
 -- Addon prototype
 -----------------------------------------------------------------------------------------------
 Prototype.__index = Prototype 
-function Prototype:new(t)
-   	local t = t or {}
-   	setmetatable(t, Prototype)
+function Prototype:new(o)
+   	local o = o or {}
+   	setmetatable(o, Prototype)
    
-	t.bInit = false
+	o.bInit = false
 
-   	return t
+   	return o
 end
 
-function Prototype:ForgeAPI_PreInit()
-end
-
-function Prototype:ForgeAPI_Init()
-end
-
-function Prototype:ForgeAPI_LoadSettings()
-end
-
-function Prototype:ForgeAPI_PopulateOptions()
-end
+function Prototype:ForgeAPI_PreInit() end
+function Prototype:ForgeAPI_Init() end
+function Prototype:ForgeAPI_LoadSettings() end
+function Prototype:ForgeAPI_PopulateOptions() end
 
 _G["ForgeLibs"]["ForgeAddon"] = new(Addon)
 

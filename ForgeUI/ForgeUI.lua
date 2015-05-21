@@ -104,26 +104,6 @@ function Addon:ItemListPressed( wndHandler, wndControl, eMouseButton )
 		end
 	end
 	
-	if wndControl:FindChild("Sign"):IsShown() then
-		if wndControl:FindChild("Holder"):IsShown() then
-			wndControl:FindChild("Sign"):SetText("+")
-			wndControl:FindChild("Holder"):Show(false)
-			
-			local wndHolder = wndControl:GetParent()
-			local nLeft, nTop, nRight, nBottom = wndHolder:GetAnchorOffsets()
-			wndHolder:SetAnchorOffsets(nLeft, nTop, nRight, nTop + 20)
-		else
-			wndControl:FindChild("Sign"):SetText("-")
-			wndControl:FindChild("Holder"):Show(true)
-			
-			local wndHolder = wndControl:GetParent()
-			local nLeft, nTop, nRight, nBottom = wndHolder:GetAnchorOffsets()
-			wndHolder:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + 20 * #wndControl:FindChild("Holder"):GetChildren())
-		end
-		
-		Inst.wndMenuHolder:ArrangeChildrenVert()
-	end
-	
 	-- options window
 	for k, v in pairs(self.wndOptionsHolder:GetChildren()) do
 		v:Show(false, true)
@@ -131,10 +111,29 @@ function Addon:ItemListPressed( wndHandler, wndControl, eMouseButton )
 	
 	local tData = wndControl:GetParent():GetData()
 	
-	if tData.wndOptions and not wndControl:FindChild("Sign"):IsShown() then
+	if tData.wndOptions then
 		tData.wndOptions:Show(true, false)
 	end
+end
+
+function Addon:ItemListSignPressed( wndHandler, wndControl, eMouseButton )
+	if wndControl:GetParent():FindChild("Holder"):IsShown() then
+		wndControl:SetText("+")
+		wndControl:GetParent():FindChild("Holder"):Show(false)
+		
+		local wndHolder = wndControl:GetParent():GetParent()
+		local nLeft, nTop, nRight, nBottom = wndHolder:GetAnchorOffsets()
+		wndHolder:SetAnchorOffsets(nLeft, nTop, nRight, nTop + 20)
+	else
+		wndControl:SetText("-")
+		wndControl:GetParent():FindChild("Holder"):Show(true)
+		
+		local wndHolder = wndControl:GetParent():GetParent()
+		local nLeft, nTop, nRight, nBottom = wndHolder:GetAnchorOffsets()
+		wndHolder:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + 20 * #wndControl:GetParent():FindChild("Holder"):GetChildren())
+	end
 	
+	Inst.wndMenuHolder:ArrangeChildrenVert()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -152,6 +151,8 @@ function ForgeUI:API_AddMenuItem(tModule, strText, strWindow)
 	
 	wndItem:AddEventHandler("ButtonCheck", "ItemListPressed", Inst)
 	wndItem:AddEventHandler("ButtonUncheck", "ItemListPressed", Inst)
+	wndItem:FindChild("Sign"):AddEventHandler("ButtonCheck", "ItemListSignPressed", Inst)
+	wndItem:FindChild("Sign"):AddEventHandler("ButtonUncheck", "ItemListSignPressed", Inst)
 	
 	local tData = {}
 	if strWindow then
@@ -183,6 +184,13 @@ function ForgeUI:API_AddMenuToMenuItem(tModule, wndParent, strText, strWindow)
 	local tData = {}
 	
 	if strWindow then
+		local wnd = Apollo.LoadForm(Inst.xmlOptions, "ForgeUI_Container", Inst.wndOptionsHolder, Inst)
+		wnd:SetName(strWindow)
+		
+		if not tModule.tOptionHolders then tModule.tOptionHolders = {} end
+		tModule.tOptionHolders[strWindow] = wnd
+		
+		tData.wndOptions = wnd
 	end
 	
 	wndItem:SetData(tData)

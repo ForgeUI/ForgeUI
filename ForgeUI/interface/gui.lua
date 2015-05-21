@@ -63,6 +63,8 @@ local EnumWindowType = {
 	["CheckBox"] = 4,
 	["ComboBox"] = 5,
 	["ComboBoxItem"] = 6,
+	["EditBox"] = 7,
+	["NumberBox"] = 6,
 }
 
 -----------------------------------------------------------------------------------------------
@@ -257,7 +259,7 @@ function Gui:OnCheckBoxCheck(wndHandler, wndControl, eMouseButton)
 end
 
 -----------------------------------------------------------------------------------------------
--- CheckBox
+-- ComboBox
 -----------------------------------------------------------------------------------------------
 function Gui:API_AddComboBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 	-- defaults
@@ -397,7 +399,7 @@ function Gui:API_EditBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 		tModule = tModule,
 		tSettings = tSettings,
 		strKey = strKey,
-		eType = EnumWindowType.ComboBox,
+		eType = EnumWindowType.EditBox,
 	}
 	
 	local strFont = self.tDefaults.strFont
@@ -461,7 +463,7 @@ function Gui:API_EditBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 		wndEditBox:FindChild("Text"):SetText(strText)
 	end
 	
-	return wndComboBox
+	return wndEditBox
 end
 
 function Gui:OnEditBoxReturn(wndHandler, wndControl, strText)
@@ -469,6 +471,100 @@ function Gui:OnEditBoxReturn(wndHandler, wndControl, strText)
 	
 	if tData.tModule and tData.fnCallbackReturn then
 		tData.fnCallbackReturn(tData.tModule, "textobox_return", tData.strKey, strText) 
+	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- NumberBox
+-----------------------------------------------------------------------------------------------
+function Gui:API_AddNumberBox(tModule, wnd, strText, tSettings, strKey, tOptions)
+	-- defaults
+	local tData = {
+		tModule = tModule,
+		tSettings = tSettings,
+		strKey = strKey,
+		eType = EnumWindowType.NumberBox,
+	}
+	
+	local strFont = self.tDefaults.strFont
+	local strText = strText
+
+	-- load wnnd
+	local wndNumberBox = Apollo.LoadForm(xmlDoc, "ForgeUI_NumberBox", wnd, self)
+	
+	-- event handlers
+	wndNumberBox:FindChild("NumberBox"):AddEventHandler("EditBoxChanged", "OnNumberBoxChanged", self)
+	
+	-- options
+	if tOptions then
+		if tOptions.tOffsets then
+			wndNumberBox:SetAnchorOffsets(unpack(tOptions.tOffsets))
+		end
+		
+		if tOptions.tWidths then
+			local nLeft, nTop, nRight, nBottom = wndNumberBox:GetAnchorOffsets()
+			wndNumberBox:SetAnchorOffsets(nLeft, nTop, nLeft + tOptions.tWidths[1] + tOptions.tWidths[2] + 5, nBottom)
+			
+			nLeft, nTop, nRight, nBottom = wndNumberBox:FindChild("Background"):GetAnchorOffsets()
+			wndNumberBox:FindChild("Background"):SetAnchorOffsets(nLeft, nTop, tOptions.tWidths[1], nBottom)
+			
+			nLeft, nTop, nRight, nBottom = wndNumberBox:FindChild("Text"):GetAnchorOffsets()
+			wndNumberBox:FindChild("Text"):SetAnchorOffsets(- tOptions.tWidths[2], nTop, nRight, nBottom)
+		end
+		
+		if tOptions.tMove then
+			local nLeft, nTop, nRight, nBottom = wndNumberBox:GetAnchorOffsets()
+			nLeft = nLeft + tOptions.tMove[1]
+			nTop = nTop + tOptions.tMove[2]
+			nRight = nRight + tOptions.tMove[1]
+			nBottom = nBottom + tOptions.tMove[2]
+			wndNumberBox:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+		end
+		
+		if tOptions.fnCallback then
+			tData.fnCallback = tOptions.fnCallback
+		end
+		
+		if tOptions.fnCallbackReturn then
+			tData.fnCallbackReturn = tOptions.fnCallbackReturn
+		end
+		
+		if tOptions.strHint then
+			wndNumberBox:FindChild("NumberBox"):SetPrompt(tOptions.strHint)
+		end
+	end
+	
+	-- data
+	wndNumberBox:SetData(tData)
+	
+	-- set wnd
+	wndNumberBox:FindChild("Text"):SetFont(strFont)
+	wndNumberBox:FindChild("Text"):SetText(strText)
+	wndNumberBox:FindChild("NumberBox"):SetText(tSettings[strKey])
+	
+	self:SetNumberBox(wndNumberBox)
+	
+	return wndNumberBox
+end
+
+function Gui:SetNumberBox(wndControl)
+	local tData = wndControl:GetData()
+	local wnd = wndControl:FindChild("NumberBox")
+	
+	if wnd:GetText() == "" then wnd:SetText(0) end
+	
+	if tData.tSettings and tData.strKey then
+		tData.tSettings[tData.strKey] = tonumber(wndControl:FindChild("NumberBox"):GetText())
+	end
+end
+
+function Gui:OnNumberBoxChanged(wndHandler, wndControl, strText)
+	local tData = wndControl:GetParent():GetParent():GetData()
+	
+	self:SetNumberBox(wndControl:GetParent():GetParent())
+	
+	if tData.tModule and tData.fnCallback then
+		tData.fnCallback(tData.tModule, "numberbox_changed", tData.strKey, strText) 
 	end
 end
 

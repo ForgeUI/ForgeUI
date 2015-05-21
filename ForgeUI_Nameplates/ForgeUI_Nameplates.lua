@@ -7,6 +7,7 @@
 -----------------------------------------------------------------------------------------------
 
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
+local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeUI GUI library
 
 require "Window"
 
@@ -171,7 +172,7 @@ local ForgeUI_Nameplates = {
 				nHpCutoff = 0,
 				crHpCutoff = "FFCCCCCC",
 				crName = "FFFF0000",
-				crNameNoPvP = "FFFF5900",
+				crNameNoPvP = "FFFF9900",
 				crHealth = "FFFF0000",
 				bClassColors = true,
 			},
@@ -282,8 +283,7 @@ function ForgeUI_Nameplates:ForgeAPI_Init()
 	self.xmlNameplate = XmlDoc.CreateFromFile("..//ForgeUI_Nameplates//ForgeUI_Nameplates.xml")
 	self.xmlNameplate:RegisterCallback("OptionsInit", self)
 	
-	local wndParent = F:API_AddMenuItem(self, self.DISPLAY_NAME)
-	F:API_AddMenuToMenuItem(self, wndParent, "General", "General")
+	local wndParent = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 	F:API_AddMenuToMenuItem(self, wndParent, "Style", "Style")
 	F:API_AddMenuToMenuItem(self, wndParent, "Target", "Target")
 	F:API_AddMenuToMenuItem(self, wndParent, "Player", "Player")
@@ -648,8 +648,7 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 	end
 	
 	if tGlobalSettings.bClassColors then
-		--crBarColor = ForgeUI.tGlobalSettings.tClassColors["cr" .. krtClassEnums[unitOwner:GetClassId()]]
-		crBarColor = "FFFFFFFF"
+		crBarColor = F:API_GetClassColor(krtClassEnums[unitOwner:GetClassId()])
 	end
 	
 	if tGlobalSettings.nHpCutoff and tNameplate.hpPercentage and tNameplate.hpPercentage < tGlobalSettings.nHpCutoff then
@@ -1506,6 +1505,118 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 		self:UpdateNameplateRewardInfo(tNameplate)
 		
 		fnUpdateNameplateVisibility(self, tNameplate)
+	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- Populating opions
+-----------------------------------------------------------------------------------------------
+function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
+	-- general settings
+	local wndGeneral = self.tOptionHolders["General"]
+	
+	G:API_AddNumberBox(self, wndGeneral, "Draw distance", self.tGlobalSettings, "nMaxRange", { tMove = {0, 0} })
+	G:API_AddCheckBox(self, wndGeneral, "Use occlusion", self.tGlobalSettings, "bOcclusion", { tMove = {0, 30} })
+	G:API_AddCheckBox(self, wndGeneral, "Show titles", self.tGlobalSettings, "bShowTitles", { tMove = {0, 60} })
+	G:API_AddCheckBox(self, wndGeneral, "Show only important NPC", self.tGlobalSettings, "bOnlyImportantNPC", { tMove = {0, 90} })
+	G:API_AddCheckBox(self, wndGeneral, "Show objectives", self.tGlobalSettings, "bShowObjectives", { tMove = {200, 0} })
+	G:API_AddCheckBox(self, wndGeneral, "Show shields", self.tGlobalSettings, "bShowShield", { tMove = {200, 60} })
+	G:API_AddCheckBox(self, wndGeneral, "Show absorbs", self.tGlobalSettings, "bShowAbsorb", { tMove = {200, 90} })
+	G:API_AddCheckBox(self, wndGeneral, "Frequent updates", self.tGlobalSettings, "bFrequentUpdate", { tMove = {400, 0} })
+	G:API_AddCheckBox(self, wndGeneral, "Clickable nameplates", self.tGlobalSettings, "bClickable", { tMove = {400, 60}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddCheckBox(self, wndGeneral, "Show nameplates for dead units", self.tGlobalSettings, "bShowDead", { tOffsets = { 5, 155, 300, 180 } })
+	G:API_AddColorBox(self, wndGeneral, "Shield bar", self.tGlobalSettings, "crShield", { tMove = {0, 210}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddColorBox(self, wndGeneral, "Absorb bar", self.tGlobalSettings, "crAbsorb", { tMove = {200, 210}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddColorBox(self, wndGeneral, "MOO bar", self.tGlobalSettings, "crMOO", { tMove = {400, 210}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddColorBox(self, wndGeneral, "Dead unit name", self.tGlobalSettings, "crDead", { tMove = {400, 150}, fnCallback = self.LoadStyle_Nameplates })
+	
+	for k, v in pairs(self.tGlobalSettings.tUnits) do
+		local wnd = self.tOptionHolders[k]
+		if wnd then
+			if v.nHpCutoff then
+				G:API_AddNumberBox(self, wnd, "HP cutoff", v, "nHpCutoff", { tMove = {400, 0} })
+			end
+			
+			if v.crHpCutoff then
+				G:API_AddColorBox(self, wnd, "HP cutoff color", v, "crHpCutoff", { tMove = {400, 30} })
+			end
+			
+			if v.crName then
+				G:API_AddColorBox(self, wnd, "Name color", v, "crName", { tMove = {0, 150} })
+			end
+			
+			if v.crNameNoPvP then
+				G:API_AddColorBox(self, wnd, "Name color (PvP off)", v, "crNameNoPvP", { tMove = {200, 150} })
+			end
+			
+			if v.crHealth then
+				G:API_AddColorBox(self, wnd, "Health color", v, "crHealth", { tMove = {0, 180} })
+			end
+			
+			if v.bClassColors ~= nil then
+				G:API_AddCheckBox(self, wnd, "Use class color", v, "bClassColors", { tMove = {200, 180} })
+			end
+			
+			if v.bCleanseIndicator ~= nil then
+				G:API_AddCheckBox(self, wnd, "Show cleanse indicator", v, "bCleanseIndicator", { tMove = {400, 90} })
+			end
+			
+			if v.crCleanseIndicator then
+				G:API_AddColorBox(self, wnd, "Cleanse indicator", v, "crCleanseIndicator", { tMove = {400, 120}, fnCallback = self.LoadStyle_Nameplates })
+			end
+			
+			if v.bThreatIndicator ~= nil then
+				G:API_AddCheckBox(self, wnd, "Show threat indicator", v, "bThreatIndicator", { tMove = {400, 90} })
+			end
+			
+			if v.crThreatIndicator then
+				G:API_AddColorBox(self, wnd, "Threat indicator", v, "crThreatIndicator", { tMove = {400, 120}, fnCallback = self.LoadStyle_Nameplates })
+			end
+			
+			if v.bReposition ~= nil then
+				G:API_AddCheckBox(self, wnd, "Reposition for big units", v, "bReposition", { tMove = {200, 60} })
+			end
+			
+			if v.nShowGuild then
+				local wndCombo = G:API_AddComboBox(self, wnd, "Guild", v, "nShowGuild", { tMove = {0, 90}, tWidths = { 150, 50 } })
+				G:API_AddOptionToComboBox(self, wndCombo, "Never", 0, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "Out of combat", 1, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "In combat", 2, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "Always", 3, {})
+			end
+			
+			if v.nShowCast then
+				local wndCombo = G:API_AddComboBox(self, wnd, "Cast", v, "nShowCast", { tMove = {0, 60}, tWidths = { 150, 50 } })
+				G:API_AddOptionToComboBox(self, wndCombo, "Never", 0, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "Out of combat", 1, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "In combat", 2, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "Always", 3, {})
+			end
+			
+			if v.nShowBars then
+				local wndCombo = G:API_AddComboBox(self, wnd, "Bars", v, "nShowBars", { tMove = {0, 30}, tWidths = { 150, 50 } })
+				G:API_AddOptionToComboBox(self, wndCombo, "Never", 0, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "Out of combat", 1, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "In combat", 2, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "Always", 3, {})
+			end
+			
+			if v.nShowName then
+				local wndCombo = G:API_AddComboBox(self, wnd, "Name", v, "nShowName", { tMove = {0, 0}, tWidths = { 150, 50 } })
+				G:API_AddOptionToComboBox(self, wndCombo, "Never", 0, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "Out of combat", 1, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "In combat", 2, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "Always", 3, {})
+			end
+			
+			if v.nShowInfo then
+				local wndCombo = G:API_AddComboBox(self, wnd, "Info", v, "nShowInfo", { tMove = {200, 0}, tWidths = { 150, 50 }, fnCallback = self.UpdateAllNameplates })
+				G:API_AddOptionToComboBox(self, wndCombo, "Nothing", 0, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "Level", 1, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "Class", 2, {})
+				G:API_AddOptionToComboBox(self, wndCombo, "Both", 3, {})
+			end
+		end
 	end
 end
 
