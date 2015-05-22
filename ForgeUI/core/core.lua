@@ -35,6 +35,14 @@ local Core = {
 				crStalker = "FFD23EF4",
 				crWarrior = "FFF54F4F"
 			},
+			tClassColorsSecondary = {
+				crEngineer = "FFFFA740",
+				crEsper = "FF31B9FF",
+				crMedic = "FFFFDB34",
+				crSpellslinger = "FFC0FFA0",
+				crStalker = "FFBD68FF",
+				crWarrior = "FFFF7272"
+			},
 			bDebug = false,
 		}
 	},
@@ -266,6 +274,7 @@ function F:API_GetProfileName() return Core.db:GetCurrentProfile() end
 function F:API_GetProfiles() return Core.db:GetProfiles() end
 function F:API_ChangeProfile(...) Core.db:SetProfile(...) end
 function F:API_RemoveProfile(...) Core.db:DeleteProfile(...) end
+function F:API_NewProfile(...) Core.db:SetProfile(...) end
 
 function F:API_GetClassColor(strClass)
 	return Core._DB.profile.tClassColors["cr" .. strClass]

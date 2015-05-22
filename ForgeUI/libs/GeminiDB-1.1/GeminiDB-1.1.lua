@@ -521,6 +521,7 @@ function DBObjectLib:SetProfile(name)
 	if name == self.keys.profile then
 		-- Callback: OnProfileChanged, database, newProfileKey
 		self.callbacks:Fire("OnProfileChanged", self, name)
+		return
 	end
 
 	local oldProfile = self.profile

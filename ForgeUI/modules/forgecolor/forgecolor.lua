@@ -111,7 +111,7 @@ function ForgeColor:Init()
 	self.v = 1
 	self.a = 1
 
-	self.wndPicker:FindChild("CloseButton"):AddEventHandler("ButtonSignal", 				"Hide", self)
+	self.wndPicker:FindChild("CloseButton"):AddEventHandler("ButtonSignal", 				"API_HidePicker", self)
 	
 	self.wndPicker:FindChild("Picker:Gradient"):AddEventHandler("MouseButtonDown", 			"OnPickerDown", self)
 	self.wndPicker:FindChild("Picker:Gradient"):AddEventHandler("MouseButtonUp", 			"OnPickerUp", self)
@@ -235,6 +235,9 @@ end
 
 function ForgeColor:OnSelectorExit()
 	bSelectorMouse = false
+end
+
+function ForgeColor:Hide()
 end
 
 -----------------------------------------------------------------------------------------------

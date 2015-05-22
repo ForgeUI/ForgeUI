@@ -19,67 +19,73 @@ local Util = F:API_GetModule("util")
 local ForgeUI_UnitFrames = {
 	_NAME = "ForgeUI_UnitFrames",
     _API_VERSION = 3,
+	DISPLAY_NAME = "UnitFrames",
 	VERSION = "2.0",
 	
 	tSettings = {
 		profile = {
-			tPlayerFrame = {
-				bUseGradient = false,
-				crBorder = "FF000000",
-				crBackground = "FF101010",
-				crHpBar = "FF272727",
-				crHpBarGradient = "FFFF0000",
-				crHpValue = "FF75CC26",
-				crShieldBar = "FF0699F3",
-				crShieldValue = "FFFFFFFF",
-				crAbsorbBar = "FFFFC600",
-				crAbsorbValue = "FFFFFFFF",
-				strFullSprite = "ForgeUI_Smooth",
-			},
-			tTargetFrame = {
-				bUseGradient = false,
-				crBorder = "FF000000",
-				crBackground = "FF101010",
-				crHpBar = "FF272727",
-				crHpBarGradient = "FFFF0000",
-				crHpValue = "FF75CC26",
-				crShieldBar = "FF0699F3",
-				crShieldValue = "FFFFFFFF",
-				crAbsorbBar = "FFFFC600",
-				crAbsorbValue = "FFFFFFFF",
-				strFullSprite = "ForgeUI_Smooth",
-			},
-			tTotFrame = {
-				bShowBuffs = false,
-				bShowDebuffs = false,
-				crThreatLow = "FF33CC33",
-				crThreatMedium = "FFFFFF00",
-				crThreatHigh = "FFFF0000",
-				crThreatTank = "FFFFFFFF",
-				crBorder = "FF000000",
-				crBackground = "FF101010",
-				crHpBar = "FF272727",
-				crHpValue = "FF75CC26",
-				crShieldBar = "FF0699F3",
-				crShieldValue = "FFFFFFFF",
-				crAbsorbBar = "FFFFC600",
-				crAbsorbValue = "FFFFFFFF",
-				strFullSprite = "ForgeUI_Smooth",
-			},
-			tFocusFrame = {
-				bShowShieldBar = true,
-				bShowAbsorbBar = true,
-				bShowBuffs = false,
-				bShowDebuffs = false,
-				crBorder = "FF000000",
-				crBackground = "FF101010",
-				crHpBar = "FF272727",
-				crHpValue = "FF75CC26",
-				crShieldBar = "FF0699F3",
-				crShieldValue = "FFFFFFFF",
-				crAbsorbBar = "FFFFC600",
-				crAbsorbValue = "FFFFFFFF",
-				strFullSprite = "ForgeUI_Smooth",
+			tFrames = {
+				Player = {
+					bUseGradient = false,
+					crBorder = "FF000000",
+					crBackground = "FF101010",
+					crHpBar = "FF272727",
+					bHealthClassColor = false,
+					crHpBarGradient = "FFFF0000",
+					crHpValue = "FF75CC26",
+					crName = "FF75CC26",
+					bNameClassColor = true,
+					crShieldBar = "FF0699F3",
+					crShieldValue = "FFFFFFFF",
+					crAbsorbBar = "FFFFC600",
+					crAbsorbValue = "FFFFFFFF",
+					strFullSprite = "ForgeUI_Smooth",
+				},
+				Target = {
+					bUseGradient = false,
+					crBorder = "FF000000",
+					crBackground = "FF101010",
+					crHpBar = "FF272727",
+					crHpBarGradient = "FFFF0000",
+					crHpValue = "FF75CC26",
+					crShieldBar = "FF0699F3",
+					crShieldValue = "FFFFFFFF",
+					crAbsorbBar = "FFFFC600",
+					crAbsorbValue = "FFFFFFFF",
+					strFullSprite = "ForgeUI_Smooth",
+				},
+				ToT = {
+					bShowBuffs = false,
+					bShowDebuffs = false,
+					crThreatLow = "FF33CC33",
+					crThreatMedium = "FFFFFF00",
+					crThreatHigh = "FFFF0000",
+					crThreatTank = "FFFFFFFF",
+					crBorder = "FF000000",
+					crBackground = "FF101010",
+					crHpBar = "FF272727",
+					crHpValue = "FF75CC26",
+					crShieldBar = "FF0699F3",
+					crShieldValue = "FFFFFFFF",
+					crAbsorbBar = "FFFFC600",
+					crAbsorbValue = "FFFFFFFF",
+					strFullSprite = "ForgeUI_Smooth",
+				},
+				Focus = {
+					bShowShieldBar = true,
+					bShowAbsorbBar = true,
+					bShowBuffs = false,
+					bShowDebuffs = false,
+					crBorder = "FF000000",
+					crBackground = "FF101010",
+					crHpBar = "FF272727",
+					crHpValue = "FF75CC26",
+					crShieldBar = "FF0699F3",
+					crShieldValue = "FFFFFFFF",
+					crAbsorbBar = "FFFFC600",
+					crAbsorbValue = "FFFFFFFF",
+					strFullSprite = "ForgeUI_Smooth",
+				}
 			}
 		}
 	}
@@ -100,33 +106,29 @@ local tClassEnums = {
 -----------------------------------------------------------------------------------------------
 -- ForgeAPI
 -----------------------------------------------------------------------------------------------
+function ForgeUI_UnitFrames:ForgeAPI_PreInit()
+	
+end
+
 function ForgeUI_UnitFrames:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_UnitFrames//ForgeUI_UnitFrames.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 	
-	-- buff filter hack
-	local BuffFilter = Apollo.GetAddon("BuffFilter")
-	if BuffFilter then
-		BuffFilter.tBarProviders["ForgeUI_UnitFrames"].tTargetType.TargetOfTarget = "wndToT"
-	end
+	local wndParent = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
+	F:API_AddMenuToMenuItem(self, wndParent, "Player frame", "Player")
+	F:API_AddMenuToMenuItem(self, wndParent, "Target frame", "Target")
+	F:API_AddMenuToMenuItem(self, wndParent, "Focus frame", "Focus")
+	F:API_AddMenuToMenuItem(self, wndParent, "ToT frame", "ToT")
 end
 
 function ForgeUI_UnitFrames:OnDocLoaded()
 	self.wndPlayerFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_PlayerFrame", "FixedHudStratumLow", self)
-	self.wndPlayerBuffFrame = Apollo.LoadForm(self.xmlDoc, "PlayerBuffContainerWindow", "FixedHudStratumHigh", self)
-	self.wndPlayerDebuffFrame = Apollo.LoadForm(self.xmlDoc, "PlayerDebuffContainerWindow", "FixedHudStratumHigh", self)
 	
 	self.wndTargetFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_TargetFrame", "FixedHudStratumLow", self)
-	self.wndTargetBuffFrame = Apollo.LoadForm(self.xmlDoc, "TargetBuffContainerWindow", "FixedHudStratumHigh", self)
-	self.wndTargetDebuffFrame = Apollo.LoadForm(self.xmlDoc, "TargetDebuffContainerWindow", "FixedHudStratumHigh", self)
 	
 	self.wndToTFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ToTFrame", "FixedHudStratumLow", self)
-	self.wndToTBuffFrame = self.wndToTFrame:FindChild("BuffContainerWindow")
-	self.wndToTDebuffFrame = self.wndToTFrame:FindChild("DebuffContainerWindow")
 
 	self.wndFocusFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_FocusFrame", "FixedHudStratumLow", self)
-	self.wndFocusBuffFrame = self.wndFocusFrame:FindChild("BuffContainerWindow")
-	self.wndFocusDebuffFrame = self.wndFocusFrame:FindChild("DebuffContainerWindow")
 	
 	if GameLib.GetPlayerUnit() then
 		self:OnCharacterCreated()
@@ -157,15 +159,12 @@ function ForgeUI_UnitFrames:UpdatePlayerFrame(unit)
 		self.wndPlayerFrame:FindChild("Indicator"):Show(false)
 	end
 		
-	self:UpdateHPBar(unit, self.wndPlayerFrame, "tPlayerFrame")
+	self:UpdateHPBar(unit, self.wndPlayerFrame, "Player")
 	self:UpdateShieldBar(unit, self.wndPlayerFrame)
 	self:UpdateAbsorbBar(unit, self.wndPlayerFrame)
 	self:UpdateInterruptArmor(unit, self.wndPlayerFrame)
 	
 	self.wndPlayerFrame:SetData(unit)
-	
-	self.wndPlayerBuffFrame:SetUnit(unit)
-	self.wndPlayerDebuffFrame:SetUnit(unit)
 	
 	self:RefreshStyle_PlayerFrame(unit)
 	
@@ -180,26 +179,20 @@ function ForgeUI_UnitFrames:UpdateTargetFrame(unitSource)
 		if self.wndTargetFrame:IsShown() then
 			self.wndTargetFrame:Show(false, true)
 			self.wndToTFrame:Show(false, true)
-			self.wndTargetBuffFrame:SetUnit(nil)
-			self.wndTargetDebuffFrame:SetUnit(nil)
 		end
 		return
 	end
 	
-	self:UpdateHPBar(unit, self.wndTargetFrame, "tTargetFrame")
+	self:UpdateHPBar(unit, self.wndTargetFrame, "Target")
 	self:UpdateShieldBar(unit, self.wndTargetFrame)
 	self:UpdateAbsorbBar(unit, self.wndTargetFrame)
 	self:UpdateInterruptArmor(unit, self.wndTargetFrame)
 	
-	self.wndTargetBuffFrame:SetUnit(unit)
-	self.wndTargetDebuffFrame:SetUnit(unit)
 	self.wndTargetFrame:SetData(unit)
 	
 	self:RefreshStyle_TargetFrame(unit)
 	
 	if not self.wndTargetFrame:IsShown() then
-		self.wndTargetBuffFrame:Show(true, true)
-		self.wndTargetDebuffFrame:Show(true, true)
 		self.wndTargetFrame:Show(true, true)
 	end
 	
@@ -218,9 +211,6 @@ function ForgeUI_UnitFrames:UpdateToTFrame(unitSource)
 	end
 	
 	self:UpdateHPBar(unit, self.wndToTFrame)
-	
-	self.wndToTFrame:FindChild("BuffContainerWindow"):SetUnit(unitSource)
-	self.wndToTFrame:FindChild("DebuffContainerWindow"):SetUnit(unitSource)
 	
 	self:RefreshStyle_TotFrame(unit)
 	
@@ -243,15 +233,12 @@ function ForgeUI_UnitFrames:UpdateFocusFrame(unitSource)
 	
 	self:UpdateHPBar(unit, self.wndFocusFrame)
 	self:UpdateInterruptArmor(unit, self.wndFocusFrame)
-	if self._DB.profile.tFocusFrame.bShowShieldBar then
+	if self._DB.profile.tFrames.Focus.bShowShieldBar then
 		self:UpdateShieldBar(unit, self.wndFocusFrame)
 	end
-	if self._DB.profile.tFocusFrame.bShowAbsorbBar then
+	if self._DB.profile.tFrames.Focus.bShowAbsorbBar then
 		self:UpdateAbsorbBar(unit, self.wndFocusFrame)
 	end
-	
-	self.wndFocusFrame:FindChild("BuffContainerWindow"):SetUnit(unitSource)
-	self.wndFocusFrame:FindChild("DebuffContainerWindow"):SetUnit(unitSource)
 	
 	self:RefreshStyle_FocusFrame(unit)
 	
@@ -268,7 +255,7 @@ function ForgeUI_UnitFrames:UpdateHPBar(unit, wnd, strSettings)
 		wnd:FindChild("HP_ProgressBar"):SetMax(unit:GetMaxHealth())
 		wnd:FindChild("HP_ProgressBar"):SetProgress(unit:GetHealth())
 		
-		if strSettings ~= nil and self._DB.profile[strSettings].bUseGradient then
+		if strSettings ~= nil and self._DB.profile.tFrames[strSettings].bUseGradient then
 			local nPercent = Util:Round((unit:GetHealth() / unit:GetMaxHealth()) * 100, 0)
 			local crGradient = Util:GenerateGradient(self._DB.profile[strSettings].crHpBarGradient, self._DB.profile[strSettings].crHpBar, 100, nPercent, true)
 			wnd:FindChild("HP_ProgressBar"):SetBarColor(crGradient)
@@ -378,20 +365,29 @@ function ForgeUI_UnitFrames:UpdateStyle_PlayerFrame()
 	if not unit or not self.wndPlayerFrame then return end
 
 	self.wndPlayerFrame:FindChild("Name"):SetText(unit:GetName())
-	self.wndPlayerFrame:FindChild("Name"):SetTextColor(F:API_GetClassColor(tClassEnums[unit:GetClassId()]))
+	if self._DB.profile.tFrames.Player.bNameClassColor then
+		self.wndPlayerFrame:FindChild("Name"):SetTextColor(F:API_GetClassColor(tClassEnums[unit:GetClassId()]))
+	else
+		self.wndPlayerFrame:FindChild("Name"):SetTextColor(self._DB.profile.tFrames.Player.crName)
+	end
+	
+	if self._DB.profile.tFrames.Player.bHealthClassColor then
+		self.wndPlayerFrame:FindChild("HP_ProgressBar"):SetBarColor(F:API_GetClassColor(tClassEnums[unit:GetClassId()]))
+	else
+		self.wndPlayerFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tFrames.Player.crHpBar)
+	end
 
-	self.wndPlayerFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tPlayerFrame.crBorder)
-	self.wndPlayerFrame:FindChild("Background"):SetBGColor(self._DB.profile.tPlayerFrame.crBackground)
-	self.wndPlayerFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tPlayerFrame.crHpBar)
-	self.wndPlayerFrame:FindChild("HP_ProgressBar"):SetFullSprite(self._DB.profile.tPlayerFrame.strFullSprite)
-	self.wndPlayerFrame:FindChild("HP_TextValue"):SetTextColor(self._DB.profile.tPlayerFrame.crHpValue)
-	self.wndPlayerFrame:FindChild("HP_TextPercent"):SetTextColor(self._DB.profile.tPlayerFrame.crHpValue)
-	self.wndPlayerFrame:FindChild("Shield_ProgressBar"):SetBarColor(self._DB.profile.tPlayerFrame.crShieldBar)
-	self.wndPlayerFrame:FindChild("Shield_ProgressBar"):SetFullSprite(self._DB.profile.tPlayerFrame.strFullSprite)
-	self.wndPlayerFrame:FindChild("Shield_TextValue"):SetTextColor(self._DB.profile.tPlayerFrame.crShieldValue)
-	self.wndPlayerFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self._DB.profile.tPlayerFrame.crAbsorbBar)
-	self.wndPlayerFrame:FindChild("Absorb_ProgressBar"):SetFullSprite(self._DB.profile.tPlayerFrame.strFullSprite)
-	self.wndPlayerFrame:FindChild("Absorb_TextValue"):SetTextColor(self._DB.profile.tPlayerFrame.crAbsorbValue)
+	self.wndPlayerFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tFrames.Player.crBorder)
+	self.wndPlayerFrame:FindChild("Background"):SetBGColor(self._DB.profile.tFrames.Player.crBackground)
+	self.wndPlayerFrame:FindChild("HP_ProgressBar"):SetFullSprite(self._DB.profile.tFrames.Player.strFullSprite)
+	self.wndPlayerFrame:FindChild("HP_TextValue"):SetTextColor(self._DB.profile.tFrames.Player.crHpValue)
+	self.wndPlayerFrame:FindChild("HP_TextPercent"):SetTextColor(self._DB.profile.tFrames.Player.crHpValue)
+	self.wndPlayerFrame:FindChild("Shield_ProgressBar"):SetBarColor(self._DB.profile.tFrames.Player.crShieldBar)
+	self.wndPlayerFrame:FindChild("Shield_ProgressBar"):SetFullSprite(self._DB.profile.tFrames.Player.strFullSprite)
+	self.wndPlayerFrame:FindChild("Shield_TextValue"):SetTextColor(self._DB.profile.tFrames.Player.crShieldValue)
+	self.wndPlayerFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self._DB.profile.tFrames.Player.crAbsorbBar)
+	self.wndPlayerFrame:FindChild("Absorb_ProgressBar"):SetFullSprite(self._DB.profile.tFrames.Player.strFullSprite)
+	self.wndPlayerFrame:FindChild("Absorb_TextValue"):SetTextColor(self._DB.profile.tFrames.Player.crAbsorbValue)
 end
 
 function ForgeUI_UnitFrames:RefreshStyle_PlayerFrame()
@@ -401,15 +397,15 @@ function ForgeUI_UnitFrames:LoadStyle_TargetFrame()
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_TargetFrame()
-	self.wndTargetFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tTargetFrame.crBorder)
-	self.wndTargetFrame:FindChild("Background"):SetBGColor(self._DB.profile.tTargetFrame.crBackground)
-	self.wndTargetFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tTargetFrame.crHpBar)
-	self.wndTargetFrame:FindChild("HP_TextValue"):SetTextColor(self._DB.profile.tTargetFrame.crHpValue)
-	self.wndTargetFrame:FindChild("HP_TextPercent"):SetTextColor(self._DB.profile.tTargetFrame.crHpValue)
-	self.wndTargetFrame:FindChild("Shield_ProgressBar"):SetBarColor(self._DB.profile.tTargetFrame.crShieldBar)
-	self.wndTargetFrame:FindChild("Shield_TextValue"):SetTextColor(self._DB.profile.tTargetFrame.crShieldValue)
-	self.wndTargetFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self._DB.profile.tTargetFrame.crAbsorbBar)
-	self.wndTargetFrame:FindChild("Absorb_TextValue"):SetTextColor(self._DB.profile.tTargetFrame.crAbsorbValue)
+	self.wndTargetFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tFrames.Target.crBorder)
+	self.wndTargetFrame:FindChild("Background"):SetBGColor(self._DB.profile.tFrames.Target.crBackground)
+	self.wndTargetFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tFrames.Target.crHpBar)
+	self.wndTargetFrame:FindChild("HP_TextValue"):SetTextColor(self._DB.profile.tFrames.Target.crHpValue)
+	self.wndTargetFrame:FindChild("HP_TextPercent"):SetTextColor(self._DB.profile.tFrames.Target.crHpValue)
+	self.wndTargetFrame:FindChild("Shield_ProgressBar"):SetBarColor(self._DB.profile.tFrames.Target.crShieldBar)
+	self.wndTargetFrame:FindChild("Shield_TextValue"):SetTextColor(self._DB.profile.tFrames.Target.crShieldValue)
+	self.wndTargetFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self._DB.profile.tFrames.Target.crAbsorbBar)
+	self.wndTargetFrame:FindChild("Absorb_TextValue"):SetTextColor(self._DB.profile.tFrames.Target.crAbsorbValue)
 end
 
 function ForgeUI_UnitFrames:RefreshStyle_TargetFrame(unit)
@@ -427,21 +423,18 @@ function ForgeUI_UnitFrames:LoadStyle_FocusFrame()
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_FocusFrame()
-	self.wndFocusFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tFocusFrame.crBorder)
-	self.wndFocusFrame:FindChild("Background"):SetBGColor(self._DB.profile.tFocusFrame.crBackground)
-	self.wndFocusFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tFocusFrame.crHpBar)
-	self.wndFocusFrame:FindChild("HP_TextValue"):SetTextColor(self._DB.profile.tFocusFrame.crHpValue)
-	self.wndFocusFrame:FindChild("HP_TextPercent"):SetTextColor(self._DB.profile.tFocusFrame.crHpValue)
-	self.wndFocusFrame:FindChild("Shield_ProgressBar"):SetBarColor(self._DB.profile.tFocusFrame.crShieldBar)
-	self.wndFocusFrame:FindChild("Shield_TextValue"):SetTextColor(self._DB.profile.tFocusFrame.crShieldValue)
-	self.wndFocusFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self._DB.profile.tFocusFrame.crAbsorbBar)
-	self.wndFocusFrame:FindChild("Absorb_TextValue"):SetTextColor(self._DB.profile.tFocusFrame.crAbsorbValue)
+	self.wndFocusFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tFrames.Focus.crBorder)
+	self.wndFocusFrame:FindChild("Background"):SetBGColor(self._DB.profile.tFrames.Focus.crBackground)
+	self.wndFocusFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tFrames.Focus.crHpBar)
+	self.wndFocusFrame:FindChild("HP_TextValue"):SetTextColor(self._DB.profile.tFrames.Focus.crHpValue)
+	self.wndFocusFrame:FindChild("HP_TextPercent"):SetTextColor(self._DB.profile.tFrames.Focus.crHpValue)
+	self.wndFocusFrame:FindChild("Shield_ProgressBar"):SetBarColor(self._DB.profile.tFrames.Focus.crShieldBar)
+	self.wndFocusFrame:FindChild("Shield_TextValue"):SetTextColor(self._DB.profile.tFrames.Focus.crShieldValue)
+	self.wndFocusFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self._DB.profile.tFrames.Focus.crAbsorbBar)
+	self.wndFocusFrame:FindChild("Absorb_TextValue"):SetTextColor(self._DB.profile.tFrames.Focus.crAbsorbValue)
 	
-	self.wndFocusFrame:FindChild("ShieldBar"):Show(self._DB.profile.tFocusFrame.bShowShieldBar, true)
-	self.wndFocusFrame:FindChild("AbsorbBar"):Show(self._DB.profile.tFocusFrame.bShowAbsorbBar, true)
-	
-	self.wndFocusFrame:FindChild("BuffContainerWindow"):Show(self._DB.profile.tFocusFrame.bShowBuffs)
-	self.wndFocusFrame:FindChild("DebuffContainerWindow"):Show(self._DB.profile.tFocusFrame.bShowDebuffs)
+	self.wndFocusFrame:FindChild("ShieldBar"):Show(self._DB.profile.tFrames.Focus.bShowShieldBar, true)
+	self.wndFocusFrame:FindChild("AbsorbBar"):Show(self._DB.profile.tFrames.Focus.bShowAbsorbBar, true)
 end
 
 function ForgeUI_UnitFrames:RefreshStyle_FocusFrame(unit)
@@ -459,12 +452,9 @@ function ForgeUI_UnitFrames:LoadStyle_TotFrame()
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_TotFrame()
-	self.wndToTFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tTotFrame.crBorder)
-	self.wndToTFrame:FindChild("Background"):SetBGColor(self._DB.profile.tTotFrame.crBackground)
-	self.wndToTFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tTotFrame.crHpBar)
-	
-	self.wndToTFrame:FindChild("BuffContainerWindow"):Show(self._DB.profile.tTotFrame.bShowBuffs)
-	self.wndToTFrame:FindChild("DebuffContainerWindow"):Show(self._DB.profile.tTotFrame.bShowDebuffs)
+	self.wndToTFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tFrames.ToT.crBorder)
+	self.wndToTFrame:FindChild("Background"):SetBGColor(self._DB.profile.tFrames.ToT.crBackground)
+	self.wndToTFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tFrames.ToT.crHpBar)
 end
 
 function ForgeUI_UnitFrames:RefreshStyle_TotFrame(unit)
@@ -502,6 +492,64 @@ function ForgeUI_UnitFrames:OnGenerateBuffTooltip(wndHandler, wndControl, tType,
 		return
 	end
 	Tooltip.GetBuffTooltipForm(self, wndControl, splBuff, {bFutureSpell = false})
+end
+
+function ForgeUI_UnitFrames:ForgeAPI_PopulateOptions()
+	for k, v in pairs(self._DB.profile.tFrames) do
+		local wnd = self.tOptionHolders[k]
+		
+		if v.crBorder then
+			G:API_AddColorBox(self, wnd, "Border color", v, "crBorder", { tMove = {0, 0}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+		
+		if v.crBackground then
+			G:API_AddColorBox(self, wnd, "Background color", v, "crBackground", { tMove = {0, 30}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+		
+		if v.crHpBar then
+			G:API_AddColorBox(self, wnd, "Health bar color", v, "crHpBar", { tMove = {0, 60}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+		
+		if v.crHpValue then
+			G:API_AddColorBox(self, wnd, "Health value color", v, "crHpValue", { tMove = {0, 90}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+		
+		if v.crShieldBar then
+			G:API_AddColorBox(self, wnd, "Shield bar color", v, "crShieldBar", { tMove = {200, 0}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+		
+		if v.crShieldValue then
+			G:API_AddColorBox(self, wnd, "Shield value color", v, "crShieldValue", { tMove = {400, 0}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+		
+		if v.crAbsorbBar then
+			G:API_AddColorBox(self, wnd, "Absorb bar color", v, "crAbsorbBar", { tMove = {200, 30}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+		
+		if v.crAbsorbValue then
+			G:API_AddColorBox(self, wnd, "Absorb value color", v, "crAbsorbValue", { tMove = {400, 30}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+		
+		if v.crName then
+			G:API_AddColorBox(self, wnd, "Name color", v, "crName", { tMove = {0, 120}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+		
+		if v.bNameClassColor ~= nil then
+			G:API_AddCheckBox(self, wnd, "Class color for name", v, "bNameClassColor", { tMove = {200, 120}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+		
+		if v.bHealthClassColor ~= nil then
+			G:API_AddCheckBox(self, wnd, "Class color for health bar", v, "bHealthClassColor", { tMove = {200, 60}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+		
+		if v.bUseGradient ~= nil then
+			G:API_AddCheckBox(self, wnd, "Gradient health bar", v, "bUseGradient", { tMove = {0, 180} })
+		end
+		
+		if v.crHpBarGradient then
+			G:API_AddColorBox(self, wnd, "HP bar gradient", v, "crHpBarGradient", { tMove = {200, 180}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+	end
 end
 
 F:API_NewAddon(ForgeUI_UnitFrames)
