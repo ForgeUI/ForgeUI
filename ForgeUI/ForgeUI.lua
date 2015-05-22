@@ -75,7 +75,6 @@ function Addon:OnDocLoaded()
 end
 
 function Addon:OnCharacterCreated() ForgeUI:Init() end
-
 function Addon:OnConfigure() self:OnForgeUIOn() end
 function Addon:OnForgeUIOn() self.wndMain:Invoke() end
 function Addon:OnForgeUIOff() self.wndMain:Close() end
@@ -141,8 +140,8 @@ end
 -----------------------------------------------------------------------------------------------
 -- OnSave/OnRestore
 -----------------------------------------------------------------------------------------------
-function Addon:OnSave(...) return ForgeUI:OnSave(...) end
-function Addon:OnRestore(...) ForgeUI:OnRestore(...) end
+--function Addon:OnSave(...) return ForgeUI:OnSave(...) end
+--function Addon:OnRestore(...) ForgeUI:OnRestore(...) end
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI public api
@@ -205,6 +204,12 @@ end
 
 function ForgeUI:API_GetApiVersion() return API_VERSION end
 function ForgeUI:API_GetVersion() return VERSION end
+
+-- ForgeDB initialization
+_G["ForgeDB"] = {}
+_G["ForgeDB"]["profile"] = {}
+_G["ForgeDB"]["global"] = {}
+_G["ForgeDB"]["char"] = {}
 
 -- ForgeLibs initialization
 _G["ForgeLibs"] = {}

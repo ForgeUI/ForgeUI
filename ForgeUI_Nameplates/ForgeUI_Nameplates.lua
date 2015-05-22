@@ -64,8 +64,8 @@ local fnColorNameplate
 local fnRepositionNameplate
 
 local ForgeUI_Nameplates = {
-	NAME = "ForgeUI_Nameplates",
-	API_VERSION = 3,
+	_NAME = "ForgeUI_Nameplates",
+	_API_VERSION = 3,
 	VERSION = "3.0",
 
     tPreloadUnits = {},
@@ -81,195 +81,197 @@ local ForgeUI_Nameplates = {
 	DISPLAY_NAME = "Nameplates",
 	
 	settings_version = 3,
-    tGlobalSettings = {
-		nMaxRange = 75,
-		bUseOcclusion = true,
-		bShowTitles = false,
-		bOnlyImportantNPC = true,
-		bShowObjectives = true,
-		bShowShield = true,
-		bShowAbsorb = true,
-		bFrequentUpdate = false,
-		bShowDead = true,
-		bClickable = false,
-		crShield = "FF0699F3",
-		crAbsorb = "FFFFC600",
-		crDead = "FF666666",
-		crMOO = "FF7E00FF",
-		tStyle = {
-			nStyle = 0,
-			nBarHeight = 120,
-			nBarWidth = 20,
-			nShieldHeight = 8,
-			nAbsorbHeight = 8,
-			nCastHeight = 7,
+    tSettings = {
+		profile = {
+			nMaxRange = 75,
+			bUseOcclusion = true,
+			bShowTitles = false,
+			bOnlyImportantNPC = true,
+			bShowObjectives = true,
+			bShowShield = true,
+			bShowAbsorb = true,
+			bFrequentUpdate = false,
+			bShowDead = true,
+			bClickable = false,
+			crShield = "FF0699F3",
+			crAbsorb = "FFFFC600",
+			crDead = "FF666666",
+			crMOO = "FF7E00FF",
+			tStyle = {
+				nStyle = 0,
+				nBarHeight = 120,
+				nBarWidth = 20,
+				nShieldHeight = 8,
+				nAbsorbHeight = 8,
+				nCastHeight = 7,
+			},
+			tUnits = {
+				Target = {
+					bShowMarker = true,
+					crTargetMarker = "FFFFFFFF",
+					nShowName = 3,
+					nShowBars = 3,
+					nShowCast = 3,
+					nShowInfo = 0,
+				},
+				Player = {
+					bEnabled = true,
+					bHideOnHealth = false,
+					bHideOnShield = false,
+					nShowName = 0,
+					nShowBars = 0,
+					nShowCast = 0,
+					nShowGuild = 0,
+					nShowInfo = 0,
+					nHpCutoff = 0,
+					crHpCutoff = "FFCCCCCC",
+					crName = "FFFFFFFF",
+					crHealth = "FF75CC26",
+					bClassColors = false,
+				},
+				FriendlyPlayer = {
+					bEnabled = true,
+					bHideOnHealth = false,
+					bHideOnShield = false,
+					bCleanseIndicator = false,
+					crCleanseIndicator = "FFA100FE",
+					nShowName = 3,
+					nShowBars = 3,
+					nShowCast = 0,
+					nShowGuild = 0,
+					nShowInfo = 0,
+					nHpCutoff = 0,
+					crHpCutoff = "FFCCCCCC",
+					crName = "FFFFFFFF",
+					crHealth = "FF75CC26",
+					bClassColors = true,
+				},
+				PartyPlayer = {
+					bEnabled = true,
+					bHideOnHealth = false,
+					bHideOnShield = false,
+					bCleanseIndicator = false,
+					crCleanseIndicator = "FFA100FE",
+					nShowName = 3,
+					nShowBars = 3,
+					nShowCast = 0,
+					nShowGuild = 0,
+					nShowInfo = 0,
+					nHpCutoff = 0,
+					crHpCutoff = "FFCCCCCC",
+					crName = "FF43C8F3",
+					crHealth = "FF75CC26",
+					bClassColors = true,
+				},
+				HostilePlayer = {
+					bEnabled = true,
+					nShowName = 3,
+					nShowBars = 3,
+					nShowCast = 3,
+					nShowGuild = 0,
+					nShowInfo = 0,
+					nHpCutoff = 0,
+					crHpCutoff = "FFCCCCCC",
+					crName = "FFFF0000",
+					crNameNoPvP = "FFFF9900",
+					crHealth = "FFFF0000",
+					bClassColors = true,
+				},
+				FriendlyNPC = {
+					bEnabled = true,
+					nShowName = 3,
+					nShowBars = 2,
+					nShowCast = 2,
+					nShowGuild = 3,
+					nShowInfo = 0,
+					crName = "FF76CD26",
+					crHealth = "FF75CC26",
+				},
+				NeutralNPC = {
+					bEnabled = true,
+					nShowName = 3,
+					nShowBars = 2,
+					nShowCast = 2,
+					nShowGuild = 0,
+					nShowInfo = 1,
+					crName = "FFFFF569",
+					crHealth = "FFF3D829",
+				},
+				HostileNPC = {
+					bEnabled = true,
+					bThreatIndicator = false,
+					bReposition = false,
+					crThreatIndicator = "FFFF9900",
+					nShowName = 3,
+					nShowBars = 2,
+					nShowCast = 2,
+					nShowGuild = 0,
+					nShowInfo = 1,
+					nHpCutoff = 0,
+					crHpCutoff = "FFCCCCCC",
+					crName = "FFD9544D",
+					crHealth = "FFE50000",
+				},
+				UnknownNPC = {
+					bEnabled = true,
+					nShowName = 3,
+					nShowBars = 3,
+					crName = "FF333333",
+					crHealth = "FF333333",
+				},
+				FriendlyPet = {
+					bEnabled = false,
+					nShowName = 0,
+					nShowBars = 0,
+				},
+				PlayerPet = {
+					bEnabled = true,
+					nShowName = 0,
+					nShowBars = 0,
+					crName = "FFFFFFFF",
+					crHealth = "FFFFFFFF"
+				},
+				HostilePet = {
+					bEnabled = false,
+					nShowName = 0,
+					nShowBars = 0,
+				},
+				Simple = {
+					bEnabled = false,
+					nShowName = 0,
+					crName = "FFFFFFFF"
+				},
+				Pickup = {
+					bEnabled = true,
+					nShowName = 3,
+					crName = "FFFFFFFF"
+				},
+				PickupNotPlayer = {
+					bEnabled = false,
+					nShowName = 0,
+					crName = "FFFFFFFF"
+				},
+				Collectible = {
+					bEnabled = false,
+					nShowName = 0,
+					crName = "FFFFFFFF"
+				},
+				PinataLoot = {
+					bEnabled = false,
+					nShowName = 0,
+					crName = "FFFFFFFF"
+				},
+				Mount = {
+					bEnabled = false,
+					nShowName = 0,
+					crName = "FFFFFFFF"
+				},
+				
+			},
+			knNameplatePoolLimit = 500,
+			knTargetRange = 16000,
 		},
-		tUnits = {
-			Target = {
-				bShowMarker = true,
-				crTargetMarker = "FFFFFFFF",
-				nShowName = 3,
-				nShowBars = 3,
-				nShowCast = 3,
-				nShowInfo = 0,
-			},
-			Player = {
-				bEnabled = true,
-				bHideOnHealth = false,
-				bHideOnShield = false,
-				nShowName = 0,
-				nShowBars = 0,
-				nShowCast = 0,
-				nShowGuild = 0,
-				nShowInfo = 0,
-				nHpCutoff = 0,
-				crHpCutoff = "FFCCCCCC",
-				crName = "FFFFFFFF",
-				crHealth = "FF75CC26",
-				bClassColors = false,
-			},
-			FriendlyPlayer = {
-				bEnabled = true,
-				bHideOnHealth = false,
-				bHideOnShield = false,
-				bCleanseIndicator = false,
-				crCleanseIndicator = "FFA100FE",
-				nShowName = 3,
-				nShowBars = 3,
-				nShowCast = 0,
-				nShowGuild = 0,
-				nShowInfo = 0,
-				nHpCutoff = 0,
-				crHpCutoff = "FFCCCCCC",
-				crName = "FFFFFFFF",
-				crHealth = "FF75CC26",
-				bClassColors = true,
-			},
-			PartyPlayer = {
-				bEnabled = true,
-				bHideOnHealth = false,
-				bHideOnShield = false,
-				bCleanseIndicator = false,
-				crCleanseIndicator = "FFA100FE",
-				nShowName = 3,
-				nShowBars = 3,
-				nShowCast = 0,
-				nShowGuild = 0,
-				nShowInfo = 0,
-				nHpCutoff = 0,
-				crHpCutoff = "FFCCCCCC",
-				crName = "FF43C8F3",
-				crHealth = "FF75CC26",
-				bClassColors = true,
-			},
-			HostilePlayer = {
-				bEnabled = true,
-				nShowName = 3,
-				nShowBars = 3,
-				nShowCast = 3,
-				nShowGuild = 0,
-				nShowInfo = 0,
-				nHpCutoff = 0,
-				crHpCutoff = "FFCCCCCC",
-				crName = "FFFF0000",
-				crNameNoPvP = "FFFF9900",
-				crHealth = "FFFF0000",
-				bClassColors = true,
-			},
-			FriendlyNPC = {
-				bEnabled = true,
-				nShowName = 3,
-				nShowBars = 2,
-				nShowCast = 2,
-				nShowGuild = 3,
-				nShowInfo = 0,
-				crName = "FF76CD26",
-				crHealth = "FF75CC26",
-			},
-			NeutralNPC = {
-				bEnabled = true,
-				nShowName = 3,
-				nShowBars = 2,
-				nShowCast = 2,
-				nShowGuild = 0,
-				nShowInfo = 1,
-				crName = "FFFFF569",
-				crHealth = "FFF3D829",
-			},
-			HostileNPC = {
-				bEnabled = true,
-				bThreatIndicator = false,
-				bReposition = false,
-				crThreatIndicator = "FFFF9900",
-				nShowName = 3,
-				nShowBars = 2,
-				nShowCast = 2,
-				nShowGuild = 0,
-				nShowInfo = 1,
-				nHpCutoff = 0,
-				crHpCutoff = "FFCCCCCC",
-				crName = "FFD9544D",
-				crHealth = "FFE50000",
-			},
-			UnknownNPC = {
-				bEnabled = true,
-				nShowName = 3,
-				nShowBars = 3,
-				crName = "FF333333",
-				crHealth = "FF333333",
-			},
-			FriendlyPet = {
-				bEnabled = false,
-				nShowName = 0,
-				nShowBars = 0,
-			},
-			PlayerPet = {
-				bEnabled = true,
-				nShowName = 0,
-				nShowBars = 0,
-				crName = "FFFFFFFF",
-				crHealth = "FFFFFFFF"
-			},
-			HostilePet = {
-				bEnabled = false,
-				nShowName = 0,
-				nShowBars = 0,
-			},
-			Simple = {
-				bEnabled = false,
-				nShowName = 0,
-				crName = "FFFFFFFF"
-			},
-			Pickup = {
-				bEnabled = true,
-				nShowName = 3,
-				crName = "FFFFFFFF"
-			},
-			PickupNotPlayer = {
-				bEnabled = false,
-				nShowName = 0,
-				crName = "FFFFFFFF"
-			},
-			Collectible = {
-				bEnabled = false,
-				nShowName = 0,
-				crName = "FFFFFFFF"
-			},
-			PinataLoot = {
-				bEnabled = false,
-				nShowName = 0,
-				crName = "FFFFFFFF"
-			},
-			Mount = {
-				bEnabled = false,
-				nShowName = 0,
-				crName = "FFFFFFFF"
-			},
-			
-		},
-		knNameplatePoolLimit = 500,
-		knTargetRange = 16000,
-	}
+	},
 }
 
 -----------------------------------------------------------------------------------------------
@@ -332,6 +334,15 @@ function ForgeUI_Nameplates:NameplatesInit()
 	self:CreateUnitsFromPreload()
 end
 
+function ForgeUI_Nameplates:ForgeAPI_LoadSettings()
+	for idx, tNameplate in pairs(self.arUnit2Nameplate) do
+		tNameplate.tSettings = self._DB.profile.tUnits[tNameplate.strUnitType]
+	end
+
+	self:UpdateAllNameplates()
+	self:LoadStyle_Nameplates()
+end
+
 function ForgeUI_Nameplates:UpdateAllNameplates()
 	self:UpdateAllNameplateVisibility()
 	self:RequestUpdateAllNameplateRewards()
@@ -365,10 +376,10 @@ function ForgeUI_Nameplates:UpdateNameplateRewardInfo(tNameplate)
 	local tFlags =
 	{
 		bVert = false,
-		bHideQuests = not self.tGlobalSettings.bShowObjectives,
-		bHideChallenges = not self.tGlobalSettings.bShowObjectives,
-		bHideMissions = not self.tGlobalSettings.bShowObjectives,
-		bHidePublicEvents = not self.tGlobalSettings.bShowObjectives,
+		bHideQuests = not self._DB.profile.bShowObjectives,
+		bHideChallenges = not self._DB.profile.bShowObjectives,
+		bHideMissions = not self._DB.profile.bShowObjectives,
+		bHidePublicEvents = not self._DB.profile.bShowObjectives,
 		bHideRivals = true,
 		bHideFriends = true
 	}
@@ -411,7 +422,7 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 		tNameplate.strUnitType 		= self:GetUnitType(unitOwner)
 		tNameplate.eDisposition 	= eDisposition
 		tNameplate.bIsImportant		= self:IsImportantNPC(unitOwner)
-		tNameplate.tGlobalSettings 		= self.tGlobalSettings.tUnits[tNameplate.strUnitType]
+		tNameplate.tSettings 		= self._DB.profile.tUnits[tNameplate.strUnitType]
 		
 		self:UpdateNameplate(tNameplate)
 	end
@@ -425,7 +436,7 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 	
 	tNameplate.eDisposition = eDisposition
 	
-	if bNewShow and not self.tGlobalSettings.bFrequentUpdate then
+	if bNewShow and not self._DB.profile.bFrequentUpdate then
 		fnDrawNameplate(self, tNameplate)
 	end
 
@@ -440,7 +451,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	
 	if tAllowedNames[unitNew:GetName()] == unitNew:GetId() then
 	else
-		if not self.tGlobalSettings.tUnits[strNewUnitType].bEnabled then return end
+		if not self._DB.profile.tUnits[strNewUnitType].bEnabled then return end
 	end
 	
 	local idUnit = unitNew:GetId()
@@ -470,7 +481,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		wndNameplate	= wnd,
 		strUnitType		= strNewUnitType,
 		unitClassID 	= unitNew:IsACharacter() and unitNew:GetClassId() or unitNew:GetRank(),
-		tGlobalSettings 		= self.tGlobalSettings.tUnits[strNewUnitType],
+		tSettings 		= self._DB.profile.tUnits[strNewUnitType],
 		
 		bOnScreen 		= wnd:IsOnScreen(),
 		bOccluded 		= wnd:IsOccluded(),
@@ -592,7 +603,7 @@ function ForgeUI_Nameplates:OnUnitDestroyed(unitOwner)
 	local wndNameplate = tNameplate.wndNameplate
 
 	self.arWnd2Nameplate[wndNameplate:GetId()] = nil
-	if #self.arWindowPool < self.tGlobalSettings.knNameplatePoolLimit then
+	if #self.arWindowPool < self._DB.profile.knNameplatePoolLimit then
 		wndNameplate:Show(false, true)
 		wndNameplate:SetUnit(nil)
 		table.insert(self.arWindowPool, {wndNameplate, tNameplate.wnd})
@@ -614,7 +625,7 @@ function ForgeUI_Nameplates:OnFrame()
 			fnDrawCastBar(self, tNameplate)
 			fnRepositionNameplate(self, tNameplate)
 			
-			if self.tGlobalSettings.bFrequentUpdate then
+			if self._DB.profile.bFrequentUpdate then
 				fnDrawNameplate(self, tNameplate)
 			end
 		end
@@ -634,29 +645,29 @@ end
 function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 	local unitOwner = tNameplate.unitOwner
 	local wndNameplate = tNameplate.wndNameplate
-	local tGlobalSettings = tNameplate.tGlobalSettings
+	local tSettings = tNameplate.tSettings
 	
-	local crNameColors = tGlobalSettings.crName
-	local crBarColor = tGlobalSettings.crHealth
+	local crNameColors = tSettings.crName
+	local crBarColor = tSettings.crHealth
 	
 	if tNameplate.strUnitType == "HostilePlayer" and not unitOwner:IsPvpFlagged() then
-		crNameColors = tGlobalSettings.crNameNoPvP
+		crNameColors = tSettings.crNameNoPvP
 	end
 	
 	if unitOwner:IsDead() then
-		crNameColors = self.tGlobalSettings.crDead
+		crNameColors = self._DB.profile.crDead
 	end
 	
-	if tGlobalSettings.bClassColors then
+	if tSettings.bClassColors then
 		crBarColor = F:API_GetClassColor(krtClassEnums[unitOwner:GetClassId()])
 	end
 	
-	if tGlobalSettings.nHpCutoff and tNameplate.hpPercentage and tNameplate.hpPercentage < tGlobalSettings.nHpCutoff then
-		crBarColor = tGlobalSettings.crHpCutoff
+	if tSettings.nHpCutoff and tNameplate.hpPercentage and tNameplate.hpPercentage < tSettings.nHpCutoff then
+		crBarColor = tSettings.crHpCutoff
 	end
 	
 	if unitOwner:IsInCCState(Unit.CodeEnumCCState.Vulnerability) then
-		crBarColor = self.tGlobalSettings.crMOO
+		crBarColor = self._DB.profile.crMOO
 	end
 
 	tNameplate.wnd.wndName:SetTextColor(crNameColors)
@@ -676,7 +687,7 @@ function ForgeUI_Nameplates:DrawName(tNameplate)
 
 	if bShow then
 		local strNewName
-		if self.tGlobalSettings.bShowTitles then
+		if self._DB.profile.bShowTitles then
 			strNewName = unitOwner:GetTitleOrName()
 		else
 			strNewName = unitOwner:GetName()
@@ -737,13 +748,13 @@ function ForgeUI_Nameplates:DrawHealth(tNameplate)
 	
 	local bShow = nHealth ~= nil and not unitOwner:IsDead() and nMaxHealth > 0 and self:GetBooleanOption("nShowBars", tNameplate)
 	
-	if (tNameplate.tGlobalSettings.bHideOnHealth or tNameplate.tGlobalSettings.bHideOnShield) and not tNameplate.bIsTarget then
-		local bHealth = nHealth ~= nMaxHealth and tNameplate.tGlobalSettings.bHideOnHealth
+	if (tNameplate.tSettings.bHideOnHealth or tNameplate.tSettings.bHideOnShield) and not tNameplate.bIsTarget then
+		local bHealth = nHealth ~= nMaxHealth and tNameplate.tSettings.bHideOnHealth
 		
 		local nShield = unitOwner:GetShieldCapacity()
 		local nShieldMax = unitOwner:GetShieldCapacityMax()	
 		
-		local bShield = nShield ~= nShieldMax and tNameplate.tGlobalSettings.bHideOnShield
+		local bShield = nShield ~= nShieldMax and tNameplate.tSettings.bHideOnShield
 	
 		bShow = bHealth or bShield
 	end
@@ -795,7 +806,7 @@ end
 function ForgeUI_Nameplates:DrawShield(tNameplate)
 	local bShow = false
 	
-	if self.tGlobalSettings.bShowShield then
+	if self._DB.profile.bShowShield then
 		local unitOwner = tNameplate.unitOwner
 		
 		local nShield = unitOwner:GetShieldCapacity()
@@ -812,9 +823,9 @@ function ForgeUI_Nameplates:DrawShield(tNameplate)
 		tNameplate.wnd.healthMaxShield:Show(bShow, true)
 		tNameplate.bShowShield = bShow
 		
-		if self.tGlobalSettings.tStyle.nStyle == 1 then
-			tNameplate.wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, bShow and 7 + self.tGlobalSettings.tStyle.nShieldHeight or 7)
-			tNameplate.wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, bShow and 7 + self.tGlobalSettings.tStyle.nShieldHeight or 7)
+		if self._DB.profile.tStyle.nStyle == 1 then
+			tNameplate.wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, bShow and 7 + self._DB.profile.tStyle.nShieldHeight or 7)
+			tNameplate.wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, bShow and 7 + self._DB.profile.tStyle.nShieldHeight or 7)
 		end
 	end
 end
@@ -822,7 +833,7 @@ end
 function ForgeUI_Nameplates:DrawAbsorb(tNameplate)
 	local bShow = false
 	
-	if self.tGlobalSettings.bShowAbsorb then
+	if self._DB.profile.bShowAbsorb then
 		local unitOwner = tNameplate.unitOwner
 		
 		local nAbsorb = unitOwner:GetAbsorptionValue()
@@ -831,9 +842,9 @@ function ForgeUI_Nameplates:DrawAbsorb(tNameplate)
 		bShow = nAbsorb ~= nil and not unitOwner:IsDead() and nAbsorb > 0
 		
 		if bShow then
-			if self.tGlobalSettings.tStyle.nStyle == 0 then
+			if self._DB.profile.tStyle.nStyle == 0 then
 				self:SetBarValue(tNameplate.wnd.healthAbsorbFill, 0, nAbsorb, nAbsorbMax)
-			elseif self.tGlobalSettings.tStyle.nStyle == 1 then
+			elseif self._DB.profile.tStyle.nStyle == 1 then
 				local nMaxHealth = unitOwner:GetMaxHealth()
 				
 				if nMaxHealth > nAbsorbMax then
@@ -849,9 +860,9 @@ function ForgeUI_Nameplates:DrawAbsorb(tNameplate)
 		tNameplate.wnd.healthMaxAbsorb:Show(bShow, true)
 		tNameplate.bShowAbsorb = bShow
 		
-		if self.tGlobalSettings.tStyle.nStyle == 1 then
-			tNameplate.wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, bShow and -7 - self.tGlobalSettings.tStyle.nAbsorbHeight or -7, 7, 7)
-			tNameplate.wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, bShow and -7 - self.tGlobalSettings.tStyle.nAbsorbHeight or -7, 7, 7)
+		if self._DB.profile.tStyle.nStyle == 1 then
+			tNameplate.wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, bShow and -7 - self._DB.profile.tStyle.nAbsorbHeight or -7, 7, 7)
+			tNameplate.wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, bShow and -7 - self._DB.profile.tStyle.nAbsorbHeight or -7, 7, 7)
 		end
 	end
 end
@@ -895,7 +906,7 @@ function ForgeUI_Nameplates:DrawRewards(tNameplate)
 	local wndNameplate = tNameplate.wndNameplate
 	local unitOwner = tNameplate.unitOwner
 
-	local bShow = self.tGlobalSettings.bShowObjectives
+	local bShow = self._DB.profile.bShowObjectives
 
 	if bShow ~= tNameplate.wnd.questRewards:IsShown() then
 		tNameplate.wnd.questRewards:Show(bShow)
@@ -910,7 +921,7 @@ function ForgeUI_Nameplates:DrawIndicators(tNameplate)
 
 	-- target indicator
 	
-	local bShowTargetMarker = tNameplate.bIsTarget and self.tGlobalSettings.tUnits["Target"].bShowMarker
+	local bShowTargetMarker = tNameplate.bIsTarget and self._DB.profile.tUnits["Target"].bShowMarker
 	if wnd.targetMarker:IsShown() ~= bShowTargetMarker then
 		wnd.targetMarker:Show(bShowTargetMarker)
 	end
@@ -919,7 +930,7 @@ function ForgeUI_Nameplates:DrawIndicators(tNameplate)
 	
 	-- threat loss indicator
 	
-	if tNameplate.tGlobalSettings.bThreatIndicator then
+	if tNameplate.tSettings.bThreatIndicator then
 		local unitsTarget = unitOwner:GetTarget()
 		if unitsTarget and not unitsTarget:IsThePlayer() then
 			bShowIndicator = true
@@ -928,7 +939,7 @@ function ForgeUI_Nameplates:DrawIndicators(tNameplate)
 	
 	-- cleanse indicator
 	
-	if tNameplate.tGlobalSettings.bCleanseIndicator then
+	if tNameplate.tSettings.bCleanseIndicator then
 		local tDebuffs = unitOwner:GetBuffs().arHarmful
 		
 		for _, debuff in pairs(tDebuffs) do
@@ -950,9 +961,9 @@ function ForgeUI_Nameplates:DrawInfo(tNameplate)
 	local bShowInfo = false
 	
 	--if tNameplate.bIsTarget then
-	--	nShowInfo = self.tGlobalSettings.tUnits["Target"].nShowInfo
+	--	nShowInfo = self._DB.profile.tUnits["Target"].nShowInfo
 	--else
-		nShowInfo = tNameplate.tGlobalSettings.nShowInfo
+		nShowInfo = tNameplate.tSettings.nShowInfo
 	--end
 	
 	
@@ -992,7 +1003,7 @@ function ForgeUI_Nameplates:UpdateInfo(tNameplate)
 end
 
 function ForgeUI_Nameplates:RepositionNameplate(tNameplate)
-	if tNameplate.tGlobalSettings.bReposition then
+	if tNameplate.tSettings.bReposition then
 		local wndNameplate = tNameplate.wndNameplate
 	
 		local nX, nY = wndNameplate:GetPos()
@@ -1047,10 +1058,10 @@ function ForgeUI_Nameplates:CheckDrawDistance(tNameplate)
 	local nDistance = (nDeltaX * nDeltaX) + (nDeltaY * nDeltaY) + (nDeltaZ * nDeltaZ)
 
 	if tNameplate.bIsTarget then
-		bInRange = nDistance < self.tGlobalSettings.knTargetRange
+		bInRange = nDistance < self._DB.profile.knTargetRange
 		return bInRange
 	else
-		bInRange = nDistance < self.tGlobalSettings.nMaxRange * self.tGlobalSettings.nMaxRange
+		bInRange = nDistance < self._DB.profile.nMaxRange * self._DB.profile.nMaxRange
 		return bInRange
 	end
 end
@@ -1059,8 +1070,8 @@ function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 	local unitPlayer = self.unitPlayer
 	local unitOwner = tNameplate.unitOwner
 	
-	local bDontShowNameplate = not tNameplate.bOnScreen or tNameplate.bGibbed or not tNameplate.bIsImportant and self.tGlobalSettings.bOnlyImportantNPC
-		or (unitOwner:IsDead() and not self.tGlobalSettings.bShowDead)
+	local bDontShowNameplate = not tNameplate.bOnScreen or tNameplate.bGibbed or not tNameplate.bIsImportant and self._DB.profile.bOnlyImportantNPC
+		or (unitOwner:IsDead() and not self._DB.profile.bShowDead)
 	
 	if bDontShowNameplate and not tNameplate.bIsTarget and not tAllowedNames[unitOwner:GetName()] then
 		return false
@@ -1070,13 +1081,13 @@ function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 	local tActivation = tNameplate.tActivation
 
 	local bShowNameplate = true
-	if self.tGlobalSettings.bUseOcclusion then
+	if self._DB.profile.bUseOcclusion then
 		bShowNameplate = not tNameplate.bOccluded or tNameplate.bIsTarget
 	else
 		bShowNameplate = true
 	end
 
-	--if self.tGlobalSettings.bShowMainObjectiveOnly and not bShowNameplate then
+	--if self._DB.profile.bShowMainObjectiveOnly and not bShowNameplate then
 	--	local tRewardInfo = unitOwner:GetRewardInfo() or {}
 	--	for idx, tReward in pairs(tRewardInfo) do
 	--		if tReward.eType == Unit.CodeEnumRewardInfoType.Quest or tReward.eType == Unit.CodeEnumRewardInfoType.Contract then
@@ -1157,12 +1168,12 @@ function ForgeUI_Nameplates:GetBooleanOption(strOption, tNameplate)
 	local unit = tNameplate.unitOwner
 
 	if tNameplate.bIsTarget then
-		nOption = self.tGlobalSettings.tUnits.Target[strOption]
+		nOption = self._DB.profile.tUnits.Target[strOption]
 		if nOption == nil then
-			nOption = tNameplate.tGlobalSettings[strOption]
+			nOption = tNameplate.tSettings[strOption]
 		end
 	else
-		nOption = tNameplate.tGlobalSettings[strOption]
+		nOption = tNameplate.tSettings[strOption]
 	end
 
 	if nOption == 0 then
@@ -1256,29 +1267,29 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	local wnd = tNameplate.wnd
 	local wndNameplate = tNameplate.wndNameplate
 	
-	wnd.targetMarker:SetBGColor(self.tGlobalSettings.tUnits["Target"].crTargetMarker)
+	wnd.targetMarker:SetBGColor(self._DB.profile.tUnits["Target"].crTargetMarker)
 	
-	wnd.healthShieldFill:SetBarColor(self.tGlobalSettings.crShield)
-	wnd.healthAbsorbFill:SetBarColor(self.tGlobalSettings.crAbsorb)
+	wnd.healthShieldFill:SetBarColor(self._DB.profile.crShield)
+	wnd.healthAbsorbFill:SetBarColor(self._DB.profile.crAbsorb)
 	
 	if tNameplate.strUnitType == "HostileNPC" then
-		wnd.indicator:SetBGColor(self.tGlobalSettings.tUnits["HostileNPC"].crThreatIndicator)
+		wnd.indicator:SetBGColor(self._DB.profile.tUnits["HostileNPC"].crThreatIndicator)
 	elseif tNameplate.strUnitType == "FriendlyPlayer" then
-		wnd.indicator:SetBGColor(self.tGlobalSettings.tUnits["FriendlyPlayer"].crCleanseIndicator)
+		wnd.indicator:SetBGColor(self._DB.profile.tUnits["FriendlyPlayer"].crCleanseIndicator)
 	elseif tNameplate.strUnitType == "PartyPlayer" then
-		wnd.indicator:SetBGColor(self.tGlobalSettings.tUnits["PartyPlayer"].crCleanseIndicator)
+		wnd.indicator:SetBGColor(self._DB.profile.tUnits["PartyPlayer"].crCleanseIndicator)
 	end
 	
-	wndNameplate:FindChild("Container"):SetStyle("IgnoreMouse", not self.tGlobalSettings.bClickable)
+	wndNameplate:FindChild("Container"):SetStyle("IgnoreMouse", not self._DB.profile.bClickable)
 	
 	--style
-	local tStyle = self.tGlobalSettings.tStyle
+	local tStyle = self._DB.profile.tStyle
 	
 	-- indicators
 	if tStyle.nStyle == 0 then
 		wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, 7)
 		wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, 7)
-	elseif self.tGlobalSettings.tStyle.nStyle == 1 then
+	elseif self._DB.profile.tStyle.nStyle == 1 then
 		wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, 7 + tStyle.nShieldHeight)
 		wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, 7 + tStyle.nShieldHeight)
 	end
@@ -1334,15 +1345,15 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 end
 
 function ForgeUI_Nameplates:OnStyleChanged()
-	if self.tGlobalSettings.tStyle.nStyle == 0 then
-		self.tGlobalSettings.tStyle.nAbsorbHeight = 8
-		self.tGlobalSettings.tStyle.nShieldHeight = 8
+	if self._DB.profile.tStyle.nStyle == 0 then
+		self._DB.profile.tStyle.nAbsorbHeight = 8
+		self._DB.profile.tStyle.nShieldHeight = 8
 		
 		self.wndContainers["Container_Style"]:FindChild("nAbsorbHeight"):FindChild("EditBox"):SetText(8)
 		self.wndContainers["Container_Style"]:FindChild("nShieldHeight"):FindChild("EditBox"):SetText(8)
-	elseif self.tGlobalSettings.tStyle.nStyle == 1 then
-		self.tGlobalSettings.tStyle.nAbsorbHeight = 4
-		self.tGlobalSettings.tStyle.nShieldHeight = 4
+	elseif self._DB.profile.tStyle.nStyle == 1 then
+		self._DB.profile.tStyle.nAbsorbHeight = 4
+		self._DB.profile.tStyle.nShieldHeight = 4
 		
 		self.wndContainers["Container_Style"]:FindChild("nAbsorbHeight"):FindChild("EditBox"):SetText(4)
 		self.wndContainers["Container_Style"]:FindChild("nShieldHeight"):FindChild("EditBox"):SetText(4)
@@ -1356,7 +1367,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ForgeUI_Nameplates:OnNameplateNameClick(wndHandler, wndCtrl, eMouseButton)
-	if not self.tGlobalSettings.bClickable then return end
+	if not self._DB.profile.bClickable then return end
 
 	local tNameplate = self.arWnd2Nameplate[wndHandler:GetParent():GetId()]
 	if tNameplate == nil then
@@ -1515,22 +1526,22 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	-- general settings
 	local wndGeneral = self.tOptionHolders["General"]
 	
-	G:API_AddNumberBox(self, wndGeneral, "Draw distance", self.tGlobalSettings, "nMaxRange", { tMove = {0, 0} })
-	G:API_AddCheckBox(self, wndGeneral, "Use occlusion", self.tGlobalSettings, "bOcclusion", { tMove = {0, 30} })
-	G:API_AddCheckBox(self, wndGeneral, "Show titles", self.tGlobalSettings, "bShowTitles", { tMove = {0, 60} })
-	G:API_AddCheckBox(self, wndGeneral, "Show only important NPC", self.tGlobalSettings, "bOnlyImportantNPC", { tMove = {0, 90} })
-	G:API_AddCheckBox(self, wndGeneral, "Show objectives", self.tGlobalSettings, "bShowObjectives", { tMove = {200, 0} })
-	G:API_AddCheckBox(self, wndGeneral, "Show shields", self.tGlobalSettings, "bShowShield", { tMove = {200, 60} })
-	G:API_AddCheckBox(self, wndGeneral, "Show absorbs", self.tGlobalSettings, "bShowAbsorb", { tMove = {200, 90} })
-	G:API_AddCheckBox(self, wndGeneral, "Frequent updates", self.tGlobalSettings, "bFrequentUpdate", { tMove = {400, 0} })
-	G:API_AddCheckBox(self, wndGeneral, "Clickable nameplates", self.tGlobalSettings, "bClickable", { tMove = {400, 60}, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddCheckBox(self, wndGeneral, "Show nameplates for dead units", self.tGlobalSettings, "bShowDead", { tOffsets = { 5, 155, 300, 180 } })
-	G:API_AddColorBox(self, wndGeneral, "Shield bar", self.tGlobalSettings, "crShield", { tMove = {0, 210}, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddColorBox(self, wndGeneral, "Absorb bar", self.tGlobalSettings, "crAbsorb", { tMove = {200, 210}, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddColorBox(self, wndGeneral, "MOO bar", self.tGlobalSettings, "crMOO", { tMove = {400, 210}, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddColorBox(self, wndGeneral, "Dead unit name", self.tGlobalSettings, "crDead", { tMove = {400, 150}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndGeneral, "Draw distance", self._DB.profile, "nMaxRange", { tMove = {0, 0} })
+	G:API_AddCheckBox(self, wndGeneral, "Use occlusion", self._DB.profile, "bOcclusion", { tMove = {0, 30} })
+	G:API_AddCheckBox(self, wndGeneral, "Show titles", self._DB.profile, "bShowTitles", { tMove = {0, 60} })
+	G:API_AddCheckBox(self, wndGeneral, "Show only important NPC", self._DB.profile, "bOnlyImportantNPC", { tMove = {0, 90} })
+	G:API_AddCheckBox(self, wndGeneral, "Show objectives", self._DB.profile, "bShowObjectives", { tMove = {200, 0} })
+	G:API_AddCheckBox(self, wndGeneral, "Show shields", self._DB.profile, "bShowShield", { tMove = {200, 60} })
+	G:API_AddCheckBox(self, wndGeneral, "Show absorbs", self._DB.profile, "bShowAbsorb", { tMove = {200, 90} })
+	G:API_AddCheckBox(self, wndGeneral, "Frequent updates", self._DB.profile, "bFrequentUpdate", { tMove = {400, 0} })
+	G:API_AddCheckBox(self, wndGeneral, "Clickable nameplates", self._DB.profile, "bClickable", { tMove = {400, 60}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddCheckBox(self, wndGeneral, "Show nameplates for dead units", self._DB.profile, "bShowDead", { tOffsets = { 5, 155, 300, 180 } })
+	G:API_AddColorBox(self, wndGeneral, "Shield bar", self._DB.profile, "crShield", { tMove = {0, 210}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddColorBox(self, wndGeneral, "Absorb bar", self._DB.profile, "crAbsorb", { tMove = {200, 210}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddColorBox(self, wndGeneral, "MOO bar", self._DB.profile, "crMOO", { tMove = {400, 210}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddColorBox(self, wndGeneral, "Dead unit name", self._DB.profile, "crDead", { tMove = {400, 150}, fnCallback = self.LoadStyle_Nameplates })
 	
-	for k, v in pairs(self.tGlobalSettings.tUnits) do
+	for k, v in pairs(self._DB.profile.tUnits) do
 		local wnd = self.tOptionHolders[k]
 		if wnd then
 			if v.nHpCutoff then

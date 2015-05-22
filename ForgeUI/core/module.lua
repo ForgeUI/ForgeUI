@@ -31,26 +31,42 @@ function Module:NewModule(...) return Prototype:new(...) end
 -- Module prototype
 -----------------------------------------------------------------------------------------------
 Prototype.__index = Prototype 
-function Prototype:new(t)
-   	local t = t or {}
-   	setmetatable(t, Prototype)
+function Prototype:new(o)
+   	local o = o or {}
+   	setmetatable(o, Prototype)
+	
+	o._DB = {
+		profile = F:API_GetDB(o, "profile"),
+		global = F:API_GetDB(o, "global"),
+		char = F:API_GetDB(o, "char"),
+	}
 
-	t.bInit = false
-
-   	return t
+	o.bInit = false
+	
+   	return o
 end
 
-function Prototype:ForgeAPI_PreInit()
+function Prototype:RefreshConfig()
+	self._DB = {
+		profile = F:API_GetDB(self, "profile"),
+		global = F:API_GetDB(self, "global"),
+		char = F:API_GetDB(self, "char"),
+	}
+	
+	if self.tOptionHolders then
+		for k, v in pairs(self.tOptionHolders) do
+			v:DestroyChildren()
+		end
+	end
+	
+	self:ForgeAPI_LoadSettings()
+	self:ForgeAPI_PopulateOptions()
 end
 
-function Prototype:ForgeAPI_Init()
-end
-
-function Prototype:ForgeAPI_LoadSettings()
-end
-
-function Prototype:ForgeAPI_PopulateOptions()
-end
+function Prototype:ForgeAPI_PreInit() end
+function Prototype:ForgeAPI_Init() end
+function Prototype:ForgeAPI_LoadSettings() end
+function Prototype:ForgeAPI_PopulateOptions() end
 
 _G["ForgeLibs"]["ForgeModule"] = new(Module)
 

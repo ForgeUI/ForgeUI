@@ -12,11 +12,13 @@ local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 -- ForgeUI Module Definition
 -----------------------------------------------------------------------------------------------
 local Skins = {
-	NAME = "skins",
-	API_VERSION = 3,
+	_NAME = "skins",
+	_API_VERSION = 3,
 
-	tCharSettings = {
-		tLoadSkins = {}
+	tSettings = {
+		char = {
+			tLoadSkins = {}
+		}
 	}
 }
 
@@ -30,7 +32,7 @@ local tSkins = {}
 -----------------------------------------------------------------------------------------------
 function Skins:ForgeAPI_Init()
 	for k, v in pairs(tSkins) do
-		if Apollo.GetAddon(k) and self.tCharSettings.tLoadSkins[k] then
+		if Apollo.GetAddon(k) and self._DB.char.tLoadSkins[k] then
 			v()
 		end
 	end
@@ -38,8 +40,8 @@ end
 
 function Skins:NewCarbineSkin(strAddon, fLoadSkin)
 	tSkins[strAddon] = fLoadSkin
-	if self.tCharSettings.tLoadSkins[strAddon] == nil then
-		self.tCharSettings.tLoadSkins[strAddon] = true
+	if self._DB.char.tLoadSkins[strAddon] == nil then
+		self._DB.char.tLoadSkins[strAddon] = true
 	end
 end
 

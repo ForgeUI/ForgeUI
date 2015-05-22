@@ -17,69 +17,70 @@ local Util = F:API_GetModule("util")
 -- ForgeUI Addon Definition
 -----------------------------------------------------------------------------------------------
 local ForgeUI_UnitFrames = {
-	NAME = "ForgeUI_UnitFrames",
-    API_VERSION = 3,
+	_NAME = "ForgeUI_UnitFrames",
+    _API_VERSION = 3,
 	VERSION = "2.0",
 	
-	settings_version = 2,
-	tGlobalSettings = {
-		tPlayerFrame = {
-			bUseGradient = false,
-			crBorder = "FF000000",
-			crBackground = "FF101010",
-			crHpBar = "FF272727",
-			crHpBarGradient = "FFFF0000",
-			crHpValue = "FF75CC26",
-			crShieldBar = "FF0699F3",
-			crShieldValue = "FFFFFFFF",
-			crAbsorbBar = "FFFFC600",
-			crAbsorbValue = "FFFFFFFF",
-			strFullSprite = "ForgeUI_Smooth",
-		},
-		tTargetFrame = {
-			bUseGradient = false,
-			crBorder = "FF000000",
-			crBackground = "FF101010",
-			crHpBar = "FF272727",
-			crHpBarGradient = "FFFF0000",
-			crHpValue = "FF75CC26",
-			crShieldBar = "FF0699F3",
-			crShieldValue = "FFFFFFFF",
-			crAbsorbBar = "FFFFC600",
-			crAbsorbValue = "FFFFFFFF",
-			strFullSprite = "ForgeUI_Smooth",
-		},
-		tTotFrame = {
-			bShowBuffs = false,
-			bShowDebuffs = false,
-			crThreatLow = "FF33CC33",
-			crThreatMedium = "FFFFFF00",
-			crThreatHigh = "FFFF0000",
-			crThreatTank = "FFFFFFFF",
-			crBorder = "FF000000",
-			crBackground = "FF101010",
-			crHpBar = "FF272727",
-			crHpValue = "FF75CC26",
-			crShieldBar = "FF0699F3",
-			crShieldValue = "FFFFFFFF",
-			crAbsorbBar = "FFFFC600",
-			crAbsorbValue = "FFFFFFFF",
-			strFullSprite = "ForgeUI_Smooth",
-		},
-		tFocusFrame = {
-			bShowShieldBar = true,
-			bShowAbsorbBar = true,
-			bShowBuffs = false,
-			bShowDebuffs = false,
-			crBorder = "FF000000",
-			crBackground = "FF101010",
-			crHpBar = "FF272727",
-			crHpValue = "FF75CC26",
-			crShieldBar = "FF0699F3",
-			crShieldValue = "FFFFFFFF",
-			crAbsorbBar = "FFFFC600",
-			crAbsorbValue = "FFFFFFFF",
-			strFullSprite = "ForgeUI_Smooth",
+	tSettings = {
+		profile = {
+			tPlayerFrame = {
+				bUseGradient = false,
+				crBorder = "FF000000",
+				crBackground = "FF101010",
+				crHpBar = "FF272727",
+				crHpBarGradient = "FFFF0000",
+				crHpValue = "FF75CC26",
+				crShieldBar = "FF0699F3",
+				crShieldValue = "FFFFFFFF",
+				crAbsorbBar = "FFFFC600",
+				crAbsorbValue = "FFFFFFFF",
+				strFullSprite = "ForgeUI_Smooth",
+			},
+			tTargetFrame = {
+				bUseGradient = false,
+				crBorder = "FF000000",
+				crBackground = "FF101010",
+				crHpBar = "FF272727",
+				crHpBarGradient = "FFFF0000",
+				crHpValue = "FF75CC26",
+				crShieldBar = "FF0699F3",
+				crShieldValue = "FFFFFFFF",
+				crAbsorbBar = "FFFFC600",
+				crAbsorbValue = "FFFFFFFF",
+				strFullSprite = "ForgeUI_Smooth",
+			},
+			tTotFrame = {
+				bShowBuffs = false,
+				bShowDebuffs = false,
+				crThreatLow = "FF33CC33",
+				crThreatMedium = "FFFFFF00",
+				crThreatHigh = "FFFF0000",
+				crThreatTank = "FFFFFFFF",
+				crBorder = "FF000000",
+				crBackground = "FF101010",
+				crHpBar = "FF272727",
+				crHpValue = "FF75CC26",
+				crShieldBar = "FF0699F3",
+				crShieldValue = "FFFFFFFF",
+				crAbsorbBar = "FFFFC600",
+				crAbsorbValue = "FFFFFFFF",
+				strFullSprite = "ForgeUI_Smooth",
+			},
+			tFocusFrame = {
+				bShowShieldBar = true,
+				bShowAbsorbBar = true,
+				bShowBuffs = false,
+				bShowDebuffs = false,
+				crBorder = "FF000000",
+				crBackground = "FF101010",
+				crHpBar = "FF272727",
+				crHpValue = "FF75CC26",
+				crShieldBar = "FF0699F3",
+				crShieldValue = "FFFFFFFF",
+				crAbsorbBar = "FFFFC600",
+				crAbsorbValue = "FFFFFFFF",
+				strFullSprite = "ForgeUI_Smooth",
+			}
 		}
 	}
 } 
@@ -242,10 +243,10 @@ function ForgeUI_UnitFrames:UpdateFocusFrame(unitSource)
 	
 	self:UpdateHPBar(unit, self.wndFocusFrame)
 	self:UpdateInterruptArmor(unit, self.wndFocusFrame)
-	if self.tGlobalSettings.tFocusFrame.bShowShieldBar then
+	if self._DB.profile.tFocusFrame.bShowShieldBar then
 		self:UpdateShieldBar(unit, self.wndFocusFrame)
 	end
-	if self.tGlobalSettings.tFocusFrame.bShowAbsorbBar then
+	if self._DB.profile.tFocusFrame.bShowAbsorbBar then
 		self:UpdateAbsorbBar(unit, self.wndFocusFrame)
 	end
 	
@@ -267,9 +268,9 @@ function ForgeUI_UnitFrames:UpdateHPBar(unit, wnd, strSettings)
 		wnd:FindChild("HP_ProgressBar"):SetMax(unit:GetMaxHealth())
 		wnd:FindChild("HP_ProgressBar"):SetProgress(unit:GetHealth())
 		
-		if strSettings ~= nil and self.tGlobalSettings[strSettings].bUseGradient then
+		if strSettings ~= nil and self._DB.profile[strSettings].bUseGradient then
 			local nPercent = Util:Round((unit:GetHealth() / unit:GetMaxHealth()) * 100, 0)
-			local crGradient = Util:GenerateGradient(self.tGlobalSettings[strSettings].crHpBarGradient, self.tGlobalSettings[strSettings].crHpBar, 100, nPercent, true)
+			local crGradient = Util:GenerateGradient(self._DB.profile[strSettings].crHpBarGradient, self._DB.profile[strSettings].crHpBar, 100, nPercent, true)
 			wnd:FindChild("HP_ProgressBar"):SetBarColor(crGradient)
 		end
 		
@@ -379,18 +380,18 @@ function ForgeUI_UnitFrames:UpdateStyle_PlayerFrame()
 	self.wndPlayerFrame:FindChild("Name"):SetText(unit:GetName())
 	self.wndPlayerFrame:FindChild("Name"):SetTextColor(F:API_GetClassColor(tClassEnums[unit:GetClassId()]))
 
-	self.wndPlayerFrame:FindChild("HPBar"):SetBGColor(self.tGlobalSettings.tPlayerFrame.crBorder)
-	self.wndPlayerFrame:FindChild("Background"):SetBGColor(self.tGlobalSettings.tPlayerFrame.crBackground)
-	self.wndPlayerFrame:FindChild("HP_ProgressBar"):SetBarColor(self.tGlobalSettings.tPlayerFrame.crHpBar)
-	self.wndPlayerFrame:FindChild("HP_ProgressBar"):SetFullSprite(self.tGlobalSettings.tPlayerFrame.strFullSprite)
-	self.wndPlayerFrame:FindChild("HP_TextValue"):SetTextColor(self.tGlobalSettings.tPlayerFrame.crHpValue)
-	self.wndPlayerFrame:FindChild("HP_TextPercent"):SetTextColor(self.tGlobalSettings.tPlayerFrame.crHpValue)
-	self.wndPlayerFrame:FindChild("Shield_ProgressBar"):SetBarColor(self.tGlobalSettings.tPlayerFrame.crShieldBar)
-	self.wndPlayerFrame:FindChild("Shield_ProgressBar"):SetFullSprite(self.tGlobalSettings.tPlayerFrame.strFullSprite)
-	self.wndPlayerFrame:FindChild("Shield_TextValue"):SetTextColor(self.tGlobalSettings.tPlayerFrame.crShieldValue)
-	self.wndPlayerFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self.tGlobalSettings.tPlayerFrame.crAbsorbBar)
-	self.wndPlayerFrame:FindChild("Absorb_ProgressBar"):SetFullSprite(self.tGlobalSettings.tPlayerFrame.strFullSprite)
-	self.wndPlayerFrame:FindChild("Absorb_TextValue"):SetTextColor(self.tGlobalSettings.tPlayerFrame.crAbsorbValue)
+	self.wndPlayerFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tPlayerFrame.crBorder)
+	self.wndPlayerFrame:FindChild("Background"):SetBGColor(self._DB.profile.tPlayerFrame.crBackground)
+	self.wndPlayerFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tPlayerFrame.crHpBar)
+	self.wndPlayerFrame:FindChild("HP_ProgressBar"):SetFullSprite(self._DB.profile.tPlayerFrame.strFullSprite)
+	self.wndPlayerFrame:FindChild("HP_TextValue"):SetTextColor(self._DB.profile.tPlayerFrame.crHpValue)
+	self.wndPlayerFrame:FindChild("HP_TextPercent"):SetTextColor(self._DB.profile.tPlayerFrame.crHpValue)
+	self.wndPlayerFrame:FindChild("Shield_ProgressBar"):SetBarColor(self._DB.profile.tPlayerFrame.crShieldBar)
+	self.wndPlayerFrame:FindChild("Shield_ProgressBar"):SetFullSprite(self._DB.profile.tPlayerFrame.strFullSprite)
+	self.wndPlayerFrame:FindChild("Shield_TextValue"):SetTextColor(self._DB.profile.tPlayerFrame.crShieldValue)
+	self.wndPlayerFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self._DB.profile.tPlayerFrame.crAbsorbBar)
+	self.wndPlayerFrame:FindChild("Absorb_ProgressBar"):SetFullSprite(self._DB.profile.tPlayerFrame.strFullSprite)
+	self.wndPlayerFrame:FindChild("Absorb_TextValue"):SetTextColor(self._DB.profile.tPlayerFrame.crAbsorbValue)
 end
 
 function ForgeUI_UnitFrames:RefreshStyle_PlayerFrame()
@@ -400,15 +401,15 @@ function ForgeUI_UnitFrames:LoadStyle_TargetFrame()
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_TargetFrame()
-	self.wndTargetFrame:FindChild("HPBar"):SetBGColor(self.tGlobalSettings.tTargetFrame.crBorder)
-	self.wndTargetFrame:FindChild("Background"):SetBGColor(self.tGlobalSettings.tTargetFrame.crBackground)
-	self.wndTargetFrame:FindChild("HP_ProgressBar"):SetBarColor(self.tGlobalSettings.tTargetFrame.crHpBar)
-	self.wndTargetFrame:FindChild("HP_TextValue"):SetTextColor(self.tGlobalSettings.tTargetFrame.crHpValue)
-	self.wndTargetFrame:FindChild("HP_TextPercent"):SetTextColor(self.tGlobalSettings.tTargetFrame.crHpValue)
-	self.wndTargetFrame:FindChild("Shield_ProgressBar"):SetBarColor(self.tGlobalSettings.tTargetFrame.crShieldBar)
-	self.wndTargetFrame:FindChild("Shield_TextValue"):SetTextColor(self.tGlobalSettings.tTargetFrame.crShieldValue)
-	self.wndTargetFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self.tGlobalSettings.tTargetFrame.crAbsorbBar)
-	self.wndTargetFrame:FindChild("Absorb_TextValue"):SetTextColor(self.tGlobalSettings.tTargetFrame.crAbsorbValue)
+	self.wndTargetFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tTargetFrame.crBorder)
+	self.wndTargetFrame:FindChild("Background"):SetBGColor(self._DB.profile.tTargetFrame.crBackground)
+	self.wndTargetFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tTargetFrame.crHpBar)
+	self.wndTargetFrame:FindChild("HP_TextValue"):SetTextColor(self._DB.profile.tTargetFrame.crHpValue)
+	self.wndTargetFrame:FindChild("HP_TextPercent"):SetTextColor(self._DB.profile.tTargetFrame.crHpValue)
+	self.wndTargetFrame:FindChild("Shield_ProgressBar"):SetBarColor(self._DB.profile.tTargetFrame.crShieldBar)
+	self.wndTargetFrame:FindChild("Shield_TextValue"):SetTextColor(self._DB.profile.tTargetFrame.crShieldValue)
+	self.wndTargetFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self._DB.profile.tTargetFrame.crAbsorbBar)
+	self.wndTargetFrame:FindChild("Absorb_TextValue"):SetTextColor(self._DB.profile.tTargetFrame.crAbsorbValue)
 end
 
 function ForgeUI_UnitFrames:RefreshStyle_TargetFrame(unit)
@@ -426,21 +427,21 @@ function ForgeUI_UnitFrames:LoadStyle_FocusFrame()
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_FocusFrame()
-	self.wndFocusFrame:FindChild("HPBar"):SetBGColor(self.tGlobalSettings.tFocusFrame.crBorder)
-	self.wndFocusFrame:FindChild("Background"):SetBGColor(self.tGlobalSettings.tFocusFrame.crBackground)
-	self.wndFocusFrame:FindChild("HP_ProgressBar"):SetBarColor(self.tGlobalSettings.tFocusFrame.crHpBar)
-	self.wndFocusFrame:FindChild("HP_TextValue"):SetTextColor(self.tGlobalSettings.tFocusFrame.crHpValue)
-	self.wndFocusFrame:FindChild("HP_TextPercent"):SetTextColor(self.tGlobalSettings.tFocusFrame.crHpValue)
-	self.wndFocusFrame:FindChild("Shield_ProgressBar"):SetBarColor(self.tGlobalSettings.tFocusFrame.crShieldBar)
-	self.wndFocusFrame:FindChild("Shield_TextValue"):SetTextColor(self.tGlobalSettings.tFocusFrame.crShieldValue)
-	self.wndFocusFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self.tGlobalSettings.tFocusFrame.crAbsorbBar)
-	self.wndFocusFrame:FindChild("Absorb_TextValue"):SetTextColor(self.tGlobalSettings.tFocusFrame.crAbsorbValue)
+	self.wndFocusFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tFocusFrame.crBorder)
+	self.wndFocusFrame:FindChild("Background"):SetBGColor(self._DB.profile.tFocusFrame.crBackground)
+	self.wndFocusFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tFocusFrame.crHpBar)
+	self.wndFocusFrame:FindChild("HP_TextValue"):SetTextColor(self._DB.profile.tFocusFrame.crHpValue)
+	self.wndFocusFrame:FindChild("HP_TextPercent"):SetTextColor(self._DB.profile.tFocusFrame.crHpValue)
+	self.wndFocusFrame:FindChild("Shield_ProgressBar"):SetBarColor(self._DB.profile.tFocusFrame.crShieldBar)
+	self.wndFocusFrame:FindChild("Shield_TextValue"):SetTextColor(self._DB.profile.tFocusFrame.crShieldValue)
+	self.wndFocusFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self._DB.profile.tFocusFrame.crAbsorbBar)
+	self.wndFocusFrame:FindChild("Absorb_TextValue"):SetTextColor(self._DB.profile.tFocusFrame.crAbsorbValue)
 	
-	self.wndFocusFrame:FindChild("ShieldBar"):Show(self.tGlobalSettings.tFocusFrame.bShowShieldBar, true)
-	self.wndFocusFrame:FindChild("AbsorbBar"):Show(self.tGlobalSettings.tFocusFrame.bShowAbsorbBar, true)
+	self.wndFocusFrame:FindChild("ShieldBar"):Show(self._DB.profile.tFocusFrame.bShowShieldBar, true)
+	self.wndFocusFrame:FindChild("AbsorbBar"):Show(self._DB.profile.tFocusFrame.bShowAbsorbBar, true)
 	
-	self.wndFocusFrame:FindChild("BuffContainerWindow"):Show(self.tGlobalSettings.tFocusFrame.bShowBuffs)
-	self.wndFocusFrame:FindChild("DebuffContainerWindow"):Show(self.tGlobalSettings.tFocusFrame.bShowDebuffs)
+	self.wndFocusFrame:FindChild("BuffContainerWindow"):Show(self._DB.profile.tFocusFrame.bShowBuffs)
+	self.wndFocusFrame:FindChild("DebuffContainerWindow"):Show(self._DB.profile.tFocusFrame.bShowDebuffs)
 end
 
 function ForgeUI_UnitFrames:RefreshStyle_FocusFrame(unit)
@@ -458,12 +459,12 @@ function ForgeUI_UnitFrames:LoadStyle_TotFrame()
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_TotFrame()
-	self.wndToTFrame:FindChild("HPBar"):SetBGColor(self.tGlobalSettings.tTotFrame.crBorder)
-	self.wndToTFrame:FindChild("Background"):SetBGColor(self.tGlobalSettings.tTotFrame.crBackground)
-	self.wndToTFrame:FindChild("HP_ProgressBar"):SetBarColor(self.tGlobalSettings.tTotFrame.crHpBar)
+	self.wndToTFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tTotFrame.crBorder)
+	self.wndToTFrame:FindChild("Background"):SetBGColor(self._DB.profile.tTotFrame.crBackground)
+	self.wndToTFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tTotFrame.crHpBar)
 	
-	self.wndToTFrame:FindChild("BuffContainerWindow"):Show(self.tGlobalSettings.tTotFrame.bShowBuffs)
-	self.wndToTFrame:FindChild("DebuffContainerWindow"):Show(self.tGlobalSettings.tTotFrame.bShowDebuffs)
+	self.wndToTFrame:FindChild("BuffContainerWindow"):Show(self._DB.profile.tTotFrame.bShowBuffs)
+	self.wndToTFrame:FindChild("DebuffContainerWindow"):Show(self._DB.profile.tTotFrame.bShowDebuffs)
 end
 
 function ForgeUI_UnitFrames:RefreshStyle_TotFrame(unit)

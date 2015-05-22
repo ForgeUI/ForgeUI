@@ -34,10 +34,33 @@ Prototype.__index = Prototype
 function Prototype:new(o)
    	local o = o or {}
    	setmetatable(o, Prototype)
-   
-	o.bInit = false
+	
+	o._DB = {
+		profile = F:API_GetDB(o, "profile"),
+		global = F:API_GetDB(o, "global"),
+		char = F:API_GetDB(o, "char"),
+	}
 
+	o.bInit = false
+	
    	return o
+end
+
+function Prototype:RefreshConfig()
+	self._DB = {
+		profile = F:API_GetDB(self, "profile"),
+		global = F:API_GetDB(self, "global"),
+		char = F:API_GetDB(self, "char"),
+	}
+	
+	if self.tOptionHolders then
+		for k, v in pairs(self.tOptionHolders) do
+			v:DestroyChildren()
+		end
+	end
+	
+	self:ForgeAPI_LoadSettings()
+	self:ForgeAPI_PopulateOptions()
 end
 
 function Prototype:ForgeAPI_PreInit() end

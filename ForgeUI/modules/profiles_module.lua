@@ -3,19 +3,18 @@
 --
 -- name: 		profiles_module.lua
 -- author:		Winty Badass@Jabbit
--- about:		ForgeUI profiles module for loading options into the main ForgeUI window
+-- about:		ForgeUI module for providing profiles UI
 -----------------------------------------------------------------------------------------------
 
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
-local P = _G["ForgeLibs"]["ForgeProfiles"] -- ForgeProfiles
 local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition
 -----------------------------------------------------------------------------------------------
 local ProfilesModule = {
-	NAME = "profiles_module",
-	API_VERSION = 3,
+	_NAME = "profiles_module",
+	_API_VERSION = 3,
 }
 
 -----------------------------------------------------------------------------------------------
@@ -32,7 +31,7 @@ end
 function ProfilesModule:ForgeAPI_PopulateOptions()
 	local wndProfiles = self.tOptionHolders["Profiles"]
 	
-	G:API_AddText(self, wndProfiles, string.format("<T TextColor=\"%s\" Font=\"%s\">%s</T>", "FFFFFFFF", "Nameplates", "Current profile: ") .. string.format("<T TextColor=\"%s\" Font=\"%s\">%s</T>", "FFFF0000", "Nameplates", tostring(P:API_GetProfileName())))
+	G:API_AddText(self, wndProfiles, string.format("<T TextColor=\"%s\" Font=\"%s\">%s</T>", "FFFFFFFF", "Nameplates", "Current profile: ") .. string.format("<T TextColor=\"%s\" Font=\"%s\">%s</T>", "FFFF0000", "Nameplates", tostring(F:API_GetProfileName())))
 	
 	-- new profile
 	G:API_EditBox(self, wndProfiles, "", nil, nil, {
@@ -50,8 +49,8 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 		bInnerText = true,
 	})
 	
-	for k, v in pairs(P:API_GetProfiles()) do
-		G:API_AddOptionToComboBox(self, wndCombo, k, k)
+	for k, v in pairs(F:API_GetProfiles()) do
+		G:API_AddOptionToComboBox(self, wndCombo, v, v)
 	end
 	
 	-- select profile
@@ -61,21 +60,21 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 		tMove = { 0, 60 },
 		bInnerText = true,
 	})
-	for k, v in pairs(P:API_GetProfiles()) do
-		G:API_AddOptionToComboBox(self, wndCombo, k, k)
+	for k, v in pairs(F:API_GetProfiles()) do
+		G:API_AddOptionToComboBox(self, wndCombo, v, v)
 	end
 end
 
 function ProfilesModule:OnSelectProfile(strType, strKey, vValue)
-	P:API_ChangeProfile(vValue)
+	F:API_ChangeProfile(vValue)
 end
 
 function ProfilesModule:OnDeleteProfile(strType, strKey, vValue)
-	P:API_RemoveProfile(vValue)
+	F:API_RemoveProfile(vValue)
 end
 
 function ProfilesModule:OnNewProfile(strType, strKey, strValue)
-	P:API_ChangeProfile(strValue)
+	F:API_NewProfile(strValue)
 end
 
 ProfilesModule = F:API_NewModule(ProfilesModule)

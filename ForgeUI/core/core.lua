@@ -7,33 +7,41 @@
 -----------------------------------------------------------------------------------------------
 
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
-local P = _G["ForgeLibs"]["ForgeProfiles"] -- ForgeUI profiles library
 local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeUI GUI library
 local M = _G["ForgeLibs"]["ForgeModule"] -- ForgeUI module prototype
 local A = _G["ForgeLibs"]["ForgeAddon"] -- ForgeUI addon prototype
 
 -- libraries
 local GeminiHook = Apollo.GetPackage("Gemini:Hook-1.0").tPackage
+local GeminiDB = Apollo.GetPackage("Gemini:DB-1.1").tPackage
+GeminiDB.callbacks = GeminiDB.callbacks or Apollo.GetPackage("Gemini:CallbackHandler-1.0").tPackage:New(GeminiDB)
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition
 -----------------------------------------------------------------------------------------------
 local Core = {
-	NAME = "core",
-	API_VERSION = 3,
+	_NAME = "core",
+	_API_VERSION = 3,
 	VERSION = "1.0-alpha",
 
-	tGlobalSettings = {
-		bAdvanced = false,
-		tClassColors = {
-			crEngineer = "FFEFAB48",
-			crEsper = "FF1591DB",
-			crMedic = "FFFFE757",
-			crSpellslinger = "FF98C723",
-			crStalker = "FFD23EF4",
-			crWarrior = "FFF54F4F"
-		},
-		bDebug = false,
+	tSettings = {
+		profile = {
+			bAdvanced = false,
+			tClassColors = {
+				crEngineer = "FFEFAB48",
+				crEsper = "FF1591DB",
+				crMedic = "FFFFE757",
+				crSpellslinger = "FF98C723",
+				crStalker = "FFD23EF4",
+				crWarrior = "FFF54F4F"
+			},
+			bDebug = false,
+		}
+	},
+	tDefaults = {
+		profile = {},
+		char = {},
+		global = {},
 	}
 }
 
@@ -58,10 +66,37 @@ local bResetSettings = false
 -----------------------------------------------------------------------------------------------
 -- ForgeUI module functions
 -----------------------------------------------------------------------------------------------
+function Core:ForgeAPI_PreInit()
+	local ForgeUI = Apollo.GetAddon("ForgeUI")
+	
+	self.db = GeminiDB:New(ForgeUI, self.tDefaults)
+	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
+	self.db.RegisterCallback(self, "OnDatabaseStartup", "DatabaseStartup")
+end
+
+function Core:DatabaseStartup()
+	self.db:SetProfile(self.db:GetCurrentProfile())
+end
+
 function Core:ForgeAPI_Init()
 	Print("ForgeUI v" .. F:API_GetVersion() .. " has been loaded")
 	
 	GeminiHook:Embed(F)
+end
+
+function Core:RefreshConfig()
+
+end
+
+function Core:SetupDatabase(o)
+	if o.tSettings then
+		-- db defaults
+		local tDefaults = self.copyTable(self.db.defaults, tDefaults)
+		tDefaults.profile[o._NAME] = Core.copyTable(o.tSettings.profile, tDefaults.profile[o._NAME])
+		tDefaults.global[o._NAME] = Core.copyTable(o.tSettings.global, tDefaults.global[o._NAME])
+		tDefaults.char[o._NAME] = Core.copyTable(o.tSettings.char, tDefaults.char[o._NAME])
+		self.db:RegisterDefaults(tDefaults)
+	end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -72,29 +107,47 @@ end
 -- ForgeUI Addon API
 -----------------------------------------------------------------------------------------------
 function F:API_NewAddon(tAddon, tParams)
-	if not tAddon.NAME or tAddons[tAddon.NAME] then return end
-	if tAddon.API_VERSION ~= F:API_GetApiVersion() then return end
+	if not tAddon._NAME or tAddons[tAddon._NAME] then
+		error("ForgeUI - Wrong addon name or nonexistent!")
+		return
+	end
+	if tAddon._API_VERSION ~= F:API_GetApiVersion() then
+		error("ForgeUI - Wrong API version! [" .. tAddon._NAME .. "]")
+		return
+	end
 
+	if tAddon.ForgeAPI_PreInit then
+		tAddon:ForgeAPI_PreInit()
+	end
+	
+	Core:SetupDatabase(tAddon)
+	
+	-- new instance
 	local addon = A:NewAddon(tAddon)
+	
+	-- db callbacks
+	Core.db.RegisterCallback(addon, "OnProfileChanged", "RefreshConfig")
+	Core.db.RegisterCallback(addon, "OnProfileDeleted", "RefreshConfig")
+	Core.db.RegisterCallback(addon, "OnProfileReset", "RefreshConfig")
+	
 	Apollo.RegisterAddon(addon)
 	
-	tAddons[tAddon.NAME] = {
+	tAddons[tAddon._NAME] = {
         ["tAddon"] = addon,
         ["tParams"] = tParams,
     }
 	
-	if addon.ForgeAPI_PreInit then
-		addon:ForgeAPI_PreInit()
-	end
-
 	if bInit and addon.ForgeAPI_Init then
 		addon:ForgeAPI_Init()
 		addon.bInit = true
 	end
 	
 	if addon.OnDocLoaded then
-		GeminiHook:PostHook(addon, "OnDocLoaded", addon.ForgeAPI_LoadSettings)
-		tAddons[tAddon.NAME].bHooked = true
+		GeminiHook:PostHook(addon, "OnDocLoaded", function()
+			addon._DB.profile = F:API_GetDB(addon, "profile")
+			addon:ForgeAPI_LoadSettings()
+		end)
+		tAddons[tAddon._NAME].bHooked = true
 	else
 		if bInit and addon.ForgeAPI_LoadSettings then
 			addon:ForgeAPI_LoadSettings()
@@ -121,28 +174,38 @@ function F:API_ListAddons()
 end
 
 -----------------------------------------------------------------------------------------------
--- ForgeUI API
------------------------------------------------------------------------------------------------
-function F:API_GetClassColor(strClass)
-	return Core.tGlobalSettings.tClassColors["cr" .. strClass]
-end
-
------------------------------------------------------------------------------------------------
 -- ForgeUI Module API
 -----------------------------------------------------------------------------------------------
 function F:API_NewModule(tModule, tParams)
-	if not tModule.NAME or tModules[tModule.NAME] then return end
-	if tModule.API_VERSION ~= F:API_GetApiVersion() then return end
+	if not tModule._NAME or tModules[tModule._NAME] then
+		error("ForgeUI - Wrong module name or nonexistent!")
+		return
+	end
+	if tModule._API_VERSION ~= F:API_GetApiVersion() then
+		error("ForgeUI - Wrong API version! [" .. tModule._NAME .. "]")
+		return
+	end
 
+	if tModule.ForgeAPI_PreInit then
+		tModule:ForgeAPI_PreInit()
+	end
+	
+	Core:SetupDatabase(tModule)
+	
 	local module = M:NewModule(tModule)
 	
-	tModules[tModule.NAME] = {
+	-- db callbacks
+	Core.db.RegisterCallback(module, "OnProfileChanged", "RefreshConfig")
+	Core.db.RegisterCallback(module, "OnProfileDeleted", "RefreshConfig")
+	Core.db.RegisterCallback(module, "OnProfileReset", "RefreshConfig")
+	
+	tModules[tModule._NAME] = {
         ["tModule"] = module,
         ["tParams"] = tParams or {},
     }
 	
-	if module.ForgeAPI_PreInit then
-		module:ForgeAPI_PreInit()
+	if tModule.tSettings then
+		Core.db.profile[tModule._NAME] = tModule.tSettings.profile or {}
 	end
 
 	if bInit and module.ForgeAPI_Init then
@@ -150,8 +213,13 @@ function F:API_NewModule(tModule, tParams)
 		module.bInit = true
 	end
 	
-	if bInit and module.ForgeAPI_LoadSettings then
-		module:ForgeAPI_LoadSettings()
+	if module.OnDocLoaded then
+		GeminiHook:PostHook(module, "OnDocLoaded", module.ForgeAPI_LoadSettings)
+		tModules[tModule._NAME].bHooked = true
+	else
+		if bInit and module.ForgeAPI_LoadSettings then
+			module:ForgeAPI_LoadSettings()
+		end
 	end
 	
 	if bInit and module.ForgeAPI_PopulateOptions then
@@ -180,13 +248,35 @@ function F:API_ListModules()
 end
 
 -----------------------------------------------------------------------------------------------
+-- ForgeUI API
+-----------------------------------------------------------------------------------------------
+function F:API_GetDB(o, strType)
+	if Core.db then
+		if Core.db[strType] then
+			return Core.db[strType][o._NAME]
+		else
+			return nil
+		end
+	else
+		return nil
+	end
+end
+
+function F:API_GetProfileName() return Core.db:GetCurrentProfile() end
+function F:API_GetProfiles() return Core.db:GetProfiles() end
+function F:API_ChangeProfile(...) Core.db:SetProfile(...) end
+function F:API_RemoveProfile(...) Core.db:DeleteProfile(...) end
+
+function F:API_GetClassColor(strClass)
+	return Core._DB.profile.tClassColors["cr" .. strClass]
+end
+
+-----------------------------------------------------------------------------------------------
 -- ForgeUI intern API
 -----------------------------------------------------------------------------------------------
 function F:Init()
 	if bInit then return end
 	bInit = true
-	
-	F:AfterRestore()
 	
 	for k, v in pairs(tModules) do
 		if not v.tModule.ForgeAPI_Init then
@@ -224,126 +314,21 @@ function F:Init()
 end
 
 function F:Save() RequestReloadUI() end
-function F:Reset() bResetSettings = true; F:Save(); end
+function F:Reset() Core.db:ResetDB() F:Save(); end
 
------------------------------------------------------------------------------------------------
--- OnSave/OnRestore
------------------------------------------------------------------------------------------------
-function F:OnSave(eType)
-	if bResetSettings then return {} end
-
-	local Util = F:API_GetModule("util")
-
-	if eType == GameLib.CodeEnumAddonSaveLevel.Character then
-		local tData = P:API_GetProfile(tForgeSavedData.tCharacter)
-		local tNewData = {}
-		
-		if tData then
-			tData.tModules = {}
-			for k, v in pairs(tModules) do
-				if v.tModule.tCharSettings then
-					tData.tModules[k] = {}
-					tData.tModules[k].tCharSettings = {}
-					
-					tData.tModules[k].tCharSettings = v.tModule.tCharSettings
-				end
+-- helpers
+function Core.copyTable(src, dest)
+	if type(dest) ~= "table" then dest = {} end
+	if type(src) == "table" then
+		for k,v in pairs(src) do
+			if type(v) == "table" then
+				-- try to index the key first so that the metatable creates the defaults, if set, and use that table
+				v = Core.copyTable(v, dest[k])
 			end
-			
-			tData.tAddons = {}
-			for k, v in pairs(tAddons) do
-				if v.tAddon.tCharSettings then
-					tData.tAddons[k] = {}
-					tData.tAddons[k].tCharSettings = {}
-					
-					tData.tAddons[k].tCharSettings = v.tAddon.tCharSettings
-				end
-			end
-		end
-		
-		tNewData = Util:CopyTable(tNewData, tForgeSavedData.tCharacter)
-		return tNewData
-	elseif eType == GameLib.CodeEnumAddonSaveLevel.General then
-		P:OnSave(tForgeSavedData)
-	
-		local tData = P:API_GetProfile(tForgeSavedData.tGeneral)
-		
-		tData.tModules = {}
-		for k, v in pairs(tModules) do
-			if v.tModule.tGlobalSettings then
-				tData.tModules[k] = {}
-				tData.tModules[k].tGlobalSettings = {}
-				
-				tData.tModules[k].tGlobalSettings = v.tModule.tGlobalSettings
-			end
-		end
-		
-		tData.tAddons = {}
-		for k, v in pairs(tAddons) do
-			if v.tAddon.tGlobalSettings then
-				tData.tAddons[k] = {}
-				tData.tAddons[k].tGlobalSettings = {}
-				
-				tData.tAddons[k].tGlobalSettings = v.tAddon.tGlobalSettings
-			end
-		end
-		
-		tNewData = Util:CopyTable(tNewData, tForgeSavedData.tGeneral)
-		return tNewData
-	end
-end
-
-function F:OnRestore(eType, tData)
-	local Util = F:API_GetModule("util")
-	
-	if eType == GameLib.CodeEnumAddonSaveLevel.General then
-		tForgeSavedData.tGeneral = Util:CopyTable(tForgeSavedData.tGeneral, tData)
-	elseif eType == GameLib.CodeEnumAddonSaveLevel.Character then
-		tForgeSavedData.tCharacter = Util:CopyTable(tForgeSavedData.tCharacter, tData)
-	end
-end
-
-function F:AfterRestore()
-	P:AfterRestore(tForgeSavedData)
-
-	local Util = F:API_GetModule("util")
-	
-	local tData = {}
-	
-	-- character settings
-	tData = P:API_GetProfile(tForgeSavedData.tCharacter)
-	
-	if tData.tModules then
-		for k, v in pairs(tData.tModules) do
-			if tModules[k] then
-				tModules[k].tModule.tCharSettings = Util:CopyTable(tModules[k].tModule.tCharSettings, v.tCharSettings)
-			end
+			dest[k] = v
 		end
 	end
-	if tData.tAddons then
-		for k, v in pairs(tData.tAddons) do
-			if tAddons[k] then
-				tAddons[k].tAddon.tCharSettings = Util:CopyTable(tAddons[k].tAddon.tCharSettings, v.tCharSettings)
-			end
-		end
-	end
-
-	-- global settings
-	tData = P:API_GetProfile(tForgeSavedData.tGeneral)
-	
-	if tData.tModules then
-		for k, v in pairs(tData.tModules) do
-			if tModules[k] then
-				tModules[k].tModule.tGlobalSettings = Util:CopyTable(tModules[k].tModule.tGlobalSettings, v.tGlobalSettings)
-			end
-		end
-	end
-	if tData.tAddons then
-		for k, v in pairs(tData.tAddons) do
-			if tAddons[k] then
-				tAddons[k].tAddon.tGlobalSettings = Util:CopyTable(tAddons[k].tAddon.tGlobalSettings, v.tGlobalSettings)
-			end
-		end
-	end
+	return dest
 end
 
 Core = F:API_NewModule(Core)

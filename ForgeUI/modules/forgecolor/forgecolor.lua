@@ -12,8 +12,8 @@ local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 -- ForgeUI Module Definition
 -----------------------------------------------------------------------------------------------
 local ForgeColor = {
-	NAME = "forgecolor",
-	API_VERSION = 3,
+	_NAME = "forgecolor",
+	_API_VERSION = 3,
 }
 
 local tSavedColors = {
