@@ -66,6 +66,15 @@ function Addon:OnDocLoaded()
 	self.wndMain:FindChild("AuthorText"):SetText(AUTHOR)
 	self.wndMain:FindChild("VersionText"):SetText(VERSION)
 	
+	-- create overlays
+	ForgeUI.tOverlays = {
+		HudLow = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", nil, self),
+		HudMid = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", nil, self),
+		HudHigh = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", nil, self),
+		
+		Movers = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", nil, self),
+	}
+	
 	-- init Modules
 	if GameLib.GetPlayerUnit() then
 		self:OnCharacterCreated()
@@ -85,6 +94,19 @@ function Addon:OnForgeUIOff() self.wndMain:Close() end
 function Addon:OnSaveButtonPressed() ForgeUI:Save() end
 function Addon:OnUnlockButtonPressed() end
 function Addon:OnDefaultsButtonPressed() ForgeUI:Reset() end
+
+function Addon:OnUnlockButtonPressed( wndHandler, wndControl, eMouseButton )
+	local tData = wndControl:GetData()
+	local Movers = ForgeUI:API_GetModule("movers")
+	
+	if not tData or tData.bLock then
+		wndControl:SetData({bLock = false})
+		Movers:UnlockMovers()
+	elseif not tData.bLock then
+		wndControl:SetData({bLock = true})
+		Movers:LockMovers()
+	end
+end
 
 ---------------------------------------------------------------------------------------------------
 -- ForgeUI_Item Functions
@@ -214,6 +236,8 @@ _G["ForgeDB"]["char"] = {}
 -- ForgeLibs initialization
 _G["ForgeLibs"] = {}
 _G["ForgeLibs"]["ForgeUI"] = ForgeUI
+
+_G["F"] = ForgeUI
 
 Apollo.RegisterAddon(Inst, true, "ForgeUI", {})
 

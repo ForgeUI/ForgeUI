@@ -16,13 +16,11 @@ local function LoadSkin()
 	
 	F:PostHook(addon, "OnDocumentReady", fnUseSkin)
 	
-	if addon.xmlDoc and addon.xmlDoc:IsLoaded() then
-		fnUseSkin(addon)
-	end
+	fnUseSkin(addon)
 end
 
 fnUseSkin = function(luaCaller)
-	if not luaCaller.wndMain then return end
+	if not luaCaller.wndMain and not bRun then return end
 	
 	Skins:HandleFrame(luaCaller.wndMain)
 	

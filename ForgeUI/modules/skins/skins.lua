@@ -33,15 +33,24 @@ local tSkins = {}
 function Skins:ForgeAPI_Init()
 	for k, v in pairs(tSkins) do
 		if Apollo.GetAddon(k) and self._DB.char.tLoadSkins[k] then
-			v()
+			v.fnLoadSkin()
+			v.bLoaded = true
 		end
 	end
 end
 
-function Skins:NewCarbineSkin(strAddon, fLoadSkin)
-	tSkins[strAddon] = fLoadSkin
-	if self._DB.char.tLoadSkins[strAddon] == nil then
-		self._DB.char.tLoadSkins[strAddon] = true
+function Skins:NewCarbineSkin(strAddon, fnLoadSkin)
+	tSkins[strAddon] = {
+		fnLoadSkin = fnLoadSkin,
+		bLoaded = false,
+	}
+	
+	if not self._DB then
+		self.tSettings.char.tLoadSkins[strAddon] = true
+	else
+		if self._DB.char.tLoadSkins[strAddon] == nil then
+			self._DB.char.tLoadSkins[strAddon] = true
+		end
 	end
 end
 

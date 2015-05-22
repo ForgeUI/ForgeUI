@@ -51,6 +51,9 @@ end
 
 function ForgeUI_SprintDash:ForgeAPI_LoadSettings()
 	self.wndSprintMeter:FindChild("Bar"):SetBarColor(self._DB.profile.crSprint)
+	
+	F:API_RegisterMover(self, self.wndSprintMeter, "SprintDash_Sprint", "Sprint")
+	F:API_RegisterMover(self, self.wndDashMeter, "SprintDash_Dash", "Dash")
 end
 
 function ForgeUI_SprintDash:ForgeAPI_PopulateOptions()
@@ -74,8 +77,8 @@ end
 function ForgeUI_SprintDash:OnDocLoaded()
 	if self.xmlDoc == nil and not self.xmlDoc:IsLoaded() then return end
 	
-	self.wndSprintMeter = Apollo.LoadForm(self.xmlDoc, "SprintMeter", nil, self)
-	self.wndDashMeter = Apollo.LoadForm(self.xmlDoc, "DashMeter", nil, self)
+	self.wndSprintMeter = Apollo.LoadForm(self.xmlDoc, "SprintMeter", F.tOverlays.HudHigh, self)
+	self.wndDashMeter = Apollo.LoadForm(self.xmlDoc, "DashMeter", F.tOverlays.HudHigh, self)
 	
 	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnNextFrame", self)
 	
@@ -93,7 +96,7 @@ function ForgeUI_SprintDash:OnNextFrame()
 	local nSprintCurr = unitPlayer:GetResource(sprintResource)
 	local nSprintMax = unitPlayer:GetMaxResource(sprintResource)
 	local bSprintFull = nSprintCurr == nSprintMax or unitPlayer:IsDead()
-	local bShowSprint = not bSprintFull or self._DB.profile.bShowSprint
+	local bShowSprint = (not bSprintFull or self._DB.profile.bShowSprint) and not F:API_MoversActive()
 	
 	if bShowSprint then
 		self.wndSprintMeter:FindChild("Bar"):SetMax(unitPlayer:GetMaxResource(sprintResource))
@@ -108,7 +111,7 @@ function ForgeUI_SprintDash:OnNextFrame()
 	local nDashCurr = unitPlayer:GetResource(dashResource)
 	local nDashMax = unitPlayer:GetMaxResource(dashResource)
 	local bDashFull = nDashCurr == nDashMax or unitPlayer:IsDead()
-	local bShowDash = not bDashFull or self._DB.profile.bShowDash
+	local bShowDash = (not bDashFull or self._DB.profile.bShowDash) and not F:API_MoversActive()
 	
 	if bShowDash then
 		if nDashCurr < 100 then

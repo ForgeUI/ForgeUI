@@ -13,7 +13,7 @@ local A = _G["ForgeLibs"]["ForgeAddon"] -- ForgeUI addon prototype
 
 -- libraries
 local GeminiHook = Apollo.GetPackage("Gemini:Hook-1.0").tPackage
-local GeminiDB = Apollo.GetPackage("Gemini:DB-1.1").tPackage
+local GeminiDB = Apollo.GetPackage("Gemini:DB-1.0a").tPackage
 GeminiDB.callbacks = GeminiDB.callbacks or Apollo.GetPackage("Gemini:CallbackHandler-1.0").tPackage:New(GeminiDB)
 
 -----------------------------------------------------------------------------------------------
@@ -25,7 +25,7 @@ local Core = {
 	VERSION = "1.0-alpha",
 
 	tSettings = {
-		profile = {
+		global = {
 			bAdvanced = false,
 			tClassColors = {
 				crEngineer = "FFEFAB48",
@@ -44,13 +44,8 @@ local Core = {
 				crWarrior = "FFFF7272"
 			},
 			bDebug = false,
-		}
+		},
 	},
-	tDefaults = {
-		profile = {},
-		char = {},
-		global = {},
-	}
 }
 
 -----------------------------------------------------------------------------------------------
@@ -77,34 +72,13 @@ local bResetSettings = false
 function Core:ForgeAPI_PreInit()
 	local ForgeUI = Apollo.GetAddon("ForgeUI")
 	
-	self.db = GeminiDB:New(ForgeUI, self.tDefaults)
-	self.db.RegisterCallback(self, "OnProfileChanged", "RefreshConfig")
-	self.db.RegisterCallback(self, "OnDatabaseStartup", "DatabaseStartup")
-end
-
-function Core:DatabaseStartup()
-	self.db:SetProfile(self.db:GetCurrentProfile())
+	self.db = GeminiDB:New(ForgeUI)
 end
 
 function Core:ForgeAPI_Init()
 	Print("ForgeUI v" .. F:API_GetVersion() .. " has been loaded")
 	
 	GeminiHook:Embed(F)
-end
-
-function Core:RefreshConfig()
-
-end
-
-function Core:SetupDatabase(o)
-	if o.tSettings then
-		-- db defaults
-		local tDefaults = self.copyTable(self.db.defaults, tDefaults)
-		tDefaults.profile[o._NAME] = Core.copyTable(o.tSettings.profile, tDefaults.profile[o._NAME])
-		tDefaults.global[o._NAME] = Core.copyTable(o.tSettings.global, tDefaults.global[o._NAME])
-		tDefaults.char[o._NAME] = Core.copyTable(o.tSettings.char, tDefaults.char[o._NAME])
-		self.db:RegisterDefaults(tDefaults)
-	end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -128,10 +102,19 @@ function F:API_NewAddon(tAddon, tParams)
 		tAddon:ForgeAPI_PreInit()
 	end
 	
-	Core:SetupDatabase(tAddon)
-	
 	-- new instance
 	local addon = A:NewAddon(tAddon)
+	
+	if bInit and addon.tSettings then
+		local db = Core.db:RegisterNamespace(addon._NAME)
+		db:RegisterDefaults(addon.tSettings)
+		
+		addon._DB = {
+			profile = db.profile,
+			global = db.global,
+			char = db.char,
+		}
+	end
 	
 	-- db callbacks
 	Core.db.RegisterCallback(addon, "OnProfileChanged", "RefreshConfig")
@@ -152,7 +135,6 @@ function F:API_NewAddon(tAddon, tParams)
 	
 	if addon.OnDocLoaded then
 		GeminiHook:PostHook(addon, "OnDocLoaded", function()
-			addon._DB.profile = F:API_GetDB(addon, "profile")
 			addon:ForgeAPI_LoadSettings()
 		end)
 		tAddons[tAddon._NAME].bHooked = true
@@ -198,9 +180,18 @@ function F:API_NewModule(tModule, tParams)
 		tModule:ForgeAPI_PreInit()
 	end
 	
-	Core:SetupDatabase(tModule)
-	
 	local module = M:NewModule(tModule)
+	
+	if bInit and module.tSettings then
+		local db = Core.db:RegisterNamespace(module._NAME)
+		db:RegisterDefaults(module.tSettings)
+		
+		module._DB = {
+			profile = db.profile,
+			global = db.global,
+			char = db.char,
+		}
+	end
 	
 	-- db callbacks
 	Core.db.RegisterCallback(module, "OnProfileChanged", "RefreshConfig")
@@ -211,10 +202,6 @@ function F:API_NewModule(tModule, tParams)
         ["tModule"] = module,
         ["tParams"] = tParams or {},
     }
-	
-	if tModule.tSettings then
-		Core.db.profile[tModule._NAME] = tModule.tSettings.profile or {}
-	end
 
 	if bInit and module.ForgeAPI_Init then
 		module:ForgeAPI_Init()
@@ -238,7 +225,7 @@ function F:API_NewModule(tModule, tParams)
 end
 
 function F:API_GetModule(strName)
-    if tModules[strName] and not tModules[strName].tParams.bLocal then
+    if tModules[strName] and not tModules[strName].tParams.bPrivate then
         return tModules[strName].tModule
     else
         return nil
@@ -258,16 +245,8 @@ end
 -----------------------------------------------------------------------------------------------
 -- ForgeUI API
 -----------------------------------------------------------------------------------------------
-function F:API_GetDB(o, strType)
-	if Core.db then
-		if Core.db[strType] then
-			return Core.db[strType][o._NAME]
-		else
-			return nil
-		end
-	else
-		return nil
-	end
+function F:API_GetNamespace(strName)
+	return Core.db:GetNamespace(strName, true)
 end
 
 function F:API_GetProfileName() return Core.db:GetCurrentProfile() end
@@ -277,7 +256,7 @@ function F:API_RemoveProfile(...) Core.db:DeleteProfile(...) end
 function F:API_NewProfile(...) Core.db:SetProfile(...) end
 
 function F:API_GetClassColor(strClass)
-	return Core._DB.profile.tClassColors["cr" .. strClass]
+	return Core._DB.global.tClassColors["cr" .. strClass]
 end
 
 -----------------------------------------------------------------------------------------------
@@ -291,16 +270,27 @@ function F:Init()
 		if not v.tModule.ForgeAPI_Init then
 			Print("ERR: " .. k .. " module cannot be loaded!")
 		else
+			if v.tModule.tSettings then
+				local db = Core.db:RegisterNamespace(v.tModule._NAME)
+				db:RegisterDefaults(v.tModule.tSettings)
+				
+				v.tModule._DB = {
+					profile = db.profile,
+					global = db.global,
+					char = db.char,
+				}
+			end
+			
 			v.tModule:ForgeAPI_Init()
 			v.tModule.bInit = true
-		end
-		
-		if v.tModule.ForgeAPI_LoadSettings then
-			v.tModule:ForgeAPI_LoadSettings()
-		end
-		
-		if v.tModule.ForgeAPI_PopulateOptions then
-			v.tModule:ForgeAPI_PopulateOptions()
+			
+			if v.tModule.ForgeAPI_LoadSettings then
+				v.tModule:ForgeAPI_LoadSettings()
+			end
+			
+			if v.tModule.ForgeAPI_PopulateOptions then
+				v.tModule:ForgeAPI_PopulateOptions()
+			end
 		end
 	end
 	
@@ -308,16 +298,27 @@ function F:Init()
 		if not v.tAddon.ForgeAPI_Init then
 			Print("ERR: " .. k .. " addon cannot be loaded!")
 		else
+			if v.tAddon.tSettings then
+				local db = Core.db:RegisterNamespace(v.tAddon._NAME)
+				db:RegisterDefaults(v.tAddon.tSettings)
+				
+				v.tAddon._DB = {
+					profile = db.profile,
+					global = db.global,
+					char = db.char,
+				}
+			end
+		
 			v.tAddon:ForgeAPI_Init(v.tAddon)
 			v.tAddon.bInit = true
-		end
-		
-		if v.tAddon.ForgeAPI_LoadSettings and not v.bHooked then
-			v.tAddon:ForgeAPI_LoadSettings()
-		end
-		
-		if v.tAddon.ForgeAPI_PopulateOptions then
-			v.tAddon:ForgeAPI_PopulateOptions()
+			
+			if v.tAddon.ForgeAPI_LoadSettings and not v.bHooked then
+				v.tAddon:ForgeAPI_LoadSettings()
+			end
+			
+			if v.tAddon.ForgeAPI_PopulateOptions then
+				v.tAddon:ForgeAPI_PopulateOptions()
+			end
 		end
 	end
 end
@@ -340,5 +341,5 @@ function Core.copyTable(src, dest)
 	return dest
 end
 
-Core = F:API_NewModule(Core)
+Core = F:API_NewModule(Core, { bPrivate = true })
 

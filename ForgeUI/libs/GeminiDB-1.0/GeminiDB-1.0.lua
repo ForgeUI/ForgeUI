@@ -32,7 +32,7 @@
 -- end
 -- @class file
 -- @name GeminiDB-1.0.lua
-local MAJOR, MINOR = "Gemini:DB-1.1", 1
+local MAJOR, MINOR = "Gemini:DB-1.0a", 6
 local APkg = Apollo.GetPackage(MAJOR)
 if APkg and (APkg.nVersion or 0) >= MINOR then
 	return -- no upgrade is needed
@@ -469,7 +469,7 @@ local function OnRestore(self, eLevel, tSavedData)
 			keyTbl.profile = profileKey
 		end
 	end
-	
+
 	db.callbacks:Fire("OnDatabaseStartup", db)
 end
 
@@ -518,11 +518,10 @@ function DBObjectLib:SetProfile(name)
 	end
 
 	-- changing to the same profile, dont do anything
-	if name == self.keys.profile then
-		-- Callback: OnProfileChanged, database, newProfileKey
-		self.callbacks:Fire("OnProfileChanged", self, name)
-		return
-	end
+	--if name == self.keys.profile then
+	--	self.callbacks:Fire("OnProfileChanged", self, name)
+	--	return
+	--end
 
 	local oldProfile = self.profile
 	local defaults = self.defaults and self.defaults.profile

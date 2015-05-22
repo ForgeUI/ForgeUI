@@ -35,22 +35,17 @@ function Prototype:new(o)
    	local o = o or {}
    	setmetatable(o, Prototype)
 	
-	o._DB = {
-		profile = F:API_GetDB(o, "profile"),
-		global = F:API_GetDB(o, "global"),
-		char = F:API_GetDB(o, "char"),
-	}
-
 	o.bInit = false
 	
    	return o
 end
 
 function Prototype:RefreshConfig()
+	local db = F:API_GetNamespace(self._NAME)
 	self._DB = {
-		profile = F:API_GetDB(self, "profile"),
-		global = F:API_GetDB(self, "global"),
-		char = F:API_GetDB(self, "char"),
+		profile = db.profile,
+		global = db.global,
+		char = db.char,
 	}
 	
 	if self.tOptionHolders then

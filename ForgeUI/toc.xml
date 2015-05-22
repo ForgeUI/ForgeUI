@@ -3,7 +3,7 @@
     <!-- libraries -->
 	<Script Name="libs\LibJSON-2.5\LibJSON-2.5.lua"/>
 	<Script Name="libs\CallbackHandler-1.0\CallbackHandler-1.0.lua"/>
-	<Script Name="libs\GeminiDB-1.1\GeminiDB-1.1.lua"/>
+	<Script Name="libs\GeminiDB-1.0\GeminiDB-1.0.lua"/>
     <Script Name="libs\GeminiHook-1.0\GeminiHook-1.0.lua"/>
     <!-- addon script -->
     <Script Name="ForgeUI.lua"/>
@@ -16,6 +16,7 @@
     <Script Name="interface\gui.lua"/>
     <!-- core scripts -->
     <Script Name="core\core.lua"/>
+	<Script Name="core\movers.lua"/>
     <Script Name="core\util.lua"/>
     <!-- modules -->
     <Script Name="modules\forgecolor\forgecolor.lua"/>
