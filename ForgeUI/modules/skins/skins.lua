@@ -7,6 +7,7 @@
 -----------------------------------------------------------------------------------------------
 
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
+local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition
@@ -105,6 +106,10 @@ function Skins:HandleButton(wndButton, tOptions)
 	wndButton:SetPressedTextColor("FF888888")
 	wndButton:SetPressedFlybyTextColor("FF888888")
 	wndButton:SetFlybyTextColor("FFFFFFFF")
+end
+
+function Skins:CoverVScrollWindow(wndParent, wndVScrollWindow, tOptions)
+	local wndCover = G:API_AddVScrollWindow(self, wndParent, wndVScrollWindow)
 end
 
 Skins = F:API_NewModule(Skins)

@@ -7,6 +7,7 @@
 -----------------------------------------------------------------------------------------------
 
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
+local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 local Skins = F:API_GetModule("skins")
 
 local Addon
@@ -102,6 +103,9 @@ fnUseSkin = function(self, ...)
 	wndVendor:FindChild("AmountFrame"):SetSprite("ForgeUI_InnerWindow")
 	
 	Skins:HandleCloseButton(wndVendor:FindChild("CloseBtn"))
+	
+	Skins:CoverVScrollWindow(self.wndVendor:FindChild("LeftSideContainer"), self.wndVendor:FindChild("ItemsList"))
+	self.OnVScrollMouseWheel = G.OnVScrollMouseWheel
 end
 
 fnOnGuildChange = function(self, ...)

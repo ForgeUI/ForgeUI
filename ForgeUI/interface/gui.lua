@@ -568,5 +568,87 @@ function Gui:OnNumberBoxChanged(wndHandler, wndControl, strText)
 	end
 end
 
+-----------------------------------------------------------------------------------------------
+-- ScrollWindow
+-----------------------------------------------------------------------------------------------
+function Gui:API_AddVScrollWindow(tModule, wndParent, wndScroll, tOptions)
+	local wndVScrollWindow = Apollo.LoadForm(xmlDoc, "ForgeUI_VScrollWindow", wndParent, self)
+	
+	wndVScrollWindow:FindChild("VScrollButton"):AddEventHandler("WindowMove", "OnVScrollButtonMove", self)
+	wndScroll:AddEventHandler("MouseWheel", "OnVScrollMouseWheel", self)
+	
+	local tData = {
+		wndScroll = wndScroll,
+	}
+	
+	wndVScrollWindow:SetData(tData)
+	
+	return wndVScrollWindow
+end
+
+function Gui:OnVScrollButtonMove(wndHandler, wndControl)
+	local nLeft, nTop, nRight, nBottom = wndControl:GetAnchorOffsets()
+	
+	local tData = wndControl:GetParent():GetParent():GetParent():GetData()
+	
+	local nHeight = wndControl:GetHeight()
+	local nParentHeight = wndControl:GetParent():GetHeight()
+	
+	nLeft = 0
+	nRight = 0
+	
+	if nTop < 0 then
+		nTop = 0
+		nBottom = nHeight
+	end
+	
+	if nBottom > nParentHeight then
+		nBottom = nParentHeight
+		nTop = nParentHeight - nHeight
+	end
+	
+	local fPos = nTop / (nParentHeight - nHeight)
+	
+	tData.wndScroll:SetVScrollPos(fPos * tData.wndScroll:GetVScrollRange())
+	
+	wndControl:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+end
+
+function Gui:OnVScrollMouseWheel(wndHandler, wndControl, nLastRelativeMouseX, nLastRelativeMouseY, fScrollAmount, bConsumeMouseWheel)
+	local wndScrollWindow = wndControl:GetParent():FindChild("ForgeUI_VScrollWindow")
+	if not wndScrollWindow then return end
+	local wndButton = wndScrollWindow:FindChild("VScrollButton")
+	
+	local tData = wndButton:GetParent():GetParent():GetParent():GetData()
+	
+	local nRange = tData.wndScroll:GetVScrollRange()
+	local nPos = tData.wndScroll:GetVScrollPos()
+	
+	local nHeight = wndButton:GetHeight()
+	local nParentHeight = wndButton:GetParent():GetHeight()
+	
+	local nPercent = nPos / nRange
+	
+	local nLeft, nTop, nRight, nBottom = wndButton:GetAnchorOffsets()
+	
+	nTop = nPercent * nParentHeight
+	nBottom = nPercent * nParentHeight + nHeight
+	
+	nLeft = 0
+	nRight = 0
+	
+	if nTop < 0 then
+		nTop = 0
+		nBottom = nHeight
+	end
+	
+	if nBottom > nParentHeight then
+		nBottom = nParentHeight
+		nTop = nParentHeight - nHeight
+	end
+	
+	wndButton:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+end
+
 _G["ForgeLibs"]["ForgeGUI"] = new(Gui)
 
