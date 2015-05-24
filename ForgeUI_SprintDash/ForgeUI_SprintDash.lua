@@ -52,8 +52,8 @@ end
 function ForgeUI_SprintDash:ForgeAPI_LoadSettings()
 	self.wndSprintMeter:FindChild("Bar"):SetBarColor(self._DB.profile.crSprint)
 	
-	F:API_RegisterMover(self, self.wndSprintMeter, "SprintDash_Sprint", "Sprint")
-	F:API_RegisterMover(self, self.wndDashMeter, "SprintDash_Dash", "Dash")
+	F:API_RegisterMover(self, self.wndSprintMeter, "SprintDash_Sprint", "Sprint", "general", { bNameAsTooltip = true})
+	F:API_RegisterMover(self, self.wndDashMeter, "SprintDash_Dash", "Dash", "general", { bNameAsTooltip = true})
 end
 
 function ForgeUI_SprintDash:ForgeAPI_PopulateOptions()

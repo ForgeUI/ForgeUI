@@ -65,15 +65,15 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 	end
 end
 
-function ProfilesModule:OnSelectProfile(strType, strKey, vValue)
+function ProfilesModule:OnSelectProfile(vValue, strKey)
 	F:API_ChangeProfile(vValue)
 end
 
-function ProfilesModule:OnDeleteProfile(strType, strKey, vValue)
+function ProfilesModule:OnDeleteProfile(vValue, strKey)
 	F:API_RemoveProfile(vValue)
 end
 
-function ProfilesModule:OnNewProfile(strType, strKey, strValue)
+function ProfilesModule:OnNewProfile(strValue, strKey)
 	F:API_NewProfile(strValue)
 end
 

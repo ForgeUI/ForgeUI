@@ -259,6 +259,11 @@ function F:API_GetClassColor(strClass)
 	return Core._DB.global.tClassColors["cr" .. strClass]
 end
 
+function F:API_RegisterNamespaceDefaults(o, tDefaults)
+	local db = Core.db:GetNamespace(o._NAME, true)
+	db:RegisterDefaults(tDefaults)
+end
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI intern API
 -----------------------------------------------------------------------------------------------

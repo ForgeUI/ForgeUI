@@ -254,7 +254,7 @@ function Gui:OnCheckBoxCheck(wndHandler, wndControl, eMouseButton)
 	self:SetCheckBox(wndControl:GetParent())
 	
 	if tData.fnCallback then
-		tData.fnCallback(tData.tModule)
+		tData.fnCallback(tData.tModule, tData.bCheck)
 	end
 end
 
@@ -314,7 +314,7 @@ function Gui:API_AddComboBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 	wndComboBox:SetData(tData)
 	
 	-- set wnd
-	if tOptions and tOptions.bInnerText then
+	if tOptions and tOptions.bInnerText == true then
 		wndComboBox:FindChild("EditBox"):SetFont(strFont)
 		wndComboBox:FindChild("EditBox"):SetText(strText)
 	else
@@ -384,7 +384,7 @@ function Gui:OnComboBoxItemButton(wndHandler, wndControl, eMouseButton)
 	end
 	
 	if tParentData.fnCallback then
-		tParentData.fnCallback(tParentData.tModule, "combobox", tParentData.strKey, tData.vValue)
+		tParentData.fnCallback(tParentData.tModule, tData.vValue, tParentData.strKey)
 	end
 	
 	wndControl:GetParent():GetParent():Show(false)
@@ -470,7 +470,7 @@ function Gui:OnEditBoxReturn(wndHandler, wndControl, strText)
 	local tData = wndControl:GetParent():GetParent():GetData()
 	
 	if tData.tModule and tData.fnCallbackReturn then
-		tData.fnCallbackReturn(tData.tModule, "textobox_return", tData.strKey, strText) 
+		tData.fnCallbackReturn(tData.tModule, strText, tData.strKey) 
 	end
 end
 
@@ -564,7 +564,7 @@ function Gui:OnNumberBoxChanged(wndHandler, wndControl, strText)
 	self:SetNumberBox(wndControl:GetParent():GetParent())
 	
 	if tData.tModule and tData.fnCallback then
-		tData.fnCallback(tData.tModule, "numberbox_changed", tData.strKey, strText) 
+		tData.fnCallback(tData.tModule, strText, tData.strKey) 
 	end
 end
 

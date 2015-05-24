@@ -92,21 +92,8 @@ function Addon:OnForgeUIOff() self.wndMain:Close() end
 -- ForgeUI_Form Functions
 ---------------------------------------------------------------------------------------------------
 function Addon:OnSaveButtonPressed() ForgeUI:Save() end
-function Addon:OnUnlockButtonPressed() end
+function Addon:OnUnlockButtonPressed() ForgeUI:UnlockMovers() end
 function Addon:OnDefaultsButtonPressed() ForgeUI:Reset() end
-
-function Addon:OnUnlockButtonPressed( wndHandler, wndControl, eMouseButton )
-	local tData = wndControl:GetData()
-	local Movers = ForgeUI:API_GetModule("movers")
-	
-	if not tData or tData.bLock then
-		wndControl:SetData({bLock = false})
-		Movers:UnlockMovers()
-	elseif not tData.bLock then
-		wndControl:SetData({bLock = true})
-		Movers:LockMovers()
-	end
-end
 
 ---------------------------------------------------------------------------------------------------
 -- ForgeUI_Item Functions
@@ -224,6 +211,7 @@ function ForgeUI:API_AddMenuToMenuItem(tModule, wndParent, strText, strWindow)
 	return wndItem
 end
 
+function ForgeUI:API_ShowMainWindow(bShow) Inst.wndMain:Show(bShow) end
 function ForgeUI:API_GetApiVersion() return API_VERSION end
 function ForgeUI:API_GetVersion() return VERSION end
 
