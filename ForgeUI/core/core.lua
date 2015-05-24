@@ -49,6 +49,18 @@ local Core = {
 }
 
 -----------------------------------------------------------------------------------------------
+-- Constants
+-----------------------------------------------------------------------------------------------
+local tClassEnums = {
+	[GameLib.CodeEnumClass.Warrior]      	= "Warrior",
+	[GameLib.CodeEnumClass.Engineer]     	= "Engineer",
+	[GameLib.CodeEnumClass.Esper]        	= "Esper",
+	[GameLib.CodeEnumClass.Medic]        	= "Medic",
+	[GameLib.CodeEnumClass.Stalker]      	= "Stalker",
+	[GameLib.CodeEnumClass.Spellslinger]	= "Spellslinger"
+}
+
+-----------------------------------------------------------------------------------------------
 -- Local variables
 -----------------------------------------------------------------------------------------------
 local tForgeSavedData = { -- template for saving data
@@ -255,8 +267,17 @@ function F:API_ChangeProfile(...) Core.db:SetProfile(...) end
 function F:API_RemoveProfile(...) Core.db:DeleteProfile(...) end
 function F:API_NewProfile(...) Core.db:SetProfile(...) end
 
-function F:API_GetClassColor(strClass)
-	return Core._DB.global.tClassColors["cr" .. strClass]
+function F:API_GetClassColor(unit)
+	if type(unit) == "string" then
+		return Core._DB.global.tClassColors["cr" .. unit]
+	else
+		if not unit then return "FFFFFFFF" end
+		if unit:GetClassId() ~= 23 then
+			return Core._DB.global.tClassColors["cr" .. tClassEnums[unit:GetClassId()]]
+		else
+			return unit:GetNameplateColor()
+		end
+	end
 end
 
 function F:API_RegisterNamespaceDefaults(o, tDefaults)

@@ -49,7 +49,11 @@ local function RegisterMover(luaCaller, wnd, strKey, strName, strScope, tOptions
 	if tScopes["all"][strKey] then
 		wndMover = tScopes["all"][strKey]
 	else
-		wndMover = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_Mover", nil, F)
+		if tOptions and tOptions.strParent and tScopes["all"][tOptions.strParent] then
+			wndMover = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_Mover", tScopes["all"][tOptions.strParent], F)
+		else
+			wndMover = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_Mover", nil, F)
+		end
 		
 		tScopes["all"][strKey] = wndMover
 		if tScopes[strScope] then
@@ -134,7 +138,7 @@ function Movers:ForgeAPI_Init()
 	for k, v in pairs(tScopes["all"]) do
 		UpdateParentPosition(v)
 		
-		v:Show(false)
+		v:Show(false, true)
 	end
 end
 
@@ -149,35 +153,41 @@ end
 
 function Movers:UnlockMovers()
 	bMoversActive = true
-	F:API_ShowMainWindow(false)
-	self.wndMoversForm:Show(true)
+	F:API_ShowMainWindow(false, true)
+	self.wndMoversForm:Show(true, true)
 	
 	for k, v in pairs(tScopes["all"]) do
 		UpdateMoverPosition(v)
 	
-		v:Show(true)
+		v:Show(true, true)
+		
+		v:GetData().wndParent:Show(false, true)
 	end
 end
 
 function Movers:LockMovers()
 	bMoversActive = false
 	F:API_ShowMainWindow(true)
-	self.wndMoversForm:Show(false)
+	self.wndMoversForm:Show(false, true)
 	
 	for k, v in pairs(tScopes["all"]) do
 		UpdateParentPosition(v)
 		
-		v:Show(false)
+		v:Show(false, true)
+		
+		v:GetData().wndParent:Show(true, true)
 	end
 end
 
 function Movers:CancelChanges()
 	bMoversActive = false
 	F:API_ShowMainWindow(true)
-	self.wndMoversForm:Show(false)
+	self.wndMoversForm:Show(false, true)
 	
 	for k, v in pairs(tScopes["all"]) do
-		v:Show(false)
+		v:Show(false, true)
+		
+		v:GetData().wndParent:Show(true, true)
 	end
 end
 
@@ -185,11 +195,11 @@ function Movers:OnScopeSet(strScope)
 	if not tScopes[strScope] then return end
 
 	for k, v in pairs(tScopes["all"]) do
-		v:Show(false)
+		v:Show(false, true)
 	end
 	
 	for k, v in pairs(tScopes[strScope]) do
-		v:Show(true)
+		v:Show(true, true)
 	end
 end
 
