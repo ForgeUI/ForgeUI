@@ -132,12 +132,6 @@ end
 function ForgeUI_UnitFrames:OnLoad()
 	self.xmlDoc = XmlDoc.CreateFromFile("ForgeUI_UnitFrames.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
-	
-	-- buff filter hack
-	local BuffFilter = Apollo.GetAddon("BuffFilter")
-	if BuffFilter then
-		BuffFilter.tBarProviders["ForgeUI_UnitFrames"].tTargetType.TargetOfTarget = "wndToT"
-	end
 end
 
 function ForgeUI_UnitFrames:ForgeAPI_AfterRegistration()
