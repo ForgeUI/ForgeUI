@@ -260,7 +260,7 @@ function F:API_NewProfile(...) Core.db:SetProfile(...) end
 
 function F:API_GetClassColor(unit)
 	if type(unit) == "string" then
-		return Core._DB.global.tClassColors["cr" .. unit]
+		return Core._DB.global.tClassColors[GameLib.CodeEnumClass[unit]]
 	else
 		if not unit then return "FFFFFFFF" end
 		if unit:GetClassId() ~= 23 then
