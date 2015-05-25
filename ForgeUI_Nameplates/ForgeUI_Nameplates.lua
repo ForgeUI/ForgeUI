@@ -95,6 +95,7 @@ function ForgeUI_Nameplates:new(o)
 		bFrequentUpdate = false,
 		bShowDead = true,
 		bClickable = false,
+		bSelfClickable = false,
 		crShield = "FF0699F3",
 		crAbsorb = "FFFFC600",
 		crDead = "FF666666",
@@ -1294,6 +1295,9 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	end
 	
 	wndNameplate:FindChild("Container"):SetStyle("IgnoreMouse", not self.tSettings.bClickable)
+	if tNameplate.unitOwner:IsThePlayer() and not self.tSettings.bSelfClickable then
+		wndNameplate:FindChild("Container"):SetStyle("IgnoreMouse", tNameplate.unitOwner:IsThePlayer())
+	end
 	
 	--style
 	local tStyle = self.tSettings.tStyle
@@ -1388,6 +1392,8 @@ function ForgeUI_Nameplates:OnNameplateNameClick(wndHandler, wndCtrl, eMouseButt
 	end
 
 	local unitOwner = tNameplate.unitOwner
+	
+	if unitOwner:IsThePlayer() and not self.tSettings.bSelfClickable then return end
 	if GameLib.GetTargetUnit() ~= unitOwner and eMouseButton == GameLib.CodeEnumInputMouse.Left then
 		GameLib.SetTargetUnit(unitOwner)
 	end
