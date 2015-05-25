@@ -28,20 +28,18 @@ local Core = {
 		global = {
 			bAdvanced = false,
 			tClassColors = {
-				crEngineer = "FFEFAB48",
-				crEsper = "FF1591DB",
-				crMedic = "FFFFE757",
-				crSpellslinger = "FF98C723",
-				crStalker = "FFD23EF4",
-				crWarrior = "FFF54F4F"
+				[GameLib.CodeEnumClass.Engineer] = "FFEFAB48",
+				[GameLib.CodeEnumClass.Esper] = "FF1591DB",
+				[GameLib.CodeEnumClass.Medic]= "FFFFE757",
+				[GameLib.CodeEnumClass.Spellslinger] = "FF98C723",
+				[GameLib.CodeEnumClass.Stalker] = "FFD23EF4",
+				[GameLib.CodeEnumClass.Warrior] = "FFF54F4F"
 			},
-			tClassColorsSecondary = {
-				crEngineer = "FFFFA740",
-				crEsper = "FF31B9FF",
-				crMedic = "FFFFDB34",
-				crSpellslinger = "FFC0FFA0",
-				crStalker = "FFBD68FF",
-				crWarrior = "FFFF7272"
+			tDispositionColors = {
+				[Unit.CodeEnumDisposition.Friendly] = "FF75CC26",
+				[Unit.CodeEnumDisposition.Neutral] = "FFF3D829",
+				[Unit.CodeEnumDisposition.Hostile] = "FFE50000",
+				[Unit.CodeEnumDisposition.Unknown] = "FF666666",
 			},
 			bDebug = false,
 		},
@@ -51,14 +49,7 @@ local Core = {
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
-local tClassEnums = {
-	[GameLib.CodeEnumClass.Warrior]      	= "Warrior",
-	[GameLib.CodeEnumClass.Engineer]     	= "Engineer",
-	[GameLib.CodeEnumClass.Esper]        	= "Esper",
-	[GameLib.CodeEnumClass.Medic]        	= "Medic",
-	[GameLib.CodeEnumClass.Stalker]      	= "Stalker",
-	[GameLib.CodeEnumClass.Spellslinger]	= "Spellslinger"
-}
+
 
 -----------------------------------------------------------------------------------------------
 -- Local variables
@@ -273,9 +264,9 @@ function F:API_GetClassColor(unit)
 	else
 		if not unit then return "FFFFFFFF" end
 		if unit:GetClassId() ~= 23 then
-			return Core._DB.global.tClassColors["cr" .. tClassEnums[unit:GetClassId()]]
+			return Core._DB.global.tClassColors[unit:GetClassId()]
 		else
-			return unit:GetNameplateColor()
+			return Core._DB.global.tDispositionColors[unit:GetDispositionTo(GameLib.GetPlayerUnit())]
 		end
 	end
 end

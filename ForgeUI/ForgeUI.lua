@@ -98,7 +98,7 @@ function Addon:OnDefaultsButtonPressed() ForgeUI:Reset() end
 ---------------------------------------------------------------------------------------------------
 -- ForgeUI_Item Functions
 ---------------------------------------------------------------------------------------------------
-function Addon:ItemListPressed( wndHandler, wndControl, eMouseButton )
+function Addon:ItemListPressed(wndHandler, wndControl, eMouseButton)
 	wndControl:SetCheck(true)
 	
 	-- menu item selection
@@ -123,10 +123,15 @@ function Addon:ItemListPressed( wndHandler, wndControl, eMouseButton )
 	
 	if tData.wndOptions then
 		tData.wndOptions:Show(true, false)
+	else
+		if not wndControl:FindChild("Holder"):IsShown() then
+			self:ItemListSignPressed(wndHandler, wndControl:FindChild("Sign"), eMouseButton)
+		end
+		self:ItemListPressed(wndHandler, wndControl:FindChild("Holder"):GetChildren()[1]:FindChild("Button"), eMouseButton)
 	end
 end
 
-function Addon:ItemListSignPressed( wndHandler, wndControl, eMouseButton )
+function Addon:ItemListSignPressed(wndHandler, wndControl, eMouseButton)
 	if wndControl:GetParent():FindChild("Holder"):IsShown() then
 		wndControl:SetText("+")
 		wndControl:GetParent():FindChild("Holder"):Show(false)
@@ -143,19 +148,55 @@ function Addon:ItemListSignPressed( wndHandler, wndControl, eMouseButton )
 		wndHolder:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + 20 * #wndControl:GetParent():FindChild("Holder"):GetChildren())
 	end
 	
-	Inst.wndMenuHolder:ArrangeChildrenVert()
+	Inst:SortItemsByPriority()
 end
 
------------------------------------------------------------------------------------------------
--- OnSave/OnRestore
------------------------------------------------------------------------------------------------
---function Addon:OnSave(...) return ForgeUI:OnSave(...) end
---function Addon:OnRestore(...) ForgeUI:OnRestore(...) end
+function Addon:SortItemsByPriority()
+	local wndHolder = self.wndMenuHolder
+
+	local tAll = {
+		high = {},
+		normal = {},
+		low = {},
+	}
+
+	for k, v in pairs(wndHolder:GetChildren()) do
+		local tData = v:GetData()
+		
+		if not tData.strPriotiy then tData.strPriotiy = "normal" end
+		table.insert(tAll[tData.strPriotiy], v)
+	end
+	
+	local nPos = 0
+	for k, v in pairs(tAll.high) do
+		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
+		nTop = nPos
+		nPos = nPos + v:GetHeight()
+		nBottom = nPos
+		v:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+	end
+	
+	for k, v in pairs(tAll.normal) do
+		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
+		nTop = nPos
+		nPos = nPos + v:GetHeight()
+		nBottom = nPos
+		v:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+	end
+	
+	for k, v in pairs(tAll.low) do
+		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
+		nTop = nPos
+		nPos = nPos + v:GetHeight()
+		nBottom = nPos
+		v:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+	end
+end
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI public api
 -----------------------------------------------------------------------------------------------
-function ForgeUI:API_AddMenuItem(tModule, strText, strWindow)
+function ForgeUI:API_AddMenuItem(tModule, strText, strWindow, tOptions)
 	local wndItem = Apollo.LoadForm(Inst.xmlDoc, "ForgeUI_Item", Inst.wndMenuHolder, Inst)
 	wndItem:FindChild("Button"):SetText(strText)
 	
@@ -164,7 +205,10 @@ function ForgeUI:API_AddMenuItem(tModule, strText, strWindow)
 	wndItem:FindChild("Sign"):AddEventHandler("ButtonCheck", "ItemListSignPressed", Inst)
 	wndItem:FindChild("Sign"):AddEventHandler("ButtonUncheck", "ItemListSignPressed", Inst)
 	
-	local tData = {}
+	local tData = {
+		strPriority = "normal"
+	}
+	
 	if strWindow then
 		local wnd = Apollo.LoadForm(Inst.xmlOptions, "ForgeUI_Container", Inst.wndOptionsHolder, Inst)
 		wnd:SetName(strWindow)
@@ -175,9 +219,13 @@ function ForgeUI:API_AddMenuItem(tModule, strText, strWindow)
 		tData.wndOptions = wnd
 	end
 	
+	if tOptions then
+		tData.strPriotiy = tOptions.strPriority or "normal"
+	end
+	
 	wndItem:SetData(tData)
 
-	Inst.wndMenuHolder:ArrangeChildrenVert()
+	Inst:SortItemsByPriority()
 	
 	return wndItem
 end

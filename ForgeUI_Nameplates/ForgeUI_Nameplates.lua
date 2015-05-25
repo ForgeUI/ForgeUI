@@ -659,7 +659,7 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 	end
 	
 	if tSettings.bClassColors then
-		crBarColor = F:API_GetClassColor(krtClassEnums[unitOwner:GetClassId()])
+		crBarColor = F:API_GetClassColor(unit)
 	end
 	
 	if tSettings.nHpCutoff and tNameplate.hpPercentage and tNameplate.hpPercentage < tSettings.nHpCutoff then

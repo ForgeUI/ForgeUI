@@ -124,11 +124,12 @@ function ForgeUI_UnitFrames:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_UnitFrames//ForgeUI_UnitFrames.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 	
-	local wndParent = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
+	local wndParent = F:API_AddMenuItem(self, self.DISPLAY_NAME)
 	F:API_AddMenuToMenuItem(self, wndParent, "Player frame", "Player")
 	F:API_AddMenuToMenuItem(self, wndParent, "Target frame", "Target")
 	F:API_AddMenuToMenuItem(self, wndParent, "Focus frame", "Focus")
 	F:API_AddMenuToMenuItem(self, wndParent, "ToT frame", "ToT")
+	F:API_AddMenuToMenuItem(self, wndParent, "Other", "Other")
 end
 
 function ForgeUI_UnitFrames:OnDocLoaded()
@@ -186,7 +187,10 @@ function ForgeUI_UnitFrames:UpdatePlayerFrame(unit)
 	
 	self.wndPlayerFrame:SetData(unit)
 	
-	self:RefreshStyle_PlayerFrame(unit)
+	local name = self.wndPlayerFrame:FindChild("Name")
+	local hpBar = self.wndPlayerFrame:FindChild("HP_ProgressBar")
+	
+	self:RefreshStyle(unit, name, hpBar, "Player")
 	
 	self:UpdateTargetFrame(unit)
 	self:UpdateFocusFrame(unit)
@@ -209,7 +213,10 @@ function ForgeUI_UnitFrames:UpdateTargetFrame(unitSource)
 		
 		self.wndTargetFrame:SetData(unit)
 		
-		self:RefreshStyle_TargetFrame(unit)
+		local name = self.wndTargetFrame:FindChild("Name")
+		local hpBar = self.wndTargetFrame:FindChild("HP_ProgressBar")
+		
+		self:RefreshStyle(unit, name, hpBar, "Target")
 	end
 	
 	if bShow ~= self.wndTargetFrame:IsShown() then
@@ -231,9 +238,12 @@ function ForgeUI_UnitFrames:UpdateToTFrame(unitSource)
 	if bShow then
 		self:UpdateHPBar(unit, self.wndToTFrame)
 		
-		self:RefreshStyle_TotFrame(unit)
-		
 		self.wndToTFrame:SetData(unit)
+		
+		local name = self.wndToTFrame:FindChild("Name")
+		local hpBar = self.wndToTFrame:FindChild("HP_ProgressBar")
+		
+		self:RefreshStyle(unit, name, hpBar, "ToT")
 	end
 	
 	if bShow ~= self.wndToTFrame:IsShown() then
@@ -260,9 +270,12 @@ function ForgeUI_UnitFrames:UpdateFocusFrame(unitSource)
 			self:UpdateAbsorbBar(unit, self.wndFocusFrame)
 		end
 		
-		self:RefreshStyle_FocusFrame(unit)
-		
 		self.wndFocusFrame:SetData(unit)
+		
+		local name = self.wndFocusFrame:FindChild("Name")
+		local hpBar = self.wndFocusFrame:FindChild("HP_ProgressBar")
+		
+		self:RefreshStyle(unit, name, hpBar, "Focus")
 	end
 	
 	if bShow ~= self.wndFocusFrame:IsShown() then
@@ -361,15 +374,12 @@ end
 
 function ForgeUI_UnitFrames:UpdateStyles()
 	self:UpdateStyle_PlayerFrame()
-	
 	self:UpdateStyle_TargetFrame()
-	
 	self:UpdateStyle_TotFrame()
-	
 	self:UpdateStyle_FocusFrame()
 end
 
-function ForgeUI_UnitFrames:RefreshStyle_General(unit, name, hpBar, strType)
+function ForgeUI_UnitFrames:RefreshStyle(unit, name, hpBar, strType)
 	local crHpBar = "FFFFFFFF"
 	
 	name:SetText(unit:GetName())
@@ -393,7 +403,7 @@ function ForgeUI_UnitFrames:RefreshStyle_General(unit, name, hpBar, strType)
 
 	if self._DB.profile.tFrames[strType].bUseGradient then
 		local nPercent = Util:Round((unit:GetHealth() / unit:GetMaxHealth()) * 100, 0)
-		crHpBar = Util:GenerateGradient(self._DB.profile.tFrames[strType].crHpBarGradient, self._DB.profile.tFrames[strType].crHpBar, 100, nPercent, true)
+		crHpBar = Util:GenerateGradient(self._DB.profile.tFrames[strType].crHpBarGradient, crHpBar, 100, nPercent, true)
 	end
 
 	hpBar:SetBarColor(crHpBar)
@@ -429,9 +439,6 @@ function ForgeUI_UnitFrames:UpdateStyle_PlayerFrame()
 	self.wndPlayerFrame:FindChild("Absorb_TextValue"):SetTextColor(self._DB.profile.tFrames.Player.crAbsorbValue)
 end
 
-function ForgeUI_UnitFrames:RefreshStyle_PlayerFrame(unit)
-end
-
 function ForgeUI_UnitFrames:UpdateStyle_TargetFrame()
 	self.wndTargetFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tFrames.Target.crBorder)
 	self.wndTargetFrame:FindChild("Background"):SetBGColor(self._DB.profile.tFrames.Target.crBackground)
@@ -442,13 +449,6 @@ function ForgeUI_UnitFrames:UpdateStyle_TargetFrame()
 	self.wndTargetFrame:FindChild("Shield_TextValue"):SetTextColor(self._DB.profile.tFrames.Target.crShieldValue)
 	self.wndTargetFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self._DB.profile.tFrames.Target.crAbsorbBar)
 	self.wndTargetFrame:FindChild("Absorb_TextValue"):SetTextColor(self._DB.profile.tFrames.Target.crAbsorbValue)
-end
-
-function ForgeUI_UnitFrames:RefreshStyle_TargetFrame(unit)
-	local name = self.wndTargetFrame:FindChild("Name")
-	local hpBar = self.wndTargetFrame:FindChild("HP_ProgressBar")
-
-	self:RefreshStyle_General(unit, name, hpBar, "Target")
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_FocusFrame()
@@ -466,58 +466,10 @@ function ForgeUI_UnitFrames:UpdateStyle_FocusFrame()
 	self.wndFocusFrame:FindChild("AbsorbBar"):Show(self._DB.profile.tFrames.Focus.bShowAbsorbBar, true)
 end
 
-function ForgeUI_UnitFrames:RefreshStyle_FocusFrame(unit)
-	local name = self.wndFocusFrame:FindChild("Name")
-	local hpBar = self.wndFocusFrame:FindChild("HP_ProgressBar")
-
-	name:SetText(unit:GetName())
-	if self._DB.profile.tFrames.Focus.bNameClassColor then
-		name:SetTextColor(F:API_GetClassColor(unit))
-	else
-		name:SetTextColor(self._DB.profile.tFrames.Focus.crName)
-	end
-	
-	if self._DB.profile.tFrames.Focus.bHealthClassColor then
-		if unit:GetClassId() == 23 and self._DB.profile.bHealthClassMob then
-			hpBar:SetBarColor(F:API_GetClassColor(unit))
-		elseif unit:GetClassId() ~= 23 then
-			hpBar:SetBarColor(F:API_GetClassColor(unit))
-		else
-			hpBar:SetBarColor(self._DB.profile.tFrames.Target.crHpBar)
-		end
-	else
-		hpBar:SetBarColor(self._DB.profile.tFrames.Focus.crHpBar)
-	end
-end
-
 function ForgeUI_UnitFrames:UpdateStyle_TotFrame()
 	self.wndToTFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tFrames.ToT.crBorder)
 	self.wndToTFrame:FindChild("Background"):SetBGColor(self._DB.profile.tFrames.ToT.crBackground)
 	self.wndToTFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tFrames.ToT.crHpBar)
-end
-
-function ForgeUI_UnitFrames:RefreshStyle_TotFrame(unit)
-	local name = self.wndToTFrame:FindChild("Name")
-	local hpBar = self.wndToTFrame:FindChild("HP_ProgressBar")
-
-	name:SetText(unit:GetName())
-	if self._DB.profile.tFrames.ToT.bNameClassColor then
-		name:SetTextColor(F:API_GetClassColor(unit))
-	else
-		name:SetTextColor(self._DB.profile.tFrames.ToT.crName)
-	end
-	
-	if self._DB.profile.tFrames.ToT.bHealthClassColor then
-		if unit:GetClassId() == 23 and self._DB.profile.bHealthClassMob then
-			hpBar:SetBarColor(F:API_GetClassColor(unit))
-		elseif unit:GetClassId() ~= 23 then
-			hpBar:SetBarColor(F:API_GetClassColor(unit))
-		else
-			hpBar:SetBarColor(self._DB.profile.tFrames.Target.crHpBar)
-		end
-	else
-		hpBar:SetBarColor(self._DB.profile.tFrames.ToT.crHpBar)
-	end
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -547,8 +499,12 @@ function ForgeUI_UnitFrames:OnGenerateBuffTooltip(wndHandler, wndControl, tType,
 end
 
 function ForgeUI_UnitFrames:ForgeAPI_PopulateOptions()
+	local wnd = self.tOptionHolders["Other"]
+	
+	G:API_AddCheckBox(self, wnd, "Use class colors for mobs", self._DB.profile, "bHealthClassMob")
+
 	for k, v in pairs(self._DB.profile.tFrames) do
-		local wnd = self.tOptionHolders[k]
+		wnd = self.tOptionHolders[k]
 		
 		if v.crBorder then
 			G:API_AddColorBox(self, wnd, "Border color", v, "crBorder", { tMove = {0, 0}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })

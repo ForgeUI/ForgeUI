@@ -25,7 +25,7 @@ local ProfilesModule = {
 -- Module functions
 -----------------------------------------------------------------------------------------------
 function ProfilesModule:ForgeAPI_Init()
-	F:API_AddMenuItem(self, "Profiles", "Profiles")
+	F:API_AddMenuItem(self, "Profiles", "Profiles", { strPriority = "low" })
 end
 
 function ProfilesModule:ForgeAPI_PopulateOptions()
