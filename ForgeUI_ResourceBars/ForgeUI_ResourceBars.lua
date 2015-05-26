@@ -11,6 +11,8 @@ require "Window"
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 
+local Util = F:API_GetModule("util")
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Addon Definition
 -----------------------------------------------------------------------------------------------
@@ -109,14 +111,6 @@ function ForgeUI_ResourceBars:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_ResourceBars//ForgeUI_ResourceBars.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 	
-	if GameLib.GetPlayerUnit() then
-		self:OnCharacterCreated()
-	else
-		Apollo.RegisterEventHandler("CharacterCreated", 	"OnCharacterCreated", self)
-	end
-end
-
-function ForgeUI_ResourceBars:OnCharacterCreated()
 	local unitPlayer = GameLib.GetPlayerUnit()
 	if unitPlayer == nil then
 		Print("ForgeUI ERROR: Wrong class")
@@ -145,6 +139,10 @@ function ForgeUI_ResourceBars:OnCharacterCreated()
 	end
 end
 
+function ForgeUI_ResourceBars:ForgeAPI_LoadSettings()
+	self["LoadStyle_ResourceBar_" .. self.playerClass](self)
+end
+
 -----------------------------------------------------------------------------------------------
 -- Engineer
 -----------------------------------------------------------------------------------------------
@@ -154,7 +152,7 @@ function ForgeUI_ResourceBars:OnEngineerCreated(unitPlayer)
 
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Engineer", "FixedHudStratumHigh", self)
 	
-	if self.tSettings.bSmoothBars then
+	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnEngineerUpdate", self)
 	else
 		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnEngineerUpdate", self)
@@ -168,7 +166,7 @@ function ForgeUI_ResourceBars:OnEngineerUpdate()
 	local bShow = false
 	
 	local nResource = unitPlayer:GetResource(1)
-	if unitPlayer:IsInCombat() or nResource > 0 or self.tSettings.bPermaShow  then
+	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow  then
 		bShow = true
 	end
 	
@@ -187,7 +185,7 @@ function ForgeUI_ResourceBars:OnEsperCreated(unitPlayer)
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Esper", "FixedHudStratumHigh", self)
 	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
 	
-	if self.tSettings.bSmoothBars then
+	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnEsperUpdate", self)
 	else
 		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnEsperUpdate", self)
@@ -201,7 +199,7 @@ function ForgeUI_ResourceBars:OnEsperUpdate()
 	local bShow = false
 	
 	local nResource = unitPlayer:GetResource(1)
-	if unitPlayer:IsInCombat() or nResource > 0 or self.tSettings.bPermaShow  then
+	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow  then
 		bShow = true
 	end
 	
@@ -222,7 +220,7 @@ function ForgeUI_ResourceBars:OnMedicCreated(unitPlayer)
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Medic", "FixedHudStratumHigh", self)
 	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
 	
-	if self.tSettings.bSmoothBars then
+	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnMedicUpdate", self)
 	else
 		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnMedicUpdate", self)
@@ -236,7 +234,7 @@ function ForgeUI_ResourceBars:OnMedicUpdate()
 	local bShow = false
 	
 	local nResource = unitPlayer:GetResource(1)
-	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self.tSettings.bPermaShow  then
+	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow  then
 		bShow = true
 	end
 	
@@ -257,7 +255,7 @@ function ForgeUI_ResourceBars:OnSlingerCreated(unitPlayer)
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Slinger", "FixedHudStratumHigh", self)
 	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
 	
-	if self.tSettings.bSmoothBars then
+	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnSlingerUpdate", self)
 	else
 		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnSlingerUpdate", self)
@@ -271,7 +269,7 @@ function ForgeUI_ResourceBars:OnSlingerUpdate()
 	local bShow = false
 	
 	local nResource = unitPlayer:GetResource(4)
-	if unitPlayer:IsInCombat() or GameLib.IsSpellSurgeActive() or nResource < self.playerMaxResource or self.tSettings.bPermaShow  then
+	if unitPlayer:IsInCombat() or GameLib.IsSpellSurgeActive() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow  then
 		bShow = true
 	end
 
@@ -292,7 +290,7 @@ function ForgeUI_ResourceBars:OnStalkerCreated(unitPlayer)
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Stalker", "FixedHudStratumHigh", self)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
 	
-	if self.tSettings.bSmoothBars then
+	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnStalkerUpdate", self)
 	else
 		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnStalkerUpdate", self)
@@ -306,7 +304,7 @@ function ForgeUI_ResourceBars:OnStalkerUpdate()
 	local bShow = false
 	
 	local nResource = unitPlayer:GetResource(3)
-	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self.tSettings.bPermaShow  then
+	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow  then
 		bShow = true
 	end
 	
@@ -331,7 +329,7 @@ function ForgeUI_ResourceBars:OnWarriorCreated(unitPlayer)
 	Apollo.RegisterEventHandler("BuffUpdated", "OnWarriorBuffUpdated", self)
 	Apollo.RegisterEventHandler("BuffRemoved", "OnWarriorBuffRemoved", self)
 	
-	if self.tSettings.bSmoothBars then
+	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnWarriorUpdate", self)
 	else
 		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnWarriorUpdate", self)
@@ -345,14 +343,16 @@ function ForgeUI_ResourceBars:OnWarriorUpdate()
 	local bShow = false
 	
 	local nResource = unitPlayer:GetResource(1)
-	if unitPlayer:IsInCombat() or nResource > 0 or self.tSettings.bPermaShow then
+	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow then
+		self:RefreshStyle_ResourceBar_Warrior(unitPlayer, nResource)
+	
 		bShow = true
 	end
 	
 	if not self.bAugBlade and self.wndResource:FindChild("AG_Stacks"):IsShown() then
 		for k, v in pairs(GameLib.GetPlayerUnit():GetBuffs().arBeneficial) do
 			if tAugBladeDrainId[v.splEffect:GetId()] then
-				self.wndResource:FindChild("AG_Stacks"):SetText(ForgeUI.Round(v.fTimeRemaining, 1) .. " - " .. v.nCount)	
+				self.wndResource:FindChild("AG_Stacks"):SetText(Util:Round(v.fTimeRemaining, 1) .. " - " .. v.nCount)	
 			end	
 		end
 	end
@@ -364,7 +364,7 @@ end
 
 function ForgeUI_ResourceBars:OnWarriorBuffAdded(unit, tBuff, nCout)
 	if not unit or not unit:IsThePlayer() then return end
-
+	
 	if tAugBladeDrainId[tBuff.splEffect:GetId()] and tBuff.nCount > 0 then
 		self.wndResource:FindChild("AG_Stacks"):SetText(tBuff.nCount)
 		self.wndResource:FindChild("AG_Stacks"):Show(true, true)
@@ -393,7 +393,7 @@ function ForgeUI_ResourceBars:OnWarriorBuffRemoved(unit, tBuff, nCout)
 	if tAugBladeDrainId[tBuff.splEffect:GetId()] then
 		self.wndResource:FindChild("AG_Stacks"):Show(false, true)
 		
-		if self.tSettings.warrior.bPlaySoundAbEnd then
+		if self._DB.profile.warrior.bPlaySoundAbEnd then
 			Sound.Play(220)
 		end
 	elseif self.bHasPowerlink and tPowerLinkId[tBuff.splEffect:GetId()] then
@@ -433,24 +433,20 @@ end
 -- Styles
 -----------------------------------------------------------------------------------------------
 
-function ForgeUI_ResourceBars:LoadStyles()
-	self.tStylers["LoadStyle_ResourceBar_" .. self.playerClass]["LoadStyle_ResourceBar_" .. self.playerClass](self)
-end
-
 -- engineer
 function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Engineer()
-	self.wndResource:FindChild("Border"):SetBGColor(self.tSettings.crBorder)
-	self.wndResource:FindChild("Background"):SetBGColor(self.tSettings.crBackground)
+	self.wndResource:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
+	self.wndResource:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
 	
-	if self.tSettings.bCenterText then
+	if self._DB.profile.bCenterText then
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, 0, 0, 0)
 	else
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, -5, 0, 0)
 	end
-	self.wndResource:FindChild("Value"):SetTextFlags("DT_VCENTER", self.tSettings.bCenterText)
+	self.wndResource:FindChild("Value"):SetTextFlags("DT_VCENTER", self._DB.profile.bCenterText)
 	
-	self.wndResource:FindChild("Bars"):Show(self.tSettings.engineer.bShowBars, true)
+	self.wndResource:FindChild("Bars"):Show(self._DB.profile.engineer.bShowBars, true)
 end
 
 function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Engineer(unitPlayer, nResource)
@@ -458,18 +454,18 @@ function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Engineer(unitPlayer, nRes
 	self.wndResource:FindChild("Value"):SetText(nResource)
 	
 	if nResource < 30 or nResource > 70 then
-		self.wndResource:FindChild("ProgressBar"):SetBarColor(self.tSettings.engineer.crResource1)
+		self.wndResource:FindChild("ProgressBar"):SetBarColor(self._DB.profile.engineer.crResource1)
 	else
-		self.wndResource:FindChild("ProgressBar"):SetBarColor(self.tSettings.engineer.crResource2)
+		self.wndResource:FindChild("ProgressBar"):SetBarColor(self._DB.profile.engineer.crResource2)
 	end
 end
 
 -- esper
 function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Esper()
 	for i = 1, self.playerMaxResource do
-		self.wndResource:FindChild("PSI" .. i):SetBGColor(self.tSettings.crBorder)
-		self.wndResource:FindChild("PSI" .. i):FindChild("Background"):SetBGColor(self.tSettings.crBackground)
-		self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.esper.crResource1)
+		self.wndResource:FindChild("PSI" .. i):SetBGColor(self._DB.profile.crBorder)
+		self.wndResource:FindChild("PSI" .. i):FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
+		self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetBarColor(self._DB.profile.esper.crResource1)
 		self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetMax(1)
 	end
 end
@@ -487,8 +483,8 @@ end
 -- medic
 function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Medic()
 	for i = 1, self.playerMaxResource do
-		self.wndResource:FindChild("ACU" .. i):SetBGColor(self.tSettings.crBorder)
-		self.wndResource:FindChild("ACU" .. i):FindChild("Background"):SetBGColor(self.tSettings.crBackground)
+		self.wndResource:FindChild("ACU" .. i):SetBGColor(self._DB.profile.crBorder)
+		self.wndResource:FindChild("ACU" .. i):FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 		self.wndResource:FindChild("ACU" .. i):FindChild("ProgressBar"):SetMax(3)
 	end
 end
@@ -496,7 +492,7 @@ end
 function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Medic(unitPlayer, nResource)
 	for i = 1, self.playerMaxResource do
 		if nResource >= i then
-			self.wndResource:FindChild("ACU" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.medic.crResource1)
+			self.wndResource:FindChild("ACU" .. i):FindChild("ProgressBar"):SetBarColor(self._DB.profile.medic.crResource1)
 			self.wndResource:FindChild("ACU" .. i):FindChild("ProgressBar"):SetProgress(3)
 		else
 			self.wndResource:FindChild("ACU" .. i):FindChild("ProgressBar"):SetProgress(0)
@@ -509,7 +505,7 @@ function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Medic(unitPlayer, nResour
 					end
 				end
 				
-				self.wndResource:FindChild("ACU" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.medic.crResource2)
+				self.wndResource:FindChild("ACU" .. i):FindChild("ProgressBar"):SetBarColor(self._DB.profile.medic.crResource2)
 				self.wndResource:FindChild("ACU" .. i):FindChild("ProgressBar"):SetProgress(nAcu)
 			end
 		end
@@ -519,8 +515,8 @@ end
 -- slinger
 function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Slinger()
 	for i = 1, 4 do
-		self.wndResource:FindChild("RUNE" .. i):SetBGColor(self.tSettings.crBorder)
-		self.wndResource:FindChild("RUNE" .. i):FindChild("Background"):SetBGColor(self.tSettings.crBackground)
+		self.wndResource:FindChild("RUNE" .. i):SetBGColor(self._DB.profile.crBorder)
+		self.wndResource:FindChild("RUNE" .. i):FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 		self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetMax(25)
 	end
 end
@@ -529,22 +525,22 @@ function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Slinger(unitPlayer, nReso
 	for i = 1, 4 do
 		if nResource >= (i * 25) then
 			if GameLib.IsSpellSurgeActive() then
-				self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.slinger.crResource3)
+				self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self._DB.profile.slinger.crResource3)
 			else
-				self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.slinger.crResource1)
+				self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self._DB.profile.slinger.crResource1)
 			end
 			self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetProgress(25)
 		else
 			if GameLib.IsSpellSurgeActive() then
-				self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.slinger.crResource4)
+				self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self._DB.profile.slinger.crResource4)
 			else
-				self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.slinger.crResource2)
+				self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetBarColor(self._DB.profile.slinger.crResource2)
 			end
 			self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetProgress(25 - ((i * 25) - nResource))
 		end
 	end
 	
-	if self.tSettings.slinger.bSurgeShadow and GameLib.IsSpellSurgeActive() then
+	if self._DB.profile.slinger.bSurgeShadow and GameLib.IsSpellSurgeActive() then
 		self.wndResource:FindChild("SpellSurge"):Show(true, true)
 	else
 		self.wndResource:FindChild("SpellSurge"):Show(false, true)
@@ -553,43 +549,44 @@ end
 
 -- stalker
 function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Stalker()
-	self.wndResource:FindChild("Border"):SetBGColor(self.tSettings.crBorder)
-	self.wndResource:FindChild("Background"):SetBGColor(self.tSettings.crBackground)
-	self.wndResource:FindChild("ProgressBar"):SetBarColor(self.tSettings.stalker.crResource1)
+	self.wndResource:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
+	self.wndResource:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
+	self.wndResource:FindChild("ProgressBar"):SetBarColor(self._DB.profile.stalker.crResource1)
 	
-	if self.tSettings.bCenterText then
+	if self._DB.profile.bCenterText then
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, 0, 0, 0)
 	else
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, -5, 0, 0)
 	end
-	self.wndResource:FindChild("Value"):SetTextFlags("DT_VCENTER", self.tSettings.bCenterText)
+	self.wndResource:FindChild("Value"):SetTextFlags("DT_VCENTER", self._DB.profile.bCenterText)
 end
 
 function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Stalker(unitPlayer, nResource)
 	self.wndResource:FindChild("ProgressBar"):SetProgress(nResource)
 	self.wndResource:FindChild("Value"):SetText(nResource)
 	
-	if nResource < self.tSettings.stalker.nBreakpoint then
-		self.wndResource:FindChild("ProgressBar"):SetBarColor(self.tSettings.stalker.crResource2)
+	if nResource < self._DB.profile.stalker.nBreakpoint then
+		self.wndResource:FindChild("ProgressBar"):SetBarColor(self._DB.profile.stalker.crResource2)
 	else
-		self.wndResource:FindChild("ProgressBar"):SetBarColor(self.tSettings.stalker.crResource1)
+		self.wndResource:FindChild("ProgressBar"):SetBarColor(self._DB.profile.stalker.crResource1)
 	end
 end
 
 -- warrior
 function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Warrior()
-	self.wndResource:FindChild("Border"):SetBGColor(self.tSettings.crBorder)
-	self.wndResource:FindChild("Background"):SetBGColor(self.tSettings.crBackground)
+	self.wndResource:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
+	self.wndResource:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
 	
+	Print("WOT")
 	
-	if self.tSettings.bCenterText then
+	if self._DB.profile.bCenterText then
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, 0, 0, 0)
 	else
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, -5, 0, 0)
 	end
-	self.wndResource:FindChild("Value"):SetTextFlags("DT_VCENTER", self.tSettings.bCenterText)
-	self.wndResource:FindChild("AG_Stacks"):SetTextFlags("DT_VCENTER", self.tSettings.bCenterText)
+	self.wndResource:FindChild("Value"):SetTextFlags("DT_VCENTER", self._DB.profile.bCenterText)
+	self.wndResource:FindChild("AG_Stacks"):SetTextFlags("DT_VCENTER", self._DB.profile.bCenterText)
 end
 
 function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Warrior(unitPlayer, nResource)
@@ -597,9 +594,9 @@ function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Warrior(unitPlayer, nReso
 	self.wndResource:FindChild("ProgressBar"):SetProgress(nResource)
 		
 	if nResource < 750 then
-		self.wndResource:FindChild("ProgressBar"):SetBarColor(self.tSettings.warrior.crResource1)
+		self.wndResource:FindChild("ProgressBar"):SetBarColor(self._DB.profile.warrior.crResource1)
 	else
-		self.wndResource:FindChild("ProgressBar"):SetBarColor(self.tSettings.warrior.crResource2)
+		self.wndResource:FindChild("ProgressBar"):SetBarColor(self._DB.profile.warrior.crResource2)
 	end
 end
 
@@ -610,8 +607,8 @@ end
 function ForgeUI_ResourceBars:RefreshStyle_Focus(unitPlayer, nMana, nMaxMana)
 	self.wndFocus:FindChild("ProgressBar"):SetMax(nMaxMana)
 	self.wndFocus:FindChild("ProgressBar"):SetProgress(nMana)
-	self.wndFocus:FindChild("ProgressBar"):SetBarColor(self.tSettings.crFocus)
-	self.wndFocus:FindChild("Value"):SetText(ForgeUI.Round(nMana, 0) .. " ( " .. ForgeUI.Round((nMana / nMaxMana) * 100, 1) .. "% )")
+	self.wndFocus:FindChild("ProgressBar"):SetBarColor(self._DB.profile.crFocus)
+	self.wndFocus:FindChild("Value"):SetText(Util:Round(nMana, 0) .. " ( " .. Util:Round((nMana / nMaxMana) * 100, 1) .. "% )")
 end
 
 -----------------------------------------------------------------------------------------------
