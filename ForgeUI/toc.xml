@@ -11,7 +11,6 @@
     <Script Name="ForgeOptions\ForgeOptions.lua"/>
     <Script Name="ForgeNotifications\ForgeNotifications.lua"/>
     <!-- themes -->
-    <Script Name="Themes\SupplySatchel\SupplySatchel.lua"/>
     <!-- libraries -->
     <Script Name="Libs\LibJSON\LibJSON-2.5.lua"/>
 </Addon>
