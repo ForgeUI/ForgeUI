@@ -351,10 +351,10 @@ function ForgeUI_UnitFrames:UpdateInterruptArmor(unit, wnd)
 	else
 		wnd:FindChild("InterruptArmor"):Show(true, true)
 		if nMax == -1 then
-			wnd:FindChild("InterruptArmor"):SetSprite("ForgeUI_IAinf")
+			wnd:FindChild("InterruptArmor"):SetSprite("HUD_TargetFrame:spr_TargetFrame_InterruptArmor_Infinite")
 			wnd:FindChild("InterruptArmor_Value"):SetText("")
 		elseif nMax > 0 then
-			wnd:FindChild("InterruptArmor"):SetSprite("ForgeUI_IA")
+			wnd:FindChild("InterruptArmor"):SetSprite("HUD_TargetFrame:spr_TargetFrame_InterruptArmor_Value")
 			wnd:FindChild("InterruptArmor_Value"):SetText(nValue)
 		end
 	end
