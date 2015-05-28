@@ -578,8 +578,6 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Warrior()
 	self.wndResource:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
 	
-	Print("WOT")
-	
 	if self._DB.profile.bCenterText then
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, 0, 0, 0)
 	else

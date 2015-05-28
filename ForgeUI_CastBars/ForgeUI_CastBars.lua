@@ -11,6 +11,8 @@ require "Window"
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 
+local Util = F:API_GetModule("util")
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Addon Definition
 -----------------------------------------------------------------------------------------------
@@ -238,7 +240,7 @@ function ForgeUI_CastBars:UpdateMoOBar(unit, wnd)
 		wnd:FindChild("MoOBar"):SetProgress(time)
 		
 		wnd:FindChild("SpellName"):SetText("MoO")
-		wnd:FindChild("CastTime"):SetText(ForgeUI.Round(time, 1))
+		wnd:FindChild("CastTime"):SetText(Util:Round(time, 1))
 		
 		if not wnd:IsShown() then
 			wnd:Show(true, true)

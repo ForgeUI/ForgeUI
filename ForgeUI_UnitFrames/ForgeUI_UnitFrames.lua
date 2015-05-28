@@ -28,6 +28,7 @@ local ForgeUI_UnitFrames = {
 			tFrames = {
 				Player = {
 					bUseGradient = false,
+					bAlignBuffsRight = false,
 					crBorder = "FF000000",
 					crBackground = "FF101010",
 					crHpBar = "FF272727",
@@ -44,6 +45,7 @@ local ForgeUI_UnitFrames = {
 				},
 				Target = {
 					bUseGradient = false,
+					bAlignBuffsRight = false,
 					crBorder = "FF000000",
 					crBackground = "FF101010",
 					crHpBar = "FF272727",
@@ -60,6 +62,7 @@ local ForgeUI_UnitFrames = {
 				},
 				ToT = {
 					bUseGradient = false,
+					bAlignBuffsRight = false,
 					bShowBuffs = false,
 					bShowDebuffs = false,
 					crBorder = "FF000000",
@@ -78,6 +81,7 @@ local ForgeUI_UnitFrames = {
 				},
 				Focus = {
 					bUseGradient = false,
+					bAlignBuffsRight = false,
 					bShowShieldBar = true,
 					bShowAbsorbBar = true,
 					bShowBuffs = false,
@@ -151,6 +155,8 @@ function ForgeUI_UnitFrames:OnDocLoaded()
 	F:API_RegisterMover(self, self.wndFocusFrame:FindChild("ShieldBar"), "UnitFrames_FocusShieldBar", "Shield", "general", { strParent = "UnitFrames_FocusFrame" })
 	F:API_RegisterMover(self, self.wndFocusFrame:FindChild("AbsorbBar"), "UnitFrames_FocusAbsorbBar", "Absorb", "general", { strParent = "UnitFrames_FocusFrame" })
 	
+	self:CreateBuffs()
+	
 	if GameLib.GetPlayerUnit() then
 		self:OnCharacterCreated()
 	else
@@ -185,7 +191,8 @@ function ForgeUI_UnitFrames:UpdatePlayerFrame(unit)
 	self:UpdateAbsorbBar(unit, self.wndPlayerFrame)
 	self:UpdateInterruptArmor(unit, self.wndPlayerFrame)
 	
-	self.wndPlayerFrame:SetData(unit)
+	self.wndPlayerBuffs:SetUnit(unit)
+	self.wndPlayerDebuffs:SetUnit(unit)
 	
 	local name = self.wndPlayerFrame:FindChild("Name")
 	local hpBar = self.wndPlayerFrame:FindChild("HP_ProgressBar")
@@ -211,7 +218,8 @@ function ForgeUI_UnitFrames:UpdateTargetFrame(unitSource)
 		self:UpdateAbsorbBar(unit, self.wndTargetFrame)
 		self:UpdateInterruptArmor(unit, self.wndTargetFrame)
 		
-		self.wndTargetFrame:SetData(unit)
+		self.wndTargetBuffs:SetUnit(unit)
+		self.wndTargetDebuffs:SetUnit(unit)
 		
 		local name = self.wndTargetFrame:FindChild("Name")
 		local hpBar = self.wndTargetFrame:FindChild("HP_ProgressBar")
@@ -237,8 +245,6 @@ function ForgeUI_UnitFrames:UpdateToTFrame(unitSource)
 	
 	if bShow then
 		self:UpdateHPBar(unit, self.wndToTFrame)
-		
-		self.wndToTFrame:SetData(unit)
 		
 		local name = self.wndToTFrame:FindChild("Name")
 		local hpBar = self.wndToTFrame:FindChild("HP_ProgressBar")
@@ -270,8 +276,6 @@ function ForgeUI_UnitFrames:UpdateFocusFrame(unitSource)
 			self:UpdateAbsorbBar(unit, self.wndFocusFrame)
 		end
 		
-		self.wndFocusFrame:SetData(unit)
-		
 		local name = self.wndFocusFrame:FindChild("Name")
 		local hpBar = self.wndFocusFrame:FindChild("HP_ProgressBar")
 		
@@ -286,6 +290,8 @@ end
 -- hp bar
 function ForgeUI_UnitFrames:UpdateHPBar(unit, wnd, strSettings)
 	if unit:GetHealth() ~= nil then
+		wnd:FindChild("HPBar"):SetData(unit)
+	
 		wnd:FindChild("Background"):Show(true)
 		wnd:FindChild("HP_ProgressBar"):SetMax(unit:GetMaxHealth())
 		wnd:FindChild("HP_ProgressBar"):SetProgress(unit:GetHealth())
@@ -354,10 +360,35 @@ function ForgeUI_UnitFrames:UpdateInterruptArmor(unit, wnd)
 	end
 end
 
+function ForgeUI_UnitFrames:CreateBuffs()
+	for k, v in pairs(self._DB.profile.tFrames) do
+		-- buffs
+		local wndContainer = self["wnd" .. k .. "Frame"]:FindChild("BuffContainer")
+		if wndContainer then
+			wndContainer:DestroyChildren()	
+		
+			local tXml = self.xmlDoc:ToTable()
+			tXml[8].AlignBuffsRight = self._DB.profile.tFrames[k].bAlignBuffsRight
+			
+			self["wnd" .. k .. "Buffs"] = Apollo.LoadForm(XmlDoc.CreateFromTable(tXml), "ForgeUI_BuffContainer", wndContainer, self)
+		end
+		
+		-- debuffs
+		local wndContainer = self["wnd" .. k .. "Frame"]:FindChild("DebuffContainer")
+		if wndContainer then
+			wndContainer:DestroyChildren()	
+		
+			local tXml = self.xmlDoc:ToTable()
+			tXml[9].AlignBuffsRight = self._DB.profile.tFrames[k].bAlignDebuffsRight
+			
+			self["wnd" .. k .. "Debuffs"] = Apollo.LoadForm(XmlDoc.CreateFromTable(tXml), "ForgeUI_DebuffContainer", wndContainer, self)
+		end
+	end
+end
+
 -----------------------------------------------------------------------------------------------
 -- On character created
 -----------------------------------------------------------------------------------------------
-
 function ForgeUI_UnitFrames:OnCharacterCreated()
 	local unitPlayer = GameLib.GetPlayerUnit()
 	if unitPlayer == nil then
