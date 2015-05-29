@@ -446,8 +446,6 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 	
 	local bNewShow = self:HelperVerifyVisibilityOptions(tNameplate) and self:CheckDrawDistance(tNameplate)
 	
-	--if tNameplate.unitOwner:GetName() == "Thayd Cargo Lifter" then Print(tNameplate.unitOwner:GetId()) end
-	
 	tNameplate.eDisposition = eDisposition
 	
 	if bNewShow and not self.tSettings.bFrequentUpdate then
@@ -456,6 +454,7 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 
 	if bNewShow ~= tNameplate.bShow then
 		tNameplate.bShow = bNewShow
+		tNameplate.wndReposition:Show(bNewShow)
 		wndNameplate:Show(bNewShow, not bNewShow) -- removes weird glitching when occluding nameplates
 	end
 end
@@ -549,7 +548,6 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		tNameplate.wndReposition:SetUnit(unitNew, 0)
 	else
 		tNameplate.wndReposition:SetUnit(unitNew, 0)
-		tNameplate.wndReposition:Show(true, true)
 	end
 	
 	self.arUnit2Nameplate[idUnit] = tNameplate
