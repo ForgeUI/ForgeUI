@@ -33,7 +33,11 @@ end
 function ForgeUI:OnMessageSent(iccomm, eResult, idMessage)
 	if not self.tSettings.bNetworking then return end
 	
-	self:Debug("ForgeComm", "[sent]: " .. tSentMessages[idMessage].strMessage)
+	if tSentMessages[idMessage] then
+		self:Debug("ForgeComm", "[sent]: " .. tSentMessages[idMessage].strMessage)
+	else
+		self:Debug("ForgeComm", "[sent]: " .. "UNKNOWN")
+	end
 	
 	tSentMessages[idMessage].bSent = true
 	
