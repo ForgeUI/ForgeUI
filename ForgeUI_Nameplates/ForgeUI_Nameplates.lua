@@ -479,6 +479,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		local poolEntry = table.remove(self.arWindowPool)
 		wnd = poolEntry[1]
 		wndReferences = poolEntry[2]
+		wndRepositionReferences = poolEntry[3]
 	end
 
 	if wnd == nil or not wnd:IsValid() then
@@ -511,6 +512,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		
 		bShow			= false,
 		wnd				= wndReferences,
+		wndReposition	= wndRepositionReferences,
 	}
 	
 	if wndReferences == nil then
@@ -542,11 +544,12 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		}
 	end
 	
-	if tNameplate.wndReposition == nil then
+	if not tNameplate.wndReposition then
 		tNameplate.wndReposition = Apollo.LoadForm(self.xmlNameplate, "Reposition", "InWorldHudStratum", self)
 		tNameplate.wndReposition:SetUnit(unitNew, 0)
 	else
 		tNameplate.wndReposition:SetUnit(unitNew, 0)
+		tNameplate.wndReposition:Show(true, true)
 	end
 	
 	self.arUnit2Nameplate[idUnit] = tNameplate
@@ -615,14 +618,21 @@ function ForgeUI_Nameplates:OnUnitDestroyed(unitOwner)
 
 	local tNameplate = self.arUnit2Nameplate[idUnit]
 	local wndNameplate = tNameplate.wndNameplate
+	local wndReposition = tNameplate.wndReposition
 
 	self.arWnd2Nameplate[wndNameplate:GetId()] = nil
 	if #self.arWindowPool < self.tSettings.knNameplatePoolLimit then
 		wndNameplate:Show(false, true)
 		wndNameplate:SetUnit(nil)
-		table.insert(self.arWindowPool, {wndNameplate, tNameplate.wnd})
+		
+		wndReposition:Show(false, true)
+		wndReposition:SetUnit(nil)
+		table.insert(self.arWindowPool, {wndNameplate, tNameplate.wnd, wndReposition })
 	else
 		wndNameplate:Destroy()
+		wndReposition:Destroy()
+		tNameplate.wnd = nil
+		tNameplate = nil
 	end
 	self.arUnit2Nameplate[idUnit] = nil
 end
