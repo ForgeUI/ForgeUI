@@ -161,6 +161,7 @@ function Movers:UnlockMovers()
 	
 		v:Show(true, true)
 		
+		v:GetData().bParentShown = v:GetData().wndParent:IsShown()
 		v:GetData().wndParent:Show(false, true)
 	end
 end
@@ -175,7 +176,7 @@ function Movers:LockMovers()
 		
 		v:Show(false, true)
 		
-		v:GetData().wndParent:Show(true, true)
+		v:GetData().wndParent:Show(v:GetData().bParentShown, true)
 	end
 end
 
@@ -187,7 +188,7 @@ function Movers:CancelChanges()
 	for k, v in pairs(tScopes["all"]) do
 		v:Show(false, true)
 		
-		v:GetData().wndParent:Show(true, true)
+		v:GetData().wndParent:Show(v:GetData().bParentShown, true)
 	end
 end
 
