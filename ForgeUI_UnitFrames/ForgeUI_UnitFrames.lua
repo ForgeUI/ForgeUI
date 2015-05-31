@@ -29,6 +29,7 @@ local ForgeUI_UnitFrames = {
 				Player = {
 					bUseGradient = false,
 					bAlignBuffsRight = false,
+					bAlignDebuffsRight = false,
 					crBorder = "FF000000",
 					crBackground = "FF101010",
 					crHpBar = "FF272727",
@@ -46,6 +47,7 @@ local ForgeUI_UnitFrames = {
 				Target = {
 					bUseGradient = false,
 					bAlignBuffsRight = false,
+					bAlignDebuffsRight = false,
 					crBorder = "FF000000",
 					crBackground = "FF101010",
 					crHpBar = "FF272727",
@@ -62,15 +64,15 @@ local ForgeUI_UnitFrames = {
 				},
 				ToT = {
 					bUseGradient = false,
-					bAlignBuffsRight = false,
 					bShowBuffs = false,
 					bShowDebuffs = false,
+					bAlignBuffsRight = false,
+					bAlignDebuffsRight = false,
 					crBorder = "FF000000",
 					crBackground = "FF101010",
 					crHpBar = "FF272727",
 					bHealthClassColor = false,
 					crHpBarGradient = "FFFF0000",
-					crHpValue = "FF75CC26",
 					crName = "FF75CC26",
 					bNameClassColor = true,
 					crShieldBar = "FF0699F3",
@@ -81,11 +83,12 @@ local ForgeUI_UnitFrames = {
 				},
 				Focus = {
 					bUseGradient = false,
-					bAlignBuffsRight = false,
 					bShowShieldBar = true,
 					bShowAbsorbBar = true,
 					bShowBuffs = false,
 					bShowDebuffs = false,
+					bAlignBuffsRight = false,
+					bAlignDebuffsRight = false,
 					crBorder = "FF000000",
 					crBackground = "FF101010",
 					crHpBar = "FF272727",
@@ -128,6 +131,9 @@ function ForgeUI_UnitFrames:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_UnitFrames//ForgeUI_UnitFrames.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 	
+	self.xmlSprites = XmlDoc.CreateFromFile("..//ForgeUI_UnitFrames//ForgeUI_UnitFrames_Sprites.xml")
+	Apollo.LoadSprites(self.xmlSprites)
+	
 	local wndParent = F:API_AddMenuItem(self, self.DISPLAY_NAME)
 	F:API_AddMenuToMenuItem(self, wndParent, "Player frame", "Player")
 	F:API_AddMenuToMenuItem(self, wndParent, "Target frame", "Target")
@@ -166,6 +172,7 @@ end
 
 function ForgeUI_UnitFrames:ForgeAPI_LoadSettings()
 	self:UpdateStyles()
+	self:CreateBuffs()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -249,6 +256,9 @@ function ForgeUI_UnitFrames:UpdateToTFrame(unitSource)
 		local name = self.wndToTFrame:FindChild("Name")
 		local hpBar = self.wndToTFrame:FindChild("HP_ProgressBar")
 		
+		self.wndToTBuffs:SetUnit(unit)
+		self.wndToTDebuffs:SetUnit(unit)
+		
 		self:RefreshStyle(unit, name, hpBar, "ToT")
 	end
 	
@@ -275,6 +285,9 @@ function ForgeUI_UnitFrames:UpdateFocusFrame(unitSource)
 		if self._DB.profile.tFrames.Focus.bShowAbsorbBar then
 			self:UpdateAbsorbBar(unit, self.wndFocusFrame)
 		end
+		
+		self.wndFocusBuffs:SetUnit(unit)
+		self.wndFocusDebuffs:SetUnit(unit)
 		
 		local name = self.wndFocusFrame:FindChild("Name")
 		local hpBar = self.wndFocusFrame:FindChild("HP_ProgressBar")
@@ -361,9 +374,11 @@ function ForgeUI_UnitFrames:UpdateInterruptArmor(unit, wnd)
 end
 
 function ForgeUI_UnitFrames:CreateBuffs()
+	local wndContainer	
+
 	for k, v in pairs(self._DB.profile.tFrames) do
 		-- buffs
-		local wndContainer = self["wnd" .. k .. "Frame"]:FindChild("BuffContainer")
+		wndContainer = self["wnd" .. k .. "Frame"]:FindChild("BuffContainer")
 		if wndContainer then
 			wndContainer:DestroyChildren()	
 		
@@ -371,10 +386,12 @@ function ForgeUI_UnitFrames:CreateBuffs()
 			tXml[8].AlignBuffsRight = self._DB.profile.tFrames[k].bAlignBuffsRight
 			
 			self["wnd" .. k .. "Buffs"] = Apollo.LoadForm(XmlDoc.CreateFromTable(tXml), "ForgeUI_BuffContainer", wndContainer, self)
+			
+			F:API_RegisterMover(self, wndContainer, "UnitFrames_" .. k .. "Buffs", k .. " buffs", "general", { strParent = "UnitFrames_" .. k .. "Frame" })
 		end
 		
 		-- debuffs
-		local wndContainer = self["wnd" .. k .. "Frame"]:FindChild("DebuffContainer")
+		wndContainer = self["wnd" .. k .. "Frame"]:FindChild("DebuffContainer")
 		if wndContainer then
 			wndContainer:DestroyChildren()	
 		
@@ -382,6 +399,8 @@ function ForgeUI_UnitFrames:CreateBuffs()
 			tXml[9].AlignBuffsRight = self._DB.profile.tFrames[k].bAlignDebuffsRight
 			
 			self["wnd" .. k .. "Debuffs"] = Apollo.LoadForm(XmlDoc.CreateFromTable(tXml), "ForgeUI_DebuffContainer", wndContainer, self)
+			
+			F:API_RegisterMover(self, wndContainer, "UnitFrames_" .. k .. "Debuffs", k .. " debuffs", "general", { strParent = "UnitFrames_" .. k .. "Frame" })
 		end
 	end
 end
@@ -406,7 +425,7 @@ end
 function ForgeUI_UnitFrames:UpdateStyles()
 	self:UpdateStyle_PlayerFrame()
 	self:UpdateStyle_TargetFrame()
-	self:UpdateStyle_TotFrame()
+	self:UpdateStyle_ToTFrame()
 	self:UpdateStyle_FocusFrame()
 end
 
@@ -493,14 +512,20 @@ function ForgeUI_UnitFrames:UpdateStyle_FocusFrame()
 	self.wndFocusFrame:FindChild("Absorb_ProgressBar"):SetBarColor(self._DB.profile.tFrames.Focus.crAbsorbBar)
 	self.wndFocusFrame:FindChild("Absorb_TextValue"):SetTextColor(self._DB.profile.tFrames.Focus.crAbsorbValue)
 	
+	self.wndFocusFrame:FindChild("BuffContainer"):Show(self._DB.profile.tFrames.Focus.bShowBuffs, true)
+	self.wndFocusFrame:FindChild("DebuffContainer"):Show(self._DB.profile.tFrames.Focus.bShowDebuffs, true)
+	
 	self.wndFocusFrame:FindChild("ShieldBar"):Show(self._DB.profile.tFrames.Focus.bShowShieldBar, true)
 	self.wndFocusFrame:FindChild("AbsorbBar"):Show(self._DB.profile.tFrames.Focus.bShowAbsorbBar, true)
 end
 
-function ForgeUI_UnitFrames:UpdateStyle_TotFrame()
+function ForgeUI_UnitFrames:UpdateStyle_ToTFrame()
 	self.wndToTFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tFrames.ToT.crBorder)
 	self.wndToTFrame:FindChild("Background"):SetBGColor(self._DB.profile.tFrames.ToT.crBackground)
 	self.wndToTFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tFrames.ToT.crHpBar)
+	
+	self.wndToTFrame:FindChild("BuffContainer"):Show(self._DB.profile.tFrames.ToT.bShowBuffs, true)
+	self.wndToTFrame:FindChild("DebuffContainer"):Show(self._DB.profile.tFrames.ToT.bShowDebuffs, true)
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -587,6 +612,22 @@ function ForgeUI_UnitFrames:ForgeAPI_PopulateOptions()
 		
 		if v.crHpBarGradient then
 			G:API_AddColorBox(self, wnd, "HP bar gradient", v, "crHpBarGradient", { tMove = {200, 180}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+		
+		if v.bShowBuffs ~= nil then
+			G:API_AddCheckBox(self, wnd, "Show buffs", v, "bShowBuffs", { tMove = {0, 240}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+		
+		if v.bShowDebuffs ~= nil then
+			G:API_AddCheckBox(self, wnd, "Show debuffs", v, "bShowDebuffs", { tMove = {200, 240}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+		
+		if v.bAlignBuffsRight ~= nil then
+			G:API_AddCheckBox(self, wnd, "Align buffs from right", v, "bAlignBuffsRight", { tMove = {0, 270}, fnCallback = self.CreateBuffs })
+		end
+		
+		if v.bAlignDebuffsRight ~= nil then
+			G:API_AddCheckBox(self, wnd, "Align debuffs from right", v, "bAlignDebuffsRight", { tMove = {200, 270}, fnCallback = self.CreateBuffs })
 		end
 	end
 end
