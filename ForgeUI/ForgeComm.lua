@@ -35,11 +35,10 @@ function ForgeUI:OnMessageSent(iccomm, eResult, idMessage)
 	
 	if tSentMessages[idMessage] then
 		self:Debug("ForgeComm", "[sent]: " .. tSentMessages[idMessage].strMessage)
+		tSentMessages[idMessage].bSent = true
 	else
 		self:Debug("ForgeComm", "[sent]: " .. "UNKNOWN")
 	end
-	
-	tSentMessages[idMessage].bSent = true
 	
 	if self.tSettings.bNetworkLoop then
 		self:OnMessageReceived(ForgeComm, tSentMessages[idMessage].strMessage, GameLib.GetPlayerUnit():GetName())
