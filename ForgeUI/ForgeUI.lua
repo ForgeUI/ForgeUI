@@ -18,8 +18,28 @@ local Addon = {}
 -- Constants
 -----------------------------------------------------------------------------------------------
 local AUTHOR = "Winty Badass@Jabbit"
-local VERSION = "0.5-alpha"
 local API_VERSION = 3
+
+-- version
+local MAJOR_VERSION = 0
+local MINOR_VERSION = 5
+local PATCH_VERSION = 0
+local PATCH_SUFFIX = -2
+local PATCH_SUFFIXES = {
+	[-2] = "alpha", [-1] = "beta", [0] = "",
+	[1] = "a", [2] = "b", [3] = "c",
+	[4] = "d", [5] = "e", [6] = "f",
+}
+
+local VERSION = MAJOR_VERSION .. "." .. MINOR_VERSION
+
+if PATCH_VERSION ~= 0 then
+	VERSION = VERSION .. "." .. PATCH_VERSION
+end
+
+if PATCH_SUFFIX ~= 0 then
+	VERSION = VERSION .. "-" .. PATCH_SUFFIXES[PATCH_SUFFIX]
+end
  
 -----------------------------------------------------------------------------------------------
 -- Initialization
@@ -262,6 +282,14 @@ end
 function ForgeUI:API_ShowMainWindow(bShow) Inst.wndMain:Show(bShow) end
 function ForgeUI:API_GetApiVersion() return API_VERSION end
 function ForgeUI:API_GetVersion() return VERSION end
+function ForgeUI:API_GetVersions()
+	return {
+		major = MAJOR_VERSION,
+		minor = MINOR_VERSION,
+		patch = PATCH_VERSION,
+		suffix = PATCH_SUFFIX,
+	}
+end
 
 -- ForgeDB initialization
 _G["ForgeDB"] = {}
