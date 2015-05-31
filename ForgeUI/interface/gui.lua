@@ -484,6 +484,7 @@ function Gui:API_AddNumberBox(tModule, wnd, strText, tSettings, strKey, tOptions
 		tSettings = tSettings,
 		strKey = strKey,
 		eType = EnumWindowType.NumberBox,
+		nPrevValue = tSettings[strKey],
 	}
 	
 	local strFont = self.tDefaults.strFont
@@ -552,6 +553,11 @@ function Gui:SetNumberBox(wndControl)
 	local wnd = wndControl:FindChild("NumberBox")
 	
 	if wnd:GetText() == "" then wnd:SetText(0) end
+	if not tonumber(wnd:GetText()) then
+		wnd:SetText(tData.nPrevValue)
+	end
+	
+	tData.nPrevValue = wnd:GetText()
 	
 	if tData.tSettings and tData.strKey then
 		tData.tSettings[tData.strKey] = tonumber(wndControl:FindChild("NumberBox"):GetText())
