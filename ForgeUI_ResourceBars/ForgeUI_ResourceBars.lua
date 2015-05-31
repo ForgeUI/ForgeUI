@@ -83,6 +83,9 @@ function ForgeUI_ResourceBars:new(o)
 		crBorder = "FF000000",
 		crBackground = "FF101010",
 		crFocus = "FFFFFFFF",
+		crFocusLow = "FFFF0000",
+		nFocusBreakpoint = 20,
+		bAlwaysShowFocus = false,
 		bCenterText = false,
 		warrior = {
 			crResource1 = "FFE53805",
@@ -243,10 +246,15 @@ function ForgeUI_ResourceBars:OnEsperCreated(unitPlayer)
 	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
 	
 	self.wndContainers.Container:FindChild("EsperContainer"):Show(true, true)
+	self.wndContainers.Container:FindChild("FocusContainer"):Show(true, true)
 	
 	-- register options
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Esper_Color1_EditBox"), self.tSettings.esper, "crResource1", false, "LoadStyle_ResourceBar_Esper" )
-	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Esper_crFocus"), self.tSettings, "crFocus", false, "LoadStyle_Focus" )
+	
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crFocus"), self.tSettings, "crFocus", false, "LoadStyle_Focus" )
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crFocusLow"), self.tSettings, "crFocusLow", false, "LoadStyle_Focus" )
+	ForgeUI.API_RegisterNumberBox(self, self.wndContainers.Container:FindChild("nFocusBreakpoint"), self.tSettings, "nFocusBreakpoint", { nMin = 0 })
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bAlwaysShowFocus"), self.tSettings, "bAlwaysShowFocus")
 	
 	ForgeUI.API_RegisterWindow(self, self.wndResource, "ForgeUI_ResourceBar", { nLevel = 3, strDisplayName = "Resource bar" })
 	ForgeUI.API_RegisterWindow(self, self.wndFocus, "ForgeUI_FocusBar", { nLevel = 3, strDisplayName = "Focus bar", crBorder = "FFFFFFFF" })
@@ -292,11 +300,16 @@ function ForgeUI_ResourceBars:OnMedicCreated(unitPlayer)
 	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
 	
 	self.wndContainers.Container:FindChild("MedicContainer"):Show(true, true)
+	self.wndContainers.Container:FindChild("FocusContainer"):Show(true, true)
 	
 	-- register options
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Medic_Color1_EditBox"), self.tSettings.medic, "crResource1", false, "LoadStyle_ResourceBar_Medic" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Medic_Color2_EditBox"), self.tSettings.medic, "crResource2", false, "LoadStyle_ResourceBar_Medic" )
-	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Medic_crFocus"), self.tSettings, "crFocus", false, "LoadStyle_Focus" )
+	
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crFocus"), self.tSettings, "crFocus", false, "LoadStyle_Focus" )
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crFocusLow"), self.tSettings, "crFocusLow", false, "LoadStyle_Focus" )
+	ForgeUI.API_RegisterNumberBox(self, self.wndContainers.Container:FindChild("nFocusBreakpoint"), self.tSettings, "nFocusBreakpoint", { nMin = 0 })
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bAlwaysShowFocus"), self.tSettings, "bAlwaysShowFocus")
 	
 	ForgeUI.API_RegisterWindow(self, self.wndResource, "ForgeUI_ResourceBar", { nLevel = 3, strDisplayName = "Resource bar" })
 	ForgeUI.API_RegisterWindow(self, self.wndFocus, "ForgeUI_FocusBar", { nLevel = 3, strDisplayName = "Focus bar", crBorder = "FFFFFFFF" })
@@ -342,14 +355,19 @@ function ForgeUI_ResourceBars:OnSlingerCreated(unitPlayer)
 	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
 	
 	self.wndContainers.Container:FindChild("SlingerContainer"):Show(true, true)
+	self.wndContainers.Container:FindChild("FocusContainer"):Show(true, true)
 	
 	-- register options
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Slinger_Color1_EditBox"), self.tSettings.slinger, "crResource1", false, "LoadStyle_ResourceBar_Slinger" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Slinger_Color2_EditBox"), self.tSettings.slinger, "crResource2", false, "LoadStyle_ResourceBar_Slinger" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Slinger_Color3_EditBox"), self.tSettings.slinger, "crResource3", false, "LoadStyle_ResourceBar_Slinger" )
 	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Slinger_Color4_EditBox"), self.tSettings.slinger, "crResource4", false, "LoadStyle_ResourceBar_Slinger" )
-	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("Slinger_crFocus"), self.tSettings, "crFocus", false, "LoadStyle_Focus" )
 	
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crFocus"), self.tSettings, "crFocus", false, "LoadStyle_Focus" )
+	ForgeUI.API_RegisterColorBox(self, self.wndContainers.Container:FindChild("crFocusLow"), self.tSettings, "crFocusLow", false, "LoadStyle_Focus" )
+	ForgeUI.API_RegisterNumberBox(self, self.wndContainers.Container:FindChild("nFocusBreakpoint"), self.tSettings, "nFocusBreakpoint", { nMin = 0 })
+	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("bAlwaysShowFocus"), self.tSettings, "bAlwaysShowFocus")
+		
 	ForgeUI.API_RegisterCheckBox(self, self.wndContainers.Container:FindChild("Slinger_bSurgeShadow"), self.tSettings.slinger, "bSurgeShadow")
 	
 	ForgeUI.API_RegisterWindow(self, self.wndResource, "ForgeUI_ResourceBar", { nLevel = 3, strDisplayName = "Resource bar" })
@@ -556,7 +574,9 @@ function ForgeUI_ResourceBars:UpdateFocus(unitPlayer)
 	
 	if nMana < nMaxMana then
 		self.tStylers["RefreshStyle_Focus"]["RefreshStyle_Focus"](self, unitPlayer, nMana, nMaxMana)
-		
+		bShow = true
+	elseif self.tSettings.bAlwaysShowFocus then
+		self.tStylers["RefreshStyle_Focus"]["RefreshStyle_Focus"](self, unitPlayer, nMana, nMaxMana)
 		bShow = true
 	end
 	
@@ -746,7 +766,11 @@ end
 function ForgeUI_ResourceBars:RefreshStyle_Focus(unitPlayer, nMana, nMaxMana)
 	self.wndFocus:FindChild("ProgressBar"):SetMax(nMaxMana)
 	self.wndFocus:FindChild("ProgressBar"):SetProgress(nMana)
-	self.wndFocus:FindChild("ProgressBar"):SetBarColor(self.tSettings.crFocus)
+	if nMana < (nMaxMana * (self.tSettings.nFocusBreakpoint / 100)) then
+		self.wndFocus:FindChild("ProgressBar"):SetBarColor(self.tSettings.crFocusLow)
+	else
+		self.wndFocus:FindChild("ProgressBar"):SetBarColor(self.tSettings.crFocus)
+	end
 	self.wndFocus:FindChild("Value"):SetText(ForgeUI.Round(nMana, 0) .. " ( " .. ForgeUI.Round((nMana / nMaxMana) * 100, 1) .. "% )")
 end
 
@@ -763,6 +787,13 @@ function ForgeUI_ResourceBars:OnDocLoaded()
 	ForgeUI.API_RegisterAddon(self)
 end
 
+
+---------------------------------------------------------------------------------------------------
+-- Container Functions
+---------------------------------------------------------------------------------------------------
+
+function ForgeUI_ResourceBars:OnOptionsChanged( wndHandler, wndControl, eMouseButton )
+end
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI_ResourceBars Instance
