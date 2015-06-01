@@ -20,7 +20,6 @@ local ForgeUI_CastBars = {
 	_NAME = "ForgeUI_CastBars",
 	_API_VERSION = 3,
 	_VERSION = "2.0",
-	_DB = {},
 	DISPLAY_NAME = "Cast bars",
 
 	tSettings = {
@@ -65,7 +64,7 @@ local ForgeUI_CastBars = {
 }
 
 -----------------------------------------------------------------------------------------------
--- Constants
+-- Local variables
 -----------------------------------------------------------------------------------------------
 local GetPlayerUnit = GameLib.GetPlayerUnit
 

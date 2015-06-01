@@ -15,6 +15,7 @@ local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 local Skins = {
 	_NAME = "skins",
 	_API_VERSION = 3,
+	_VERSION = "1.0",
 
 	tSettings = {
 		char = {
@@ -45,7 +46,7 @@ function Skins:NewCarbineSkin(strAddon, fnLoadSkin)
 		fnLoadSkin = fnLoadSkin,
 		bLoaded = false,
 	}
-	
+
 	if not self._DB then
 		self.tSettings.char.tLoadSkins[strAddon] = true
 	else
@@ -75,7 +76,7 @@ end
 function Skins:HandleFooter(wndWindow, tOptions)
 	wndWindow:FindChild("MetalFooter"):SetStyle("Picture", false)
 	wndWindow:FindChild("MetalFooter"):SetAnchorOffsets(5, -40, -5, -5)
-	
+
 	if tOptions then
 		if tOptions.bBackground then
 			wndWindow:FindChild("MetalFooter"):SetSprite("ForgeUI_InnerWindow")
@@ -88,9 +89,9 @@ function Skins:HandleCloseButton(wndButton, tOptions)
 	wndButton:ChangeArt("ForgeUI_Button")
 	wndButton:SetText("X")
 	wndButton:SetFont("Nameplates")
-	
+
 	wndButton:SetStyle("AutoScaleTextOff", true)
-	
+
 	if tOptions then
 	else
 		wndButton:SetAnchorPoints(1, 0, 1, 0)
@@ -113,4 +114,3 @@ function Skins:CoverVScrollWindow(wndParent, wndVScrollWindow, tOptions)
 end
 
 Skins = F:API_NewModule(Skins)
-

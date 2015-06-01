@@ -18,11 +18,10 @@ local Util = F:API_GetModule("util")
 -----------------------------------------------------------------------------------------------
 local ForgeUI_ResourceBars = {
 	_NAME = "ForgeUI_ResourceBars",
-    _API_VERSION = 3,
+  _API_VERSION = 3,
 	_VERSION = "2.0",
-	_DB = {},
 	DISPLAY_NAME = "Resource bars",
-	
+
 	tSettings = {
 		profile = {
 			bSmoothBars = false,
@@ -67,15 +66,6 @@ local ForgeUI_ResourceBars = {
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
-tClassEnums = {
-	[GameLib.CodeEnumClass.Warrior]      	= "warrior",
-	[GameLib.CodeEnumClass.Engineer]     	= "engineer",
-	[GameLib.CodeEnumClass.Esper]        	= "esper",
-	[GameLib.CodeEnumClass.Medic]        	= "medic",
-	[GameLib.CodeEnumClass.Stalker]      	= "stalker",
-	[GameLib.CodeEnumClass.Spellslinger]	= "spellslinger"
-}
-
 tPowerLinkId = {
 	[79798] = true,
 	[79797] = true,
@@ -110,13 +100,13 @@ tAugBladeDrainId = {
 function ForgeUI_ResourceBars:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_ResourceBars//ForgeUI_ResourceBars.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
-	
+
 	local unitPlayer = GameLib.GetPlayerUnit()
 	if unitPlayer == nil then
 		Print("ForgeUI ERROR: Wrong class")
 		return
 	end
-	
+
 	local eClassId = unitPlayer:GetClassId()
 	if eClassId == GameLib.CodeEnumClass.Engineer then
 		self.playerClass = "Engineer"
@@ -135,7 +125,7 @@ function ForgeUI_ResourceBars:ForgeAPI_Init()
 		self:OnStalkerCreated(unitPlayer)
 	elseif eClassId == GameLib.CodeEnumClass.Warrior then
 		self.playerClass = "Warrior"
-		self:OnWarriorCreated(unitPlayer)	
+		self:OnWarriorCreated(unitPlayer)
 	end
 end
 
@@ -151,7 +141,7 @@ function ForgeUI_ResourceBars:OnEngineerCreated(unitPlayer)
 	self.playerMaxResource = unitPlayer:GetMaxResource(1)
 
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Engineer", "FixedHudStratumHigh", self)
-	
+
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnEngineerUpdate", self)
 	else
@@ -162,14 +152,14 @@ end
 function ForgeUI_ResourceBars:OnEngineerUpdate()
 	local unitPlayer = GameLib.GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
-	
+
 	local bShow = false
-	
+
 	local nResource = unitPlayer:GetResource(1)
 	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow  then
 		bShow = true
 	end
-	
+
 	if bShow ~= self.wndResource:IsShown() then
 		self.wndResource:Show(bShow, true)
 	end
@@ -184,7 +174,7 @@ function ForgeUI_ResourceBars:OnEsperCreated(unitPlayer)
 
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Esper", "FixedHudStratumHigh", self)
 	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
-	
+
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnEsperUpdate", self)
 	else
@@ -195,18 +185,18 @@ end
 function ForgeUI_ResourceBars:OnEsperUpdate()
 	local unitPlayer = GameLib.GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
-	
+
 	local bShow = false
-	
+
 	local nResource = unitPlayer:GetResource(1)
 	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow  then
 		bShow = true
 	end
-	
+
 	if bShow ~= self.wndResource:IsShown() then
 		self.wndResource:Show(bShow, true)
 	end
-	
+
 	self:UpdateFocus(unitPlayer)
 end
 
@@ -219,7 +209,7 @@ function ForgeUI_ResourceBars:OnMedicCreated(unitPlayer)
 
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Medic", "FixedHudStratumHigh", self)
 	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
-	
+
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnMedicUpdate", self)
 	else
@@ -230,18 +220,18 @@ end
 function ForgeUI_ResourceBars:OnMedicUpdate()
 	local unitPlayer = GameLib.GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
-	
+
 	local bShow = false
-	
+
 	local nResource = unitPlayer:GetResource(1)
 	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow  then
 		bShow = true
 	end
-	
+
 	if bShow ~= self.wndResource:IsShown() then
 		self.wndResource:Show(bShow, true)
 	end
-	
+
 	self:UpdateFocus(unitPlayer)
 end
 
@@ -254,7 +244,7 @@ function ForgeUI_ResourceBars:OnSlingerCreated(unitPlayer)
 
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Slinger", "FixedHudStratumHigh", self)
 	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
-	
+
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnSlingerUpdate", self)
 	else
@@ -265,9 +255,9 @@ end
 function ForgeUI_ResourceBars:OnSlingerUpdate()
 	local unitPlayer = GameLib.GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
-	
+
 	local bShow = false
-	
+
 	local nResource = unitPlayer:GetResource(4)
 	if unitPlayer:IsInCombat() or GameLib.IsSpellSurgeActive() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow  then
 		bShow = true
@@ -276,7 +266,7 @@ function ForgeUI_ResourceBars:OnSlingerUpdate()
 	if bShow ~= self.wndResource:IsShown() then
 		self.wndResource:Show(bShow, true)
 	end
-	
+
 	self:UpdateFocus(unitPlayer)
 end
 
@@ -289,7 +279,7 @@ function ForgeUI_ResourceBars:OnStalkerCreated(unitPlayer)
 
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Stalker", "FixedHudStratumHigh", self)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
-	
+
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnStalkerUpdate", self)
 	else
@@ -300,14 +290,14 @@ end
 function ForgeUI_ResourceBars:OnStalkerUpdate()
 	local unitPlayer = GameLib.GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
-	
+
 	local bShow = false
-	
+
 	local nResource = unitPlayer:GetResource(3)
 	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow  then
 		bShow = true
 	end
-	
+
 	if bShow ~= self.wndResource:IsShown() then
 		self.wndResource:Show(bShow, true)
 	end
@@ -316,19 +306,22 @@ end
 -----------------------------------------------------------------------------------------------
 -- Warrior
 -----------------------------------------------------------------------------------------------
-
 function ForgeUI_ResourceBars:OnWarriorCreated(unitPlayer)
 	self.playerMaxResource = unitPlayer:GetMaxResource(1)
 
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Warrior", "FixedHudStratumHigh", self)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
-	
+
+	F:API_RegisterMover(self, self.wndResource, "ResourceBar_Warrior", "Resource bar", "general", {
+		strStratum = "FixedHudStratumHigh"
+	})
+
 	self.nAugBladeRemaining = 0
-	
+
 	Apollo.RegisterEventHandler("BuffAdded", "OnWarriorBuffAdded", self)
 	Apollo.RegisterEventHandler("BuffUpdated", "OnWarriorBuffUpdated", self)
 	Apollo.RegisterEventHandler("BuffRemoved", "OnWarriorBuffRemoved", self)
-	
+
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnWarriorUpdate", self)
 	else
@@ -339,24 +332,24 @@ end
 function ForgeUI_ResourceBars:OnWarriorUpdate()
 	local unitPlayer = GameLib.GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
-	
+
 	local bShow = false
-	
+
 	local nResource = unitPlayer:GetResource(1)
-	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow then
+	if (unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow) and not F:API_MoversActive() then
 		self:RefreshStyle_ResourceBar_Warrior(unitPlayer, nResource)
-	
+
 		bShow = true
 	end
-	
+
 	if not self.bAugBlade and self.wndResource:FindChild("AG_Stacks"):IsShown() then
 		for k, v in pairs(GameLib.GetPlayerUnit():GetBuffs().arBeneficial) do
 			if tAugBladeDrainId[v.splEffect:GetId()] then
-				self.wndResource:FindChild("AG_Stacks"):SetText(Util:Round(v.fTimeRemaining, 1) .. " - " .. v.nCount)	
-			end	
+				self.wndResource:FindChild("AG_Stacks"):SetText(Util:Round(v.fTimeRemaining, 1) .. " - " .. v.nCount)
+			end
 		end
 	end
-	
+
 	if bShow ~= self.wndResource:IsShown() then
 		self.wndResource:Show(bShow, true)
 	end
@@ -364,17 +357,17 @@ end
 
 function ForgeUI_ResourceBars:OnWarriorBuffAdded(unit, tBuff, nCout)
 	if not unit or not unit:IsThePlayer() then return end
-	
+
 	if tAugBladeDrainId[tBuff.splEffect:GetId()] and tBuff.nCount > 0 then
 		self.wndResource:FindChild("AG_Stacks"):SetText(tBuff.nCount)
 		self.wndResource:FindChild("AG_Stacks"):Show(true, true)
 	elseif tAugBladeBuffId[tBuff.splEffect:GetId()] then -- aug blade turned off
 		self.wndResource:FindChild("KE_Drain"):Show(true, true)
-		
+
 		self.bAugBlade = true
 	elseif self.bHasPowerlink and tPowerLinkId[tBuff.splEffect:GetId()] then
 		self.wndResource:FindChild("KE_Drain"):Show(true, true)
-		
+
 		self.bPowerLink = true
 	end
 end
@@ -392,7 +385,7 @@ function ForgeUI_ResourceBars:OnWarriorBuffRemoved(unit, tBuff, nCout)
 
 	if tAugBladeDrainId[tBuff.splEffect:GetId()] then
 		self.wndResource:FindChild("AG_Stacks"):Show(false, true)
-		
+
 		if self._DB.profile.warrior.bPlaySoundAbEnd then
 			Sound.Play(220)
 		end
@@ -401,7 +394,7 @@ function ForgeUI_ResourceBars:OnWarriorBuffRemoved(unit, tBuff, nCout)
 	elseif tAugBladeBuffId[tBuff.splEffect:GetId()] then -- aug blade turned off
 		self.bAugBlade = false
 	end
-	
+
 	if not self.bAugBlade and not self.bPowerLink then
 		self.wndResource:FindChild("KE_Drain"):Show(false, true)
 	end
@@ -414,16 +407,16 @@ end
 function ForgeUI_ResourceBars:UpdateFocus(unitPlayer)
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 	if self.wndFocus == nil then return end
-	
+
 	local bShow = false
-	
+
 	local nMana = unitPlayer:GetMana()
 	local nMaxMana = unitPlayer:GetMaxMana()
-	
+
 	if nMana < nMaxMana then
 		bShow = true
 	end
-	
+
 	if bShow ~= self.wndFocus:IsShown() then
 		self.wndFocus:Show(bShow, true)
 	end
@@ -438,21 +431,21 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Engineer()
 	self.wndResource:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
 	self.wndResource:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
-	
+
 	if self._DB.profile.bCenterText then
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, 0, 0, 0)
 	else
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, -5, 0, 0)
 	end
 	self.wndResource:FindChild("Value"):SetTextFlags("DT_VCENTER", self._DB.profile.bCenterText)
-	
+
 	self.wndResource:FindChild("Bars"):Show(self._DB.profile.engineer.bShowBars, true)
 end
 
 function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Engineer(unitPlayer, nResource)
 	self.wndResource:FindChild("ProgressBar"):SetProgress(nResource)
 	self.wndResource:FindChild("Value"):SetText(nResource)
-	
+
 	if nResource < 30 or nResource > 70 then
 		self.wndResource:FindChild("ProgressBar"):SetBarColor(self._DB.profile.engineer.crResource1)
 	else
@@ -498,13 +491,13 @@ function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Medic(unitPlayer, nResour
 			self.wndResource:FindChild("ACU" .. i):FindChild("ProgressBar"):SetProgress(0)
 			if (nResource + 1) == i then
 				local nAcu = 0
-			
+
 				for key, buff in pairs(unitPlayer:GetBuffs().arBeneficial) do
-					if buff.splEffect:GetId() == 42569 then 
+					if buff.splEffect:GetId() == 42569 then
 						nAcu = buff.nCount
 					end
 				end
-				
+
 				self.wndResource:FindChild("ACU" .. i):FindChild("ProgressBar"):SetBarColor(self._DB.profile.medic.crResource2)
 				self.wndResource:FindChild("ACU" .. i):FindChild("ProgressBar"):SetProgress(nAcu)
 			end
@@ -539,7 +532,7 @@ function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Slinger(unitPlayer, nReso
 			self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetProgress(25 - ((i * 25) - nResource))
 		end
 	end
-	
+
 	if self._DB.profile.slinger.bSurgeShadow and GameLib.IsSpellSurgeActive() then
 		self.wndResource:FindChild("SpellSurge"):Show(true, true)
 	else
@@ -552,7 +545,7 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Stalker()
 	self.wndResource:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
 	self.wndResource:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 	self.wndResource:FindChild("ProgressBar"):SetBarColor(self._DB.profile.stalker.crResource1)
-	
+
 	if self._DB.profile.bCenterText then
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, 0, 0, 0)
 	else
@@ -564,7 +557,7 @@ end
 function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Stalker(unitPlayer, nResource)
 	self.wndResource:FindChild("ProgressBar"):SetProgress(nResource)
 	self.wndResource:FindChild("Value"):SetText(nResource)
-	
+
 	if nResource < self._DB.profile.stalker.nBreakpoint then
 		self.wndResource:FindChild("ProgressBar"):SetBarColor(self._DB.profile.stalker.crResource2)
 	else
@@ -577,7 +570,7 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Warrior()
 	self.wndResource:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
 	self.wndResource:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
-	
+
 	if self._DB.profile.bCenterText then
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, 0, 0, 0)
 	else
@@ -590,7 +583,7 @@ end
 function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Warrior(unitPlayer, nResource)
 	self.wndResource:FindChild("Value"):SetText(nResource)
 	self.wndResource:FindChild("ProgressBar"):SetProgress(nResource)
-		
+
 	if nResource < 750 then
 		self.wndResource:FindChild("ProgressBar"):SetBarColor(self._DB.profile.warrior.crResource1)
 	else

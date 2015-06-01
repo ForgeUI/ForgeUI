@@ -22,7 +22,7 @@ GeminiDB.callbacks = GeminiDB.callbacks or Apollo.GetPackage("Gemini:CallbackHan
 local Core = {
 	_NAME = "core",
 	_API_VERSION = 3,
-	VERSION = "1.0-alpha",
+	_VERSION = "1.0",
 
 	tSettings = {
 		global = {

@@ -14,6 +14,7 @@ local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 local ForgeColor = {
 	_NAME = "forgecolor",
 	_API_VERSION = 3,
+	_VERSION = "1.0",
 }
 
 local tSavedColors = {

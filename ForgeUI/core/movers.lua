@@ -16,7 +16,8 @@ local ForgeUI = Apollo.GetAddon("ForgeUI")
 local Movers = {
 	_NAME = "movers",
 	_API_VERSION = 3,
-	
+	_VERSION = "1.0",
+
 	tSettings = {
 		profile = {
 
@@ -42,39 +43,43 @@ local tScopes = {
 -----------------------------------------------------------------------------------------------
 local function RegisterMover(luaCaller, wnd, strKey, strName, strScope, tOptions)
 	local nLeft, nTop, nRight, nBottom = wnd:GetAnchorOffsets()
-	
+
 	local wndMover
 	local tData = {}
-	
+
 	if tScopes["all"][strKey] then
 		wndMover = tScopes["all"][strKey]
 	else
 		if tOptions and tOptions.strParent and tScopes["all"][tOptions.strParent] then
 			wndMover = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_Mover", tScopes["all"][tOptions.strParent], F)
 		else
-			wndMover = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_Mover", nil, F)
+			if tOptions and tOptions.strStratum then
+				wndMover = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_Mover", tOptions.strStratum, F)
+			else
+				wndMover = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_Mover", "FixedHudStratum", F)
+			end
 		end
-		
+
 		tScopes["all"][strKey] = wndMover
 		if tScopes[strScope] then
-			tScopes[strScope][strKey] = wndMover	
+			tScopes[strScope][strKey] = wndMover
 		end
-		
+
 		wndMover:SetAnchorPoints(wnd:GetAnchorPoints())
 		wndMover:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
-		
+
 		if not Movers.tSettings.profile[luaCaller._NAME] then
 			Movers.tSettings.profile[luaCaller._NAME] = {}
 		end
 		Movers.tSettings.profile[luaCaller._NAME][strKey] = { nLeft, nTop, nRight, nBottom }
-		
+
 		F:API_RegisterNamespaceDefaults(Movers, Movers.tSettings)
 	end
-	
+
 	if not Movers._DB.profile[luaCaller._NAME] then
 		Movers._DB.profile[luaCaller._NAME] = {}
 	end
-	
+
 	if not Movers._DB.profile[luaCaller._NAME][strKey] then
 		Movers._DB.profile[luaCaller._NAME][strKey] = {
 			nLeft,
@@ -86,21 +91,21 @@ local function RegisterMover(luaCaller, wnd, strKey, strName, strScope, tOptions
 		wndMover:SetAnchorOffsets(unpack(Movers._DB.profile[luaCaller._NAME][strKey]))
 		wnd:SetAnchorOffsets(unpack(Movers._DB.profile[luaCaller._NAME][strKey]))
 	end
-	
+
 	if tOptions then
 		if tOptions.bNameAsTooltip then
 			wndMover:SetTooltip(strName)
 		end
 	end
-	
+
 	if not tOptions or not tOptions.bNameAsTooltip then
 		wndMover:SetText(strName)
 	end
-	
+
 	tData.strParent = luaCaller._NAME
 	tData.strKey = strKey
 	tData.wndParent = wnd
-	
+
 	wndMover:SetData(tData)
 end
 
@@ -112,7 +117,7 @@ end
 local function UpdateParentPosition(wndMover)
 	local tData = wndMover:GetData()
 	tData.wndParent:SetAnchorOffsets(wndMover:GetAnchorOffsets())
-	
+
 	local nLeft, nTop, nRight, nBottom = wndMover:GetAnchorOffsets()
 	Movers._DB.profile[tData.strParent][tData.strKey] = {
 		nLeft, nTop, nRight, nBottom,
@@ -134,10 +139,10 @@ function Movers:ForgeAPI_Init()
 	G:API_AddOptionToComboBox(self, wndScope, "All", "all", { bDefault = true })
 	G:API_AddOptionToComboBox(self, wndScope, "General", "general")
 	G:API_AddOptionToComboBox(self, wndScope, "Misc", "misc")
-	
+
 	for k, v in pairs(tScopes["all"]) do
 		UpdateParentPosition(v)
-		
+
 		v:Show(false, true)
 	end
 end
@@ -145,7 +150,7 @@ end
 function Movers:ForgeAPI_LoadSettings()
 	for _, v in pairs(tScopes["all"]) do
 		local tData = v:GetData()
-		
+
 		v:SetAnchorOffsets(unpack(Movers._DB.profile[tData.strParent][tData.strKey]))
 		tData.wndParent:SetAnchorOffsets(unpack(Movers._DB.profile[tData.strParent][tData.strKey]))
 	end
@@ -155,12 +160,12 @@ function Movers:UnlockMovers()
 	bMoversActive = true
 	F:API_ShowMainWindow(false, true)
 	self.wndMoversForm:Show(true, true)
-	
+
 	for k, v in pairs(tScopes["all"]) do
 		UpdateMoverPosition(v)
-	
+
 		v:Show(true, true)
-		
+
 		v:GetData().bParentShown = v:GetData().wndParent:IsShown()
 		v:GetData().wndParent:Show(false, true)
 	end
@@ -170,12 +175,12 @@ function Movers:LockMovers()
 	bMoversActive = false
 	F:API_ShowMainWindow(true)
 	self.wndMoversForm:Show(false, true)
-	
+
 	for k, v in pairs(tScopes["all"]) do
 		UpdateParentPosition(v)
-		
+
 		v:Show(false, true)
-		
+
 		v:GetData().wndParent:Show(v:GetData().bParentShown, true)
 	end
 end
@@ -184,10 +189,10 @@ function Movers:CancelChanges()
 	bMoversActive = false
 	F:API_ShowMainWindow(true)
 	self.wndMoversForm:Show(false, true)
-	
+
 	for k, v in pairs(tScopes["all"]) do
 		v:Show(false, true)
-		
+
 		v:GetData().wndParent:Show(v:GetData().bParentShown, true)
 	end
 end
@@ -198,7 +203,7 @@ function Movers:OnScopeSet(strScope)
 	for k, v in pairs(tScopes["all"]) do
 		v:Show(false, true)
 	end
-	
+
 	for k, v in pairs(tScopes[strScope]) do
 		v:Show(true, true)
 	end
@@ -206,7 +211,7 @@ end
 
 function F:OnMoverMove(wndHandler, wndControl)
 	local tData = wndControl:GetData()
-	
+
 	tData.wndParent:SetAnchorOffsets(wndControl:GetAnchorOffsets())
 	tData.wndParent:SetAnchorPoints(wndControl:GetAnchorPoints())
 end

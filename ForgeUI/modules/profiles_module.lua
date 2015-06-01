@@ -15,6 +15,7 @@ local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 local ProfilesModule = {
 	_NAME = "profiles_module",
 	_API_VERSION = 3,
+	_VERSION = "1.0",
 }
 
 -----------------------------------------------------------------------------------------------
@@ -30,9 +31,9 @@ end
 
 function ProfilesModule:ForgeAPI_PopulateOptions()
 	local wndProfiles = self.tOptionHolders["Profiles"]
-	
+
 	G:API_AddText(self, wndProfiles, string.format("<T TextColor=\"%s\" Font=\"%s\">%s</T>", "FFFFFFFF", "Nameplates", "Current profile: ") .. string.format("<T TextColor=\"%s\" Font=\"%s\">%s</T>", "FFFF0000", "Nameplates", tostring(F:API_GetProfileName())))
-	
+
 	-- new profile
 	G:API_EditBox(self, wndProfiles, "", nil, nil, {
 		strHint = "New profile (enter to confirm)",
@@ -40,7 +41,7 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 		tMove = { 0, 120 },
 		fnCallbackReturn = self.OnNewProfile,
 	})
-	
+
 	-- delete profile
 	local wndCombo = G:API_AddComboBox(tModule, wndProfiles, "Delete profile", nil, nil, {
 		fnCallback = self.OnDeleteProfile,
@@ -48,11 +49,11 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 		tMove = { 205, 60 },
 		bInnerText = true,
 	})
-	
+
 	for k, v in pairs(F:API_GetProfiles()) do
 		G:API_AddOptionToComboBox(self, wndCombo, v, v)
 	end
-	
+
 	-- select profile
 	local wndCombo = G:API_AddComboBox(tModule, wndProfiles, "Select profile", nil, nil, {
 		fnCallback = self.OnSelectProfile,
@@ -78,4 +79,3 @@ function ProfilesModule:OnNewProfile(strValue, strKey)
 end
 
 ProfilesModule = F:API_NewModule(ProfilesModule)
-

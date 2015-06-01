@@ -66,22 +66,16 @@ local fnRepositionNameplate
 local ForgeUI_Nameplates = {
 	_NAME = "ForgeUI_Nameplates",
 	_API_VERSION = 3,
-	VERSION = "3.0",
+	_VERSION = "3.0",
+	DISPLAY_NAME = "Nameplates",
 
-    tPreloadUnits = {},
+  tPreloadUnits = {},
 
 	arWindowPool = {},
 	arUnit2Nameplate = {},
 	arWnd2Nameplate = {},
 
-    API_VERSION = 3, -- mandatory
-	VERSION = "1.0.0",
-	AUTHOR = "WintyBadass",
-	ADDON_NAME = "ForgeUI_Nameplates",
-	DISPLAY_NAME = "Nameplates",
-
-	settings_version = 3,
-    tSettings = {
+  tSettings = {
 		profile = {
 			nMaxRange = 75,
 			bUseOcclusion = true,
@@ -790,10 +784,10 @@ function ForgeUI_Nameplates:DrawIA(tNameplate)
 	else
 		bShow = true
 		if nMax == -1 then
-			ia:SetSprite("ForgeUI_IAinf")
+			ia:SetSprite("HUD_TargetFrame:spr_TargetFrame_InterruptArmor_Infinite")
 			ia:SetText("")
 		elseif nMax > 0 then
-			ia:SetSprite("ForgeUI_IA")
+			ia:SetSprite("HUD_TargetFrame:spr_TargetFrame_InterruptArmor_Value")
 			ia:SetText(nValue)
 		end
 	end
