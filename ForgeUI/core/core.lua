@@ -74,21 +74,19 @@ local bResetSettings = false
 -----------------------------------------------------------------------------------------------
 function Core:ForgeAPI_PreInit()
 	local ForgeUI = Apollo.GetAddon("ForgeUI")
-	
+
 	self.db = GeminiDB:New(ForgeUI)
 end
 
 function Core:ForgeAPI_Init()
 	Print("ForgeUI v" .. F:API_GetVersion() .. " has been loaded")
-	
+
 	GeminiHook:Embed(F)
 end
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI public API
------------------------------------------------------------------------------------------------
-
------------------------------------------------------------------------------------------------
+--
 -- ForgeUI Addon API
 -----------------------------------------------------------------------------------------------
 function F:API_NewAddon(tAddon, tParams)
@@ -104,53 +102,49 @@ function F:API_NewAddon(tAddon, tParams)
 	if tAddon.ForgeAPI_PreInit then
 		tAddon:ForgeAPI_PreInit()
 	end
-	
+
 	-- new instance
 	local addon = A:NewAddon(tAddon)
-	
+
 	if bInit and addon.tSettings then
 		local db = Core.db:RegisterNamespace(addon._NAME)
 		db:RegisterDefaults(addon.tSettings)
-		
+
 		addon._DB = {
 			profile = db.profile,
 			global = db.global,
 			char = db.char,
 		}
 	end
-	
+
 	-- db callbacks
 	Core.db.RegisterCallback(addon, "OnProfileChanged", "RefreshConfig")
 	Core.db.RegisterCallback(addon, "OnProfileDeleted", "RefreshConfig")
 	Core.db.RegisterCallback(addon, "OnProfileReset", "RefreshConfig")
-	
+
 	Apollo.RegisterAddon(addon)
-	
+
 	tAddons[tAddon._NAME] = {
         ["tAddon"] = addon,
         ["tParams"] = tParams,
     }
-	
+
 	if bInit and addon.ForgeAPI_Init then
 		addon:ForgeAPI_Init()
 		addon.bInit = true
 	end
-	
+
 	if addon.OnDocLoaded then
 		GeminiHook:PostHook(addon, "OnDocLoaded", function()
 			addon:ForgeAPI_LoadSettings()
+			addon:ForgeAPI_PopulateOptions()
 		end)
 		tAddons[tAddon._NAME].bHooked = true
-	else
-		if bInit and addon.ForgeAPI_LoadSettings then
-			addon:ForgeAPI_LoadSettings()
-		end
-	end
-	
-	if bInit and addon.ForgeAPI_PopulateOptions then
+	elseif bInit then
+		addon:ForgeAPI_LoadSettings()
 		addon:ForgeAPI_PopulateOptions()
 	end
-	
+
 	return addon
 end
 
@@ -182,25 +176,26 @@ function F:API_NewModule(tModule, tParams)
 	if tModule.ForgeAPI_PreInit then
 		tModule:ForgeAPI_PreInit()
 	end
-	
+
+	-- new instance
 	local module = M:NewModule(tModule)
-	
+
 	if bInit and module.tSettings then
 		local db = Core.db:RegisterNamespace(module._NAME)
 		db:RegisterDefaults(module.tSettings)
-		
+
 		module._DB = {
 			profile = db.profile,
 			global = db.global,
 			char = db.char,
 		}
 	end
-	
+
 	-- db callbacks
 	Core.db.RegisterCallback(module, "OnProfileChanged", "RefreshConfig")
 	Core.db.RegisterCallback(module, "OnProfileDeleted", "RefreshConfig")
 	Core.db.RegisterCallback(module, "OnProfileReset", "RefreshConfig")
-	
+
 	tModules[tModule._NAME] = {
         ["tModule"] = module,
         ["tParams"] = tParams or {},
@@ -210,20 +205,18 @@ function F:API_NewModule(tModule, tParams)
 		module:ForgeAPI_Init()
 		module.bInit = true
 	end
-	
+
 	if module.OnDocLoaded then
-		GeminiHook:PostHook(module, "OnDocLoaded", module.ForgeAPI_LoadSettings)
-		tModules[tModule._NAME].bHooked = true
-	else
-		if bInit and module.ForgeAPI_LoadSettings then
+		GeminiHook:PostHook(module, "OnDocLoaded", function()
 			module:ForgeAPI_LoadSettings()
-		end
-	end
-	
-	if bInit and module.ForgeAPI_PopulateOptions then
+			module:ForgeAPI_PopulateOptions()
+		end)
+		tModules[tModule._NAME].bHooked = true
+	elseif bInit then
+		module:ForgeAPI_LoadSettings()
 		module:ForgeAPI_PopulateOptions()
 	end
-	
+
 	return module
 end
 
@@ -282,7 +275,7 @@ end
 function F:Init()
 	if bInit then return end
 	bInit = true
-	
+
 	for k, v in pairs(tModules) do
 		if not v.tModule.ForgeAPI_Init then
 			Print("ERR: " .. k .. " module cannot be loaded!")
@@ -290,27 +283,24 @@ function F:Init()
 			if v.tModule.tSettings then
 				local db = Core.db:RegisterNamespace(v.tModule._NAME)
 				db:RegisterDefaults(v.tModule.tSettings)
-				
+
 				v.tModule._DB = {
 					profile = db.profile,
 					global = db.global,
 					char = db.char,
 				}
 			end
-			
+
 			v.tModule:ForgeAPI_Init()
 			v.tModule.bInit = true
-			
-			if v.tModule.ForgeAPI_LoadSettings then
+
+			if not v.bHooked then
 				v.tModule:ForgeAPI_LoadSettings()
-			end
-			
-			if v.tModule.ForgeAPI_PopulateOptions then
 				v.tModule:ForgeAPI_PopulateOptions()
 			end
 		end
 	end
-	
+
 	for k, v in pairs(tAddons) do
 		if not v.tAddon.ForgeAPI_Init then
 			Print("ERR: " .. k .. " addon cannot be loaded!")
@@ -318,22 +308,19 @@ function F:Init()
 			if v.tAddon.tSettings then
 				local db = Core.db:RegisterNamespace(v.tAddon._NAME)
 				db:RegisterDefaults(v.tAddon.tSettings)
-				
+
 				v.tAddon._DB = {
 					profile = db.profile,
 					global = db.global,
 					char = db.char,
 				}
 			end
-		
+
 			v.tAddon:ForgeAPI_Init(v.tAddon)
 			v.tAddon.bInit = true
-			
-			if v.tAddon.ForgeAPI_LoadSettings and not v.bHooked then
+
+			if not v.bHooked then
 				v.tAddon:ForgeAPI_LoadSettings()
-			end
-			
-			if v.tAddon.ForgeAPI_PopulateOptions then
 				v.tAddon:ForgeAPI_PopulateOptions()
 			end
 		end
@@ -359,4 +346,3 @@ function Core.copyTable(src, dest)
 end
 
 Core = F:API_NewModule(Core, { bPrivate = true })
-
