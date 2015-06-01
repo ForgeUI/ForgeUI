@@ -26,6 +26,7 @@ local ForgeUI_CastBars = {
 	tSettings = {
 		profile = {
 			bSmoothBars = true,
+			bShowPlayer = true,
 			bShowTarget = true,
 			bShowFocus = true,
 			tFrames = {
@@ -34,18 +35,36 @@ local ForgeUI_CastBars = {
 					crBorder = "FF000000",
 					crBackground = "FF101010",
 					crCastBar = "FF272727",
-					crCastBarTarget = "FF272727",
-					crInfArmorTarget = "FFEA0707",
-					crCastBarFocus = "FF272727",
-					crInfArmorFocus = "FFEA0707",
-					crMooBar = "FFBC00BB",
 					crDuration = "FFFFCC00",
+					crText = "FFFFFFFF",
+				},
+				Target = {
+					bShowCastIcons = true,
+					crBorder = "FF000000",
+					crBackground = "FF101010",
+					crCastBar = "FF272727",
+					crCastBarInf = "FFFF0000",
+					crMooBar = "FFBC00BB",
+					crText = "FFFFFFFF",
+				},
+				Focus = {
+					bShowCastIcons = true,
+					crBorder = "FF000000",
+					crBackground = "FF101010",
+					crCastBar = "FF272727",
+					crCastBarInf = "FFFF0000",
+					crMooBar = "FFBC00BB",
 					crText = "FFFFFFFF",
 				}
 			}
 		}
 	}
 }
+
+-----------------------------------------------------------------------------------------------
+-- Constants
+-----------------------------------------------------------------------------------------------
+local GetPlayerUnit = GameLib.GetPlayerUnit
 
 -----------------------------------------------------------------------------------------------
 -- ForgeAPI
@@ -56,21 +75,8 @@ function ForgeUI_CastBars:ForgeAPI_Init()
 
 	local wndParent = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 	F:API_AddMenuToMenuItem(self, wndParent, "Player", "Player")
-end
-
-function ForgeUI_CastBars:ForgeAPI_LoadSettings()
-end
-
-function ForgeUI_CastBars:ForgeAPI_PopulateOptions()
-	local wndPlayer = self.tOptionHolders["Player"]
-
-	for k, v in pairs(self._DB.profile.tFrames) do
-		if v.crCastBar then
-			G:API_AddColorBox(self, wndPlayer, "Cast bar color", v, "crCastBar", { tMove = {0, 0},
-				fnCallback = function(...) self["wnd" .. k .. "CastBar"]:FindChild("CastBar"):SetBarColor(arg[2]) end
-			})
-		end
-	end
+	F:API_AddMenuToMenuItem(self, wndParent, "Target", "Target")
+	F:API_AddMenuToMenuItem(self, wndParent, "Focus", "Focus")
 end
 
 -----------------------------------------------------------------------------------------------
@@ -81,30 +87,32 @@ function ForgeUI_CastBars:OnDocLoaded()
 	self.wndTargetCastBar = Apollo.LoadForm(self.xmlDoc, "TargetCastBar", "FixedHudStratum", self)
 	self.wndFocusCastBar = Apollo.LoadForm(self.xmlDoc, "FocusCastBar", "FixedHudStratum", self)
 
-	if self._DB.profile.bSmoothBars == true then
-		Apollo.RegisterEventHandler("NextFrame", 	"OnNextFrame", self)
-	else
-		Apollo.RegisterEventHandler("VarChange_FrameCount", 	"OnNextFrame", self)
-	end
+	F:API_RegisterMover(self, self.wndPlayerCastBar, "CastBars_Player", "Player's cast bar", "general")
+	F:API_RegisterMover(self, self.wndTargetCastBar, "CastBars_Target", "Target's cast bar", "general")
+	F:API_RegisterMover(self, self.wndFocusCastBar, "CastBars_Focus", "Focus' cast bar", "general")
+
 	Apollo.RegisterEventHandler("StartSpellThreshold", 	"OnStartSpellThreshold", self)
 	Apollo.RegisterEventHandler("ClearSpellThreshold", 	"OnClearSpellThreshold", self)
 	Apollo.RegisterEventHandler("UpdateSpellThreshold", "OnUpdateSpellThreshold", self)
 end
 
 function ForgeUI_CastBars:OnNextFrame()
-	local unitPlayer = GameLib.GetPlayerUnit()
+	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
-	self:UpdateCastBar(unitPlayer, self.wndPlayerCastBar)
-	self:RefreshStyle_PlayerCastBar(unitPlayer, self.wndPlayerCastBar)
+	if self._DB.profile.bShowPlayer and not F:API_MoversActive() then
+		self:UpdateCastBar(unitPlayer, self.wndPlayerCastBar, "Player")
+	else
+		if self.wndPlayerCastBar:IsShown() then
+			self.wndPlayerCastBar:Show(false, true)
+		end
+	end
 
 	local unitTarget = unitPlayer:GetTarget()
-	if unitTarget ~= nil and unitTarget:IsValid() and self._DB.profile.bShowTarget then
-		self:UpdateCastBar(unitTarget, self.wndTargetCastBar)
-		self:UpdateMoOBar(unitTarget, self.wndTargetCastBar)
-		self:UpdateInterruptArmor(unitTarget, self.wndTargetCastBar)
-
-		self:RefreshStyle_TargetCastBar(unitTarget, self.wndTargetCastBar)
+	if unitTarget ~= nil and unitTarget:IsValid() and self._DB.profile.bShowTarget and not F:API_MoversActive() then
+		self:UpdateCastBar(unitTarget, self.wndTargetCastBar, "Target")
+		self:UpdateMoOBar(unitTarget, self.wndTargetCastBar, "Target")
+		self:UpdateInterruptArmor(unitTarget, self.wndTargetCastBar, "Target")
 	else
 		if self.wndTargetCastBar:IsShown() then
 			self.wndTargetCastBar:Show(false, true)
@@ -112,18 +120,17 @@ function ForgeUI_CastBars:OnNextFrame()
 	end
 
 	local unitFocus = unitPlayer:GetAlternateTarget()
-	if unitFocus ~= nil and unitFocus:IsValid() and self._DB.profile.bShowFocus then
-		self:UpdateCastBar(unitFocus, self.wndFocusCastBar)
-		self:UpdateMoOBar(unitFocus, self.wndFocusCastBar)
-		self:UpdateInterruptArmor(unitFocus, self.wndFocusCastBar)
-
-		self:RefreshStyle_FocusCastBar(unitFocus, self.wndFocusCastBar)
+	if unitFocus ~= nil and unitFocus:IsValid() and self._DB.profile.bShowFocus and not F:API_MoversActive() then
+		self:UpdateCastBar(unitFocus, self.wndFocusCastBar, "Focus")
+		self:UpdateMoOBar(unitFocus, self.wndFocusCastBar, "Focus")
+		self:UpdateInterruptArmor(unitFocus, self.wndFocusCastBar, "Focus")
 	else
 		if self.wndFocusCastBar:IsShown() then
 			self.wndFocusCastBar:Show(false, true)
 		end
 	end
 
+	-- duration bar for tap skills
 	if self.cast ~= nil then
 		local fTimeLeft = 1-GameLib.GetSpellThresholdTimePrcntDone(self.cast.id)
 		self.wndPlayerCastBar:FindChild("DurationBar"):SetProgress(fTimeLeft)
@@ -133,7 +140,9 @@ function ForgeUI_CastBars:OnNextFrame()
 end
 
 function ForgeUI_CastBars:OnStartSpellThreshold(idSpell, nMaxThresholds, eCastMethod)
-	local unitPlayer = GameLib.GetPlayerUnit()
+	if not self._DB.profile.bShowPlayer then return end
+
+	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
 	local splObject = GameLib.GetSpell(idSpell)
@@ -155,7 +164,9 @@ function ForgeUI_CastBars:OnStartSpellThreshold(idSpell, nMaxThresholds, eCastMe
 end
 
 function ForgeUI_CastBars:OnUpdateSpellThreshold(idSpell, nNewThreshold)
-	local unitPlayer = GameLib.GetPlayerUnit()
+	if not self._DB.profile.bShowPlayer then return end
+
+	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() or self.cast == nil then return end
 
 	local splObject = GameLib.GetSpell(idSpell)
@@ -172,7 +183,7 @@ function ForgeUI_CastBars:OnUpdateSpellThreshold(idSpell, nNewThreshold)
 end
 
 function ForgeUI_CastBars:OnClearSpellThreshold(idSpell)
-	local unitPlayer = GameLib.GetPlayerUnit()
+	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() or self.cast == nil then return end
 
 	self.wndPlayerCastBar:Show(false, true)
@@ -200,15 +211,17 @@ function ForgeUI_CastBars:UpdateCastBar(unit, wnd)
 		wnd:FindChild("SpellName"):SetText(strSpellName)
 		wnd:FindChild("CastBar"):SetMax(fDuration)
 		wnd:FindChild("CastBar"):SetProgress(fElapsed)
-		if wnd:FindChild("Icon") then
-			local strIcon = self:GetSpellIconByName(strSpellName)
-			if strIcon ~= "" and self._DB.profile.bShowCastIcons then
-				wnd:FindChild("Icon"):SetSprite(self:GetSpellIconByName(strSpellName))
-				wnd:FindChild("IconHolder"):Show(true, true)
-			else
-				wnd:FindChild("IconHolder"):Show(false, true)
-			end
-		end
+
+		-- if wnd:FindChild("Icon") then -- TODO: make it work
+		-- 	local strIcon = self:GetSpellIconByName(strSpellName)
+		-- 	if strIcon ~= "" and self._DB.profile.bShowCastIcons then
+		-- 		wnd:FindChild("Icon"):SetSprite(self:GetSpellIconByName(strSpellName))
+		-- 		wnd:FindChild("IconHolder"):Show(true, true)
+		-- 	else
+		-- 		wnd:FindChild("IconHolder"):Show(false, true)
+		-- 	end
+		-- end
+
 		wnd:FindChild("CastTime"):SetText(string.format("%00.01f", (fDuration - fElapsed)/1000) .. "s")
 	elseif wnd:GetName() ==  "PlayerCastBar" and self.cast ~= nil then
 		wnd:FindChild("SpellName"):SetText(self.cast.strSpellName)
@@ -239,7 +252,7 @@ function ForgeUI_CastBars:UpdateMoOBar(unit, wnd)
 
 	local maxTime = unit:GetCCStateTotalTime(Unit.CodeEnumCCState.Vulnerability)
 	local time = unit:GetCCStateTimeRemaining(Unit.CodeEnumCCState.Vulnerability)
-	local pl = GameLib.GetPlayerUnit()
+	local pl = GetPlayerUnit()
 
 	if time > 0 then
 		--maxTime = time > maxTime and time or maxTime
@@ -259,19 +272,22 @@ function ForgeUI_CastBars:UpdateMoOBar(unit, wnd)
 	end
 end
 
-function ForgeUI_CastBars:UpdateInterruptArmor(unit, wnd)
+function ForgeUI_CastBars:UpdateInterruptArmor(unit, wnd, type)
 	local bShow = false
 	nValue = unit:GetInterruptArmorValue()
 	nMax = unit:GetInterruptArmorMax()
 	if nMax == 0 or nValue == nil or unit:IsDead() then
+		wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.tFrames[type].crCastBar)
 	else
 		bShow = true
 		if nMax == -1 then
 			wnd:FindChild("InterruptArmor"):SetSprite("ForgeUI_IAinf")
 			wnd:FindChild("InterruptArmor_Value"):SetText("")
+			wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.tFrames[type].crCastBarInf)
 		elseif nMax > 0 then
 			wnd:FindChild("InterruptArmor"):SetSprite("ForgeUI_IA")
 			wnd:FindChild("InterruptArmor_Value"):SetText(nValue)
+			wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.tFrames[type].crCastBar)
 		end
 	end
 
@@ -281,107 +297,84 @@ function ForgeUI_CastBars:UpdateInterruptArmor(unit, wnd)
 end
 
 -----------------------------------------------------------------------------------------------
--- Styles
+-- ForgeAPI
 -----------------------------------------------------------------------------------------------
-function ForgeUI_CastBars:UpdateStyle_PlayerCastBar()
-	self.wndPlayerCastBar:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
-	self.wndPlayerCastBar:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
-	self.wndPlayerCastBar:FindChild("CastBar"):SetBarColor(self._DB.profile.crCastBar)
-	self.wndPlayerCastBar:FindChild("TickBar"):SetBarColor(self._DB.profile.crCastBar)
-	self.wndPlayerCastBar:FindChild("DurationBar"):SetBarColor(self._DB.profile.crDuration)
-	self.wndPlayerCastBar:FindChild("CastTime"):SetTextColor(self._DB.profile.crText)
-	self.wndPlayerCastBar:FindChild("SpellName"):SetTextColor(self._DB.profile.crText)
-
-	if self._DB.profile.bCenterPlayerText then
-		self.wndPlayerCastBar:FindChild("SpellName"):SetAnchorOffsets(10, 0, 0, 0)
-		self.wndPlayerCastBar:FindChild("SpellName"):SetAnchorPoints(0, 0, 1, 1)
-
-		self.wndPlayerCastBar:FindChild("CastTime"):SetAnchorOffsets(0, 0, -10, 0)
-		self.wndPlayerCastBar:FindChild("CastTime"):SetAnchorPoints(0, 0, 1, 1)
+function ForgeUI_CastBars:ForgeAPI_LoadSettings()
+	if self._DB.profile.bSmoothBars then
+		Apollo.RegisterEventHandler("NextFrame", 	"OnNextFrame", self)
+		Apollo.RemoveEventHandler("VarChange_FrameCount", self)
 	else
-		self.wndPlayerCastBar:FindChild("SpellName"):SetAnchorOffsets(10, -10, 0, 15)
-		self.wndPlayerCastBar:FindChild("SpellName"):SetAnchorPoints(0, 0, 1, 0)
-
-		self.wndPlayerCastBar:FindChild("CastTime"):SetAnchorOffsets(0, -10, -10, 15)
-		self.wndPlayerCastBar:FindChild("CastTime"):SetAnchorPoints(0, 0, 1, 0)
+		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnNextFrame", self)
+		Apollo.RemoveEventHandler("NextFrame", self)
 	end
 end
 
-function ForgeUI_CastBars:RefreshStyle_PlayerCastBar(unit, wnd)
-end
+function ForgeUI_CastBars:ForgeAPI_PopulateOptions()
+	local wndGeneral = self.tOptionHolders["General"]
+	G:API_AddCheckBox(self, wndGeneral, "Smooth bars", self._DB.profile, "bSmoothBars", { tMove = {0, 0},
+		fnCallback = self.ForgeAPI_LoadSettings
+	})
 
-function ForgeUI_CastBars:UpdateStyle_TargetCastBar()
-	self.wndTargetCastBar:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
-	self.wndTargetCastBar:FindChild("IconHolder"):SetBGColor(self._DB.profile.crBorder)
-	self.wndTargetCastBar:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
-	self.wndTargetCastBar:FindChild("CastBar"):SetBarColor(self._DB.profile.crCastBarTarget)
-	self.wndTargetCastBar:FindChild("MoOBar"):SetBarColor(self._DB.profile.crMooBar)
-	self.wndTargetCastBar:FindChild("CastTime"):SetTextColor(self._DB.profile.crText)
-	self.wndTargetCastBar:FindChild("SpellName"):SetTextColor(self._DB.profile.crText)
+	G:API_AddCheckBox(self, wndGeneral, "Enable player's cast bar", self._DB.profile, "bShowPlayer", { tMove = {0, 30} })
+	G:API_AddCheckBox(self, wndGeneral, "Enable target's cast bar", self._DB.profile, "bShowTarget", { tMove = {200, 30} })
+	G:API_AddCheckBox(self, wndGeneral, "Enable focus' cast bar", self._DB.profile, "bShowFocus", { tMove = {400, 30} })
 
-	if self._DB.profile.bCenterTargetText then
-		self.wndTargetCastBar:FindChild("SpellName"):SetAnchorOffsets(10, 0, 0, 0)
-		self.wndTargetCastBar:FindChild("SpellName"):SetAnchorPoints(0, 0, 1, 1)
+	for k, v in pairs(self._DB.profile.tFrames) do
+		if v.crBorder then
+			G:API_AddColorBox(self, self.tOptionHolders[k], "Border color", v, "crBorder", { tMove = {0, 0},
+				fnCallback = function(...) self["wnd" .. k .. "CastBar"]:FindChild("Border"):SetBGColor(arg[2]) end
+			})
+		end
 
-		self.wndTargetCastBar:FindChild("CastTime"):SetAnchorOffsets(0, 0, -10, 0)
-		self.wndTargetCastBar:FindChild("CastTime"):SetAnchorPoints(0, 0, 1, 1)
-	else
-		self.wndTargetCastBar:FindChild("SpellName"):SetAnchorOffsets(10, -10, 0, 15)
-		self.wndTargetCastBar:FindChild("SpellName"):SetAnchorPoints(0, 0, 1, 0)
+		if v.crBackground then
+			G:API_AddColorBox(self, self.tOptionHolders[k], "Background color", v, "crBackground", { tMove = {200, 0},
+				fnCallback = function(...) self["wnd" .. k .. "CastBar"]:FindChild("Background"):SetBGColor(arg[2]) end
+			})
+		end
 
-		self.wndTargetCastBar:FindChild("CastTime"):SetAnchorOffsets(0, -10, -10, 15)
-		self.wndTargetCastBar:FindChild("CastTime"):SetAnchorPoints(0, 0, 1, 0)
-	end
+		if v.crCastBar then
+			G:API_AddColorBox(self, self.tOptionHolders[k], "Cast bar color", v, "crCastBar", { tMove = {0, 30},
+				fnCallback = function(...)
+					self["wnd" .. k .. "CastBar"]:FindChild("CastBar"):SetBarColor(arg[2])
+					self["wnd" .. k .. "CastBar"]:FindChild("TickBar"):SetBarColor(arg[2])
+				end
+			})
+		end
 
-	local nLeft, nTop, nRight, nBottom = self.wndTargetCastBar:GetAnchorOffsets()
-	self.wndTargetCastBar:FindChild("IconHolder"):SetAnchorOffsets(nTop - nBottom - 5, 0, -5, 0)
-end
+		if v.crCastBarInf then
+			G:API_AddColorBox(self, self.tOptionHolders[k], "Cast bar color - infinite IA", v, "crCastBarInf", { tMove = {200, 30},
+				fnCallback = function(...)
+					self["wnd" .. k .. "CastBar"]:FindChild("CastBar"):SetBarColor(arg[2])
+				end
+			})
+		end
 
-function ForgeUI_CastBars:RefreshStyle_TargetCastBar(unit, wnd)
-	local nMax = unit:GetInterruptArmorMax()
-	if nMax == -1 then
-		wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.crInfArmorTarget)
-	else
-		wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.crCastBarTarget)
-	end
-end
+		if v.crMooBar then
+			G:API_AddColorBox(self, self.tOptionHolders[k], "MoO bar color", v, "crMooBar", { tMove = {200, 60},
+				fnCallback = function(...) self["wnd" .. k .. "CastBar"]:FindChild("MoOBar"):SetBarColor(arg[2]) end
+			})
+		end
 
-function ForgeUI_CastBars:UpdateStyle_FocusCastBar()
-	self.wndFocusCastBar:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
-	self.wndFocusCastBar:FindChild("IconHolder"):SetBGColor(self._DB.profile.crBorder)
-	self.wndFocusCastBar:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
-	self.wndFocusCastBar:FindChild("CastBar"):SetBarColor(self._DB.profile.crCastBarFocus)
-	self.wndFocusCastBar:FindChild("MoOBar"):SetBarColor(self._DB.profile.crMooBar)
-	self.wndFocusCastBar:FindChild("CastTime"):SetTextColor(self._DB.profile.crText)
-	self.wndFocusCastBar:FindChild("SpellName"):SetTextColor(self._DB.profile.crText)
+		if v.crDuration then
+			G:API_AddColorBox(self, self.tOptionHolders[k], "Duration bar color", v, "crDuration", { tMove = {400, 30},
+				fnCallback = function(...) self["wnd" .. k .. "CastBar"]:FindChild("DurationBar"):SetBarColor(arg[2]) end
+			})
+		end
 
-	if self._DB.profile.bCenterFocusText then
-		self.wndFocusCastBar:FindChild("SpellName"):SetAnchorOffsets(10, 0, 0, 0)
-		self.wndFocusCastBar:FindChild("SpellName"):SetAnchorPoints(0, 0, 1, 1)
-
-		self.wndFocusCastBar:FindChild("CastTime"):SetAnchorOffsets(0, 0, -10, 0)
-		self.wndFocusCastBar:FindChild("CastTime"):SetAnchorPoints(0, 0, 1, 1)
-	else
-		self.wndFocusCastBar:FindChild("SpellName"):SetAnchorOffsets(10, -10, 0, 15)
-		self.wndFocusCastBar:FindChild("SpellName"):SetAnchorPoints(0, 0, 1, 0)
-
-		self.wndFocusCastBar:FindChild("CastTime"):SetAnchorOffsets(0, -10, -10, 15)
-		self.wndFocusCastBar:FindChild("CastTime"):SetAnchorPoints(0, 0, 1, 0)
-	end
-
-	local nLeft, nTop, nRight, nBottom = self.wndFocusCastBar:GetAnchorOffsets()
-	self.wndFocusCastBar:FindChild("IconHolder"):SetAnchorOffsets(nTop - nBottom - 5, 0, -5, 0)
-end
-
-function ForgeUI_CastBars:RefreshStyle_FocusCastBar(unit, wnd)
-	local nMax = unit:GetInterruptArmorMax()
-	if nMax == -1 then
-		wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.crInfArmorFocus)
-	else
-		wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.crCastBarFocus)
+		if v.crText then
+			G:API_AddColorBox(self, self.tOptionHolders[k], "Text color", v, "crText", { tMove = {0, 60},
+				fnCallback = function(...)
+					self["wnd" .. k .. "CastBar"]:FindChild("CastTime"):SetTextColor(arg[2])
+					self["wnd" .. k .. "CastBar"]:FindChild("SpellName"):SetTextColor(arg[2])
+				end
+			})
+		end
 	end
 end
 
+-----------------------------------------------------------------------------------------------
+-- Ability icons
+-----------------------------------------------------------------------------------------------
 function ForgeUI_CastBars:GetAbilitiesList()
 	if self.abilityNameToIcon == nil then
 		self.abilityNameToIcon = {}
