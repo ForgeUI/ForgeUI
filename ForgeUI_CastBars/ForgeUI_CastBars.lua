@@ -32,6 +32,7 @@ local ForgeUI_CastBars = {
 			tFrames = {
 				Player = {
 					bShowCastIcons = true,
+					bCenterText = false,
 					crBorder = "FF000000",
 					crBackground = "FF101010",
 					crCastBar = "FF272727",
@@ -40,6 +41,7 @@ local ForgeUI_CastBars = {
 				},
 				Target = {
 					bShowCastIcons = true,
+					bCenterText = false,
 					crBorder = "FF000000",
 					crBackground = "FF101010",
 					crCastBar = "FF272727",
@@ -49,6 +51,7 @@ local ForgeUI_CastBars = {
 				},
 				Focus = {
 					bShowCastIcons = true,
+					bCenterText = false,
 					crBorder = "FF000000",
 					crBackground = "FF101010",
 					crCastBar = "FF272727",
@@ -90,6 +93,13 @@ function ForgeUI_CastBars:OnDocLoaded()
 	F:API_RegisterMover(self, self.wndPlayerCastBar, "CastBars_Player", "Player's cast bar", "general")
 	F:API_RegisterMover(self, self.wndTargetCastBar, "CastBars_Target", "Target's cast bar", "general")
 	F:API_RegisterMover(self, self.wndFocusCastBar, "CastBars_Focus", "Focus' cast bar", "general")
+
+	F:API_RegisterMover(self, self.wndTargetCastBar:FindChild("InterruptArmor"), "CastBars_Target_IA", "IA", "general", {
+		strParent = "CastBars_Target"
+	})
+	F:API_RegisterMover(self, self.wndFocusCastBar:FindChild("InterruptArmor"), "CastBars_Focus_IA", "IA", "general", {
+		strParent = "CastBars_Focus"
+	})
 
 	Apollo.RegisterEventHandler("StartSpellThreshold", 	"OnStartSpellThreshold", self)
 	Apollo.RegisterEventHandler("ClearSpellThreshold", 	"OnClearSpellThreshold", self)
@@ -281,11 +291,11 @@ function ForgeUI_CastBars:UpdateInterruptArmor(unit, wnd, type)
 	else
 		bShow = true
 		if nMax == -1 then
-			wnd:FindChild("InterruptArmor"):SetSprite("ForgeUI_IAinf")
+			wnd:FindChild("InterruptArmor"):SetSprite("HUD_TargetFrame:spr_TargetFrame_InterruptArmor_Infinite")
 			wnd:FindChild("InterruptArmor_Value"):SetText("")
 			wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.tFrames[type].crCastBarInf)
 		elseif nMax > 0 then
-			wnd:FindChild("InterruptArmor"):SetSprite("ForgeUI_IA")
+			wnd:FindChild("InterruptArmor"):SetSprite("HUD_TargetFrame:spr_TargetFrame_InterruptArmor_Value")
 			wnd:FindChild("InterruptArmor_Value"):SetText(nValue)
 			wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.tFrames[type].crCastBar)
 		end
@@ -306,6 +316,22 @@ function ForgeUI_CastBars:ForgeAPI_LoadSettings()
 	else
 		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnNextFrame", self)
 		Apollo.RemoveEventHandler("NextFrame", self)
+	end
+
+	for k, v in pairs(self._DB.profile.tFrames) do
+		if v.bCenterText then
+			self["wnd" .. k .. "CastBar"]:FindChild("SpellName"):SetAnchorOffsets(10, 0, 0, 0)
+			self["wnd" .. k .. "CastBar"]:FindChild("SpellName"):SetAnchorPoints(0, 0, 1, 1)
+
+			self["wnd" .. k .. "CastBar"]:FindChild("CastTime"):SetAnchorOffsets(0, 0, -10, 0)
+			self["wnd" .. k .. "CastBar"]:FindChild("CastTime"):SetAnchorPoints(0, 0, 1, 1)
+		else
+			self["wnd" .. k .. "CastBar"]:FindChild("SpellName"):SetAnchorOffsets(10, -10, 0, 15)
+			self["wnd" .. k .. "CastBar"]:FindChild("SpellName"):SetAnchorPoints(0, 0, 1, 0)
+
+			self["wnd" .. k .. "CastBar"]:FindChild("CastTime"):SetAnchorOffsets(0, -10, -10, 15)
+			self["wnd" .. k .. "CastBar"]:FindChild("CastTime"):SetAnchorPoints(0, 0, 1, 0)
+		end
 	end
 end
 
@@ -367,6 +393,12 @@ function ForgeUI_CastBars:ForgeAPI_PopulateOptions()
 					self["wnd" .. k .. "CastBar"]:FindChild("CastTime"):SetTextColor(arg[2])
 					self["wnd" .. k .. "CastBar"]:FindChild("SpellName"):SetTextColor(arg[2])
 				end
+			})
+		end
+
+		if v.bCenterText ~= nil then
+			G:API_AddCheckBox(self, self.tOptionHolders[k], "Center text", v, "bCenterText", { tMove = {0, 120},
+				fnCallback = self.ForgeAPI_LoadSettings
 			})
 		end
 	end
