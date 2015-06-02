@@ -23,7 +23,7 @@ local ERR_WRONG_API = 2
 local MAJOR_VERSION = 0
 local MINOR_VERSION = 4
 local PATCH_VERSION = 4
-local PATCH_SUFFIX = 2
+local PATCH_SUFFIX = 3
 local PATCH_SUFFIXES = {
 	[-2] = "-alpha", [-1] = "-beta", [0] = "",
 	[1] = "a", [2] = "b", [3] = "c",
@@ -72,7 +72,7 @@ function ForgeUI:new(o)
 	 -- mandatory
   self.api_version = 2
 	self.sVersion = VERSION
-	self.nVersion = 8
+	self.nVersion = 9
 
 	self.author = "WintyBadass"
 	self.strAddonName = "~ForgeUI"
@@ -125,8 +125,6 @@ function ForgeUI:OnLoad()
 	self.xmlUI = XmlDoc.CreateFromFile("ForgeUI_UIElements.xml")
 
 	self.xmlMain:RegisterCallback("OnDocLoaded", self)
-
-  Event_FireGenericEvent("OneVersion_ReportAddonInfo", "ForgeUI", MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION, PATCH_SUFFIX)
 end
 
 -----------------------------------------------------------------------------------------------
@@ -195,6 +193,8 @@ function ForgeUI:OnDocLoaded()
 		ForgeUI.ShowWarning("Addon 'Interface' is turned off which may cause errors. Please turn it on.")
 	end
 	tInterface = nil
+	
+	Event_FireGenericEvent("OneVersion_ReportAddonInfo", "ForgeUI", MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION, PATCH_SUFFIX)
 end
 
 function ForgeUI:ForgeAPI_AfterRegistration()
