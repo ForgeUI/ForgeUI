@@ -144,28 +144,29 @@ function Addon:ItemListPressed(wndHandler, wndControl, eMouseButton)
 	if tData.wndOptions then
 		tData.wndOptions:Show(true, true)
 	else
-		if not wndControl:FindChild("Holder"):IsShown() then
+		if not wndControl:GetParent():FindChild("Holder"):IsShown() then
 			self:ItemListSignPressed(wndHandler, wndControl:FindChild("Sign"), eMouseButton)
 		end
-		self:ItemListPressed(wndHandler, wndControl:FindChild("Holder"):GetChildren()[1]:FindChild("Button"), eMouseButton)
+		self:ItemListPressed(wndHandler, wndControl:GetParent():FindChild("Holder"):GetChildren()[1]:FindChild("Button"), eMouseButton)
 	end
 end
 
 function Addon:ItemListSignPressed(wndHandler, wndControl, eMouseButton)
-	if wndControl:GetParent():FindChild("Holder"):IsShown() then
+	local wndHolder = wndControl:GetParent():GetParent()
+	local wndContainer = wndControl:GetParent():GetParent():FindChild("Holder")
+	
+	if wndContainer:IsShown() then
 		wndControl:SetText("+")
-		wndControl:GetParent():FindChild("Holder"):Show(false, true)
+		wndContainer:Show(false, true)
 
-		local wndHolder = wndControl:GetParent():GetParent()
 		local nLeft, nTop, nRight, nBottom = wndHolder:GetAnchorOffsets()
 		wndHolder:SetAnchorOffsets(nLeft, nTop, nRight, nTop + 20)
 	else
 		wndControl:SetText("-")
-		wndControl:GetParent():FindChild("Holder"):Show(true, true)
+		wndContainer:Show(true, true)
 
-		local wndHolder = wndControl:GetParent():GetParent()
 		local nLeft, nTop, nRight, nBottom = wndHolder:GetAnchorOffsets()
-		wndHolder:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + 20 * #wndControl:GetParent():FindChild("Holder"):GetChildren())
+		wndHolder:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + 20 * #wndContainer:GetChildren())
 	end
 
 	Inst:SortItemsByPriority()
@@ -173,6 +174,7 @@ end
 
 function Addon:SortItemsByPriority()
 	local wndHolder = self.wndMenuHolder
+	wndHolder:ArrangeChildrenVert() -- hack to allow scrolling
 
 	local tAll = {
 		high = {},
@@ -274,7 +276,6 @@ function ForgeUI:API_AddMenuToMenuItem(tModule, wndParent, strText, strWindow)
 	wndItem:SetData(tData)
 
 	wndParent:FindChild("Holder"):ArrangeChildrenVert()
-	wndParent:FindChild("Holder"):SetAnchorOffsets(10, 0, 0, #wndParent:FindChild("Holder"):GetChildren() * 20)
 
 	return wndItem
 end
