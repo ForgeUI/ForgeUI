@@ -97,7 +97,9 @@ end
 function ForgeUI_PetFrames:ForgeAPI_AfterRegistration()
 	Apollo.RegisterEventHandler("PetStanceChanged", "OnPetStanceChanged", self)
 	Apollo.RegisterEventHandler("PetSpawned", "OnPetSpawned", self)
+	Apollo.RegisterEventHandler("PetDespawned", "OnPetDespawned", self)
 	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnNextFrame", self)
+	Apollo.RegisterEventHandler("Mount", "OnMount", self)
 
 	self.wndPetFrames = Apollo.LoadForm(self.xmlDoc, "ForgeUI_PetFrames", "FixedHudStratumLow", self)
 	self.wndPetControl = Apollo.LoadForm(self.xmlDoc, "ForgeUI_PetControl", "FixedHudStratumLow", self)
@@ -185,7 +187,7 @@ function ForgeUI_PetFrames:PetControl_OnStanceBtn( wndHandler, wndControl, eMous
 end
 
 ---------------------------------------------------------------------------------------------------
--- ForgeUI_PetControl EvenHandlers
+-- ForgeUI_PetControl EventHandlers
 ---------------------------------------------------------------------------------------------------
 function ForgeUI_PetFrames:OnNextFrame()
 	self:UpdatePetFrames()
@@ -199,6 +201,27 @@ end
 function ForgeUI_PetFrames:OnPetSpawned()
 	self.wndPetControl:Show(true, true)
 end
+
+function ForgeUI_PetFrames:OnPetDespawned()
+	despawnPets = GameLib.GetPlayerPets()
+
+	if #despawnPets == 0 then
+		self.wndPetControl:Show(false, true)
+	end
+end
+
+function ForgeUI_PetFrames:OnMount()
+	petTimer = ApolloTimer.Create(0.1, false, "MountPetTimer", self)
+end
+
+function ForgeUI_PetFrames:MountPetTimer()
+	mountPets = GameLib.GetPlayerPets()
+	
+	if #mountPets > 0 then
+		self.wndPetControl:Show(true, true)
+	else self.wndPetControl:Show(false, true)
+	end
+end	
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI_PetFrames Instance
