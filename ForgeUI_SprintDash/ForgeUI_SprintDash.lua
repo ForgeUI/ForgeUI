@@ -46,7 +46,7 @@ function ForgeUI_SprintDash:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_SprintDash//ForgeUI_SprintDash.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
-	F:API_AddMenuItem(self, "Sprint & dash", "General")
+	F:API_AddMenuItem(self, "Sprint & Dash", "General")
 end
 
 function ForgeUI_SprintDash:ForgeAPI_LoadSettings()

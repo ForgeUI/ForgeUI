@@ -93,6 +93,19 @@ function Gui:API_AddText(tModule, wnd, strText, tOptions)
 		if tOptions.tOffsets then
 			wndText:SetAnchorOffsets(unpack(tOptions.tOffsets))
 		end
+
+		if tOptions.tMove then
+			local nLeft, nTop, nRight, nBottom = wndText:GetAnchorOffsets()
+			nLeft = nLeft + tOptions.tMove[1]
+			nTop = nTop + tOptions.tMove[2]
+			nRight = nRight + tOptions.tMove[1]
+			nBottom = nBottom + tOptions.tMove[2]
+			wndText:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+		end
+
+		if tOptions.strFont then
+			strFont = tOptions.strFont
+		end
 	end
 
 	-- set wnd
@@ -222,6 +235,11 @@ function Gui:API_AddCheckBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 			nRight = nRight + tOptions.tMove[1]
 			nBottom = nBottom + tOptions.tMove[2]
 			wndCheckBox:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+		end
+
+		if tOptions.nAddWidth then
+			nLeft, nTop, nRight, nBottom = wndCheckBox:GetAnchorOffsets()
+			wndCheckBox:SetAnchorOffsets(nLeft, nTop, nRight + tOptions.nAddWidth, nBottom)
 		end
 
 		if tOptions.fnCallback then

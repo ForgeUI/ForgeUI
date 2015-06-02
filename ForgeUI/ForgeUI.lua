@@ -142,7 +142,7 @@ function Addon:ItemListPressed(wndHandler, wndControl, eMouseButton)
 	local tData = wndControl:GetParent():GetData()
 
 	if tData.wndOptions then
-		tData.wndOptions:Show(true, false)
+		tData.wndOptions:Show(true, true)
 	else
 		if not wndControl:FindChild("Holder"):IsShown() then
 			self:ItemListSignPressed(wndHandler, wndControl:FindChild("Sign"), eMouseButton)
@@ -154,14 +154,14 @@ end
 function Addon:ItemListSignPressed(wndHandler, wndControl, eMouseButton)
 	if wndControl:GetParent():FindChild("Holder"):IsShown() then
 		wndControl:SetText("+")
-		wndControl:GetParent():FindChild("Holder"):Show(false)
+		wndControl:GetParent():FindChild("Holder"):Show(false, true)
 
 		local wndHolder = wndControl:GetParent():GetParent()
 		local nLeft, nTop, nRight, nBottom = wndHolder:GetAnchorOffsets()
 		wndHolder:SetAnchorOffsets(nLeft, nTop, nRight, nTop + 20)
 	else
 		wndControl:SetText("-")
-		wndControl:GetParent():FindChild("Holder"):Show(true)
+		wndControl:GetParent():FindChild("Holder"):Show(true, true)
 
 		local wndHolder = wndControl:GetParent():GetParent()
 		local nLeft, nTop, nRight, nBottom = wndHolder:GetAnchorOffsets()
@@ -279,7 +279,7 @@ function ForgeUI:API_AddMenuToMenuItem(tModule, wndParent, strText, strWindow)
 	return wndItem
 end
 
-function ForgeUI:API_ShowMainWindow(bShow) Inst.wndMain:Show(bShow) end
+function ForgeUI:API_ShowMainWindow(bShow) Inst.wndMain:Show(bShow, true) end
 function ForgeUI:API_GetApiVersion() return API_VERSION end
 function ForgeUI:API_GetVersion() return VERSION end
 function ForgeUI:API_GetVersions()

@@ -95,13 +95,20 @@ tAugBladeDrainId = {
 }
 
 -----------------------------------------------------------------------------------------------
+-- Locals
+-----------------------------------------------------------------------------------------------
+local GetPlayerUnit = GameLib.GetPlayerUnit
+
+-----------------------------------------------------------------------------------------------
 -- ForgeAPI
 -----------------------------------------------------------------------------------------------
 function ForgeUI_ResourceBars:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_ResourceBars//ForgeUI_ResourceBars.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
-	local unitPlayer = GameLib.GetPlayerUnit()
+	F:API_AddMenuItem(self, "Resource bar", "General")
+
+	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil then
 		Print("ForgeUI ERROR: Wrong class")
 		return
@@ -118,7 +125,7 @@ function ForgeUI_ResourceBars:ForgeAPI_Init()
 		self.playerClass = "Medic"
 		self:OnMedicCreated(unitPlayer)
 	elseif eClassId == GameLib.CodeEnumClass.Spellslinger then
-		self.playerClass = "Spellslinger"
+		self.playerClass = "Slinger"
 		self:OnSlingerCreated(unitPlayer)
 	elseif eClassId == GameLib.CodeEnumClass.Stalker then
 		self.playerClass = "Stalker"
@@ -133,10 +140,22 @@ function ForgeUI_ResourceBars:ForgeAPI_LoadSettings()
 	self["LoadStyle_ResourceBar_" .. self.playerClass](self)
 end
 
+function ForgeUI_ResourceBars:ForgeAPI_PopulateOptions()
+	local wndGeneral = self.tOptionHolders["General"]
+
+	G:API_AddColorBox(self, wndGeneral, "Border color", self._DB.profile, "crBorder", { tMove = {0, 0},
+		fnCallback = function(...) self.wndResource:FindChild("Border"):SetBGColor(arg[2]) end
+	})
+	G:API_AddColorBox(self, wndGeneral, "Background color", self._DB.profile, "crBackground", { tMove = {200, 0},
+	fnCallback = function(...) self.wndResource:FindChild("Background"):SetBGColor(arg[2]) end
+	})
+
+	self["PopulateOptions_" .. self.playerClass](self)
+end
+
 -----------------------------------------------------------------------------------------------
 -- Engineer
 -----------------------------------------------------------------------------------------------
-
 function ForgeUI_ResourceBars:OnEngineerCreated(unitPlayer)
 	self.playerMaxResource = unitPlayer:GetMaxResource(1)
 
@@ -150,7 +169,7 @@ function ForgeUI_ResourceBars:OnEngineerCreated(unitPlayer)
 end
 
 function ForgeUI_ResourceBars:OnEngineerUpdate()
-	local unitPlayer = GameLib.GetPlayerUnit()
+	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
 	local bShow = false
@@ -183,7 +202,7 @@ function ForgeUI_ResourceBars:OnEsperCreated(unitPlayer)
 end
 
 function ForgeUI_ResourceBars:OnEsperUpdate()
-	local unitPlayer = GameLib.GetPlayerUnit()
+	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
 	local bShow = false
@@ -218,7 +237,7 @@ function ForgeUI_ResourceBars:OnMedicCreated(unitPlayer)
 end
 
 function ForgeUI_ResourceBars:OnMedicUpdate()
-	local unitPlayer = GameLib.GetPlayerUnit()
+	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
 	local bShow = false
@@ -245,6 +264,14 @@ function ForgeUI_ResourceBars:OnSlingerCreated(unitPlayer)
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Slinger", "FixedHudStratumHigh", self)
 	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
 
+	F:API_RegisterMover(self, self.wndResource, "ResourceBar_Slinger", "Resource bar", "general", {
+		strStratum = "FixedHudStratumHigh"
+	})
+
+	F:API_RegisterMover(self, self.wndFocus, "ResourceBar_Focus", "Focus bar", "general", {
+		strStratum = "FixedHudStratumHigh"
+	})
+
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnSlingerUpdate", self)
 	else
@@ -253,13 +280,16 @@ function ForgeUI_ResourceBars:OnSlingerCreated(unitPlayer)
 end
 
 function ForgeUI_ResourceBars:OnSlingerUpdate()
-	local unitPlayer = GameLib.GetPlayerUnit()
+	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
 	local bShow = false
 
 	local nResource = unitPlayer:GetResource(4)
-	if unitPlayer:IsInCombat() or GameLib.IsSpellSurgeActive() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow  then
+	if (unitPlayer:IsInCombat() or GameLib.IsSpellSurgeActive()
+			or nResource < self.playerMaxResource or self._DB.profile.bPermaShow) and not F:API_MoversActive() then
+		self:RefreshStyle_ResourceBar_Slinger(unitPlayer, nResource)
+
 		bShow = true
 	end
 
@@ -288,7 +318,7 @@ function ForgeUI_ResourceBars:OnStalkerCreated(unitPlayer)
 end
 
 function ForgeUI_ResourceBars:OnStalkerUpdate()
-	local unitPlayer = GameLib.GetPlayerUnit()
+	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
 	local bShow = false
@@ -330,7 +360,7 @@ function ForgeUI_ResourceBars:OnWarriorCreated(unitPlayer)
 end
 
 function ForgeUI_ResourceBars:OnWarriorUpdate()
-	local unitPlayer = GameLib.GetPlayerUnit()
+	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
 	local bShow = false
@@ -343,7 +373,7 @@ function ForgeUI_ResourceBars:OnWarriorUpdate()
 	end
 
 	if not self.bAugBlade and self.wndResource:FindChild("AG_Stacks"):IsShown() then
-		for k, v in pairs(GameLib.GetPlayerUnit():GetBuffs().arBeneficial) do
+		for k, v in pairs(GetPlayerUnit():GetBuffs().arBeneficial) do
 			if tAugBladeDrainId[v.splEffect:GetId()] then
 				self.wndResource:FindChild("AG_Stacks"):SetText(Util:Round(v.fTimeRemaining, 1) .. " - " .. v.nCount)
 			end
@@ -600,6 +630,21 @@ function ForgeUI_ResourceBars:RefreshStyle_Focus(unitPlayer, nMana, nMaxMana)
 	self.wndFocus:FindChild("ProgressBar"):SetProgress(nMana)
 	self.wndFocus:FindChild("ProgressBar"):SetBarColor(self._DB.profile.crFocus)
 	self.wndFocus:FindChild("Value"):SetText(Util:Round(nMana, 0) .. " ( " .. Util:Round((nMana / nMaxMana) * 100, 1) .. "% )")
+end
+
+-----------------------------------------------------------------------------------------------
+-- Options
+-----------------------------------------------------------------------------------------------
+function ForgeUI_ResourceBars:PopulateOptions_Warrior()
+	local wndGeneral = self.tOptionHolders["General"]
+
+	G:API_AddText(self, wndGeneral, "Warrior", { tOffsets = {5, 60, 205, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Resource color (low)", self._DB.profile.warrior, "crResource1", { tMove = {0, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Resource color (high)", self._DB.profile.warrior, "crResource2", { tMove = {0, 120} })
+
+	G:API_AddCheckBox(self, wndGeneral, "Play sound when AB stacks falls off", self._DB.profile.warrior, "bPlaySoundAbEnd", {
+		tMove = {200, 90}, nAddWidth = 200
+	})
 end
 
 -----------------------------------------------------------------------------------------------
