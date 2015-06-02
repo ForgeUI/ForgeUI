@@ -289,8 +289,8 @@ function ForgeUI_UnitFrames:UpdateToTFrame(unitSource)
 	
 	self:UpdateHPBar(unit, self.wndToTFrame)
 	
-	self.wndToTFrame:FindChild("BuffContainerWindow"):SetUnit(unitSource)
-	self.wndToTFrame:FindChild("DebuffContainerWindow"):SetUnit(unitSource)
+	self.wndToTFrame:FindChild("BuffContainerWindow"):SetUnit(unit)
+	self.wndToTFrame:FindChild("DebuffContainerWindow"):SetUnit(unit)
 	
 	self.wndToTFrame:SetData(unit)
 	if not self.wndToTFrame:IsShown() then
@@ -320,8 +320,8 @@ function ForgeUI_UnitFrames:UpdateFocusFrame(unitSource)
 		self:UpdateAbsorbBar(unit, self.wndFocusFrame)
 	end
 	
-	self.wndFocusFrame:FindChild("BuffContainerWindow"):SetUnit(unitSource)
-	self.wndFocusFrame:FindChild("DebuffContainerWindow"):SetUnit(unitSource)
+	self.wndFocusFrame:FindChild("BuffContainerWindow"):SetUnit(unit)
+	self.wndFocusFrame:FindChild("DebuffContainerWindow"):SetUnit(unit)
 	
 	self.wndFocusFrame:SetData(unit)
 	if not self.wndFocusFrame:IsShown() then
