@@ -106,7 +106,7 @@ function ForgeUI_ResourceBars:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_ResourceBars//ForgeUI_ResourceBars.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
-	F:API_AddMenuItem(self, "Resource bar", "General")
+	local wndMenuItem = F:API_AddMenuItem(self, "Resource bar", "General")
 
 	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil then
@@ -127,6 +127,7 @@ function ForgeUI_ResourceBars:ForgeAPI_Init()
 	elseif eClassId == GameLib.CodeEnumClass.Spellslinger then
 		self.playerClass = "Slinger"
 		self:OnSlingerCreated(unitPlayer)
+		F:API_AddMenuToMenuItem(self, wndMenuItem, "Focus bar", "Focus")
 	elseif eClassId == GameLib.CodeEnumClass.Stalker then
 		self.playerClass = "Stalker"
 		self:OnStalkerCreated(unitPlayer)
@@ -144,13 +145,12 @@ function ForgeUI_ResourceBars:ForgeAPI_PopulateOptions()
 	local wndGeneral = self.tOptionHolders["General"]
 
 	G:API_AddColorBox(self, wndGeneral, "Border color", self._DB.profile, "crBorder", { tMove = {0, 0},
-		fnCallback = function(...) self.wndResource:FindChild("Border"):SetBGColor(arg[2]) end
-	})
+		fnCallback = self.ForgeAPI_LoadSettings })
 	G:API_AddColorBox(self, wndGeneral, "Background color", self._DB.profile, "crBackground", { tMove = {200, 0},
-	fnCallback = function(...) self.wndResource:FindChild("Background"):SetBGColor(arg[2]) end
-	})
+		fnCallback = self.ForgeAPI_LoadSettings })
 
 	self["PopulateOptions_" .. self.playerClass](self)
+	self:PopulateOptions_Focus()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -433,7 +433,6 @@ end
 -----------------------------------------------------------------------------------------------
 -- Focus
 -----------------------------------------------------------------------------------------------
-
 function ForgeUI_ResourceBars:UpdateFocus(unitPlayer)
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 	if self.wndFocus == nil then return end
@@ -443,8 +442,10 @@ function ForgeUI_ResourceBars:UpdateFocus(unitPlayer)
 	local nMana = unitPlayer:GetMana()
 	local nMaxMana = unitPlayer:GetMaxMana()
 
-	if nMana < nMaxMana then
+	if nMana < nMaxMana and not F:API_MoversActive() then
 		bShow = true
+
+		self:RefreshStyle_Focus(unitPlayer, nMana, nMaxMana)
 	end
 
 	if bShow ~= self.wndFocus:IsShown() then
@@ -622,9 +623,6 @@ function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Warrior(unitPlayer, nReso
 end
 
 -- focus
-function ForgeUI_ResourceBars:LoadStyle_Focus()
-end
-
 function ForgeUI_ResourceBars:RefreshStyle_Focus(unitPlayer, nMana, nMaxMana)
 	self.wndFocus:FindChild("ProgressBar"):SetMax(nMaxMana)
 	self.wndFocus:FindChild("ProgressBar"):SetProgress(nMana)
@@ -645,6 +643,24 @@ function ForgeUI_ResourceBars:PopulateOptions_Warrior()
 	G:API_AddCheckBox(self, wndGeneral, "Play sound when AB stacks falls off", self._DB.profile.warrior, "bPlaySoundAbEnd", {
 		tMove = {200, 90}, nAddWidth = 200
 	})
+end
+
+function ForgeUI_ResourceBars:PopulateOptions_Slinger()
+	local wndGeneral = self.tOptionHolders["General"]
+
+	G:API_AddText(self, wndGeneral, "Spellslinger", { tOffsets = {5, 60, 205, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Resource color", self._DB.profile.slinger, "crResource1", { tMove = {0, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Resource color (not full)", self._DB.profile.slinger, "crResource2", { tMove = {0, 120} })
+	G:API_AddColorBox(self, wndGeneral, "Surged color", self._DB.profile.slinger, "crResource3", { tMove = {200, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Surged color (not full)", self._DB.profile.slinger, "crResource4", { tMove = {200, 120} })
+	G:API_AddCheckBox(self, wndGeneral, "Surge shadow", self._DB.profile.slinger, "bSurgeShadow", { tMove = {400, 90} })
+end
+
+function ForgeUI_ResourceBars:PopulateOptions_Focus()
+	local wndFocus = self.tOptionHolders["Focus"]
+	if not wndFocus then return end
+
+	G:API_AddColorBox(self, wndFocus, "Focus color", self._DB.profile, "crFocus", { tMove = {0, 0} })
 end
 
 -----------------------------------------------------------------------------------------------
