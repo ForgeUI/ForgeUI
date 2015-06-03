@@ -121,9 +121,11 @@ function ForgeUI_ResourceBars:ForgeAPI_Init()
 	elseif eClassId == GameLib.CodeEnumClass.Esper then
 		self.playerClass = "Esper"
 		self:OnEsperCreated(unitPlayer)
+		F:API_AddMenuToMenuItem(self, wndMenuItem, "Focus bar", "Focus")
 	elseif eClassId == GameLib.CodeEnumClass.Medic then
 		self.playerClass = "Medic"
 		self:OnMedicCreated(unitPlayer)
+		F:API_AddMenuToMenuItem(self, wndMenuItem, "Focus bar", "Focus")
 	elseif eClassId == GameLib.CodeEnumClass.Spellslinger then
 		self.playerClass = "Slinger"
 		self:OnSlingerCreated(unitPlayer)
@@ -148,6 +150,9 @@ function ForgeUI_ResourceBars:ForgeAPI_PopulateOptions()
 		fnCallback = self.ForgeAPI_LoadSettings })
 	G:API_AddColorBox(self, wndGeneral, "Background color", self._DB.profile, "crBackground", { tMove = {200, 0},
 		fnCallback = self.ForgeAPI_LoadSettings })
+	G:API_AddCheckBox(self, wndGeneral, "Always show resource bar", self._DB.profile, "bPermaShow", { tMove = {400, 0} })
+	G:API_AddCheckBox(self, wndGeneral, "Center text value", self._DB.profile, "bCenterText", { tMove = {0, 30},
+		fnCallback = self.ForgeAPI_LoadSettings })
 
 	self["PopulateOptions_" .. self.playerClass](self)
 	self:PopulateOptions_Focus()
@@ -160,6 +165,10 @@ function ForgeUI_ResourceBars:OnEngineerCreated(unitPlayer)
 	self.playerMaxResource = unitPlayer:GetMaxResource(1)
 
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Engineer", "FixedHudStratumHigh", self)
+
+	F:API_RegisterMover(self, self.wndResource, "ResourceBar_Slinger", "Resource bar", "general", {
+		strStratum = "FixedHudStratumHigh"
+	})
 
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnEngineerUpdate", self)
@@ -175,7 +184,9 @@ function ForgeUI_ResourceBars:OnEngineerUpdate()
 	local bShow = false
 
 	local nResource = unitPlayer:GetResource(1)
-	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow  then
+	if (unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow) and not F:API_MoversActive()  then
+		self:RefreshStyle_ResourceBar_Engineer(unitPlayer, nResource)
+
 		bShow = true
 	end
 
@@ -194,6 +205,14 @@ function ForgeUI_ResourceBars:OnEsperCreated(unitPlayer)
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Esper", "FixedHudStratumHigh", self)
 	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
 
+	F:API_RegisterMover(self, self.wndResource, "ResourceBar_Slinger", "Resource bar", "general", {
+		strStratum = "FixedHudStratumHigh"
+	})
+
+	F:API_RegisterMover(self, self.wndFocus, "ResourceBar_Focus", "Focus bar", "general", {
+		strStratum = "FixedHudStratumHigh"
+	})
+
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnEsperUpdate", self)
 	else
@@ -208,7 +227,9 @@ function ForgeUI_ResourceBars:OnEsperUpdate()
 	local bShow = false
 
 	local nResource = unitPlayer:GetResource(1)
-	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow  then
+	if (unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow) and not F:API_MoversActive()  then
+		self:RefreshStyle_ResourceBar_Esper(unitPlayer, nResource)
+
 		bShow = true
 	end
 
@@ -229,6 +250,14 @@ function ForgeUI_ResourceBars:OnMedicCreated(unitPlayer)
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Medic", "FixedHudStratumHigh", self)
 	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
 
+	F:API_RegisterMover(self, self.wndResource, "ResourceBar_Slinger", "Resource bar", "general", {
+		strStratum = "FixedHudStratumHigh"
+	})
+
+	F:API_RegisterMover(self, self.wndFocus, "ResourceBar_Focus", "Focus bar", "general", {
+		strStratum = "FixedHudStratumHigh"
+	})
+
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnMedicUpdate", self)
 	else
@@ -243,7 +272,10 @@ function ForgeUI_ResourceBars:OnMedicUpdate()
 	local bShow = false
 
 	local nResource = unitPlayer:GetResource(1)
-	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow  then
+	if (unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow)
+			and not F:API_MoversActive() then
+		self:RefreshStyle_ResourceBar_Medic(unitPlayer, nResource)
+
 		bShow = true
 	end
 
@@ -310,6 +342,10 @@ function ForgeUI_ResourceBars:OnStalkerCreated(unitPlayer)
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Stalker", "FixedHudStratumHigh", self)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
 
+	F:API_RegisterMover(self, self.wndResource, "ResourceBar_Slinger", "Resource bar", "general", {
+		strStratum = "FixedHudStratumHigh"
+	})
+
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnStalkerUpdate", self)
 	else
@@ -324,7 +360,10 @@ function ForgeUI_ResourceBars:OnStalkerUpdate()
 	local bShow = false
 
 	local nResource = unitPlayer:GetResource(3)
-	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow  then
+	if (unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow)
+	  	and not F:API_MoversActive() then
+		self:RefreshStyle_ResourceBar_Stalker(unitPlayer, nResource)
+
 		bShow = true
 	end
 
@@ -637,8 +676,8 @@ function ForgeUI_ResourceBars:PopulateOptions_Warrior()
 	local wndGeneral = self.tOptionHolders["General"]
 
 	G:API_AddText(self, wndGeneral, "Warrior", { tOffsets = {5, 60, 205, 90} })
-	G:API_AddColorBox(self, wndGeneral, "Resource color (low)", self._DB.profile.warrior, "crResource1", { tMove = {0, 90} })
-	G:API_AddColorBox(self, wndGeneral, "Resource color (high)", self._DB.profile.warrior, "crResource2", { tMove = {0, 120} })
+	G:API_AddColorBox(self, wndGeneral, "Energy color (low)", self._DB.profile.warrior, "crResource1", { tMove = {0, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Energy color (high)", self._DB.profile.warrior, "crResource2", { tMove = {0, 120} })
 
 	G:API_AddCheckBox(self, wndGeneral, "Play sound when AB stacks falls off", self._DB.profile.warrior, "bPlaySoundAbEnd", {
 		tMove = {200, 90}, nAddWidth = 200
@@ -649,11 +688,46 @@ function ForgeUI_ResourceBars:PopulateOptions_Slinger()
 	local wndGeneral = self.tOptionHolders["General"]
 
 	G:API_AddText(self, wndGeneral, "Spellslinger", { tOffsets = {5, 60, 205, 90} })
-	G:API_AddColorBox(self, wndGeneral, "Resource color", self._DB.profile.slinger, "crResource1", { tMove = {0, 90} })
-	G:API_AddColorBox(self, wndGeneral, "Resource color (not full)", self._DB.profile.slinger, "crResource2", { tMove = {0, 120} })
+	G:API_AddColorBox(self, wndGeneral, "Rune color", self._DB.profile.slinger, "crResource1", { tMove = {0, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Rune color (not full)", self._DB.profile.slinger, "crResource2", { tMove = {0, 120} })
 	G:API_AddColorBox(self, wndGeneral, "Surged color", self._DB.profile.slinger, "crResource3", { tMove = {200, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Surged color (not full)", self._DB.profile.slinger, "crResource4", { tMove = {200, 120} })
 	G:API_AddCheckBox(self, wndGeneral, "Surge shadow", self._DB.profile.slinger, "bSurgeShadow", { tMove = {400, 90} })
+end
+
+function ForgeUI_ResourceBars:PopulateOptions_Esper()
+	local wndGeneral = self.tOptionHolders["General"]
+
+	G:API_AddText(self, wndGeneral, "Esper", { tOffsets = {5, 60, 205, 90} })
+	G:API_AddColorBox(self, wndGeneral, "PSI point color", self._DB.profile.esper, "crResource1", { tMove = {0, 90},
+		fnCallback = self.ForgeAPI_LoadSettings })
+end
+
+function ForgeUI_ResourceBars:PopulateOptions_Stalker()
+	local wndGeneral = self.tOptionHolders["General"]
+
+	G:API_AddText(self, wndGeneral, "Stalker", { tOffsets = {5, 60, 205, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Suit power color (low)", self._DB.profile.stalker, "crResource2", { tMove = {0, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Suit power color", self._DB.profile.stalker, "crResource1", { tMove = {200, 90} })
+	G:API_AddNumberBox(self, wndGeneral, "Suit power threshold", self._DB.profile.stalker, "nBreakpoint", { tMove = {400, 90} })
+end
+
+function ForgeUI_ResourceBars:PopulateOptions_Medic()
+	local wndGeneral = self.tOptionHolders["General"]
+
+	G:API_AddText(self, wndGeneral, "Medic", { tOffsets = {5, 60, 205, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Actuator color", self._DB.profile.medic, "crResource1", { tMove = {0, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Power charge color", self._DB.profile.medic, "crResource2", { tMove = {200, 90} })
+end
+
+function ForgeUI_ResourceBars:PopulateOptions_Engineer()
+	local wndGeneral = self.tOptionHolders["General"]
+
+	G:API_AddText(self, wndGeneral, "Engineer", { tOffsets = {5, 60, 205, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Volatility color", self._DB.profile.engineer, "crResource1", { tMove = {0, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Volatility color (30 - 70)", self._DB.profile.engineer, "crResource2", { tMove = {200, 90} })
+	G:API_AddCheckBox(self, wndGeneral, "Show 30 & 70 lines", self._DB.profile.engineer, "bShowBars", { tMove = {400, 90},
+		fnCallback = self.ForgeAPI_LoadSettings })
 end
 
 function ForgeUI_ResourceBars:PopulateOptions_Focus()
