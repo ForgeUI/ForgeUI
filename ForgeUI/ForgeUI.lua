@@ -23,7 +23,7 @@ local ERR_WRONG_API = 2
 local MAJOR_VERSION = 0
 local MINOR_VERSION = 4
 local PATCH_VERSION = 4
-local PATCH_SUFFIX = 3
+local PATCH_SUFFIX = 4
 local PATCH_SUFFIXES = {
 	[-2] = "-alpha", [-1] = "-beta", [0] = "",
 	[1] = "a", [2] = "b", [3] = "c",
@@ -72,7 +72,7 @@ function ForgeUI:new(o)
 	 -- mandatory
   self.api_version = 2
 	self.sVersion = VERSION
-	self.nVersion = 9
+	self.nVersion = 10
 
 	self.author = "WintyBadass"
 	self.strAddonName = "~ForgeUI"
