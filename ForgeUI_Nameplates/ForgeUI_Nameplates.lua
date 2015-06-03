@@ -58,9 +58,9 @@ local fnColorNameplate
 local fnRepositionNameplate
 
 function ForgeUI_Nameplates:new(o)
-    o = o or {}
-    setmetatable(o, self)
-    self.__index = self
+  o = o or {}
+  setmetatable(o, self)
+  self.__index = self
 
 	self.tPreloadUnits = {}
 
@@ -68,23 +68,23 @@ function ForgeUI_Nameplates:new(o)
 	self.arUnit2Nameplate = {}
 	self.arWnd2Nameplate = {}
 
-	-- mandatory 
-    self.api_version = 2
+	-- mandatory
+  self.api_version = 2
 	self.version = "1.0.0"
 	self.author = "WintyBadass"
 	self.strAddonName = "ForgeUI_Nameplates"
 	self.strDisplayName = "Nameplates"
-	
+
 	self.wndContainers = {}
-	
+
 	self.tStylers = {
 		["LoadStyle_Nameplates"] = self,
 		["LoadStyle_Nameplate"] = self, -- (tNameplate)
 	}
-	
+
 	-- optional
 	self.settings_version = 3
-    self.tSettings = {
+  self.tSettings = {
 		nMaxRange = 75,
 		bUseOcclusion = true,
 		bShowTitles = false,
@@ -269,17 +269,17 @@ function ForgeUI_Nameplates:new(o)
 				nShowName = 0,
 				crName = "FFFFFFFF"
 			},
-			
+
 		},
 		knNameplatePoolLimit = 500,
 		knTargetRange = 16000,
 	}
-	
-    return o
+
+  return o
 end
 
 function ForgeUI_Nameplates:Init()
-    Apollo.RegisterAddon(self, false, nil, {})
+  Apollo.RegisterAddon(self, false, nil, {})
 end
 
 -----------------------------------------------------------------------------------------------
@@ -288,10 +288,10 @@ end
 
 function ForgeUI_Nameplates:OnLoad()
 	Apollo.RegisterEventHandler("UnitCreated", 					"OnPreloadUnitCreated", self)
-	
+
 	self.xmlNameplate = XmlDoc.CreateFromFile("ForgeUI_Nameplates.xml")
 	self.xmlNameplate:RegisterCallback("OptionsInit", self)
-	
+
 	self.xmlOptions = XmlDoc.CreateFromFile("ForgeUI_Options.xml")
 	self.xmlOptions:RegisterCallback("OnDocLoaded", self)
 end
@@ -310,7 +310,7 @@ function ForgeUI_Nameplates:ForgeAPI_AfterRegistration()
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Friendly NPC", { xmlDoc = self.xmlOptions, strContainer = "Container_FriendlyNPC" })
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Neutral NPC", { xmlDoc = self.xmlOptions, strContainer = "Container_NeutralNPC" })
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Hostile NPC", { xmlDoc = self.xmlOptions, strContainer = "Container_HostileNPC" })
-	
+
 	ForgeUI.API_AddListItemToButton(self, wndItemButton, "Player's pet", { xmlDoc = self.xmlOptions, strContainer = "Container_PlayerPet" })
 end
 
@@ -318,7 +318,7 @@ function ForgeUI_Nameplates:OnDocLoaded()
 	if ForgeUI == nil then -- forgeui loaded
 		ForgeUI = Apollo.GetAddon("ForgeUI")
 	end
-	
+
 	ForgeUI.API_RegisterAddon(self)
 end
 
@@ -334,7 +334,7 @@ function ForgeUI_Nameplates:NameplatesInit()
 	Apollo.RegisterEventHandler("UnitMemberOfGuildChange", 		"OnUnitMemberOfGuildChange", self)
 	Apollo.RegisterEventHandler("GuildChange", 					"OnGuildChange", self)
 	Apollo.RegisterEventHandler("UnitGibbed",					"OnUnitGibbed", self)
-	
+
 	self.bRedrawRewardIcons = true
 	local tRewardUpdateEvents = {
 		"QuestObjectiveUpdated", "QuestStateChanged", "ChallengeAbandon", "ChallengeLeftArea",
@@ -353,28 +353,28 @@ function ForgeUI_Nameplates:NameplatesInit()
 
 	self.arUnit2Nameplate = {}
 	self.arWnd2Nameplate = {}
-	
+
 	self:CreateUnitsFromPreload()
 end
 
 function ForgeUI_Nameplates:UpdateAllNameplates()
 	self:UpdateAllNameplateVisibility()
 	self:RequestUpdateAllNameplateRewards()
-	
+
 	for idx, tNameplate in pairs(self.arUnit2Nameplate) do
 		fnUpdateNameplate(self, tNameplate)
 	end
 end
 
 function ForgeUI_Nameplates:UpdateNameplate(tNameplate)
+	fnDrawIndicators(self, tNameplate)
 	fnDrawName(self, tNameplate)
 	fnDrawGuild(self, tNameplate)
 	fnDrawInfo(self, tNameplate)
 	fnDrawHealth(self, tNameplate)
 	fnDrawCastBar(self, tNameplate)
-	fnDrawIndicators(self, tNameplate)
 	fnDrawRewards(self, tNameplate)
-	
+
 	fnColorNameplate(self, tNameplate)
 end
 
@@ -437,17 +437,17 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 		tNameplate.eDisposition 	= eDisposition
 		tNameplate.bIsImportant		= self:IsImportantNPC(unitOwner)
 		tNameplate.tSettings 		= self.tSettings.tUnits[tNameplate.strUnitType]
-		
+
 		self:UpdateNameplate(tNameplate)
 	end
-	
+
 	tNameplate.bOnScreen = wndNameplate:IsOnScreen()
 	tNameplate.bOccluded = wndNameplate:IsOccluded()
-	
+
 	local bNewShow = self:HelperVerifyVisibilityOptions(tNameplate) and self:CheckDrawDistance(tNameplate)
-	
+
 	tNameplate.eDisposition = eDisposition
-	
+
 	if bNewShow and not self.tSettings.bFrequentUpdate then
 		fnDrawNameplate(self, tNameplate)
 	end
@@ -461,17 +461,17 @@ end
 
 function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	local strNewUnitType = self:GetUnitType(unitNew)
-	
+
 	if tAllowedNames[unitNew:GetName()] == unitNew:GetId() then
 	else
 		if not self.tSettings.tUnits[strNewUnitType].bEnabled then return end
 	end
-	
+
 	local idUnit = unitNew:GetId()
 	if self.arUnit2Nameplate[idUnit] ~= nil and self.arUnit2Nameplate[idUnit].wndNameplate:IsValid() then
 		return
 	end
-	
+
 	local wnd = nil
 	local wndReferences = nil
 	if next(self.arWindowPool) ~= nil then
@@ -496,24 +496,25 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		strUnitType		= strNewUnitType,
 		unitClassID 	= unitNew:IsACharacter() and unitNew:GetClassId() or unitNew:GetRank(),
 		tSettings 		= self.tSettings.tUnits[strNewUnitType],
-		
+
 		bOnScreen 		= wnd:IsOnScreen(),
 		bOccluded 		= wnd:IsOccluded(),
 		bIsImportant	= self:IsImportantNPC(unitNew),
-		
+
 		bIsTarget 		= GameLib.GetTargetUnit() == unitNew,
 		bIsCasting 		= false,
 		bIsMounted		= false,
-		
+		bIsCleansable	= false,
+
 		nVulnerableTime = 0,
 		eDisposition	= unitNew:GetDispositionTo(self.unitPlayer),
 		tActivation		= unitNew:GetActivationState(),
-		
+
 		bShow			= false,
 		wnd				= wndReferences,
 		wndReposition	= wndRepositionReferences,
 	}
-	
+
 	if wndReferences == nil then
 		tNameplate.wnd = {
 			health = wnd:FindChild("Container:Health"),
@@ -521,7 +522,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 			level = wnd:FindChild("NameRewardContainer:Level"),
 			wndGuild = wnd:FindChild("Guild"),
 			wndName = wnd:FindChild("NameRewardContainer:Name"),
-			
+
 			nameRewardContainer = wnd:FindChild("NameRewardContainer:RewardContainer"),
 			healthMaxShield = wnd:FindChild("Container:Health:HealthBars:MaxShield"),
 			healthShieldFill = wnd:FindChild("Container:Health:HealthBars:MaxShield:ShieldFill"),
@@ -531,7 +532,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 			healthHealthFill = wnd:FindChild("Container:Health:HealthBars:MaxHealth:HealthFill"),
 			healthHealthLabel = wnd:FindChild("Container:Health:HealthLabel"),
 			ia = wnd:FindChild("Container:Health:IA"),
-			
+
 			castBarLabel = wnd:FindChild("Container:CastBar:Label"),
 			castBarCastFill = wnd:FindChild("Container:CastBar:CastFill"),
 			questRewards = wnd:FindChild("NameRewardContainer:Name:RewardContainer:QuestRewards"),
@@ -542,29 +543,29 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 			info_class = wnd:FindChild("NameRewardContainer:Name:Info:Class"),
 		}
 	end
-	
+
 	if not tNameplate.wndReposition then
 		tNameplate.wndReposition = Apollo.LoadForm(self.xmlNameplate, "Reposition", "InWorldHudStratum", self)
 		tNameplate.wndReposition:SetUnit(unitNew, 0)
 	else
 		tNameplate.wndReposition:SetUnit(unitNew, 0)
 	end
-	
+
 	self.arUnit2Nameplate[idUnit] = tNameplate
 	self.arWnd2Nameplate[wnd:GetId()] = tNameplate
-	
+
 	self:UpdateNameplateRewardInfo(tNameplate)
-	
+
 	self:DrawName(tNameplate)
 	self:DrawGuild(tNameplate)
 	self:DrawHealth(tNameplate)
 	self:DrawIndicators(tNameplate)
 	self:DrawRewards(tNameplate)
 	self:DrawInfo(tNameplate)
-	
+
 	self:UpdateInfo(tNameplate)
 	self:UpdateNameplateRewardInfo(tNameplate)
-	
+
 	self.tStylers["LoadStyle_Nameplate"]["LoadStyle_Nameplate"](self, tNameplate)
 end
 
@@ -583,23 +584,23 @@ end
 function ForgeUI_Nameplates:OnPreloadUnitCreateTimer()
 	if self.unitPlayer then
 		Apollo.RemoveEventHandler("UnitCreated", self)
-	
+
 		Apollo.RegisterEventHandler("UnitCreated",					"OnUnitCreated", self)
 		Apollo.RegisterEventHandler("UnitDestroyed", 				"OnUnitDestroyed", self)
-	
+
 		local nCurrentTime = GameLib.GetTickCount()
-		
+
 		while #self.tPreloadUnits > 0 do
 			local unit = table.remove(self.tPreloadUnits, #self.tPreloadUnits)
 			if unit:IsValid() then
 				self:OnUnitCreated(unit)
 			end
-			
+
 			if GameLib.GetTickCount() - nCurrentTime > 250 then
 				return
 			end
 		end
-		
+
 		if self.timerPreloadUnitCreateDelay then
 			self.timerPreloadUnitCreateDelay:Stop()
 		end
@@ -622,7 +623,7 @@ function ForgeUI_Nameplates:OnUnitDestroyed(unitOwner)
 	if #self.arWindowPool < self.tSettings.knNameplatePoolLimit then
 		wndNameplate:Show(false, true)
 		wndNameplate:SetUnit(nil)
-		
+
 		wndReposition:Show(false, true)
 		wndReposition:SetUnit(nil)
 		table.insert(self.arWindowPool, {wndNameplate, tNameplate.wnd, wndReposition })
@@ -646,7 +647,7 @@ function ForgeUI_Nameplates:OnFrame()
 		if tNameplate.bShow then
 			fnDrawCastBar(self, tNameplate)
 			fnRepositionNameplate(self, tNameplate)
-			
+
 			if self.tSettings.bFrequentUpdate then
 				fnDrawNameplate(self, tNameplate)
 			end
@@ -656,11 +657,12 @@ end
 
 function ForgeUI_Nameplates:DrawNameplate(tNameplate)
 	fnColorNameplate(self, tNameplate)
-	
+
+	fnDrawIndicators(self, tNameplate)
 	fnDrawName(self, tNameplate)
 	fnDrawGuild(self, tNameplate)
 	fnDrawHealth(self, tNameplate)
-	
+
 	fnDrawRewards(self, tNameplate)
 end
 
@@ -668,26 +670,26 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 	local unitOwner = tNameplate.unitOwner
 	local wndNameplate = tNameplate.wndNameplate
 	local tSettings = tNameplate.tSettings
-	
+
 	local crNameColors = tSettings.crName
 	local crBarColor = tSettings.crHealth
-	
+
 	if tNameplate.strUnitType == "HostilePlayer" and not unitOwner:IsPvpFlagged() then
 		crNameColors = tSettings.crNameNoPvP
 	end
-	
+
 	if unitOwner:IsDead() then
 		crNameColors = self.tSettings.crDead
 	end
-	
+
 	if tSettings.bClassColors then
 		crBarColor = ForgeUI.tSettings.tClassColors["cr" .. krtClassEnums[unitOwner:GetClassId()]]
 	end
-	
+
 	if tSettings.nHpCutoff and tNameplate.hpPercentage and tNameplate.hpPercentage < tSettings.nHpCutoff then
 		crBarColor = tSettings.crHpCutoff
 	end
-	
+
 	if unitOwner:IsInCCState(Unit.CodeEnumCCState.Vulnerability) then
 		crBarColor = self.tSettings.crMOO
 	end
@@ -701,7 +703,7 @@ function ForgeUI_Nameplates:DrawName(tNameplate)
 	local wndNameplate = tNameplate.wndNameplate
 	local unitOwner = tNameplate.unitOwner
 	local wndName = tNameplate.wnd.wndName
-	
+
 	local bShow = self:GetBooleanOption("nShowName", tNameplate) or tAllowedNames[unitOwner:GetName()]
 	if wndName:IsShown() ~= bShow then
 		wndName:Show(bShow, true)
@@ -714,7 +716,7 @@ function ForgeUI_Nameplates:DrawName(tNameplate)
 		else
 			strNewName = unitOwner:GetName()
 		end
-		
+
 		if tNameSwaps[unitOwner:GetName()] then
 			strNewName = tNameSwaps[unitOwner:GetName()]
 		end
@@ -736,23 +738,23 @@ function ForgeUI_Nameplates:DrawGuild(tNameplate)
 
 	local wndGuild = tNameplate.wnd.wndGuild
 	local bShow = self:GetBooleanOption("nShowGuild", tNameplate)
-	
+
 	if bShow then
 		local strNewGuild = unitOwner:GetAffiliationName()
 		if tNameplate.strAffiliationName ~= strNewGuild then
 			tNameplate.strAffiliationName = strNewGuild
-			
+
 			if unitOwner:GetType() == "Player" and strNewGuild ~= nil and strNewGuild ~= "" then
 				strNewGuild = String_GetWeaselString(Apollo.GetString("Nameplates_GuildDisplay"), strNewGuild)
 			end
-			
+
 			wndGuild:SetTextRaw(strNewGuild)
-			
+
 			local nNameWidth = Apollo.GetTextWidth("Nameplates", strNewGuild .. " ")
 			local nLeft, nTop, nRight, nBottom = wndGuild:GetAnchorOffsets()
 			wndGuild:SetAnchorOffsets(- (nNameWidth / 2), nTop, (nNameWidth / 2), nBottom)
 		end
-		
+
 		bShow = bShow and strNewGuild ~= nil and strNewGuild ~= ""
 	end
 
@@ -767,32 +769,32 @@ function ForgeUI_Nameplates:DrawHealth(tNameplate)
 
 	local nHealth = unitOwner:GetHealth()
 	local nMaxHealth = unitOwner:GetMaxHealth()
-	
+
 	local bShow = nHealth ~= nil and not unitOwner:IsDead() and nMaxHealth > 0 and self:GetBooleanOption("nShowBars", tNameplate)
-	
+
 	if (tNameplate.tSettings.bHideOnHealth or tNameplate.tSettings.bHideOnShield) and not tNameplate.bIsTarget then
 		local bHealth = nHealth ~= nMaxHealth and tNameplate.tSettings.bHideOnHealth
-		
+
 		local nShield = unitOwner:GetShieldCapacity()
-		local nShieldMax = unitOwner:GetShieldCapacityMax()	
-		
+		local nShieldMax = unitOwner:GetShieldCapacityMax()
+
 		local bShield = nShield ~= nShieldMax and tNameplate.tSettings.bHideOnShield
-	
+
 		bShow = bHealth or bShield
 	end
-	
-	if bShow then
+
+	if bShow or tNameplate.bIsCleansable then
 		self:SetBarValue(tNameplate.wnd.healthHealthFill, 0, nHealth, nMaxHealth)
-		
+
 		tNameplate.hpPercentage = (nHealth / nMaxHealth) * 100
-		
+
 		fnDrawIndicators(self, tNameplate)
-		
+
 		fnDrawIA(self, tNameplate)
 		fnDrawShield(self, tNameplate)
 		fnDrawAbsorb(self, tNameplate)
 	end
-	
+
 	if bShow ~= tNameplate.wnd.health:IsShown() then
 		tNameplate.wnd.health:Show(bShow, true)
 	end
@@ -800,15 +802,15 @@ end
 
 function ForgeUI_Nameplates:DrawIA(tNameplate)
 	local unitOwner = tNameplate.unitOwner
-	
+
 	local ia = tNameplate.wnd.ia
-	
+
 	local bShow = false
-	
+
 	nValue = unitOwner:GetInterruptArmorValue()
 	nMax = unitOwner:GetInterruptArmorMax()
 	if nMax == 0 or nValue == nil or unitOwner:IsDead() then
-		
+
 	else
 		bShow = true
 		if nMax == -1 then
@@ -819,7 +821,7 @@ function ForgeUI_Nameplates:DrawIA(tNameplate)
 			ia:SetText(nValue)
 		end
 	end
-	
+
 	if bShow ~= ia:IsShown() then
 		ia:Show(bShow, true)
 	end
@@ -827,24 +829,24 @@ end
 
 function ForgeUI_Nameplates:DrawShield(tNameplate)
 	local bShow = false
-	
+
 	if self.tSettings.bShowShield then
 		local unitOwner = tNameplate.unitOwner
-		
+
 		local nShield = unitOwner:GetShieldCapacity()
 		local nShieldMax = unitOwner:GetShieldCapacityMax()
-		
+
 		bShow = nShield ~= nil and not unitOwner:IsDead() and nShield > 0
-		
+
 		if bShow then
 			self:SetBarValue(tNameplate.wnd.healthShieldFill, 0, nShield, nShieldMax)
 		end
 	end
-	
+
 	if bShow ~= tNameplate.wnd.healthMaxShield:IsShown() then
 		tNameplate.wnd.healthMaxShield:Show(bShow, true)
 		tNameplate.bShowShield = bShow
-		
+
 		if self.tSettings.tStyle.nStyle == 1 then
 			tNameplate.wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, bShow and 7 + self.tSettings.tStyle.nShieldHeight or 7)
 			tNameplate.wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, bShow and 7 + self.tSettings.tStyle.nShieldHeight or 7)
@@ -854,21 +856,21 @@ end
 
 function ForgeUI_Nameplates:DrawAbsorb(tNameplate)
 	local bShow = false
-	
+
 	if self.tSettings.bShowAbsorb then
 		local unitOwner = tNameplate.unitOwner
-		
+
 		local nAbsorb = unitOwner:GetAbsorptionValue()
 		local nAbsorbMax = unitOwner:GetAbsorptionMax()
-		
+
 		bShow = nAbsorb ~= nil and not unitOwner:IsDead() and nAbsorb > 0
-		
+
 		if bShow then
 			if self.tSettings.tStyle.nStyle == 0 then
 				self:SetBarValue(tNameplate.wnd.healthAbsorbFill, 0, nAbsorb, nAbsorbMax)
 			elseif self.tSettings.tStyle.nStyle == 1 then
 				local nMaxHealth = unitOwner:GetMaxHealth()
-				
+
 				if nMaxHealth > nAbsorbMax then
 					self:SetBarValue(tNameplate.wnd.healthAbsorbFill, 0, nAbsorb, nMaxHealth)
 				else
@@ -877,11 +879,11 @@ function ForgeUI_Nameplates:DrawAbsorb(tNameplate)
 			end
 		end
 	end
-		
+
 	if bShow ~= tNameplate.wnd.healthMaxAbsorb:IsShown() then
 		tNameplate.wnd.healthMaxAbsorb:Show(bShow, true)
 		tNameplate.bShowAbsorb = bShow
-		
+
 		if self.tSettings.tStyle.nStyle == 1 then
 			tNameplate.wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, bShow and -7 - self.tSettings.tStyle.nAbsorbHeight or -7, 7, 7)
 			tNameplate.wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, bShow and -7 - self.tSettings.tStyle.nAbsorbHeight or -7, 7, 7)
@@ -902,20 +904,20 @@ function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
 	if bShow ~= wndCastBar:IsShown() then
 		wndCastBar:Show(bShow)
 	end
-	
+
 	if bShow then
 		local strCastName = unitOwner:GetCastName()
 		if strCastName ~= tNameplate.strCastName then
 			tNameplate.wnd.castBarLabel:SetText(strCastName)
 			tNameplate.strCastName = strCastName
 		end
-		
+
 		local nCastDuration = unitOwner:GetCastDuration()
 		if nCastDuration ~= tNameplate.nCastDuration then
 			tNameplate.wnd.castBarCastFill:SetMax(nCastDuration)
 			tNameplate.nCastDuration = nCastDuration
 		end
-		
+
 		local nCastElapsed = unitOwner:GetCastElapsed()
 		if nCastElapsed ~= tNameplate.nCastElapsed then
 			tNameplate.wnd.castBarCastFill:SetProgress(nCastElapsed)
@@ -933,7 +935,7 @@ function ForgeUI_Nameplates:DrawRewards(tNameplate)
 	if bShow ~= tNameplate.wnd.questRewards:IsShown() then
 		tNameplate.wnd.questRewards:Show(bShow)
 	end
-	
+
 	local tRewardsData = tNameplate.wnd.questRewards:GetData()
 end
 
@@ -942,35 +944,38 @@ function ForgeUI_Nameplates:DrawIndicators(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 
 	-- target indicator
-	
+
 	local bShowTargetMarker = tNameplate.bIsTarget and self.tSettings.tUnits["Target"].bShowMarker
 	if wnd.targetMarker:IsShown() ~= bShowTargetMarker then
 		wnd.targetMarker:Show(bShowTargetMarker)
 	end
-	
+
 	local bShowIndicator = false
-	
+
 	-- threat loss indicator
-	
+
 	if tNameplate.tSettings.bThreatIndicator then
 		local unitsTarget = unitOwner:GetTarget()
 		if unitsTarget and not unitsTarget:IsThePlayer() then
 			bShowIndicator = true
 		end
 	end
-	
+
 	-- cleanse indicator
-	
+
 	if tNameplate.tSettings.bCleanseIndicator then
 		local tDebuffs = unitOwner:GetBuffs().arHarmful
-		
+
+		tNameplate.bIsCleansable = false
+
 		for _, debuff in pairs(tDebuffs) do
 			if debuff["splEffect"]:GetClass() == Spell.CodeEnumSpellClass.DebuffDispellable then
 				bShowIndicator = true
+				tNameplate.bIsCleansable = true
 			end
 		end
 	end
-	
+
 	if bShowIndicator ~= wnd.indicator:IsShown() then
 		wnd.indicator:Show(bShowIndicator, true)
 	end
@@ -978,35 +983,35 @@ end
 
 function ForgeUI_Nameplates:DrawInfo(tNameplate)
 	local wnd = tNameplate.wnd
-	
+
 	local nShowInfo = 0
 	local bShowInfo = false
-	
+
 	--if tNameplate.bIsTarget then
 	--	nShowInfo = self.tSettings.tUnits["Target"].nShowInfo
 	--else
 		nShowInfo = tNameplate.tSettings.nShowInfo
 	--end
-	
-	
+
+
 	if nShowInfo == 0 then
 	elseif nShowInfo == 1 then
 		wnd.info_level:SetAnchorOffsets(-60, 0, -2, 0)
 		wnd.info_class:SetAnchorOffsets(0, 0, 0, 0)
-		
+
 		bShowInfo = true
 	elseif nShowInfo == 2 then
 		wnd.info_class:SetAnchorOffsets(-15, 0, 0, 0)
 		wnd.info_level:SetAnchorOffsets(0, 0, 0, 0)
-		
+
 		bShowInfo = true
 	elseif nShowInfo == 3 then
 		wnd.info_class:SetAnchorOffsets(-15, 0, 0, 0)
 		wnd.info_level:SetAnchorOffsets(-75, 0, -17, 0)
-		
+
 		bShowInfo = true
 	end
-	
+
 	if bShowInfo ~= wnd.info:IsShown() then
 		wnd.info:Show(bShowInfo, true)
 	end
@@ -1015,32 +1020,32 @@ end
 function ForgeUI_Nameplates:UpdateInfo(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 	local wnd = tNameplate.wnd
-	
+
 	wnd.info_level:SetText(tostring(unitOwner:GetLevel()))
 	if unitOwner:GetType() == "Player" then
 		wnd.info_class:SetSprite("ForgeUI_" .. krtClassEnums[tNameplate.unitClassID] .. "_t")
 	elseif tNameplate.unitClassID ~= 6 and tNameplate.unitClassID >= 0 then
 		wnd.info_class:SetSprite("ForgeUI_npc_rank_" .. krtNpcRankEnums[tNameplate.unitClassID] .. "_t")
-	end 
+	end
 end
 
 function ForgeUI_Nameplates:RepositionNameplate(tNameplate)
 	if tNameplate.tSettings.bReposition then
 		local wndNameplate = tNameplate.wndNameplate
-	
+
 		local nX, nY = wndNameplate:GetPos()
 		if nY < 0 or tNameplate.bRepositioned then
 			local wndReposition = tNameplate.wndReposition
-		
+
 			local nX, nY = wndReposition:GetPos()
 			if nY > 0 and tNameplate.bRepositioned then
 				tNameplate.bRepositioned = false
-				
+
 				wndReposition:SetUnit(tNameplate.unitOwner, 0)
 				wndNameplate:SetUnit(tNameplate.unitOwner, 1)
 			elseif not tNameplate.bRepositioned then
 				tNameplate.bRepositioned = true
-				
+
 				wndReposition:SetUnit(tNameplate.unitOwner, 1)
 				wndNameplate:SetUnit(tNameplate.unitOwner, 0)
 			end
@@ -1091,14 +1096,14 @@ end
 function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 	local unitPlayer = self.unitPlayer
 	local unitOwner = tNameplate.unitOwner
-	
+
 	local bDontShowNameplate = not tNameplate.bOnScreen or tNameplate.bGibbed or not tNameplate.bIsImportant and self.tSettings.bOnlyImportantNPC
 		or (unitOwner:IsDead() and not self.tSettings.bShowDead)
-	
+
 	if bDontShowNameplate and not tNameplate.bIsTarget and not tAllowedNames[unitOwner:GetName()] then
 		return false
 	end
-	
+
 	local eDisposition = tNameplate.eDisposition
 	local tActivation = tNameplate.tActivation
 
@@ -1132,11 +1137,11 @@ function ForgeUI_Nameplates:GetUnitType(unit)
 	else
 		eDisposition = unit:GetDispositionTo(GameLib.GetPlayerUnit())
 	end
-	
+
 	if not strPlayerName then
 		strPlayerName = self.unitPlayer:GetName()
 	end
-	
+
 	if unit:GetType() == "Player" and unit:GetName() == strPlayerName then -- TODO: :IsThePlayer() broken
 		return "Player"
 	elseif unit:GetType() == "Player" then
@@ -1155,7 +1160,7 @@ function ForgeUI_Nameplates:GetUnitType(unit)
 		return "PinataLoot"
 	elseif unit:GetType() == "Pet" then
 		local petOwner = unit:GetUnitOwner()
-	
+
 		if eDisposition == 0 then
 			return "HostilePet"
 		elseif petOwner ~= nil and petOwner:IsThePlayer() then
@@ -1221,19 +1226,19 @@ function ForgeUI_Nameplates:IsImportantNPC(unitOwner)
 	local strUnitType = self:GetUnitType(unitOwner)
 	if strUnitType == "FriendlyNPC" or strUnitType == "Simple" then
 		local tActivation = unitOwner:GetActivationState()
-		
+
 		--Units without health
 		if tActivation.Bank ~= nil then
 			return true
 		elseif tActivation.CREDDExchange then
 			return true
 		end
-	
+
 		--Flight paths
 		if tActivation.FlightPathSettler ~= nil or tActivation.FlightPath ~= nil or tActivation.FlightPathNew then
 			return true
 		end
-		
+
 		--Quests
 		if tActivation.QuestReward ~= nil then
 			return true
@@ -1246,7 +1251,7 @@ function ForgeUI_Nameplates:IsImportantNPC(unitOwner)
 		elseif tActivation.TalkTo ~= nil then
 			return true
 		end
-		
+
 		--Vendors
 		if tActivation.CommodityMarketplace ~= nil then
 			return true
@@ -1255,21 +1260,21 @@ function ForgeUI_Nameplates:IsImportantNPC(unitOwner)
 		elseif tActivation.Vendor then
 			return true
 		end
-		
+
 		--Trainers
 		if tActivation.TradeskillTrainer  then
 			return true
 		end
-		
+
 		if tActivation.InstancePortal then
 			return true
 		end
-		
+
 		return false
 	else
 		return true
 	end
-		
+
 	return false
 end
 
@@ -1285,15 +1290,15 @@ end
 
 function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	if not tNameplate then return end
-	
+
 	local wnd = tNameplate.wnd
 	local wndNameplate = tNameplate.wndNameplate
-	
+
 	wnd.targetMarker:SetBGColor(self.tSettings.tUnits["Target"].crTargetMarker)
-	
+
 	wnd.healthShieldFill:SetBarColor(self.tSettings.crShield)
 	wnd.healthAbsorbFill:SetBarColor(self.tSettings.crAbsorb)
-	
+
 	if tNameplate.strUnitType == "HostileNPC" then
 		wnd.indicator:SetBGColor(self.tSettings.tUnits["HostileNPC"].crThreatIndicator)
 	elseif tNameplate.strUnitType == "FriendlyPlayer" then
@@ -1301,15 +1306,15 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	elseif tNameplate.strUnitType == "PartyPlayer" then
 		wnd.indicator:SetBGColor(self.tSettings.tUnits["PartyPlayer"].crCleanseIndicator)
 	end
-	
+
 	wndNameplate:FindChild("Container"):SetStyle("IgnoreMouse", not self.tSettings.bClickable)
 	if tNameplate.unitOwner:IsThePlayer() and not self.tSettings.bSelfClickable then
 		wndNameplate:FindChild("Container"):SetStyle("IgnoreMouse", tNameplate.unitOwner:IsThePlayer())
 	end
-	
+
 	--style
 	local tStyle = self.tSettings.tStyle
-	
+
 	-- indicators
 	if tStyle.nStyle == 0 then
 		wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, 7)
@@ -1318,54 +1323,54 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 		wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, 7 + tStyle.nShieldHeight)
 		wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, 7 + tStyle.nShieldHeight)
 	end
-	
+
 	-- bar
 	local nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("Container"):GetAnchorOffsets()
-	
+
 	nLeft = -(tStyle.nBarHeight / 2)
 	nRight = (tStyle.nBarHeight / 2)
-	
+
 	nBottom = nTop + tStyle.nBarWidth
-	
+
 	wndNameplate:FindChild("Container"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
-	
+
 	-- shield
 	if tStyle.nStyle == 0 then
 		wndNameplate:FindChild("MaxShield"):SetAnchorPoints(0.5, 1, 1, 1)
 		wndNameplate:FindChild("MaxShield"):SetAnchorOffsets(10, -4, -5, 4)
-	
+
 		nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("MaxShield"):GetAnchorOffsets()
-		
+
 		nTop = -(tStyle.nShieldHeight / 2)
 		nBottom = (tStyle.nShieldHeight / 2)
-		
+
 		wndNameplate:FindChild("MaxShield"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 	elseif tStyle.nStyle == 1 then
 		wndNameplate:FindChild("MaxShield"):SetAnchorPoints(0, 1, 1, 1)
 		wndNameplate:FindChild("MaxShield"):SetAnchorOffsets(0, -1, 0, tStyle.nShieldHeight)
 	end
-		
+
 	-- absorb
 	if tStyle.nStyle == 0 then
 		wndNameplate:FindChild("MaxAbsorb"):SetAnchorPoints(0, 1, 0.5, 1)
 		wndNameplate:FindChild("MaxAbsorb"):SetAnchorOffsets(5, -4, -10, 4)
-	
+
 		nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("MaxAbsorb"):GetAnchorOffsets()
-		
+
 		nTop = -(tStyle.nAbsorbHeight/ 2)
 		nBottom = (tStyle.nAbsorbHeight/ 2)
-		
+
 		wndNameplate:FindChild("MaxAbsorb"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 	elseif tStyle.nStyle == 1 then
 		wndNameplate:FindChild("MaxAbsorb"):SetAnchorPoints(0, 0, 1, 0)
 		wndNameplate:FindChild("MaxAbsorb"):SetAnchorOffsets(0, - tStyle.nAbsorbHeight, 0, 1)
 	end
-	
+
 	-- cast
 	nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("CastBar"):GetAnchorOffsets()
-	
+
 	nBottom = 3 + tStyle.nCastHeight
-	
+
 	wndNameplate:FindChild("CastBar"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 end
 
@@ -1373,13 +1378,13 @@ function ForgeUI_Nameplates:OnStyleChanged()
 	if self.tSettings.tStyle.nStyle == 0 then
 		self.tSettings.tStyle.nAbsorbHeight = 8
 		self.tSettings.tStyle.nShieldHeight = 8
-		
+
 		self.wndContainers["Container_Style"]:FindChild("nAbsorbHeight"):FindChild("EditBox"):SetText(8)
 		self.wndContainers["Container_Style"]:FindChild("nShieldHeight"):FindChild("EditBox"):SetText(8)
 	elseif self.tSettings.tStyle.nStyle == 1 then
 		self.tSettings.tStyle.nAbsorbHeight = 4
 		self.tSettings.tStyle.nShieldHeight = 4
-		
+
 		self.wndContainers["Container_Style"]:FindChild("nAbsorbHeight"):FindChild("EditBox"):SetText(4)
 		self.wndContainers["Container_Style"]:FindChild("nShieldHeight"):FindChild("EditBox"):SetText(4)
 	end
@@ -1400,7 +1405,7 @@ function ForgeUI_Nameplates:OnNameplateNameClick(wndHandler, wndCtrl, eMouseButt
 	end
 
 	local unitOwner = tNameplate.unitOwner
-	
+
 	if unitOwner:IsThePlayer() and not self.tSettings.bSelfClickable then return end
 	if GameLib.GetTargetUnit() ~= unitOwner and eMouseButton == GameLib.CodeEnumInputMouse.Left then
 		GameLib.SetTargetUnit(unitOwner)
@@ -1431,7 +1436,7 @@ function ForgeUI_Nameplates:OnEnteredCombat(unitChecked, bInCombat)
 	if unitChecked == self.unitPlayer then
 		self.bPlayerInCombat = bInCombat
 	end
-	
+
 	local tNameplate = self.arUnit2Nameplate[unitChecked:GetId()]
 	if tNameplate ~= nil then
 		fnDrawName(self, tNameplate)
@@ -1510,14 +1515,14 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 		tNameplateOther.bIsTarget = false
 
 		if bIsTarget then
+			fnDrawIndicators(self, tNameplateOther)
 			fnDrawHealth(self, tNameplateOther)
 			fnDrawName(self, tNameplateOther)
 			fnDrawGuild(self, tNameplateOther)
-			fnDrawIndicators(self, tNameplateOther)
 			fnDrawInfo(self, tNameplateOther)
-			
+
 			self:UpdateNameplateRewardInfo(tNameplateOther)
-			
+
 			fnUpdateNameplateVisibility(self, tNameplateOther)
 		end
 	end
@@ -1525,7 +1530,7 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 	if unitOwner == nil then
 		return
 	end
-	
+
 	local tNameplate = self.arUnit2Nameplate[unitOwner:GetId()]
 	if tNameplate == nil then
 		return
@@ -1533,15 +1538,15 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 
 	if GameLib.GetTargetUnit() == unitOwner then
 		tNameplate.bIsTarget = true
-		
+
+		fnDrawIndicators(self, tNameplate)
 		fnDrawHealth(self, tNameplate)
 		fnDrawName(self, tNameplate)
 		fnDrawGuild(self, tNameplate)
-		fnDrawIndicators(self, tNameplate)
 		fnDrawInfo(self, tNameplate)
-		
+
 		self:UpdateNameplateRewardInfo(tNameplate)
-		
+
 		fnUpdateNameplateVisibility(self, tNameplate)
 	end
 end
