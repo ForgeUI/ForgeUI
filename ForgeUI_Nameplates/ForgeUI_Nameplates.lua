@@ -793,6 +793,8 @@ function ForgeUI_Nameplates:DrawHealth(tNameplate)
 		fnDrawIA(self, tNameplate)
 		fnDrawShield(self, tNameplate)
 		fnDrawAbsorb(self, tNameplate)
+
+		bShow = true
 	end
 
 	if bShow ~= tNameplate.wnd.health:IsShown() then
