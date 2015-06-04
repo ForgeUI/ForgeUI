@@ -142,7 +142,11 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 	-- NOTE: Right now, we're just telling the player the amount of damage they did and not the specific type to keep things neat
 	local nTotalDamage = nDamage
 	if type(nShieldDamaged) == "number" and nShieldDamaged > 0 then
-		nTotalDamage = nDamage + nShieldDamaged
+		nTotalDamage = nTotalDamage + nShieldDamaged
+	end
+	
+	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then
+		nTotalDamage = nTotalDamage + nAbsorptionAmount
 	end
 	
 	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields
@@ -282,6 +286,10 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 
 	if type(nShieldDamaged) == "number" and nShieldDamaged > 0 then
 		nDamage = nDamage + nShieldDamaged
+	end
+	
+	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then
+		nDamage = nDamage + nAbsorptionAmount
 	end
 
 	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields
