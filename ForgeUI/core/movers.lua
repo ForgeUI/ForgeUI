@@ -31,7 +31,6 @@ local Movers = {
 -----------------------------------------------------------------------------------------------
 -- Local variables
 -----------------------------------------------------------------------------------------------
-local bMoversActive = false
 local tScopes = {
 	["all"] = {},
 	["general"] = {},
@@ -54,7 +53,7 @@ local function RegisterMover(luaCaller, wnd, strKey, strName, strScope, tOptions
 			wndMover = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_Mover", tScopes["all"][tOptions.strParent], F)
 		else
 			if tOptions and tOptions.strStratum then
-				wndMover = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_Mover", tOptions.strStratum, F)
+				wndMover = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_Mover", "FixedHudStratum" .. tOptions.strStratum, F)
 			else
 				wndMover = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_Mover", "FixedHudStratum", F)
 			end
@@ -157,43 +156,45 @@ function Movers:ForgeAPI_LoadSettings()
 end
 
 function Movers:UnlockMovers()
-	bMoversActive = true
 	F:API_ShowMainWindow(false, true)
 	self.wndMoversForm:Show(true, true)
+
+	for _, v in pairs(F:API_GetStrata()) do
+		F:API_GetStratum(v):Show(false, true)
+	end
 
 	for k, v in pairs(tScopes["all"]) do
 		UpdateMoverPosition(v)
 
 		v:Show(true, true)
-
-		v:GetData().bParentShown = v:GetData().wndParent:IsShown()
-		v:GetData().wndParent:Show(false, true)
 	end
 end
 
 function Movers:LockMovers()
-	bMoversActive = false
 	F:API_ShowMainWindow(true)
 	self.wndMoversForm:Show(false, true)
+
+	for _, v in pairs(F:API_GetStrata()) do
+		F:API_GetStratum(v):Show(true, true)
+	end
 
 	for k, v in pairs(tScopes["all"]) do
 		UpdateParentPosition(v)
 
 		v:Show(false, true)
-
-		v:GetData().wndParent:Show(v:GetData().bParentShown, true)
 	end
 end
 
 function Movers:CancelChanges()
-	bMoversActive = false
 	F:API_ShowMainWindow(true)
 	self.wndMoversForm:Show(false, true)
 
+	for _, v in pairs(F:API_GetStrata()) do
+		F:API_GetStratum(v):Show(true, true)
+	end
+
 	for k, v in pairs(tScopes["all"]) do
 		v:Show(false, true)
-
-		v:GetData().wndParent:Show(v:GetData().bParentShown, true)
 	end
 end
 
@@ -221,6 +222,5 @@ function F:UnlockMovers() Movers:UnlockMovers() end
 -- ForgeUI public API
 -----------------------------------------------------------------------------------------------
 function F:API_RegisterMover(...) return RegisterMover(...) end
-function F:API_MoversActive() return bMoversActive end
 
 Movers = F:API_NewModule(Movers)

@@ -164,10 +164,10 @@ end
 function ForgeUI_ResourceBars:OnEngineerCreated(unitPlayer)
 	self.playerMaxResource = unitPlayer:GetMaxResource(1)
 
-	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Engineer", "FixedHudStratumHigh", self)
+	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Engineer", F:API_GetStratum("HudHigh"), self)
 
 	F:API_RegisterMover(self, self.wndResource, "ResourceBar_Slinger", "Resource bar", "general", {
-		strStratum = "FixedHudStratumHigh"
+		strStratum = "High"
 	})
 
 	if self._DB.profile.bSmoothBars then
@@ -184,7 +184,7 @@ function ForgeUI_ResourceBars:OnEngineerUpdate()
 	local bShow = false
 
 	local nResource = unitPlayer:GetResource(1)
-	if (unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow) and not F:API_MoversActive()  then
+	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow then
 		self:RefreshStyle_ResourceBar_Engineer(unitPlayer, nResource)
 
 		bShow = true
@@ -202,15 +202,15 @@ end
 function ForgeUI_ResourceBars:OnEsperCreated(unitPlayer)
 	self.playerMaxResource = unitPlayer:GetMaxResource(1)
 
-	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Esper", "FixedHudStratumHigh", self)
-	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
+	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Esper", F:API_GetStratum("HudHigh"), self)
+	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", F:API_GetStratum("HudHigh"), self)
 
 	F:API_RegisterMover(self, self.wndResource, "ResourceBar_Slinger", "Resource bar", "general", {
-		strStratum = "FixedHudStratumHigh"
+		strStratum = "High"
 	})
 
 	F:API_RegisterMover(self, self.wndFocus, "ResourceBar_Focus", "Focus bar", "general", {
-		strStratum = "FixedHudStratumHigh"
+		strStratum = "High"
 	})
 
 	if self._DB.profile.bSmoothBars then
@@ -227,7 +227,7 @@ function ForgeUI_ResourceBars:OnEsperUpdate()
 	local bShow = false
 
 	local nResource = unitPlayer:GetResource(1)
-	if (unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow) and not F:API_MoversActive()  then
+	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow  then
 		self:RefreshStyle_ResourceBar_Esper(unitPlayer, nResource)
 
 		bShow = true
@@ -247,15 +247,15 @@ end
 function ForgeUI_ResourceBars:OnMedicCreated(unitPlayer)
 	self.playerMaxResource = unitPlayer:GetMaxResource(1)
 
-	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Medic", "FixedHudStratumHigh", self)
-	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
+	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Medic", F:API_GetStratum("HudHigh"), self)
+	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", F:API_GetStratum("HudHigh"), self)
 
 	F:API_RegisterMover(self, self.wndResource, "ResourceBar_Slinger", "Resource bar", "general", {
-		strStratum = "FixedHudStratumHigh"
+		strStratum = "High"
 	})
 
 	F:API_RegisterMover(self, self.wndFocus, "ResourceBar_Focus", "Focus bar", "general", {
-		strStratum = "FixedHudStratumHigh"
+		strStratum = "High"
 	})
 
 	if self._DB.profile.bSmoothBars then
@@ -272,8 +272,7 @@ function ForgeUI_ResourceBars:OnMedicUpdate()
 	local bShow = false
 
 	local nResource = unitPlayer:GetResource(1)
-	if (unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow)
-			and not F:API_MoversActive() then
+	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow then
 		self:RefreshStyle_ResourceBar_Medic(unitPlayer, nResource)
 
 		bShow = true
@@ -293,15 +292,15 @@ end
 function ForgeUI_ResourceBars:OnSlingerCreated(unitPlayer)
 	self.playerMaxResource = unitPlayer:GetMaxResource(4)
 
-	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Slinger", "FixedHudStratumHigh", self)
-	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", "FixedHudStratumHigh", self)
+	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Slinger", F:API_GetStratum("HudHigh"), self)
+	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", F:API_GetStratum("HudHigh"), self)
 
 	F:API_RegisterMover(self, self.wndResource, "ResourceBar_Slinger", "Resource bar", "general", {
-		strStratum = "FixedHudStratumHigh"
+		strStratum = "High"
 	})
 
 	F:API_RegisterMover(self, self.wndFocus, "ResourceBar_Focus", "Focus bar", "general", {
-		strStratum = "FixedHudStratumHigh"
+		strStratum = "High"
 	})
 
 	if self._DB.profile.bSmoothBars then
@@ -318,8 +317,7 @@ function ForgeUI_ResourceBars:OnSlingerUpdate()
 	local bShow = false
 
 	local nResource = unitPlayer:GetResource(4)
-	if (unitPlayer:IsInCombat() or GameLib.IsSpellSurgeActive()
-			or nResource < self.playerMaxResource or self._DB.profile.bPermaShow) and not F:API_MoversActive() then
+	if unitPlayer:IsInCombat() or GameLib.IsSpellSurgeActive() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow then
 		self:RefreshStyle_ResourceBar_Slinger(unitPlayer, nResource)
 
 		bShow = true
@@ -339,11 +337,11 @@ end
 function ForgeUI_ResourceBars:OnStalkerCreated(unitPlayer)
 	self.playerMaxResource = unitPlayer:GetMaxResource(3)
 
-	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Stalker", "FixedHudStratumHigh", self)
+	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Stalker", F:API_GetStratum("HudHigh"), self)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
 
 	F:API_RegisterMover(self, self.wndResource, "ResourceBar_Slinger", "Resource bar", "general", {
-		strStratum = "FixedHudStratumHigh"
+		strStratum = "High"
 	})
 
 	if self._DB.profile.bSmoothBars then
@@ -360,8 +358,7 @@ function ForgeUI_ResourceBars:OnStalkerUpdate()
 	local bShow = false
 
 	local nResource = unitPlayer:GetResource(3)
-	if (unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow)
-	  	and not F:API_MoversActive() then
+	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow then
 		self:RefreshStyle_ResourceBar_Stalker(unitPlayer, nResource)
 
 		bShow = true
@@ -378,11 +375,11 @@ end
 function ForgeUI_ResourceBars:OnWarriorCreated(unitPlayer)
 	self.playerMaxResource = unitPlayer:GetMaxResource(1)
 
-	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Warrior", "FixedHudStratumHigh", self)
+	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Warrior", F:API_GetStratum("HudHigh"), self)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
 
 	F:API_RegisterMover(self, self.wndResource, "ResourceBar_Warrior", "Resource bar", "general", {
-		strStratum = "FixedHudStratumHigh"
+		strStratum = "High"
 	})
 
 	self.nAugBladeRemaining = 0
@@ -405,7 +402,7 @@ function ForgeUI_ResourceBars:OnWarriorUpdate()
 	local bShow = false
 
 	local nResource = unitPlayer:GetResource(1)
-	if (unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow) and not F:API_MoversActive() then
+	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow then
 		self:RefreshStyle_ResourceBar_Warrior(unitPlayer, nResource)
 
 		bShow = true
@@ -481,7 +478,7 @@ function ForgeUI_ResourceBars:UpdateFocus(unitPlayer)
 	local nMana = unitPlayer:GetMana()
 	local nMaxMana = unitPlayer:GetMaxMana()
 
-	if nMana < nMaxMana and not F:API_MoversActive() then
+	if nMana < nMaxMana then
 		bShow = true
 
 		self:RefreshStyle_Focus(unitPlayer, nMana, nMaxMana)

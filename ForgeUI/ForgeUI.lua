@@ -40,6 +40,10 @@ end
 if PATCH_SUFFIX ~= 0 then
 	VERSION = VERSION .. "-" .. PATCH_SUFFIXES[PATCH_SUFFIX]
 end
+-----------------------------------------------------------------------------------------------
+-- Locals
+-----------------------------------------------------------------------------------------------
+local tStrata = {}
 
 -----------------------------------------------------------------------------------------------
 -- Initialization
@@ -78,6 +82,15 @@ function Addon:OnDocLoaded()
 
 	Apollo.RegisterSlashCommand("forgeui", "OnForgeUIOn", self)
 
+	-- create overlays
+	tStrata = {
+		World = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "InWorldHudStratum", self),
+
+		HudLow = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "DefaultStratum", self),
+		Hud = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "DefaultStratum", self),
+		HudHigh = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "DefaultStratum", self),
+	}
+
 	-- ForgeUI window initialization
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Form", nil, self)
 	self.wndMenuHolder = self.wndMain:FindChild("ItemList")
@@ -85,15 +98,6 @@ function Addon:OnDocLoaded()
 
 	self.wndMain:FindChild("AuthorText"):SetText(AUTHOR)
 	self.wndMain:FindChild("VersionText"):SetText(VERSION)
-
-	-- create overlays
-	ForgeUI.tOverlays = {
-    HudLow = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", nil, self),
-		HudMid = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", nil, self),
-		HudHigh = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", nil, self),
-
-		Movers = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", nil, self),
-	}
 
 	-- init Modules
 	if GameLib.GetPlayerUnit() then
@@ -154,7 +158,7 @@ end
 function Addon:ItemListSignPressed(wndHandler, wndControl, eMouseButton)
 	local wndHolder = wndControl:GetParent():GetParent()
 	local wndContainer = wndControl:GetParent():GetParent():FindChild("Holder")
-	
+
 	if wndContainer:IsShown() then
 		wndControl:SetText("+")
 		wndContainer:Show(false, true)
@@ -290,6 +294,12 @@ function ForgeUI:API_GetVersions()
 		patch = PATCH_VERSION,
 		suffix = PATCH_SUFFIX,
 	}
+end
+function ForgeUI:API_GetStratum(strName) return tStrata[strName] or tStrata["HudLow"] end
+function ForgeUI:API_GetStrata()
+	local t = {}
+	for k, _ in pairs(tStrata) do table.insert(t, k) end
+	return t
 end
 
 -- ForgeDB initialization

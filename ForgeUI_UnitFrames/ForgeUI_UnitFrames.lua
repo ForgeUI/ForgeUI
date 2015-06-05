@@ -136,7 +136,7 @@ function ForgeUI_UnitFrames:ForgeAPI_Init()
 end
 
 function ForgeUI_UnitFrames:OnDocLoaded()
-	self.wndPlayerFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_PlayerFrame", "FixedHudStratumLow", self)
+	self.wndPlayerFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_PlayerFrame", F:API_GetStratum("Hud"), self)
 	F:API_RegisterMover(self, self.wndPlayerFrame, "UnitFrames_PlayerFrame", "Player frame", "general")
 	F:API_RegisterMover(self, self.wndPlayerFrame:FindChild("ShieldBar"), "UnitFrames_PlayerShieldBar", "Shield", "general", { strParent = "UnitFrames_PlayerFrame" })
 	F:API_RegisterMover(self, self.wndPlayerFrame:FindChild("AbsorbBar"), "UnitFrames_PlayerAbsorbBar", "Absorb", "general", { strParent = "UnitFrames_PlayerFrame" })
@@ -208,7 +208,7 @@ function ForgeUI_UnitFrames:UpdateTargetFrame(unitSource)
 	local bShow = false
 	local unit = unitSource:GetTarget()
 
-	if unit and not F:API_MoversActive() then
+	if unit then
 		bShow = true
 	end
 
@@ -239,7 +239,7 @@ function ForgeUI_UnitFrames:UpdateToTFrame(unitSource)
 	local bShow = false
 	local unit = unitSource and unitSource:GetTarget()
 
-	if unit and not F:API_MoversActive() then
+	if unit then
 		bShow = true
 	end
 
@@ -265,7 +265,7 @@ function ForgeUI_UnitFrames:UpdateFocusFrame(unitSource)
 	local bShow = false
 	local unit = unitSource and unitSource:GetAlternateTarget()
 
-	if unit and not F:API_MoversActive() then
+	if unit then
 		bShow = true
 	end
 

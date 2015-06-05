@@ -85,9 +85,9 @@ end
 -- Addon functions
 -----------------------------------------------------------------------------------------------
 function ForgeUI_CastBars:OnDocLoaded()
-	self.wndPlayerCastBar = Apollo.LoadForm(self.xmlDoc, "PlayerCastBar", "FixedHudStratum", self)
-	self.wndTargetCastBar = Apollo.LoadForm(self.xmlDoc, "TargetCastBar", "FixedHudStratum", self)
-	self.wndFocusCastBar = Apollo.LoadForm(self.xmlDoc, "FocusCastBar", "FixedHudStratum", self)
+	self.wndPlayerCastBar = Apollo.LoadForm(self.xmlDoc, "PlayerCastBar", F:API_GetStratum("Hud"), self)
+	self.wndTargetCastBar = Apollo.LoadForm(self.xmlDoc, "TargetCastBar", F:API_GetStratum("Hud"), self)
+	self.wndFocusCastBar = Apollo.LoadForm(self.xmlDoc, "FocusCastBar", F:API_GetStratum("Hud"), self)
 
 	F:API_RegisterMover(self, self.wndPlayerCastBar, "CastBars_Player", "Player's cast bar", "general")
 	F:API_RegisterMover(self, self.wndTargetCastBar, "CastBars_Target", "Target's cast bar", "general")
@@ -109,7 +109,7 @@ function ForgeUI_CastBars:OnNextFrame()
 	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
-	if self._DB.profile.bShowPlayer and not F:API_MoversActive() then
+	if self._DB.profile.bShowPlayer then
 		self:UpdateCastBar(unitPlayer, self.wndPlayerCastBar, "Player")
 	else
 		if self.wndPlayerCastBar:IsShown() then
@@ -118,7 +118,7 @@ function ForgeUI_CastBars:OnNextFrame()
 	end
 
 	local unitTarget = unitPlayer:GetTarget()
-	if unitTarget ~= nil and unitTarget:IsValid() and self._DB.profile.bShowTarget and not F:API_MoversActive() then
+	if unitTarget ~= nil and unitTarget:IsValid() and self._DB.profile.bShowTarget then
 		self:UpdateCastBar(unitTarget, self.wndTargetCastBar, "Target")
 		self:UpdateMoOBar(unitTarget, self.wndTargetCastBar, "Target")
 		self:UpdateInterruptArmor(unitTarget, self.wndTargetCastBar, "Target")
@@ -129,7 +129,7 @@ function ForgeUI_CastBars:OnNextFrame()
 	end
 
 	local unitFocus = unitPlayer:GetAlternateTarget()
-	if unitFocus ~= nil and unitFocus:IsValid() and self._DB.profile.bShowFocus and not F:API_MoversActive() then
+	if unitFocus ~= nil and unitFocus:IsValid() and self._DB.profile.bShowFocus then
 		self:UpdateCastBar(unitFocus, self.wndFocusCastBar, "Focus")
 		self:UpdateMoOBar(unitFocus, self.wndFocusCastBar, "Focus")
 		self:UpdateInterruptArmor(unitFocus, self.wndFocusCastBar, "Focus")

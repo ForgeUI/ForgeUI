@@ -54,16 +54,6 @@ local error = error
 -----------------------------------------------------------------------------------------------
 -- Local variables
 -----------------------------------------------------------------------------------------------
-local tForgeSavedData = { -- template for saving data
-	tGeneral = {
-		_tInfo = {},
-		tProfiles = {},
-	},
-	tCharacter = {
-		tProfiles = {},
-	}
-}
-
 local tModules = {}
 local tAddons = {}
 local bInit = false
