@@ -62,6 +62,7 @@ local function RegisterMover(luaCaller, wnd, strKey, strName, strScope, tOptions
 		tScopes["all"][strKey] = wndMover
 		if tScopes[strScope] then
 			tScopes[strScope][strKey] = wndMover
+			tData.strScope = strScope
 		end
 
 		wndMover:SetAnchorPoints(wnd:GetAnchorPoints())
@@ -101,11 +102,32 @@ local function RegisterMover(luaCaller, wnd, strKey, strName, strScope, tOptions
 		wndMover:SetText(strName)
 	end
 
+	tData.wndMover = wndMover
 	tData.strParent = luaCaller._NAME
 	tData.strKey = strKey
 	tData.wndParent = wnd
 
 	wndMover:SetData(tData)
+end
+
+function ResetMover(luaCaller, strKey)
+	local wndMover = tScopes["all"][strKey]
+	if not wndMover then
+		if Movers._DB.profile[luaCaller._NAME] then
+			Movers._DB.profile[luaCaller._NAME][strKey] = nil
+		end
+		return
+	end
+	local tData = wndMover:GetData()
+
+	tScopes["all"][strKey] = nil
+	if tDatastrScope then
+		tScopes[tData.strScope] = nil
+	end
+
+	Movers._DB.profile[luaCaller._NAME][strKey] = nil
+
+	wndMover:Destroy()
 end
 
 local function UpdateMoverPosition(wndMover)
@@ -222,5 +244,6 @@ function F:UnlockMovers() Movers:UnlockMovers() end
 -- ForgeUI public API
 -----------------------------------------------------------------------------------------------
 function F:API_RegisterMover(...) return RegisterMover(...) end
+function F:API_ResetMover(...) return ResetMover(...) end
 
 Movers = F:API_NewModule(Movers)
