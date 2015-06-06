@@ -1016,7 +1016,11 @@ function ForgeUI_Nameplates:UpdateInfo(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 	local wnd = tNameplate.wnd
 	
-	wnd.info_level:SetText(tostring(unitOwner:GetLevel()))
+	if unitOwner:GetLevel() ~= nil then
+		wnd.info_level:SetText(tostring(unitOwner:GetLevel()))
+	else wnd.info_level:SetText("-")
+	end
+	
 	if unitOwner:GetType() == "Player" then
 		wnd.info_class:SetSprite("ForgeUI_" .. krtClassEnums[tNameplate.unitClassID] .. "_t")
 	elseif tNameplate.unitClassID ~= 6 and tNameplate.unitClassID >= 0 then
