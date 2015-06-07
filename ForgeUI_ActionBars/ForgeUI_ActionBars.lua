@@ -38,9 +38,9 @@ local ForgeUI_ActionBars = {
 					nRows = 1,
 					nColumns = 8,
 					nMinId = 0,
-					nButtonPaddingVer = 0,
-					nButtonPaddingHor = 0,
-					bDrawHotkey = false,
+					nButtonPaddingVer = 3,
+					nButtonPaddingHor = 3,
+					bDrawHotkey = true,
 					bDrawShortcutBottom = false,
 				},
 			}
@@ -653,41 +653,40 @@ end
 -----------------------------------------------------------------------------------------------
 function ForgeUI_ActionBars:Helper_BarOffsets(tBar, bReset)
 	local nLeft, nTop, nRight, nBottom
+	local nCenterVert, nCenterHor
 
-	local nWidth = tBar.nColumns * tBar.nButtonSize - tBar.nColumns + tBar.nColumns * tBar.nButtonPaddingHor
-	local nHeight = tBar.nRows * tBar.nButtonSize - tBar.nRows + tBar.nRows * tBar.nButtonPaddingVer
+	local nWidth = tBar.nColumns * tBar.nButtonSize - tBar.nColumns + tBar.nColumns * tBar.nButtonPaddingHor - tBar.nButtonPaddingHor
+	local nHeight = tBar.nRows * tBar.nButtonSize - tBar.nRows + tBar.nRows * tBar.nButtonPaddingVer - tBar.nButtonPaddingVer
 
 	if bReset then
 		nLeft, nTop, nRight, nBottom = unpack(tSnapToOffsets[tBar.strSnapTo])
-
-		if tBar.strSnapTo == "bottom" then
-			nLeft = nWidth / -2
-			nRight = nWidth / 2
-
-			nTop = nTop - nHeight
-		elseif tBar.strSnapTo == "top" then
-			nLeft = nWidth / -2
-			nRight = nWidth / 2
-
-			nBottom = nBottom + tBar.nButtonSize
-		elseif tBar.strSnapTo == "right" then
-			nTop = nHeight / -2
-			nBottom = nHeight / 2
-
-			nLeft = nLeft - tBar.nButtonSize
-		elseif tBar.strSnapTo == "left" then
-			nTop = nHeight / -2
-			nBottom = nHeight / 2
-
-			nRight = nRight + tBar.nButtonSize
-		end
 	else
 		nLeft, nTop, nRight, nBottom = tBars[tBar.strKey]:GetAnchorOffsets()
+	end
 
-		if tBar.strSnapTo == "bottom" then
-			nRight = nLeft + nWidth
-			nBottom = nTop + nHeight
-		end
+	nCenterHor = (nLeft / 2) + (nRight / 2)
+	nCenterVert = (nTop / 2) + (nBottom / 2)
+
+	if tBar.strSnapTo == "bottom" then
+		nLeft = nCenterHor + nWidth / -2
+		nRight = nCenterHor + nWidth / 2
+
+		nTop = nBottom - nHeight
+	elseif tBar.strSnapTo == "top" then
+		nLeft = nCenterHor + nWidth / -2
+		nRight = nCenterHor + nWidth / 2
+
+		nBottom = nTop + nHeight
+	elseif tBar.strSnapTo == "right" then
+		nTop = nCenterVert + nHeight / -2
+		nBottom = nCenterVert + nHeight / 2
+
+		nLeft = nLeft - nWidth
+	elseif tBar.strSnapTo == "left" then
+		nTop = nCenterVert + nHeight / -2
+		nBottom = nCenterVert + nHeight / 2
+
+		nRight = nRight + nWidth
 	end
 
 	return nLeft, nTop, nRight, nBottom
@@ -697,8 +696,13 @@ function ForgeUI_ActionBars:ForgeAPI_PopulateOptions()
 	for k, v in pairs(self._DB.profile.tFrames) do
 		local wnd = self.tOptionHolders[v.strKey]
 
+		if v.bDrawHotkey ~= nil then
+			G:API_AddCheckBox(self, wnd, "Show hotkey", v, "bDrawHotkey", { tMove = {0, 0},
+				fnCallback = function(...) self:EditButtons(v) end })
+		end
+
 		if v.bDrawShortcutBottom ~= nil then
-			G:API_AddCheckBox(self, wnd, "Show shourtcuts", v, "bDrawShortcutBottom", { tMove = {0, 0},
+			G:API_AddCheckBox(self, wnd, "Use bottom-styled hotkey", v, "bDrawShortcutBottom", { tMove = {10, 30},
 				fnCallback = function(...) self:EditButtons(v) end })
 		end
 

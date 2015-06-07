@@ -21,7 +21,7 @@ local new = function(self, o)
 	o = o or {}
 	setmetatable(o, self)
 	self.__index = self
-	
+
 	return o
 end
 
@@ -30,14 +30,14 @@ function Addon:NewAddon(...) return Prototype:new(...) end
 -----------------------------------------------------------------------------------------------
 -- Addon prototype
 -----------------------------------------------------------------------------------------------
-Prototype.__index = Prototype 
+Prototype.__index = Prototype
 function Prototype:new(o)
-   	local o = o or {}
-   	setmetatable(o, Prototype)
-	
+	local o = o or {}
+	setmetatable(o, Prototype)
+
 	o.bInit = false
-	
-   	return o
+
+	return o
 end
 
 function Prototype:RefreshConfig()
@@ -47,13 +47,13 @@ function Prototype:RefreshConfig()
 		global = db.global,
 		char = db.char,
 	}
-	
+
 	if self.tOptionHolders then
 		for k, v in pairs(self.tOptionHolders) do
 			v:DestroyChildren()
 		end
 	end
-	
+
 	self:ForgeAPI_LoadSettings()
 	self:ForgeAPI_PopulateOptions()
 end
@@ -64,4 +64,3 @@ function Prototype:ForgeAPI_LoadSettings() end
 function Prototype:ForgeAPI_PopulateOptions() end
 
 _G["ForgeLibs"]["ForgeAddon"] = new(Addon)
-
