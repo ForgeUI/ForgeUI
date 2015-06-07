@@ -1,9 +1,9 @@
 ----------------------------------------------------------------------------------------------
 -- Client Lua Script for ForgeUI addon
 --
--- name: 		ForgeUI_SprintDash.lua
+-- name: 		ForgeUI_ActionBars.lua
 -- author:		Winty Badass@Jabbit
--- about:		Sprint/Dash meter addon for ForgeUI
+-- about:		Action bars addon for ForgeUI
 -----------------------------------------------------------------------------------------------
 
 require "Window"
@@ -35,20 +35,11 @@ local ForgeUI_ActionBars = {
 					strContentType = "LASBar",
 					nButtons = 8,
 					nButtonSize = 50,
+					nRows = 1,
+					nColumns = 8,
 					nMinId = 0,
-					nButtonPadding = 3,
-					bDrawHotkey = false,
-					bDrawShortcutBottom = true,
-				},
-				SecondaryBarOne = {
-					strKey = "ForgeUI_SecondaryBarOne",
-					strName = "Secondary bar",
-					strSnapTo = "right",
-					strContentType = "ABar",
-					nButtons = 12,
-					nButtonSize = 40,
-					nMinId = 0,
-					nButtonPadding = 0,
+					nButtonPaddingVer = 0,
+					nButtonPaddingHor = 0,
 					bDrawHotkey = false,
 					bDrawShortcutBottom = false,
 				},
@@ -68,7 +59,7 @@ local tSnapToPoints = {
 }
 
 local tSnapToOffsets = {
-	["bottom"] = { 0, -15, 0, -15 },
+	["bottom"] = { 0, -5, 0, -5 },
 	["right"] = { -5, 0, -5, 0 },
 	["top"] = { 0, 15, 0, 15 },
 	["left"] = { 5, 0, 5, 0 },
@@ -81,6 +72,43 @@ local tBars = {}
 local wndMenuItem = nil
 
 -----------------------------------------------------------------------------------------------
+-- ForgeAPI
+-----------------------------------------------------------------------------------------------
+function ForgeUI_ActionBars:ForgeAPI_Init()
+  self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_ActionBars//ForgeUI_ActionBars.xml")
+	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
+
+	wndMenuItem = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
+end
+
+function ForgeUI_ActionBars:ForgeAPI_LoadSettings()
+	for _, tBar in pairs(self._DB.profile.tFrames) do
+		self:SetupBar(tBar, false, true)
+		self:SetupButtons(tBar)
+		self:EditButtons(tBar)
+		self:PositionButtons(tBar)
+	end
+end
+
+function ForgeUI_ActionBars:OnDocLoaded()
+	if self.xmlDoc == nil and not self.xmlDoc:IsLoaded() then return end
+
+  --Apollo.RegisterEventHandler("ShowActionBarShortcut", 	"ShowShortcutBar", self) -- TODO: Make it work
+
+  if GameLib.GetPlayerUnit() then
+		self:OnCharacterCreated()
+	else
+		Apollo.RegisterEventHandler("CharacterCreated", 	"OnCharacterCreated", self)
+	end
+end
+
+function ForgeUI_ActionBars:OnCharacterCreated()
+	for k, v in pairs(self._DB.profile.tFrames) do
+		self:GenerateBar(v)
+	end
+end
+
+-----------------------------------------------------------------------------------------------
 -- Addon functions
 -----------------------------------------------------------------------------------------------
 function ForgeUI_ActionBars:GenerateBar(tBar)
@@ -89,26 +117,22 @@ function ForgeUI_ActionBars:GenerateBar(tBar)
 
 	tBars[tBar.strKey] = wndNewBar
 
-	self:SetupBar(tBar)
-	self:SetupButtons(tBar)
-	self:EditButtons(tBar)
-
 	F:API_AddMenuToMenuItem(self, wndMenuItem, tBar.strName, tBar.strKey)
 
 	return wndNewBar
 end
 
-function ForgeUI_ActionBars:SetupBar(tBar)
+function ForgeUI_ActionBars:SetupBar(tBar, bResetMover, bResetAnchors)
 	local wndBar = tBars[tBar.strKey]
 
 	wndBar:SetAnchorPoints(unpack(tSnapToPoints[tBar.strSnapTo]))
-	wndBar:SetAnchorOffsets(self:Helper_BarOffsets(tBar))
+	wndBar:SetAnchorOffsets(self:Helper_BarOffsets(tBar, bResetAnchors))
 
-	if tBar.strSnapToLast ~= tBar.strSnapTo then
+	if bResetMover then
 		F:API_ResetMover(self, tBar.strKey)
 	end
-	F:API_RegisterMover(self, wndBar, tBar.strKey, tBar.strName, "general", { strStratum = "high" })
-	tBar.strSnapToLast = tBar.strSnapTo
+
+	F:API_RegisterMover(self, wndBar, tBar.strKey, tBar.strName, "general", { strStratum = "high", bSizable = false })
 end
 
 function ForgeUI_ActionBars:SetupButtons(tBar)
@@ -120,26 +144,46 @@ function ForgeUI_ActionBars:SetupButtons(tBar)
 	end
 end
 
+function ForgeUI_ActionBars:PositionButtons(tBar, bPositionBar)
+	local wndBar = tBars[tBar.strKey]
+	local tButtons = {}
+
+	for k, v in pairs(wndBar:GetChildren()) do
+		v:Show(false)
+		tButtons[k - 1] = v
+	end
+
+	local nButton = 0
+	for i = 0, tBar.nRows - 1 do
+		for j = 0, tBar.nColumns - 1 do
+
+			if tBar.strSnapTo == "bottom" or tBar.strSnapTo == "top" then
+				if tButtons[nButton] then
+					tButtons[nButton]:Show(true)
+					tButtons[nButton]:SetAnchorOffsets(
+						j * tBar.nButtonSize - j + j * tBar.nButtonPaddingHor,
+						i * tBar.nButtonSize - i + i * tBar.nButtonPaddingVer,
+						(j + 1) * tBar.nButtonSize - j + j * tBar.nButtonPaddingHor,
+						(i + 1) * tBar.nButtonSize - i + i * tBar.nButtonPaddingVer
+					)
+				end
+			end
+
+			nButton = nButton + 1
+		end
+	end
+
+	if bPositionBar then
+		self:SetupBar(tBar, true, false)
+	end
+end
+
 function ForgeUI_ActionBars:EditButtons(tBar)
 	local wndBar = tBars[tBar.strKey]
 
 	for k, v in pairs(wndBar:GetChildren()) do
 		local i = k - 1
 		local wndBarButton = v
-
-		if tBar.strSnapTo == "bottom" or tBar.strSnapTo == "top" then
-			wndBarButton:SetAnchorOffsets(
-				i * tBar.nButtonSize - i + tBar.nButtonPadding * i,
-				0,
-				(i + 1) * tBar.nButtonSize - i + tBar.nButtonPadding * i,
-				tBar.nButtonSize)
-		elseif tBar.strSnapTo == "right" or tBar.strSnapTo == "left" then
-			wndBarButton:SetAnchorOffsets(
-				0,
-				i * tBar.nButtonSize - i + tBar.nButtonPadding * i,
-				tBar.nButtonSize,
-				(i + 1) * tBar.nButtonSize - i + tBar.nButtonPadding * i)
-		end
 
 		local tXml = self.xmlDoc:ToTable()
 		local tActionButton
@@ -161,7 +205,7 @@ function ForgeUI_ActionBars:EditButtons(tBar)
 		if tBar.strSnapTo == "bottom" or tBar.strSnapTo == "top" then
 			tActionButton.DrawShortcutBottom = tBar.bDrawShortcutBottom
 
-			wndBarButton:FindChild("Holder"):SetAnchorOffsets(1, 1, -1, tBar.bDrawShortcutBottom and 10 or -1)
+			wndBarButton:FindChild("Holder"):SetAnchorOffsets(1, 1, -1, tBar.bDrawShortcutBottom and 12 or -1)
 			wndBarButton:FindChild("Hotkey"):Show(tBar.bDrawShortcutBottom)
 		end
 
@@ -479,38 +523,6 @@ function ForgeUI_ActionBars:FillPath(wnd)
 	wndList:ArrangeChildrenVert(0)
 end
 
------------------------------------------------------------------------------------------------
--- ForgeUI_ActionBars Registration
------------------------------------------------------------------------------------------------
-function ForgeUI_ActionBars:ForgeAPI_Init()
-  self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_ActionBars//ForgeUI_ActionBars.xml")
-	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
-
-	wndMenuItem = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
-end
-
-function ForgeUI_ActionBars:OnDocLoaded()
-	if self.xmlDoc == nil and not self.xmlDoc:IsLoaded() then return end
-
-  --Apollo.RegisterEventHandler("ShowActionBarShortcut", 	"ShowShortcutBar", self) -- TODO: Make it work
-
-  if GameLib.GetPlayerUnit() then
-		self:OnCharacterCreated()
-	else
-		Apollo.RegisterEventHandler("CharacterCreated", 	"OnCharacterCreated", self)
-	end
-end
-
-function ForgeUI_ActionBars:OnCharacterCreated()
-	for k, v in pairs(self._DB.profile.tFrames) do
-		self:GenerateBar(v)
-	end
-end
-
-function ForgeUI_ActionBars:GenerateBars()
-	self.wndActionBar = self:GenerateBar(self._DB.profile.tFrames.ActionBar)
-end
-
 function ForgeUI_ActionBars:ShowShortcutBar(nBar, bIsVisible, nShortcuts)
 	if nBar == ActionSetLib.CodeEnumShortcutSet.VehicleBar then -- vehiclebar
 		if self.wndActionBar then
@@ -639,36 +651,43 @@ end
 -----------------------------------------------------------------------------------------------
 -- Helpers
 -----------------------------------------------------------------------------------------------
-function ForgeUI_ActionBars:Helper_BarOffsets(tBar)
-	local nLeft, nTop, nRight, nBottom = unpack(tSnapToOffsets[tBar.strSnapTo])
-	if tBar.strSnapTo == "bottom" then
-		local nWidth = tBar.nButtons * tBar.nButtonSize - tBar.nButtons + tBar.nButtons * tBar.nButtonPadding
+function ForgeUI_ActionBars:Helper_BarOffsets(tBar, bReset)
+	local nLeft, nTop, nRight, nBottom
 
-		nLeft = nWidth / -2
-		nRight = nWidth / 2
+	local nWidth = tBar.nColumns * tBar.nButtonSize - tBar.nColumns + tBar.nColumns * tBar.nButtonPaddingHor
+	local nHeight = tBar.nRows * tBar.nButtonSize - tBar.nRows + tBar.nRows * tBar.nButtonPaddingVer
 
-		nTop = nTop - tBar.nButtonSize
-	elseif tBar.strSnapTo == "top" then
-		local nWidth = tBar.nButtons * tBar.nButtonSize - tBar.nButtons + tBar.nButtons * tBar.nButtonPadding
+	if bReset then
+		nLeft, nTop, nRight, nBottom = unpack(tSnapToOffsets[tBar.strSnapTo])
 
-		nLeft = nWidth / -2
-		nRight = nWidth / 2
+		if tBar.strSnapTo == "bottom" then
+			nLeft = nWidth / -2
+			nRight = nWidth / 2
 
-		nBottom = nBottom + tBar.nButtonSize
-	elseif tBar.strSnapTo == "right" then
-		local nHeight = tBar.nButtons * tBar.nButtonSize - tBar.nButtons + tBar.nButtons * tBar.nButtonPadding
+			nTop = nTop - nHeight
+		elseif tBar.strSnapTo == "top" then
+			nLeft = nWidth / -2
+			nRight = nWidth / 2
 
-		nTop = nHeight / -2
-		nBottom = nHeight / 2
+			nBottom = nBottom + tBar.nButtonSize
+		elseif tBar.strSnapTo == "right" then
+			nTop = nHeight / -2
+			nBottom = nHeight / 2
 
-		nLeft = nLeft - tBar.nButtonSize
-	elseif tBar.strSnapTo == "left" then
-		local nHeight = tBar.nButtons * tBar.nButtonSize - tBar.nButtons + tBar.nButtons * tBar.nButtonPadding
+			nLeft = nLeft - tBar.nButtonSize
+		elseif tBar.strSnapTo == "left" then
+			nTop = nHeight / -2
+			nBottom = nHeight / 2
 
-		nTop = nHeight / -2
-		nBottom = nHeight / 2
+			nRight = nRight + tBar.nButtonSize
+		end
+	else
+		nLeft, nTop, nRight, nBottom = tBars[tBar.strKey]:GetAnchorOffsets()
 
-		nRight = nRight + tBar.nButtonSize
+		if tBar.strSnapTo == "bottom" then
+			nRight = nLeft + nWidth
+			nBottom = nTop + nHeight
+		end
 	end
 
 	return nLeft, nTop, nRight, nBottom
@@ -678,8 +697,35 @@ function ForgeUI_ActionBars:ForgeAPI_PopulateOptions()
 	for k, v in pairs(self._DB.profile.tFrames) do
 		local wnd = self.tOptionHolders[v.strKey]
 
-		G:API_AddCheckBox(self, wnd, "Show shourtcuts", v, "bDrawShortcutBottom", { tMove = {0, 0},
-			fnCallback = function(...) self:EditButtons(v) end })
+		if v.bDrawShortcutBottom ~= nil then
+			G:API_AddCheckBox(self, wnd, "Show shourtcuts", v, "bDrawShortcutBottom", { tMove = {0, 0},
+				fnCallback = function(...) self:EditButtons(v) end })
+		end
+
+		if v.nButtonSize ~= nil then
+			G:API_AddNumberBox(self, wnd, "Button size ", v, "nButtonSize", { tMove = {200, 0},
+				fnCallback = function(...) self:PositionButtons(v, true) end })
+		end
+
+		if v.nRows ~= nil then
+			G:API_AddNumberBox(self, wnd, "Rows ", v, "nRows", { tMove = {200, 60},
+				fnCallback = function(...) self:PositionButtons(v, true) end })
+		end
+
+		if v.nColumns ~= nil then
+			G:API_AddNumberBox(self, wnd, "Columns ", v, "nColumns", { tMove = {200, 90},
+				fnCallback = function(...) self:PositionButtons(v, true) end })
+		end
+
+		if v.nButtonPaddingHor ~= nil then
+			G:API_AddNumberBox(self, wnd, "Horizontal padding ", v, "nButtonPaddingHor", { tMove = {400, 60},
+				fnCallback = function(...) self:PositionButtons(v, true) end })
+		end
+
+		if v.nButtonPaddingVer ~= nil then
+			G:API_AddNumberBox(self, wnd, "Vertical padding ", v, "nButtonPaddingVer", { tMove = {400, 90},
+				fnCallback = function(...) self:PositionButtons(v, true) end })
+		end
 	end
 end
 

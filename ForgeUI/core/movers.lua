@@ -59,6 +59,12 @@ local function RegisterMover(luaCaller, wnd, strKey, strName, strScope, tOptions
 			end
 		end
 
+		if tOptions then
+			if tOptions.bSizable ~= nil then
+				wndMover:SetStyle("Sizable", tOptions.bSizable)
+			end
+		end
+
 		tScopes["all"][strKey] = wndMover
 		if tScopes[strScope] then
 			tScopes[strScope][strKey] = wndMover
@@ -111,23 +117,7 @@ local function RegisterMover(luaCaller, wnd, strKey, strName, strScope, tOptions
 end
 
 function ResetMover(luaCaller, strKey)
-	local wndMover = tScopes["all"][strKey]
-	if not wndMover then
-		if Movers._DB.profile[luaCaller._NAME] then
-			Movers._DB.profile[luaCaller._NAME][strKey] = nil
-		end
-		return
-	end
-	local tData = wndMover:GetData()
-
-	tScopes["all"][strKey] = nil
-	if tDatastrScope then
-		tScopes[tData.strScope] = nil
-	end
-
 	Movers._DB.profile[luaCaller._NAME][strKey] = nil
-
-	wndMover:Destroy()
 end
 
 local function UpdateMoverPosition(wndMover)
