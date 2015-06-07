@@ -45,6 +45,38 @@ local ForgeUI_ActionBars = {
 					bShow = true,
 				},
 				[2] = {
+					strKey = "ForgeUI_UtilBarOne",
+					strName = "Utility bar 1",
+					strSnapTo = "bottom",
+					tMove = { -295, 0 },
+					tSpecialButtons = { 3, 2, 1 },
+					nButtonSize = 50,
+					nRows = 1,
+					nColumns = 3,
+					nMinId = 0,
+					nButtonPaddingVer = 3,
+					nButtonPaddingHor = 3,
+					bDrawHotkey = true,
+					bDrawShortcutBottom = false,
+					bShow = true,
+				},
+				[3] = {
+					strKey = "ForgeUI_UtilBarTwo",
+					strName = "Utility bar 2",
+					strSnapTo = "bottom",
+					tMove = { 295, 0 },
+					tSpecialButtons = { 4, 5, 6 },
+					nButtonSize = 50,
+					nRows = 1,
+					nColumns = 3,
+					nMinId = 0,
+					nButtonPaddingVer = 3,
+					nButtonPaddingHor = 3,
+					bDrawHotkey = true,
+					bDrawShortcutBottom = false,
+					bShow = true,
+				},
+				[4] = {
 					strKey = "ForgeUI_BarOne",
 					strName = "Bar 1",
 					strSnapTo = "right",
@@ -61,7 +93,7 @@ local ForgeUI_ActionBars = {
 					bShow = true,
 					bShowMouseover = false,
 				},
-				[3] = {
+				[5] = {
 					strKey = "ForgeUI_BarTwo",
 					strName = "Bar 2",
 					strSnapTo = "right",
@@ -78,7 +110,7 @@ local ForgeUI_ActionBars = {
 					bShow = false,
 					bShowMouseover = false,
 				},
-				[4] = {
+				[6] = {
 					strKey = "ForgeUI_BarThree",
 					strName = "Bar 3",
 					strSnapTo = "left",
@@ -117,6 +149,7 @@ local tSnapToOffsets = {
 	["left"] = { 5, 0, 5, 0 },
 }
 
+local tSpecialButtons = {} -- defined at the end of the file
 -----------------------------------------------------------------------------------------------
 -- Local
 -----------------------------------------------------------------------------------------------
@@ -156,7 +189,7 @@ end
 -- Addon functions
 -----------------------------------------------------------------------------------------------
 function ForgeUI_ActionBars:GenerateBar(tBar)
-	local wndNewBar = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Bar", F:API_GetStratum("high"), self)
+	local wndNewBar = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Bar", F:API_GetStratum("HudHigh"), self)
 	wndNewBar:SetData(tBar)
 
 	wndNewBar:AddEventHandler("MouseEnter", "OnMouseEnter", self)
@@ -171,7 +204,7 @@ end
 
 function ForgeUI_ActionBars:OnMouseEnter( wndHandler, wndControl )
 	local tBar = wndControl:GetData()
-	if not tBar then return end
+	if not tBar or type(tBar) ~= "table" then return end
 
 	if tBar.bShowMouseover then
 		for k, v in pairs(wndControl:GetChildren()) do v:Show(true) end
@@ -180,7 +213,7 @@ end
 
 function ForgeUI_ActionBars:OnMouseExit( wndHandler, wndControl )
 	local tBar = wndControl:GetData()
-	if not tBar then return end
+	if not tBar or type(tBar) ~= "table" then return end
 
 	if tBar.bShowMouseover then
 		for k, v in pairs(wndControl:GetChildren()) do v:Show(false) end
@@ -205,8 +238,10 @@ end
 function ForgeUI_ActionBars:SetupButtons(tBar)
 	local wndBar = tBars[tBar.strKey]
 
+	local nTotalButtons = tBar.nButtons or #tBar.tSpecialButtons
+
 	wndBar:DestroyChildren()
-	for i = tBar.nMinId, tBar.nMinId + tBar.nButtons - 1 do
+	for i = 1, nTotalButtons do
 		local wndBarButton = Apollo.LoadForm(self.xmlDoc, "ForgeUI_BarButton", wndBar, self)
 	end
 end
@@ -270,8 +305,14 @@ function ForgeUI_ActionBars:EditButtons(tBar)
 			end
 		end
 
-		tActionButton.ContentId = tBar.nMinId + i
-		tActionButton.ContentType = tBar.strContentType
+		if not tBar.tSpecialButtons then
+			tActionButton.ContentId = tBar.nMinId + i
+			tActionButton.ContentType = tBar.strContentType
+		else
+			tActionButton.ContentId = tSpecialButtons[tBar.tSpecialButtons[k]].nContentId
+			tActionButton.ContentType = tSpecialButtons[tBar.tSpecialButtons[k]].strContent
+		end
+
 		tActionButton.DrawHotkey = tBar.bDrawHotkey
 		tActionButton.DrawShortcutBottom = false
 
@@ -287,6 +328,11 @@ function ForgeUI_ActionBars:EditButtons(tBar)
 		end
 
 		Apollo.LoadForm(XmlDoc.CreateFromTable(tXml), "ForgeUI_ActionButton", wndBarButton:FindChild("Holder"), self)
+
+		if tBar.tSpecialButtons and tSpecialButtons[tBar.tSpecialButtons[k]].fnFill then
+			tSpecialButtons[tBar.tSpecialButtons[k]].fnFill(self, wndBarButton)
+			wndBarButton:AddEventHandler("MouseButtonDown", "BarButton_OnMouseDown", self)
+		end
 	end
 end
 
@@ -540,8 +586,6 @@ function ForgeUI_ActionBars:FillPotions(wnd)
 	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize), nRight, nBottom)
 
 	wndList:ArrangeChildrenVert()
-
-	self.wndPotionBtn:Show(nCount > 0)
 end
 
 -- path
@@ -678,26 +722,26 @@ end
 function ForgeUI_ActionBars:OnSpellBtn( wndHandler, wndControl, eMouseButton )
 	local sType = wndControl:GetParent():GetData().sType
 	if sType == "stance" then
-		self.wndStanceBtn:FindChild("Popup"):Show(false, true)
+		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
 		GameLib.SetCurrentClassInnateAbilityIndex(wndHandler:GetData())
 	elseif sType == "mount" then
-		self.wndMountBtn:FindChild("Popup"):Show(false, true)
-		self.tSettings.nSelectedMount = wndControl:GetData():GetId()
-		GameLib.SetShortcutMount(self.tSettings.nSelectedMount)
+		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
+		self._DB.char.nSelectedMount = wndControl:GetData():GetId()
+		GameLib.SetShortcutMount(self._DB.char.nSelectedMount)
 	elseif sType == "potion" then
-		self.wndPotionBtn:FindChild("Popup"):Show(false, true)
-		self.tSettings.nSelectedPotion = wndControl:GetData():GetItemId()
+		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
+		self._DB.char.nSelectedPotion = wndControl:GetData():GetItemId()
 		GameLib.SetShortcutPotion(wndControl:GetData():GetItemId())
 	elseif sType == "path" then
 		local tActionSet = ActionSetLib.GetCurrentActionSet()
 
-		self.tSettings.nSelectedPath = wndControl:GetData()
+		self._DB.char.nSelectedPath = wndControl:GetData()
 
 		Event_FireGenericEvent("PathAbilityUpdated", self.tSettings.nSelectedPath)
 		tActionSet[10] = self.tSettings.nSelectedPath
 		ActionSetLib.RequestActionSetChanges(tActionSet)
 
-		self.wndPathBtn:FindChild("Popup"):Show(false, true)
+		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
 	end
 end
 
@@ -708,11 +752,7 @@ function ForgeUI_ActionBars:BarButton_OnMouseDown( wndHandler, wndControl, eMous
 	if wndControl:GetName() == "ForgeUI_BarButton" and eMouseButton == 1 then
 		wndControl:FindChild("Popup"):Show(true, true)
 
-		self:FillMounts(self.wndMountBtn)
-		self:FillStances(self.wndStanceBtn)
-		self:FillPath(self.wndPathBtn)
-		self:FillPotions(self.wndPotionBtn)
-		self:FillRecalls(self.wndRecallBtn)
+		--self:FillMounts(wndControl)
 	end
 end
 
@@ -831,6 +871,50 @@ function ForgeUI_ActionBars:ForgeAPI_PopulateOptions()
 		end
 	end
 end
+
+tSpecialButtons = {
+	[1] = {
+		strKey = "ForgeUI_StanceButton",
+		strName = "Stance",
+		strContent = "GCBar",
+		nContentId = 2,
+		fnFill = ForgeUI_ActionBars.FillStances,
+	},
+	[2] = {
+		strKey = "ForgeUI_MountButton",
+		strName = "Mount",
+		strContent = "GCBar",
+		nContentId = 26,
+		fnFill = ForgeUI_ActionBars.FillMounts,
+	},
+	[3] = {
+		strKey = "ForgeUI_RecallButton",
+		strName = "Recall",
+		strContent = "GCBar",
+		nContentId = 18,
+		--fnFill = ForgeUI_ActionBars.FillRecalls,
+	},
+	[4] = {
+		strKey = "ForgeUI_GadgetButton",
+		strName = "Gadget",
+		strContent = "GCBar",
+		nContentId = 0,
+	},
+	[5] = {
+		strKey = "ForgeUI_PotionButton",
+		strName = "Potion",
+		strContent = "GCBar",
+		nContentId = 27,
+		fnFill = ForgeUI_ActionBars.FillPotions,
+	},
+	[6] = {
+		strKey = "ForgeUI_PathButton",
+		strName = "Path",
+		strContent = "LASBar",
+		nContentId = 9,
+		fnFill = ForgeUI_ActionBars.FillPath,
+	},
+}
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI addon registration
