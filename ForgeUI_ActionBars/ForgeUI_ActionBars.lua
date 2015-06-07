@@ -415,11 +415,11 @@ function ForgeUI_ActionBars:FillMounts(wnd)
 	end
 
 	local nLeft, nTop, nRight, nBottom = wndPopup:GetAnchorOffsets()
+
+	if nCount > 5 then nCount = 5 end
 	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize), nRight, nBottom)
 
 	wndList:ArrangeChildrenVert()
-
-	wnd:Show(nCount > 0, true)
 end
 
 -- recalls
