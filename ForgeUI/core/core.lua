@@ -70,7 +70,7 @@ end
 
 function Core:ForgeAPI_Init()
 	Print("ForgeUI v" .. F:API_GetVersion() .. " has been loaded")
-
+	
 	GeminiHook:Embed(F)
 end
 

@@ -86,8 +86,8 @@ function Addon:OnDocLoaded()
 	tStrata = {
 		World = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "InWorldHudStratum", self),
 
-		HudLow = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "DefaultStratum", self),
-		Hud = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "DefaultStratum", self),
+		HudLow = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "FixedHudStratumLow", self),
+		Hud = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "FixedHudStratum", self),
 		HudHigh = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "DefaultStratum", self),
 	}
 
@@ -99,6 +99,8 @@ function Addon:OnDocLoaded()
 	self.wndMain:FindChild("AuthorText"):SetText(AUTHOR)
 	self.wndMain:FindChild("VersionText"):SetText(VERSION)
 
+	self.wndBottomPanel = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Panel", tStrata.HudLow, self)
+	
 	-- init Modules
 	if GameLib.GetPlayerUnit() then
 		self:OnCharacterCreated()
