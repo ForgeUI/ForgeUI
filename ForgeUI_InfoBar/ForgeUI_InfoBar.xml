@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<Forms>
+    <Form Class="Window" LAnchorPoint="1" LAnchorOffset="-225" TAnchorPoint="1" TAnchorOffset="-250" RAnchorPoint="1" RAnchorOffset="-5" BAnchorPoint="1" BAnchorOffset="-230" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="ForgeUI_InfoBar" Border="0" Picture="0" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="0" TooltipColor="" Tooltip="" NewWindowDepth="1" NeverBringToFront="1">
+        <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="-19" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" BGColor="FF000000" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="Background" TooltipColor="" Picture="1" IgnoreMouse="1" Sprite="ForgeUI_Border">
+            <Control Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Default" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="List" TooltipColor=""/>
+        </Control>
+        <Control Class="Button" Base="ForgeSprite:ForgeUI_Button" Font="Nameplates" ButtonType="PushButton" RadioGroup="" LAnchorPoint="1" LAnchorOffset="-20" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="1" RAnchorOffset="0" BAnchorPoint="1" BAnchorOffset="0" DT_VCENTER="1" DT_CENTER="1" BGColor="UI_BtnBGDefault" TextColor="UI_BtnTextDefault" NormalTextColor="UI_BtnTextDefault" PressedTextColor="UI_BtnTextDefault" FlybyTextColor="UI_BtnTextDefault" PressedFlybyTextColor="UI_BtnTextDefault" DisabledTextColor="UI_BtnTextDefault" TooltipType="OnCursor" Name="ForgeUI_Button" TooltipColor="" Text="" TextId="QuestTracker_ObjectiveF" Picture="0" AutoScaleTextOff="1">
+            <Event Name="ButtonSignal" Function="OnForgeButton"/>
+        </Control>
+    </Form>
+    <SpriteFile Name="..\ForgeUI\media\textures\ForgeUI_Textures.xml"/>
+    <Form Class="Window" LAnchorPoint="0" LAnchorOffset="0" TAnchorPoint="0" TAnchorOffset="0" RAnchorPoint="0" RAnchorOffset="65" BAnchorPoint="1" BAnchorOffset="0" RelativeToClient="1" Font="Nameplates" Text="" BGColor="UI_WindowBGDefault" TextColor="UI_WindowTextDefault" Template="Default" TooltipType="OnCursor" Name="ForgeUI_Info" Border="0" Picture="0" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="0" TooltipColor="" IgnoreMouse="1" NewWindowDepth="1" DT_VCENTER="1" TextId="" DT_CENTER="1" DT_RIGHT="0"/>
+</Forms>
