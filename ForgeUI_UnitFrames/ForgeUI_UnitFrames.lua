@@ -444,7 +444,7 @@ function ForgeUI_UnitFrames:RefreshStyle(unit, name, hpBar, strType)
 		crHpBar = self._DB.profile.tFrames[strType].crHpBar
 	end
 
-	if self._DB.profile.tFrames[strType].bUseGradient then
+	if self._DB.profile.tFrames[strType].bUseGradient and unit:GetHealth() then
 		local nPercent = Util:Round((unit:GetHealth() / unit:GetMaxHealth()) * 100, 0)
 		crHpBar = Util:GenerateGradient(self._DB.profile.tFrames[strType].crHpBarGradient, crHpBar, 100, nPercent, true)
 	end
