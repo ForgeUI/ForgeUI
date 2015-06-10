@@ -71,11 +71,11 @@ end
 -----------------------------------------------------------------------------------------------
 function ForgeUI_InfoBar:OnDocLoaded()
 	self.unitPlayer = GameLib.GetPlayerUnit()
-	
+
 	self.wndInfoBar = Apollo.LoadForm(self.xmlDoc, "ForgeUI_InfoBar", "FixedHudStratumLow", self)
-	
+
 	self:SetupInfos()
-	
+
 	_UpdateTimer = ApolloTimer.Create(self._DB.global.fUpdatePeriod, true, "OnUpdate", self)
 end
 
@@ -88,7 +88,7 @@ function ForgeUI_InfoBar:SetupInfos()
 		tWndInfos[v] = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Info", wnd, self)
 		tWndInfos[v]:SetAnchorOffsets(0, 0, tInfos[v].nWidth, 0)
 	end
-	
+
 	wnd:ArrangeChildrenHorz()
 end
 
@@ -112,9 +112,11 @@ tInfos.PING.fnDraw = function()
 end
 
 tInfos.XP.fnDraw = function()
+	if not GameLib.GetPlayerUnit() then return end
+	
 	local stats = GameLib.GetPlayerUnit():GetBasicStats()
 	if stats == nil then return end
-	
+
 	local restedXP = GetRestXp()
 	local currentXP
 	local neededXP
@@ -125,7 +127,7 @@ tInfos.XP.fnDraw = function()
 		currentXP = GetXp() - GetXpToCurrentLevel()
 		neededXP = GetXpToNextLevel()
 	end
-	
+
 	return Util:Round(currentXP / neededXP * 100, 1) .. "% XP"
 end
 
