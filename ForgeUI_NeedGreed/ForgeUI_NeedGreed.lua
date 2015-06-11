@@ -81,8 +81,9 @@ function ForgeUI_NeedGreed:ForgeAPI_AfterRegistration()
 	ForgeUI.API_RegisterWindow(self, self.wndContainer, "ForgeUI_NeedGreedContainer", { strDisplayName = "Need vs Greed", bSizable = false })
 
 	self.bTimerRunning = false
-	self.tKnownLoot = nil
-	self.tLootRolls = nil
+	self.tKnownLoot = {}
+	self.tLootRolls = {}
+	self.tBlacklist = {}
 
 	if GameLib.GetLootRolls() then
 		self:OnGroupLoot()
@@ -102,8 +103,9 @@ end
 function ForgeUI_NeedGreed:UpdateKnownLoot()
 	self.tLootRolls = GameLib.GetLootRolls()
 	if not self.tLootRolls or #self.tLootRolls <= 0 then
-		self.tKnownLoot = nil
-		self.tLootRolls = nil
+		self.tKnownLoot = {}
+		self.tLootRolls = {}
+		self.tBlacklist = {}
 		return
 	end
 
@@ -139,7 +141,7 @@ function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
 	for _, wnd in pairs(self.wndContainer:GetChildren()) do
 		local bShouldBeDestroyed = true
 		for _, loot in pairs(tLoot) do
-			if wnd:GetData() == loot.nLootId then
+			if wnd:GetData().nLootId == loot.nLootId then
 				bShouldBeDestroyed = false
 			end
 		end
@@ -152,21 +154,29 @@ function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
 	--self.wndContainer:DestroyChildren()
 	for k, tCurrentElement in pairs(tLoot) do
 		local bShouldBeAdded = true
+		local bBlacklistApplies = false
 		
 		local wndLoot
 		
 		for _, wnd in pairs(self.wndContainer:GetChildren()) do
-			if wnd:GetData() == tCurrentElement.nLootId then
+			if wnd:GetData().nLootId == tCurrentElement.nLootId then
 				bShouldBeAdded = false
 				wndLoot = wnd
 			end
 		end
-	
+		
 		if bShouldBeAdded then
+			for idx, tBlacklistElement in ipairs(self.tBlacklist) do
+				if self.tBlacklist[idx].itemDrop == tCurrentElement.itemDrop and self.tBlacklist[idx].nLootId == tCurrentElement.nLootId then
+					bBlacklistApplies = true
+				end
+			end
+		end
+			
+		if bShouldBeAdded and not bBlacklistApplies then
 			wndLoot = Apollo.LoadForm(self.xmlDoc, "ForgeUI_NeedGreedForm", self.wndContainer, self)
-			
-			wndLoot:SetData(tCurrentElement.nLootId)
-			
+			wndLoot:SetData(tCurrentElement)
+										
 			local itemCurrent = tCurrentElement.itemDrop
 			local itemModData = tCurrentElement.tModData
 			local tGlyphData = tCurrentElement.tSigilData
@@ -178,23 +188,26 @@ function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
 			
 			wndLoot:FindChild("NeedBtn"):Show(GameLib.IsNeedRollAllowed(tCurrentElement.nLootId))
 			
+			table.insert(self.tBlacklist, tCurrentElement)
 		end
 		
-		local nTimeLeft = math.floor(tCurrentElement.nTimeLeft / 1000)
-		wndLoot:FindChild("TimeLeftText"):Show(true)
-	
-		local nTimeLeftSecs = nTimeLeft % 60
-		local nTimeLeftMins = math.floor(nTimeLeft / 60)
-	
-		local strTimeLeft = tostring(nTimeLeftMins)
-		if nTimeLeft < 0 then
-			strTimeLeft = "0:00"
-		elseif nTimeLeftSecs < 10 then
-			strTimeLeft = strTimeLeft .. ":0" .. tostring(nTimeLeftSecs)
-		else
-			strTimeLeft = strTimeLeft .. ":" .. tostring(nTimeLeftSecs)
+		if not bBlacklistApplies then
+			local nTimeLeft = math.floor(tCurrentElement.nTimeLeft / 1000)
+			wndLoot:FindChild("TimeLeftText"):Show(true)
+		
+			local nTimeLeftSecs = nTimeLeft % 60
+			local nTimeLeftMins = math.floor(nTimeLeft / 60)
+		
+			local strTimeLeft = tostring(nTimeLeftMins)
+			if nTimeLeft < 0 then
+				strTimeLeft = "0:00"
+			elseif nTimeLeftSecs < 10 then
+				strTimeLeft = strTimeLeft .. ":0" .. tostring(nTimeLeftSecs)
+			else
+				strTimeLeft = strTimeLeft .. ":" .. tostring(nTimeLeftSecs)
+			end
+			wndLoot:FindChild("TimeLeftText"):SetText(strTimeLeft)
 		end
-		wndLoot:FindChild("TimeLeftText"):SetText(strTimeLeft)
 	end
 	
 	self:ArrangeLoot()
@@ -209,8 +222,23 @@ function ForgeUI_NeedGreed:ArrangeLoot()
 	end
 end
 
+function ForgeUI_NeedGreed:UpdateLootRollCounters(tCurrentElement, RollType)
+	for _, wnd in pairs(self.wndContainer:GetChildren()) do
+		if wnd:GetData().itemDrop == tCurrentElement.itemDrop and wnd:GetData().nLootId == tCurrentElement.nLootId then
+			local strRollString = RollType .. "Rolls"
+			strCurrentRolls = wnd:FindChild(strRollString):GetText()
+			nNewRolls = tonumber(strCurrentRolls) + 1
+			wnd:FindChild(strRollString):SetText(tostring(nNewRolls)) 
+		end
+	end
+end
+
+function ForgeUI_NeedGreed:CheckBlacklist(tCurrentElement)
+
+end
+
 -----------------------------------------------------------------------------------------------
--- Chat Message Events
+-- Chat Message Events and Roll Counters
 -----------------------------------------------------------------------------------------------
 
 function ForgeUI_NeedGreed:OnLootRollAllPassed(itemLooted)
@@ -228,14 +256,31 @@ function ForgeUI_NeedGreed:OnLootRollWon(itemLoot, strWinner, bNeed)
 	
 	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_ItemWon"), strWinner, itemLoot:GetChatLinkString(), strNeedOrGreed)
 	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
+	
+	for idx, tBlacklistElement in ipairs(self.tBlacklist) do
+		if tBlacklistElement.itemDrop == itemLoot then
+			table.remove(self.tBlacklist, idx)
+			break
+		end
+	end
 end
 
 function ForgeUI_NeedGreed:OnLootRollSelected(itemLoot, strPlayer, bNeed)
 	local strNeedOrGreed = nil
 	if bNeed then
 		strNeedOrGreed = Apollo.GetString("NeedVsGreed_NeedRoll")
+		for idx, tCurrentElement in pairs(self.tKnownLoot) do
+			if tCurrentElement.itemDrop == itemLoot then
+				self:UpdateLootRollCounters(tCurrentElement, "Need")
+			end
+		end
 	else
 		strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
+		for idx, tCurrentElement in pairs(self.tKnownLoot) do
+			if tCurrentElement.itemDrop == itemLoot then
+				self:UpdateLootRollCounters(tCurrentElement, "Greed")
+			end
+		end
 	end
 
 	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_LootRollSelected"), strPlayer, strNeedOrGreed, itemLoot:GetChatLinkString())
@@ -243,6 +288,11 @@ function ForgeUI_NeedGreed:OnLootRollSelected(itemLoot, strPlayer, bNeed)
 end
 
 function ForgeUI_NeedGreed:OnLootRollPassed(itemLoot, strPlayer)
+	for idx, tCurrentElement in pairs(self.tKnownLoot) do
+		if tCurrentElement.itemDrop == itemLoot then
+			self:UpdateLootRollCounters(tCurrentElement, "Pass")
+		end
+	end
 	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_PlayerPassed"), strPlayer, itemLoot:GetChatLinkString())
 	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
 end
@@ -272,7 +322,7 @@ end
 function ForgeUI_NeedGreed:OnNeedBtn(wndHandler, wndControl)
 	local wndLoot = wndControl:GetParent():GetParent()
 
-	GameLib.RollOnLoot(wndLoot:GetData(), true)
+	GameLib.RollOnLoot(wndLoot:GetData().nLootId, true)
 	self:UpdateKnownLoot()
 	wndLoot:Destroy()
 	
@@ -282,7 +332,7 @@ end
 function ForgeUI_NeedGreed:OnGreedBtn(wndHandler, wndControl)
 	local wndLoot = wndControl:GetParent():GetParent()
 
-	GameLib.RollOnLoot(wndLoot:GetData(), false)
+	GameLib.RollOnLoot(wndLoot:GetData().nLootId, false)
 	self:UpdateKnownLoot()
 	wndLoot:Destroy()
 	
@@ -292,7 +342,7 @@ end
 function ForgeUI_NeedGreed:OnPassBtn(wndHandler, wndControl)
 	local wndLoot = wndControl:GetParent():GetParent()
 
-	GameLib.PassOnLoot(wndLoot:GetData(), true)
+	GameLib.PassOnLoot(wndLoot:GetData().nLootId, true)
 	self:UpdateKnownLoot()
 	wndLoot:Destroy()
 	
