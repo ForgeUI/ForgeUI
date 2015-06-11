@@ -546,8 +546,10 @@ function ForgeUI_FloatText:OnElderPointsGained(nAmount, nRested)
 	local strFormatted = String_GetWeaselString(Apollo.GetString("FloatText_EPGained"), nAmount)
 	self:RequestShowTextFloater(eMessageType, unitToAttachTo, strFormatted, tTextOption, 0, tContent)
 	-- Rested EP Floater
-	strFormatted = String_GetWeaselString(Apollo.GetString("FloatText_RestEPGained"), nRested)
-	self:RequestShowTextFloater(eMessageType, unitToAttachTo, strFormatted, tTextOption, 0, tContent)
+	if nRested > 0 then
+		strFormatted = String_GetWeaselString(Apollo.GetString("FloatText_RestEPGained"), nRested)
+		self:RequestShowTextFloater(eMessageType, unitToAttachTo, strFormatted, tTextOption, 0, tContent)
+	end
 end
 
 function ForgeUI_FloatText:OnPathExperienceGained( nAmount, strText )
