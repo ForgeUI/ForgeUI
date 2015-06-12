@@ -66,6 +66,7 @@ function ForgeUI_NeedGreed:ForgeAPI_AfterRegistration()
     Apollo.RegisterTimerHandler("WinnerCheckTimer", 	"OnOneSecTimer", self)
     Apollo.RegisterEventHandler("LootRollWon", 			"OnLootRollWon", self)
     Apollo.RegisterEventHandler("LootRollAllPassed", 	"OnLootRollAllPassed", self)
+	Apollo.RegisterTimerHandler("PlayerNameCheckTimer",	"OnNameCheckTimer", self)
 
 	Apollo.RegisterEventHandler("LootRollSelected", 	"OnLootRollSelected", self)
 	Apollo.RegisterEventHandler("LootRollPassed", 		"OnLootRollPassed", self)
@@ -75,6 +76,8 @@ function ForgeUI_NeedGreed:ForgeAPI_AfterRegistration()
 
 	Apollo.CreateTimer("WinnerCheckTimer", 1.0, false)
 	Apollo.StopTimer("WinnerCheckTimer")
+	
+	Apollo.CreateTimer("PlayerNameCheckTimer", 3.0, false)
 	
 	self.wndContainer = Apollo.LoadForm(self.xmlDoc, "Container", nil, self)
 	
@@ -86,7 +89,7 @@ function ForgeUI_NeedGreed:ForgeAPI_AfterRegistration()
 	self.tBlacklist = {}
 	self.tPlayerWhoRolled = {}
 	
-	strMyPlayerName = GameLib.GetPlayerUnit():GetName()
+	self.strMyPlayerName = nil
 	
 	if GameLib.GetLootRolls() then
 		self:OnGroupLoot()
@@ -134,8 +137,10 @@ function ForgeUI_NeedGreed:OnOneSecTimer()
 	else
 		self.bTimerRunning = false
 	end
-	
-	-- TEST
+end
+
+function ForgeUI_NeedGreed:OnNameCheckTimer()
+	self.strMyPlayerName = GameLib.GetPlayerUnit():GetName()
 end
 
 function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
@@ -288,7 +293,7 @@ function ForgeUI_NeedGreed:OnLootRollSelected(itemLoot, strPlayer, bNeed)
 	local strNeedOrGreed = nil
 	local bPlayerIsRoller = false
 	
-	if strPlayer == strMyPlayerName then
+	if strPlayer == self.strMyPlayerName then
 		bPlayerIsRoller = true
 	end
 	
@@ -322,7 +327,7 @@ function ForgeUI_NeedGreed:OnLootRollPassed(itemLoot, strPlayer)
 	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_PlayerPassed"), strPlayer, itemLoot:GetChatLinkString())
 	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
 	
-	if strPlayer == strMyPlayerName then return end
+	if strPlayer == self.strMyPlayerName then return end
 		
 	for idx, tCurrentElement in pairs(self.tKnownLoot) do
 		if tCurrentElement.itemDrop == itemLoot then
