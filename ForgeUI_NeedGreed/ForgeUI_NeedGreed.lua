@@ -84,7 +84,10 @@ function ForgeUI_NeedGreed:ForgeAPI_AfterRegistration()
 	self.tKnownLoot = {}
 	self.tLootRolls = {}
 	self.tBlacklist = {}
-
+	self.tPlayerWhoRolled = {}
+	
+	strMyPlayerName = GameLib.GetPlayerUnit():GetName()
+	
 	if GameLib.GetLootRolls() then
 		self:OnGroupLoot()
 	end
@@ -106,6 +109,7 @@ function ForgeUI_NeedGreed:UpdateKnownLoot()
 		self.tKnownLoot = {}
 		self.tLootRolls = {}
 		self.tBlacklist = {}
+		self.tPlayerWhoRolled = {}
 		return
 	end
 
@@ -130,6 +134,8 @@ function ForgeUI_NeedGreed:OnOneSecTimer()
 	else
 		self.bTimerRunning = false
 	end
+	
+	-- TEST
 end
 
 function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
@@ -188,7 +194,8 @@ function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
 			
 			wndLoot:FindChild("NeedBtn"):Show(GameLib.IsNeedRollAllowed(tCurrentElement.nLootId))
 			
-			table.insert(self.tBlacklist, tCurrentElement)
+			table.insert(self.tBlacklist, 1, tCurrentElement)
+			self.tBlacklist[1].tPlayerRolls = {}
 		end
 		
 		if not bBlacklistApplies then
@@ -222,15 +229,27 @@ function ForgeUI_NeedGreed:ArrangeLoot()
 	end
 end
 
-function ForgeUI_NeedGreed:UpdateLootRollCounters(tCurrentElement, RollType)
+function ForgeUI_NeedGreed:UpdateLootRollCounters(tCurrentElement, strPlayerRoller, strRollType)
 	for _, wnd in pairs(self.wndContainer:GetChildren()) do
 		if wnd:GetData().itemDrop == tCurrentElement.itemDrop and wnd:GetData().nLootId == tCurrentElement.nLootId then
-			local strRollString = RollType .. "Rolls"
+			for idx, tBlacklistElement in ipairs(self.tBlacklist) do
+				if tBlacklistElement.nLootId == tCurrentElement.nLootId then --and tBlacklistElement.itemDrop == tCurrentElement.itemDrop then
+					for _, tPlayerAlreadyRolled in ipairs(tBlacklistElement.tPlayerRolls) do
+						if tPlayerAlreadyRolled[1] == strPlayerRoller then -- If we find the roller already in the tPlayerRolls table, don't increment the counter
+							return false
+						end
+					end
+					table.insert(tBlacklistElement.tPlayerRolls, {strPlayerRoller, strRollType}) -- Otherwise, insert them
+					break
+				end
+			end
+			local strRollString = strRollType .. "Rolls"
 			strCurrentRolls = wnd:FindChild(strRollString):GetText()
 			nNewRolls = tonumber(strCurrentRolls) + 1
 			wnd:FindChild(strRollString):SetText(tostring(nNewRolls)) 
 		end
 	end
+	return true
 end
 
 function ForgeUI_NeedGreed:CheckBlacklist(tCurrentElement)
@@ -267,18 +286,30 @@ end
 
 function ForgeUI_NeedGreed:OnLootRollSelected(itemLoot, strPlayer, bNeed)
 	local strNeedOrGreed = nil
+	local bPlayerIsRoller = false
+	
+	if strPlayer == strMyPlayerName then
+		bPlayerIsRoller = true
+	end
+	
 	if bNeed then
 		strNeedOrGreed = Apollo.GetString("NeedVsGreed_NeedRoll")
-		for idx, tCurrentElement in pairs(self.tKnownLoot) do
-			if tCurrentElement.itemDrop == itemLoot then
-				self:UpdateLootRollCounters(tCurrentElement, "Need")
+		if not bPlayerIsRoller then
+			for idx, tCurrentElement in pairs(self.tKnownLoot) do
+				if tCurrentElement.itemDrop == itemLoot then
+					bIncrementedCounter = self:UpdateLootRollCounters(tCurrentElement, strPlayer, "Need")
+					if bIncrementedCounter then break end
+				end
 			end
 		end
 	else
 		strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
-		for idx, tCurrentElement in pairs(self.tKnownLoot) do
-			if tCurrentElement.itemDrop == itemLoot then
-				self:UpdateLootRollCounters(tCurrentElement, "Greed")
+		if not bPlayerIsRoller then
+			for idx, tCurrentElement in pairs(self.tKnownLoot) do
+				if tCurrentElement.itemDrop == itemLoot then
+					bIncrementedCounter = self:UpdateLootRollCounters(tCurrentElement, strPlayer, "Greed")
+					if bIncrementedCounter then break end
+				end
 			end
 		end
 	end
@@ -288,13 +319,17 @@ function ForgeUI_NeedGreed:OnLootRollSelected(itemLoot, strPlayer, bNeed)
 end
 
 function ForgeUI_NeedGreed:OnLootRollPassed(itemLoot, strPlayer)
-	for idx, tCurrentElement in pairs(self.tKnownLoot) do
-		if tCurrentElement.itemDrop == itemLoot then
-			self:UpdateLootRollCounters(tCurrentElement, "Pass")
-		end
-	end
 	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_PlayerPassed"), strPlayer, itemLoot:GetChatLinkString())
 	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
+	
+	if strPlayer == strMyPlayerName then return end
+		
+	for idx, tCurrentElement in pairs(self.tKnownLoot) do
+		if tCurrentElement.itemDrop == itemLoot then
+			bIncrementedCounter = self:UpdateLootRollCounters(tCurrentElement, strPlayer, "Pass")
+			if bIncrementedCounter then break end
+		end
+	end
 end
 
 function ForgeUI_NeedGreed:OnLootRoll(itemLoot, strPlayer, nRoll, bNeed)
@@ -354,6 +389,41 @@ function ForgeUI_NeedGreed:HelperBuildItemTooltip(wndArg, itemCurr, itemModData,
 	wndArg:SetTooltipDocSecondary(nil)
 	local itemEquipped = itemCurr:GetEquippedItemForItemType()
 	Tooltip.GetItemTooltipForm(self, wndArg, itemCurr, {bPrimary = true, bSelling = false, itemCompare = itemEquipped, itemModData = itemModData, tGlyphData = tGlyphData})
+end
+
+function ForgeUI_NeedGreed:OnMouseEnterRollCounter(wndHandler, wndControl, x, y)
+	local xml = XmlDoc.new()
+	xml:StartTooltip(1000)
+	
+	if wndControl:GetText() == "0" then
+		xml:AddLine("None")
+		wndControl:SetTooltipDoc(xml)
+		return
+	end
+	
+	wndMain = wndHandler:GetParent():GetParent():GetParent()
+	
+	if wndControl:GetName() == "NeedRolls" then
+		self:WhoRolledHelper(xml, wndMain, "Need")
+	elseif wndControl:GetName() == "GreedRolls" then
+		self:WhoRolledHelper(xml, wndMain, "Greed")
+	elseif wndControl:GetName() == "PassRolls" then
+		self:WhoRolledHelper(xml, wndMain, "Pass")
+	end
+	wndControl:SetTooltipDoc(xml)
+end
+
+function ForgeUI_NeedGreed:WhoRolledHelper(xml, wndMain, strRollType)
+	for idx, tBlacklistElement in ipairs(self.tBlacklist) do
+		if wndMain:GetData().nLootId == tBlacklistElement.nLootId then
+			for idy, tPlayerAlreadyRolled in ipairs(tBlacklistElement.tPlayerRolls) do
+				if tPlayerAlreadyRolled[2] == strRollType then
+					xml:AddLine(tPlayerAlreadyRolled[1])
+				end
+			end
+			break
+		end
+	end
 end
 
 local ForgeUI_NeedGreedInst = ForgeUI_NeedGreed:new()
