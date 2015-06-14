@@ -32,6 +32,7 @@ tAllowedNames = {
 
 tNameSwaps = {
 	["Briex Sper"] = "Pink Cheese",
+	["Meeko Briarthorn"] = "Pink Cheese2",
 	["Thayd Cargo Lifter"] = "Lifty",
 }
 
