@@ -77,7 +77,7 @@ function ForgeUI_NeedGreed:ForgeAPI_AfterRegistration()
 	Apollo.CreateTimer("WinnerCheckTimer", 1.0, false)
 	Apollo.StopTimer("WinnerCheckTimer")
 	
-	Apollo.CreateTimer("PlayerNameCheckTimer", 3.0, false)
+	Apollo.CreateTimer("PlayerNameCheckTimer", 2.0, false)	
 	
 	self.wndContainer = Apollo.LoadForm(self.xmlDoc, "Container", nil, self)
 	
@@ -90,7 +90,7 @@ function ForgeUI_NeedGreed:ForgeAPI_AfterRegistration()
 	self.tPlayerWhoRolled = {}
 	
 	self.strMyPlayerName = nil
-	
+		
 	if GameLib.GetLootRolls() then
 		self:OnGroupLoot()
 	end
@@ -197,7 +197,17 @@ function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
 			wndLoot:FindChild("GiantItemIcon"):SetSprite(itemCurrent:GetIcon())
 			self:HelperBuildItemTooltip(wndLoot:FindChild("GiantItemIcon"), itemCurrent, itemModData, tGlyphData)
 			
-			wndLoot:FindChild("NeedBtn"):Show(GameLib.IsNeedRollAllowed(tCurrentElement.nLootId))
+			if GameLib.IsNeedRollAllowed(tCurrentElement.nLootId) == true then
+				wndLoot:FindChild("NeedBtn"):Show(true)
+				wndLoot:FindChild("NeedNotOption"):Show(false)
+				wndLoot:FindChild("NeedRolls"):Show(true)
+				wndLoot:FindChild("NeedRolls"):ToFront()
+			else
+				wndLoot:FindChild("NeedNotOption"):Show(true)
+				wndLoot:FindChild("NeedBtn"):Show(false)
+				wndLoot:FindChild("NeedRolls"):Show(true)
+				wndLoot:FindChild("NeedRolls"):ToFront()
+			end
 			
 			table.insert(self.tBlacklist, 1, tCurrentElement)
 			self.tBlacklist[1].tPlayerRolls = {}
@@ -234,31 +244,32 @@ function ForgeUI_NeedGreed:ArrangeLoot()
 	end
 end
 
+-- With a given item and roller from the Roll event, find that item's window such that the roller hasn't yet been recorded, and then update the roll counter
 function ForgeUI_NeedGreed:UpdateLootRollCounters(tCurrentElement, strPlayerRoller, strRollType)
+	local bFoundRightItem = false
 	for _, wnd in pairs(self.wndContainer:GetChildren()) do
 		if wnd:GetData().itemDrop == tCurrentElement.itemDrop and wnd:GetData().nLootId == tCurrentElement.nLootId then
 			for idx, tBlacklistElement in ipairs(self.tBlacklist) do
-				if tBlacklistElement.nLootId == tCurrentElement.nLootId then --and tBlacklistElement.itemDrop == tCurrentElement.itemDrop then
+				if tBlacklistElement.nLootId == tCurrentElement.nLootId then
 					for _, tPlayerAlreadyRolled in ipairs(tBlacklistElement.tPlayerRolls) do
 						if tPlayerAlreadyRolled[1] == strPlayerRoller then -- If we find the roller already in the tPlayerRolls table, don't increment the counter
 							return false
 						end
 					end
 					table.insert(tBlacklistElement.tPlayerRolls, {strPlayerRoller, strRollType}) -- Otherwise, insert them
+					bFoundRightItem = true
 					break
 				end
 			end
 			local strRollString = strRollType .. "Rolls"
-			strCurrentRolls = wnd:FindChild(strRollString):GetText()
-			nNewRolls = tonumber(strCurrentRolls) + 1
-			wnd:FindChild(strRollString):SetText(tostring(nNewRolls)) 
+			local strCurrentRolls = wnd:FindChild(strRollString):GetText()
+			local nNewRolls = tonumber(strCurrentRolls) + 1
+			local wndRollCounter = wnd:FindChild(strRollString)
+			wndRollCounter:SetText(tostring(nNewRolls))
+			self:OnMouseEnterRollCounter(wndRollCounter, wndRollCounter, 0, 0) -- Generate a new tooltip, in case the player is mousing over that roll right now
 		end
 	end
-	return true
-end
-
-function ForgeUI_NeedGreed:CheckBlacklist(tCurrentElement)
-
+	return bFoundRightItem
 end
 
 -----------------------------------------------------------------------------------------------
@@ -406,14 +417,14 @@ function ForgeUI_NeedGreed:OnMouseEnterRollCounter(wndHandler, wndControl, x, y)
 		return
 	end
 	
-	wndMain = wndHandler:GetParent():GetParent():GetParent()
+	wndMain = wndHandler:GetParent():GetParent()
 	
 	if wndControl:GetName() == "NeedRolls" then
 		self:WhoRolledHelper(xml, wndMain, "Need")
 	elseif wndControl:GetName() == "GreedRolls" then
-		self:WhoRolledHelper(xml, wndMain, "Greed")
+		self:WhoRolledHelper(xml, wndMain:GetParent(), "Greed")
 	elseif wndControl:GetName() == "PassRolls" then
-		self:WhoRolledHelper(xml, wndMain, "Pass")
+		self:WhoRolledHelper(xml, wndMain:GetParent(), "Pass")
 	end
 	wndControl:SetTooltipDoc(xml)
 end
