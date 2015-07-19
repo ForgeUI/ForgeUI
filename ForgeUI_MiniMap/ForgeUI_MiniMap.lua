@@ -87,7 +87,7 @@ local ktCategoryNames =
 	[ktTooltipCategories.NeutralNPC] 	= Apollo.GetString("MiniMap_NeutralNPCs"),
 	[ktTooltipCategories.HostileNPC] 	= Apollo.GetString("MiniMap_HostileNPCs"),
 	[ktTooltipCategories.Path] 			= Apollo.GetString("MiniMap_PathMissions"),
-	[ktTooltipCategories.Challenge] 	= Apollo.GetString("MiniMap_Challenges"),	
+	[ktTooltipCategories.Challenge] 	= Apollo.GetString("MiniMap_Challenges"),
 	[ktTooltipCategories.PublicEvent] 	= Apollo.GetString("ZoneMap_PublicEvent"),
 	[ktTooltipCategories.Tradeskill] 	= Apollo.GetString("MiniMap_Tradeskills"),
 	[ktTooltipCategories.Vendor] 		= Apollo.GetString("MiniMap_Vendors"),
@@ -151,7 +151,7 @@ local ktUIElementToType =
 	["OptionsBtnFriends"]			= ktTooltipCategories.Friend,
 	["OptionsBtnRivals"] 			= ktTooltipCategories.Rival,
 	["OptionsBtnTaxis"] 			= ktTooltipCategories.Taxi,
-	["OptionsBtnCityDirections"] 	= ktTooltipCategories.CityDirection,	
+	["OptionsBtnCityDirections"] 	= ktTooltipCategories.CityDirection,
 }
 
 local ktInstanceSettingTypeStrings =
@@ -171,19 +171,19 @@ function ForgeUI_MiniMap:new(o)
 	self.__index = self
 
 	o.tQueuedUnits = {}
-	
+
 	self.api_version = 2
 	self.version = "1.0.0"
 	self.author = "WintyBadass"
 	self.strAddonName = "ForgeUI_MiniMap"
 	self.strDisplayName = "MiniMap"
-	
+
 	self.wndContainers = {}
-	
+
 	self.tStylers = {
 		["LoadStyle_MiniMap"] = self,
 	}
-	
+
 	-- optional
 	self.settings_version = 1
     self.tSettings = {
@@ -445,11 +445,11 @@ function ForgeUI_MiniMap:OnDocumentReady()
 	if self.xmlDoc == nil and not self.xmlDoc:IsLoaded() then return end
 
 	Apollo.LoadSprites("SquareMapTextures_NoCompass.xml")
-	
+
 	if ForgeUI == nil then -- forgeui loaded
 		ForgeUI = Apollo.GetAddon("ForgeUI")
 	end
-	
+
 	ForgeUI.API_RegisterAddon(self)
 end
 
@@ -504,7 +504,7 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRegistration()
 	Apollo.RegisterEventHandler("PlayerLevelChange",					"UpdateHarvestableNodes", self)
 
 	Apollo.RegisterTimerHandler("ChallengeFlashIconTimer", 				"OnStopChallengeFlashIcon", self)
-	
+
 	self.timerCreateDelay = ApolloTimer.Create(1.0, true, "OnOneSecTimer", self)
 	self.timerCreateDelay:Start()
 
@@ -522,10 +522,10 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRegistration()
 	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 			"OnTutorial_RequestUIAnchor", self)
 
 	ForgeUI.API_AddItemButton(self, "MiniMap", { strContainer = "Container" })
-	
+
 	self.wndMain 			= Apollo.LoadForm(self.xmlDoc , "Minimap", "FixedHudStratum", self)
 	ForgeUI.API_RegisterWindow(self, self.wndMain, "ForgeUI_MiniMap", { strDisplayName = "MiniMap" })
-	
+
 	self.wndMiniMap 		= self.wndMain:FindChild("MapContent")
 	self.wndZoneName 		= self.wndMain:FindChild("MapZoneName")
 	self:UpdateZoneName(GetCurrentZoneName())
@@ -539,7 +539,7 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRegistration()
 	if self.unitPlayerDisposition ~= nil then
 		self:OnCharacterCreated()
 	end
-	
+
 	-- The object types for each category
 	self.tCategoryTypes =
 	{
@@ -566,7 +566,7 @@ function ForgeUI_MiniMap:ForgeAPI_AfterRegistration()
 		[ktTooltipCategories.CityDirection] = {self.eObjectTypeCityDirections,},
 		[ktTooltipCategories.PvPMarker]		= {self.eObjectPvPMarkers,},
 	}
-	
+
 	-- Maps object types to their parent category for quick access
 	self.tReverseCategoryMap = {}
 	for eCategory, tObjectTypes in pairs(self.tCategoryTypes) do
@@ -588,16 +588,16 @@ end
 
 function ForgeUI_MiniMap:ForgeAPI_AfterRestore()
 	self.wndMiniMap:SetZoomLevel(self.tSettings.nZoomLevel)
-	
+
 	local wndOptionsWindow = self.wndContainers["Container"]
 	for strCategory, bEnabled in pairs(self.tSettings.tCategories) do
 		local wndOptionsBtn = wndOptionsWindow:FindChild("OptionsBtn" .. strCategory)
-		
+
 		if wndOptionsBtn then
 			ForgeUI.API_RegisterCheckBox(self, wndOptionsBtn, self.tSettings.tCategories, strCategory, "OnFilterOption")
 		end
 	end
-	
+
 	self:RehideAllToggledIcons()
 end
 
@@ -877,8 +877,8 @@ function ForgeUI_MiniMap:OnPublicEventUpdate(peUpdated)
 	self.wndMiniMap:RemoveObjectsByUserData(self.eObjectTypePublicEvent, peUpdated)
 	for idx, peoCurr in ipairs(peUpdated:GetObjectives()) do
 		self:OnPublicEventObjectiveEnd(peoCurr)
-	end	
-	
+	end
+
 	if not peUpdated:IsActive() or self.tSettings.tCategories == nil then
 		return
 	end
@@ -1033,17 +1033,17 @@ function ForgeUI_MiniMap:OnOneSecTimer()
 	end
 
 	local nCurrentTime = os.time()
-	
+
 	if ForgeUI then
 		self.wndMain:FindChild("Time"):SetText(ForgeUI.GetTime(true))
 	end
-	
+
 	while #self.tQueuedUnits > 0 do
 		local unit = table.remove(self.tQueuedUnits, #self.tQueuedUnits)
 		if unit:IsValid() then
 			self:HandleUnitCreated(unit)
 		end
-		
+
 		if os.time() - nCurrentTime > 0 then
 			break
 		end
@@ -1125,7 +1125,7 @@ function ForgeUI_MiniMap:HandleUnitCreated(unitNew)
 	for nIdx, tMarkerInfo in ipairs(tMarkerInfoList) do
 		local tInfo = self:GetDefaultUnitInfo()
 		local tInteract = unitNew:GetActivationState()
-		
+
 		if tMarkerInfo.strIcon ~= nil then
 			tInfo.strIcon = tMarkerInfo.strIcon
 		end
@@ -1149,7 +1149,7 @@ function ForgeUI_MiniMap:HandleUnitCreated(unitNew)
 		if tMarkerInfo.bShown ~= nil then
 			tMarkerOptions.bShown = tMarkerInfo.bShown
 		end
-		
+
 		-- only one of these should be set
 		if tMarkerInfo.bFixedSizeSmall ~= nil then
 			tMarkerOptions.bFixedSizeSmall = tMarkerInfo.bFixedSizeSmall
@@ -1167,7 +1167,7 @@ function ForgeUI_MiniMap:HandleUnitCreated(unitNew)
 			or (tMarkerInfo.bHideIfHostile and unitNew:GetDispositionTo(self.unitPlayerDisposition) ~= Unit.CodeEnumDisposition.Hostile)) then
 			local mapIconReference = self.wndMiniMap:AddUnit(unitNew, objectType, tInfo, tMarkerOptions, bIconState ~= nil and not bIconState)
 			self.tUnitsShown[unitNew:GetId()] = { tInfo = tInfo, unitObject = unitNew }
-			
+
 			if objectType == self.eObjectTypeGroupMember then
 				for idxMember = 2, GroupLib.GetMemberCount() do
 					local unitMember = GroupLib.GetUnitForGroupMember(idxMember)
@@ -1176,7 +1176,7 @@ function ForgeUI_MiniMap:HandleUnitCreated(unitNew)
 							if self.tGroupMembers[idxMember].mapObject ~= nil then
 								self.wndMiniMap:RemoveObject(self.tGroupMembers[idxMember].mapObject)
 							end
-	
+
 							self.tGroupMembers[idxMember].mapObject = mapIconReference
 						end
 						break
@@ -1239,7 +1239,7 @@ function ForgeUI_MiniMap:OnUnitDestroyed(unitDestroyed)
 	self.tUnitsShown[unitDestroyed:GetId()] = nil
 	self.tUnitsHidden[unitDestroyed:GetId()] = nil
 	self.arResourceNodes[unitDestroyed:GetId()] = nil
-	
+
 	if unitDestroyed:IsInYourGroup() then
 		for idxMember = 2, GroupLib.GetMemberCount() do
 			local unitMember = GroupLib.GetUnitForGroupMember(idxMember)
@@ -1311,7 +1311,7 @@ function ForgeUI_MiniMap:OnGroupRemove(strName, eReason)
 		end
 	end
 	]]--
-	
+
 	self:OnRefreshRadar()
 	self:DrawGroupMembers()
 end
@@ -1376,15 +1376,15 @@ function ForgeUI_MiniMap:DrawGroupMember(tMember)
 	if not GroupLib.GetGroupMember(tMember.nIndex).bIsOnline then
 		return
 	end
-	
+
 	local tZone = GameLib.GetCurrentZoneMap()
 	if tZone == nil or tMember.tZoneMap == nil or tMember.tZoneMap.id ~= tZone.id then
 		return
 	end
-	
+
 	local tMarkerInfo = self.tMinimapMarkerInfo.GroupMember
 	local tInfo = self:GetDefaultUnitInfo()
-	
+
 	if tMarkerInfo.strIcon ~= nil then
 		tInfo.strIcon = tMarkerInfo.strIcon
 	end
@@ -1408,14 +1408,14 @@ function ForgeUI_MiniMap:DrawGroupMember(tMember)
 	if tMarkerInfo.bShown ~= nil then
 		tMarkerOptions.bShown = tMarkerInfo.bShown
 	end
-	
+
 	-- only one of these should be set
 	if tMarkerInfo.bFixedSizeSmall ~= nil then
 		tMarkerOptions.bFixedSizeSmall = tMarkerInfo.bFixedSizeSmall
 	elseif tMarkerInfo.bFixedSizeMedium ~= nil then
 		tMarkerOptions.bFixedSizeMedium = tMarkerInfo.bFixedSizeMedium
 	end
-	
+
 	local strNameFormatted = string.format("<T Font=\"CRB_InterfaceMedium_B\" TextColor=\"ff31fcf6\">%s</T>", tMember.strName)
 	strNameFormatted = String_GetWeaselString(Apollo.GetString("ZoneMap_AppendGroupMemberLabel"), strNameFormatted)
 	tMember.mapObject = self.wndMiniMap:AddObject(self.eObjectTypeGroupMember, tMember.tWorldLoc, strNameFormatted, tInfo, tMarkerOptions)
@@ -1435,50 +1435,50 @@ function ForgeUI_MiniMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY
 		wndControl:SetTooltip("")
 		return
 	end
-	
+
 	local tDisplayStrings = {}
-	
+
 	for key, tObject in pairs(tMapObjects) do
 		local strName = string.format("<T Font=\"%s\" TextColor=\"%s\">%s</T>", "CRB_InterfaceMedium", "ffffffff", tObject.strName)
 		local eParentCategory = self.tReverseCategoryMap[tObject.eType]
-		
+
 		if self.tSettings.tCategories[ktTypeToCategory[eParentCategory]] then
 			if tObject.eType == GameLib.CodeEnumMapOverlayType.QuestObjective then
 				local strLevel = string.format("<T Font=\"%s\" TextColor=\"%s\"> (%s)</T>", "CRB_InterfaceMedium", ktConColors[tObject.userData:GetColoredDifficulty()], tObject.userData:GetConLevel())
 				strName = strName .. strLevel
 			end
-			
-			if not tDisplayStrings[eParentCategory] then				
+
+			if not tDisplayStrings[eParentCategory] then
 				tDisplayStrings[eParentCategory] = {}
 			end
 
 			if not tDisplayStrings[eParentCategory][strName] then
 				tDisplayStrings[eParentCategory][strName] = {}
 			end
-			
+
 			if tObject.unit then
 				local idUnit = tObject.unit:GetId()
 				tDisplayStrings[eParentCategory][strName][idUnit] = true
 			end
 		end
 	end
-	
+
 	local arSortedCategories = {}
 	for eCategory, tStrings in pairs(tDisplayStrings) do
 		table.insert(arSortedCategories, eCategory)
 	end
-	
+
 	table.sort(arSortedCategories)
-	
+
 	local strFinal = ""
 	local nObjectCount = 0
-	
+
 	for idx, eCategory in pairs(arSortedCategories) do
-	
+
 		local tStrings = tDisplayStrings[eCategory]
 		if nObjectCount < 10 then
 			strFinal = strFinal .. string.format("<P><T Font=\"%s\" TextColor=\"%s\">%s</T></P>", "CRB_InterfaceMedium", "UI_TextHoloTitle", ktCategoryNames[eCategory])
-			
+
 			for strName, tIds in pairs(tStrings) do
 				local nCount = 0
 				if nObjectCount < 10 then
@@ -1486,28 +1486,28 @@ function ForgeUI_MiniMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY
 					for idUnit, bExists in pairs(tIds) do
 						nCount = nCount + 1
 					end
-					
+
 					if nCount > 1 then
 						strCount = String_GetWeaselString(Apollo.GetString("Vendor_ItemCount"), nCount)
 					end
 					strFinal = strFinal .. "<P>-   " .. strName .. " " .. strCount .."</P>"
 				end
-				nObjectCount = nObjectCount + 1				
+				nObjectCount = nObjectCount + 1
 			end
 		end
 	end
-	
+
 	if nObjectCount > 10 then
 		strOther = String_GetWeaselString(Apollo.GetString("MiniMap_OtherUnits"), GetPluralizeActor(Apollo.GetString("CRB_Unit"), nObjectCount - 10))
 		strOther = string.format("<T Font=\"%s\" TextColor=\"%s\">%s</T>", "CRB_InterfaceMedium", "UI_TextHoloTitle", strOther)
 		strFinal = strFinal .. "<P>" .. strOther .. "</P>"
 	end
-	
+
 	if nObjectCount > 0 then
 		wndControl:SetTooltip(strFinal)
 	else
 		wndControl:SetTooltip("")
-	end	
+	end
 end
 
 function ForgeUI_MiniMap:OnFriendshipAccountFriendsRecieved(tFriendAccountList)
