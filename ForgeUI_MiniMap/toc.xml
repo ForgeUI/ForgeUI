@@ -1,4 +1,4 @@
-<Addon Name="ForgeUI_MiniMap" Version="" Author="WintyBadass" APIVersion="10" Description="">
+<Addon Name="ForgeUI_MiniMap" Version="" Author="WintyBadass" APIVersion="11" Description="">
     <Script Name="ForgeUI_MiniMap.lua"/>
     <Form Name="ForgeUI_MiniMap.xml"/>
     <ReplaceAddon Name="MiniMap"/>

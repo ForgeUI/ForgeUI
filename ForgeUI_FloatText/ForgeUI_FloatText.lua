@@ -243,7 +243,7 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 	elseif bHeal then
 		CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage), tTextOption ) -- we show "0" when there's no absorption
 	else
-		CombatFloater.ShowTextFloater( unitTarget, nTotalDamage, tTextOption )
+		CombatFloater.ShowTextFloater( unitTarget, nTotalDamage, 0, tTextOption )
 	end
 end
 
@@ -361,7 +361,7 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 	if nDamage > 0 and bHeal then
 		CombatFloater.ShowTextFloater( unitPlayer, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nDamage), tTextOption )
 	elseif nDamage > 0 then
-		CombatFloater.ShowTextFloater( unitPlayer, nDamage, tTextOption )
+		CombatFloater.ShowTextFloater( unitPlayer, nDamage, 0, tTextOption )
 	end
 end
 
