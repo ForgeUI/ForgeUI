@@ -230,18 +230,18 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 	end
 
 	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then -- secondary "if" so we don't see absorption and "0"
-		CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_Absorbed"), nAbsorptionAmount), tTextOptionAbsorb )
+		CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_Absorbed"), nAbsorptionAmount), 0, tTextOptionAbsorb )
 
 		if nTotalDamage > 0 then
 			tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Vertical
 			if bHeal then
-				CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage), tTextOption )
+				CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage), 0, tTextOption )
 			else
-				CombatFloater.ShowTextFloater( unitTarget, nTotalDamage, tTextOption )
+				CombatFloater.ShowTextFloater( unitTarget, nTotalDamage, 0, tTextOption )
 			end
 		end
 	elseif bHeal then
-		CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage), tTextOption ) -- we show "0" when there's no absorption
+		CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage), 0, tTextOption ) -- we show "0" when there's no absorption
 	else
 		CombatFloater.ShowTextFloater( unitTarget, nTotalDamage, 0, tTextOption )
 	end
@@ -355,11 +355,11 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 	}
 
 	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then -- secondary "if" so we don't see absorption and "0"
-		CombatFloater.ShowTextFloater( unitPlayer, String_GetWeaselString(Apollo.GetString("FloatText_Absorbed"), nAbsorptionAmount), tTextOptionAbsorb )
+		CombatFloater.ShowTextFloater( unitPlayer, String_GetWeaselString(Apollo.GetString("FloatText_Absorbed"), nAbsorptionAmount), 0, tTextOptionAbsorb )
 	end
 
 	if nDamage > 0 and bHeal then
-		CombatFloater.ShowTextFloater( unitPlayer, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nDamage), tTextOption )
+		CombatFloater.ShowTextFloater( unitPlayer, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nDamage), 0, tTextOption )
 	elseif nDamage > 0 then
 		CombatFloater.ShowTextFloater( unitPlayer, nDamage, 0, tTextOption )
 	end
@@ -418,7 +418,7 @@ function ForgeUI_FloatText:OnCombatMomentum( eMomentumType, nCount, strText )
 		tTextOption.fScale = 1.5
 	end
 
-	CombatFloater.ShowTextFloater(unitToAttachTo, strMessage, tTextOption)
+	CombatFloater.ShowTextFloater(unitToAttachTo, strMessage, 0, tTextOption)
 end
 
 function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
@@ -461,7 +461,7 @@ function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
 
 	-- display the text
 	local strText = (eMissType == GameLib.CodeEnumMissType.Dodge) and Apollo.GetString("CRB_Dodged") or Apollo.GetString("CRB_Blocked")
-	CombatFloater.ShowTextFloater( unitTarget, strText, tTextOption )
+	CombatFloater.ShowTextFloater( unitTarget, strText, 0, tTextOption )
 end
 
 function ForgeUI_FloatText:OnExperienceGained(eReason, unitTarget, strText, fDelay, nAmount)
@@ -599,7 +599,7 @@ function ForgeUI_FloatText:OnGenericFloater(unitTarget, strMessage)
 	tTextOption.strFontFace = Inst.tSettings.strFont
 	tTextOption.bShowOnTop = true
 
-	CombatFloater.ShowTextFloater( unitTarget, strMessage, tTextOption )
+	CombatFloater.ShowTextFloater( unitTarget, strMessage, 0, tTextOption )
 end
 
 function ForgeUI_FloatText:OnUnitEvaded(unitSource, unitTarget, eReason, strMessage)
@@ -621,7 +621,7 @@ function ForgeUI_FloatText:OnUnitEvaded(unitSource, unitTarget, eReason, strMess
 		[4] = {fTime = 1.3,						fAlpha = 0.0,	fVelocityDirection = 0,},
 	}
 
-	CombatFloater.ShowTextFloater( unitSource, strMessage, tTextOption )
+	CombatFloater.ShowTextFloater( unitSource, strMessage, 0, tTextOption )
 end
 
 

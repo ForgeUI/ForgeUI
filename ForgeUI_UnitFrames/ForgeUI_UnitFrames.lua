@@ -612,6 +612,10 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function ForgeUI_UnitFrames:OnMouseButtonDown( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
+	if wndControl:GetName() == "Indicator" then -- TODO: WTF is happening with rightclick in combat, when this hack is missing
+		return false
+	end
+	
 	local unit = wndHandler:GetData()
 	
 	if eMouseButton == GameLib.CodeEnumInputMouse.Left and unit ~= nil then

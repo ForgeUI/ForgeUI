@@ -140,7 +140,11 @@ function ForgeUI_NeedGreed:OnOneSecTimer()
 end
 
 function ForgeUI_NeedGreed:OnNameCheckTimer()
-	self.strMyPlayerName = GameLib.GetPlayerUnit():GetName()
+	if GameLib.GetPlayerUnit() then
+		self.strMyPlayerName = GameLib.GetPlayerUnit():GetName()
+	else
+		Apollo.StartTimer("PlayerNameCheckTimer")
+	end
 end
 
 function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
