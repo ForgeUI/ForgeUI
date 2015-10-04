@@ -612,7 +612,6 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function ForgeUI_UnitFrames:OnMouseButtonDown( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
-	Print(wndControl:GetName() .. " " .. wndHandler:GetName())
 	if wndControl:GetName() ~= "HP_ProgressBar" then -- TODO: WTF is happening with rightclick in combat, when this hack is missing
 		return false
 	end
