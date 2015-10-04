@@ -507,6 +507,9 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Engineer()
 	self.wndResource:FindChild("Value"):SetTextFlags("DT_VCENTER", self._DB.profile.bCenterText)
 
 	self.wndResource:FindChild("Bars"):Show(self._DB.profile.engineer.bShowBars, true)
+	self.wndResource:FindChild("Bars"):FindChild("Bar1"):SetBGColor(self._DB.profile.engineer.crBars)
+	self.wndResource:FindChild("Bars"):FindChild("Bar2"):SetBGColor(self._DB.profile.engineer.crBars)
+
 end
 
 function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Engineer(unitPlayer, nResource)
@@ -723,6 +726,8 @@ function ForgeUI_ResourceBars:PopulateOptions_Engineer()
 	G:API_AddText(self, wndGeneral, "Engineer", { tOffsets = {5, 60, 205, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Volatility color", self._DB.profile.engineer, "crResource1", { tMove = {0, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Volatility color (30 - 70)", self._DB.profile.engineer, "crResource2", { tMove = {200, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Line color", self._DB.profile.engineer, "crBars", { tMove = { 400, 120} , 
+		fnCallback = self.ForgeAPI_LoadSettings })
 	G:API_AddCheckBox(self, wndGeneral, "Show 30 & 70 lines", self._DB.profile.engineer, "bShowBars", { tMove = {400, 90},
 		fnCallback = self.ForgeAPI_LoadSettings })
 end
