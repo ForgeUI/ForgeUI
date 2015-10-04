@@ -66,7 +66,9 @@ function ForgeUI_PetFrames:OnLoad()
 end
 
 function ForgeUI_PetFrames:OnFrameClick( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
-	GameLib.SetTargetUnit(wndHandler:GetParent():GetData())
+	if wndControl:GetName() == "HPBar" then -- TODO WTF again!
+		GameLib.SetTargetUnit(wndHandler:GetParent():GetData())
+	end
 end
 
 -----------------------------------------------------------------------------------------------
