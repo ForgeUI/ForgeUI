@@ -475,8 +475,8 @@ function ForgeUI_ResourceBars:UpdateFocus(unitPlayer)
 
 	local bShow = false
 
-	local nMana = unitPlayer:GetMana()
-	local nMaxMana = unitPlayer:GetMaxMana()
+	local nMana = unitPlayer:GetFocus()
+	local nMaxMana = unitPlayer:GetMaxFocus()
 
 	if nMana < nMaxMana then
 		bShow = true

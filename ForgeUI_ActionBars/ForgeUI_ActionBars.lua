@@ -128,7 +128,7 @@ local ForgeUI_ActionBars = {
 					bShow = false,
 				},
 			}
-    }
+		}
 	}
 }
 
@@ -378,7 +378,7 @@ function ForgeUI_ActionBars:FillMounts(wnd)
 
 	wndList:DestroyChildren()
 
-	local tMountList = GameLib.GetMountList()
+	local tMountList = CollectiblesLib.GetMountList()
 	local tSelectedSpellObj = nil
 
 	local nCount = 0
@@ -438,7 +438,7 @@ function ForgeUI_ActionBars:FillRecalls(wnd)
 	local nCount = 0
 	local bHasBinds = false
 	local bHasWarplot = false
-	local guildCurr = nil
+local guildCurr = nil
 
 	-- todo: condense this
 	if GameLib.HasBindPoint() == true then
@@ -848,8 +848,10 @@ function ForgeUI_ActionBars:ForgeAPI_PopulateOptions()
 		end
 
 		if v.nButtons ~= nil then
-			G:API_AddNumberBox(self, wnd, "Number of buttons ", v, "nButtons", { tMove = {200, 30},
-				fnCallback = function(...) self:SetupButtons(v); self:EditButtons(v); self:PositionButtons(v, true) end })
+			G:API_AddNumberBox(self, wnd, "Number of buttons ", v, "nButtons", {
+  				tMove = {200, 30},
+				fnCallback = function(...) self:SetupButtons(v); self:EditButtons(v); self:PositionButtons(v, true) end
+			})
 		end
 
 		if v.nButtonSize ~= nil then

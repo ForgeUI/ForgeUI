@@ -167,8 +167,8 @@ GenerateUnitTooltipForm = function(luaCaller, wndContainer, unitSource, strProp)
 		-- TopDataBlock
 		local wndTopDataBlock = wndUnitTooltip:FindChild("TopDataBlock")
 		if wndTopDataBlock then
-			wndTopDataBlock:FindChild("NameString"):SetText(unitSource:GetName())
-			wndTopDataBlock:FindChild("NameString"):SetFont("CRB_Interface11_BO")
+			--wndTopDataBlock:FindChild("NameString"):SetText(unitSource:GetName())
+			--wndTopDataBlock:FindChild("NameString"):SetFont("CRB_Interface11_BO")
 
 			local wndLevelBack = wndUnitTooltip:FindChild("LevelBack")
 			if wndLevelBack then
