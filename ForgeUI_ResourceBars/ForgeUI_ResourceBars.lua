@@ -43,7 +43,8 @@ local ForgeUI_ResourceBars = {
 			engineer = {
 				crResource1 = "FF00AEFF",
 				crResource2 = "FFFFB000",
-				bShowBars = false
+				bShowBars = false,
+				crBars = "FF000000"
 			},
 			esper = {
 				crResource1 = "FF1591DB"
