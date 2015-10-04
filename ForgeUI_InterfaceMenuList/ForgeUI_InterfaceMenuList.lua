@@ -69,6 +69,9 @@ function ForgeUI_InterfaceMenuList:ForgeAPI_AfterRegistration()
 	Apollo.RegisterTimerHandler("QueueRedrawTimer", 					"OnQueuedRedraw", self)
 	Apollo.RegisterEventHandler("ApplicationWindowSizeChanged", 		"ButtonListRedraw", self)
 	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences", 		"OnUpdateTimer", self)
+	
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop", 			"OnToggleShop", self)
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes", 		"OnToggleFortunes", self)
 
     self.wndMain = Apollo.LoadForm(self.xmlDoc , "ForgeUI_InterfaceMenuListForm", "FixedHudStratumHigh", self)
 	self.wndList = Apollo.LoadForm(self.xmlDoc , "FullListFrame", nil, self)
@@ -88,24 +91,34 @@ function ForgeUI_InterfaceMenuList:ForgeAPI_AfterRegistration()
 	if GameLib.GetPlayerUnit() then
 		self:OnCharacterCreated()
 	end
-
+	
+	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Store"), {"InterfaceMenu_ToggleShop", "Store", ""})
+	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenuList_Fortunes"), {"InterfaceMenu_ToggleFortunes", "", ""})
 end
 
 function ForgeUI_InterfaceMenuList:ForgeAPI_AfterRestore()
 	if #self.tSettings.tPinnedAddons == 0 then
 		self.tSettings.tPinnedAddons = {
+			Apollo.GetString("InterfaceMenu_Store"),
+			Apollo.GetString("InterfaceMenuList_Fortunes"),
 			Apollo.GetString("InterfaceMenu_AccountInventory"),
 			Apollo.GetString("InterfaceMenu_Character"),
 			Apollo.GetString("InterfaceMenu_AbilityBuilder"),
-			Apollo.GetString("InterfaceMenu_QuestLog"),
 			Apollo.GetString("InterfaceMenu_GroupFinder"),
 			Apollo.GetString("InterfaceMenu_Social"),
 			Apollo.GetString("InterfaceMenu_Mail"),
-			Apollo.GetString("InterfaceMenu_Lore")
 		}
 	end
 	
 	self:ButtonListRedraw()
+end
+
+function ForgeUI_InterfaceMenuList:OnToggleShop()
+	GameLib.OpenStore()
+end
+
+function ForgeUI_InterfaceMenuList:OnToggleFortunes()
+	GameLib.OpenFortunes()
 end
 
 function ForgeUI_InterfaceMenuList:OnListShow()
