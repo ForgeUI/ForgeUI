@@ -25,6 +25,7 @@ local ForgeUI_Interfaces = {
   tSettings = {
     global = {
       tPinnedAddons = {
+        Apollo.GetString("InterfaceMenu_Store"),
         Apollo.GetString("InterfaceMenu_AccountInventory"),
         Apollo.GetString("CRB_Achievements"),
         Apollo.GetString("MarketplaceCredd_Title"),
@@ -53,15 +54,18 @@ function ForgeUI_Interfaces:OnDocumentReady()
 
 	Apollo.RegisterEventHandler("InterfaceMenuList_NewAddOn", 			"OnNewAddonListed", self)
 	Apollo.RegisterEventHandler("InterfaceMenuList_AlertAddOn", 		"OnDrawAlert", self)
-	Apollo.RegisterEventHandler("CharacterCreated", 					"OnCharacterCreated", self)
-	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 			"OnTutorial_RequestUIAnchor", self)
-	Apollo.RegisterTimerHandler("TimeUpdateTimer", 						"OnUpdateTimer", self)
-	Apollo.RegisterTimerHandler("QueueRedrawTimer", 					"OnQueuedRedraw", self)
+	Apollo.RegisterEventHandler("CharacterCreated", 					      "OnCharacterCreated", self)
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 			  "OnTutorial_RequestUIAnchor", self)
+	Apollo.RegisterTimerHandler("TimeUpdateTimer", 						      "OnUpdateTimer", self)
+	Apollo.RegisterTimerHandler("QueueRedrawTimer", 					      "OnQueuedRedraw", self)
 	Apollo.RegisterEventHandler("ApplicationWindowSizeChanged", 		"ButtonListRedraw", self)
 	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences", 		"OnUpdateTimer", self)
-	Apollo.RegisterEventHandler("LiveEvent_WindowClosed", 				"OnLiveEventClosed", self)
+  Apollo.RegisterEventHandler("LiveEvent_WindowClosed",           "OnLiveEventClosed", self)
 
-    self.wndMain = Apollo.LoadForm(self.xmlDoc , "ForgeUI_InterfacesForm", "FixedHudStratumHigh", self)
+  Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop",         "OnToggleShop", self)
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes",     "OnToggleFortunes", self)
+
+  self.wndMain = Apollo.LoadForm(self.xmlDoc , "ForgeUI_InterfacesForm", "FixedHudStratumHigh", self)
 	self.wndList = Apollo.LoadForm(self.xmlDoc , "FullListFrame", nil, self)
 
 	self.wndMain:FindChild("OpenFullListBtn"):AttachWindow(self.wndList)
@@ -81,6 +85,9 @@ function ForgeUI_Interfaces:OnDocumentReady()
 	if GameLib.GetPlayerUnit() then
 		self:OnCharacterCreated()
 	end
+
+  Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Store"), {"InterfaceMenu_ToggleShop", "Store", ""})
+	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenuList_Fortunes"), {"InterfaceMenu_ToggleFortunes", "", ""})
 end
 
 function ForgeUI_Interfaces:OnListShow()
@@ -440,6 +447,14 @@ function ForgeUI_Interfaces:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strP
 	if arTutorialAnchorMapping[eAnchor] then
 		Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
 	end
+end
+
+function ForgeUI_Interfaces:OnToggleShop()
+	GameLib.OpenStore()
+end
+
+function ForgeUI_Interfaces:OnToggleFortunes()
+	GameLib.OpenFortunes()
 end
 
 -----------------------------------------------------------------------------------------------
