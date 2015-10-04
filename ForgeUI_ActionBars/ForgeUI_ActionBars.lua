@@ -127,6 +127,22 @@ local ForgeUI_ActionBars = {
 					bShowMouseover = false,
 					bShow = false,
 				},
+				[7] = {
+					strKey = "ForgeUI_ShortcutBar",
+					strName = "Shortcut bar",
+					strSnapTo = "top",
+					strContentType = "SBar",
+					tMove = { 0, 50 },
+					nButtons = 8,
+					nButtonSize = 45,
+					nRows = 1,
+					nColumns = 8,
+					nMinId = 84,
+					nButtonPaddingVer = 3,
+					nButtonPaddingHor = 3,
+					bDrawHotkey = true,
+					bDrawShortcutBottom = false,
+				},
 			}
 		}
 	}
@@ -156,12 +172,17 @@ local tSpecialButtons = {} -- defined at the end of the file
 local tBars = {}
 local wndMenuItem = nil
 
+local bShortcutShown = false
+local bVehicleShown = false
+
 -----------------------------------------------------------------------------------------------
 -- ForgeAPI
 -----------------------------------------------------------------------------------------------
 function ForgeUI_ActionBars:ForgeAPI_Init()
   self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_ActionBars//ForgeUI_ActionBars.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
+
+	Apollo.RegisterEventHandler("ShowActionBarShortcut", "ShowShortcutBar", self)
 
 	wndMenuItem = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 end
@@ -177,8 +198,6 @@ end
 
 function ForgeUI_ActionBars:OnDocLoaded()
 	if self.xmlDoc == nil and not self.xmlDoc:IsLoaded() then return end
-
-  --Apollo.RegisterEventHandler("ShowActionBarShortcut", 	"ShowShortcutBar", self) -- TODO: Make it work
 
 	for k, v in pairs(self._DB.profile.tFrames) do
 		self:GenerateBar(v)
@@ -226,7 +245,15 @@ function ForgeUI_ActionBars:SetupBar(tBar, bResetMover, bResetAnchors)
 	wndBar:SetAnchorPoints(unpack(tSnapToPoints[tBar.strSnapTo]))
 	wndBar:SetAnchorOffsets(self:Helper_BarOffsets(tBar, bResetAnchors))
 
-	wndBar:Show(tBar.bShow)
+	if tBar.bShow ~= nil then
+		wndBar:Show(tBar.bShow)
+	else -- special bars
+		if tBar.strKey == "ForgeUI_ShortcutBar" then
+			wndBar:Show(bShortcutShown)
+		elseif tBar.strKey == "ForgeUI_VehicleBar" then
+			wndBar:Show(bVehicleShown)
+		end
+	end
 
 	if bResetMover then
 		F:API_ResetMover(self, tBar.strKey)
@@ -636,43 +663,19 @@ function ForgeUI_ActionBars:FillPath(wnd)
 
 	local tActionSet = ActionSetLib.GetCurrentActionSet()
 
-	if self._DB.char.nSelectedPath > 0 and ActionSetLib.IsSpellCompatibleWithActionSet(self._DB.char.nSelectedPath) ~= 3 then
-		Event_FireGenericEvent("PathAbilityUpdated", self._DB.char.nSelectedPath)
-		tActionSet[10] = self._DB.char.nSelectedPath
-	else
-		tActionSet[10] = tActionSet[10]
-		self._DB.char.nSelectedPath = tActionSet[10]
-	end
+	--if self._DB.char.nSelectedPath > 0 and ActionSetLib.IsSpellCompatibleWithActionSet(self._DB.char.nSelectedPath) ~= 3 then
+	Event_FireGenericEvent("PathAbilityUpdated", self._DB.char.nSelectedPath) -- TODO: Make it work
+	tActionSet[10] = self._DB.char.nSelectedPath
+	--else
+	--	tActionSet[10] = tActionSet[10]
+	--	self._DB.char.nSelectedPath = tActionSet[10]
+	--end
 	ActionSetLib.RequestActionSetChanges(tActionSet)
 
 	local nLeft, nTop, nRight, nBottom = wndPopup:GetAnchorOffsets()
 	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize + 1), nRight, nBottom)
 
 	wndList:ArrangeChildrenVert(0)
-end
-
-function ForgeUI_ActionBars:ShowShortcutBar(nBar, bIsVisible, nShortcuts)
-	if nBar == ActionSetLib.CodeEnumShortcutSet.VehicleBar then -- vehiclebar
-		if self.wndActionBar then
-			self.wndActionBar:Show(not bIsVisible, true)
-		end
-
-		if bIsVisible then
-			self.wndVehicleBar = self:CreateBar(self.tActionBars.tVehicleBar)
-			self.wndVehicleBar:Show(bIsVisible, true)
-		elseif self.wndVehicleBar ~= nil then
-			self.wndVehicleBar:Show(bIsVisible, true)
-		end
-	end
-
-	if nBar == ActionSetLib.CodeEnumShortcutSet.FloatingSpellBar then -- spellbar
-		if bIsVisible then
-			self.wndSpellBar = self:CreateBar(self.tActionBars.tSpellBar)
-			self.wndSpellBar:Show(bIsVisible, true)
-		elseif self.wndSpellBar ~= nil then
-			self.wndSpellBar:Show(bIsVisible, true)
-		end
-	end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -770,6 +773,26 @@ function ForgeUI_ActionBars:RecallBtn_OnButtonDown( wndHandler, wndControl, eMou
 		wnd:FindChild("ForgeUI_ActionButton"):SetContentId(wndControl:GetData())
 	end
 	wnd:FindChild("Popup"):Show(false, true)
+end
+
+function ForgeUI_ActionBars:ShowShortcutBar(nBar, bIsVisible, nShortcuts)
+	if nBar == ActionSetLib.CodeEnumShortcutSet.VehicleBar then -- vehiclebar
+		bVehicleShown = bIsVisible
+
+		if bIsVisible then
+		elseif self.wndVehicleBar ~= nil then
+		end
+	end
+
+	if nBar == ActionSetLib.CodeEnumShortcutSet.FloatingSpellBar then -- shortcutbar
+		bShortcutShown = bIsVisible
+
+		if bIsVisible and tBars["ForgeUI_ShortcutBar"] then
+			tBars["ForgeUI_ShortcutBar"]:Show(true)
+		elseif tBars["ForgeUI_ShortcutBar"] then
+			tBars["ForgeUI_ShortcutBar"]:Show(false)
+		end
+	end
 end
 
 -----------------------------------------------------------------------------------------------
