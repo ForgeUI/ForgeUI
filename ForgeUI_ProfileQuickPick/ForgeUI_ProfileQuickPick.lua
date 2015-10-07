@@ -5,6 +5,10 @@
  
 require "Window"
  
+local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
+local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
+
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI_ProfileQuickPick Module Definition
 -----------------------------------------------------------------------------------------------
@@ -59,41 +63,31 @@ function ForgeUI_ProfileQuickPick:OnDocLoaded()
 			return
 		end
 		
-	    self.wndMain:Show(false, true)
-
-		-- if the xmlDoc is no longer needed, you should set it to nil
-		-- self.xmlDoc = nil
+		self:LoadDropdown();
 		
-		-- Register handlers for events, slash commands and timer, etc.
-		-- e.g. Apollo.RegisterEventHandler("KeyDown", "OnKeyDown", self)
-
-
-		-- Do additional Addon initialization here
+	    self.wndMain:Show(true, true)		
+		
+		ChatSystemLib.PostOnChannel(2, "0.1");
 	end
 end
 
------------------------------------------------------------------------------------------------
--- ForgeUI_ProfileQuickPick Functions
------------------------------------------------------------------------------------------------
--- Define general functions here
+function ForgeUI_ProfileQuickPick:LoadDropdown()
 
+	local wndCombo = G:API_AddComboBox(tModule, wndProfiles, "Select profile", nil, nil, {
+		fnCallback = self.OnSelectProfile,
+		tWidths = { 200, 0 },
+		tMove = { 0, 60 },
+		bInnerText = true,
+	})
 
------------------------------------------------------------------------------------------------
--- ForgeUI_ProfileQuickPickForm Functions
------------------------------------------------------------------------------------------------
--- when the OK button is clicked
-function ForgeUI_ProfileQuickPick:OnOK()
-	self.wndMain:Close() -- hide the window
+	for k, v in pairs(F:API_GetProfiles()) do
+		G:API_AddOptionToComboBox(self, wndCombo, v, v)
+	end
 end
 
--- when the Cancel button is clicked
-function ForgeUI_ProfileQuickPick:OnCancel()
-	self.wndMain:Close() -- hide the window
+function ForgeUI_ProfileQuickPick:OnSelectProfile(vValue, strKey)
+	F:API_ChangeProfile(vValue)
 end
 
-
------------------------------------------------------------------------------------------------
--- ForgeUI_ProfileQuickPick Instance
------------------------------------------------------------------------------------------------
 local ForgeUI_ProfileQuickPickInst = ForgeUI_ProfileQuickPick:new()
 ForgeUI_ProfileQuickPickInst:Init()
