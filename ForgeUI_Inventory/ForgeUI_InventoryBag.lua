@@ -270,6 +270,7 @@ function ForgeUI_Inventory:ForgeAPI_AfterRegistration()
 
 	self.wndIconBtnSortDropDown = self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown")
 	self.wndIconBtnSortDropDown:AttachWindow(self.wndIconBtnSortDropDown:FindChild("ItemSortPrompt"))
+	Event_FireGenericEvent("AddonFullyLoaded", {addon = self, strName = self.strAddonName})
 end
 
 function ForgeUI_Inventory:ForgeAPI_AfterRestore()
