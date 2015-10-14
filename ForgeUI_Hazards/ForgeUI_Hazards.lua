@@ -73,6 +73,7 @@ function ForgeUI_Hazards:ForgeAPI_AfterRegistration()
 	Apollo.RegisterEventHandler("HazardUpdated", "OnHazardsUpdated", self)
 	
 	self.wndHazardsHolder = Apollo.LoadForm(self.xmlDoc, "HazardsHolder", ForgeUI.HudStratum3, self)
+	ForgeUI.API_RegisterWindow(self, self.wndHazardsHolder, "ForgeUI_HazardMeter", { strDisplayName = "Breath and Hazard bars" })
 end
 
 -------------------------------------------------------------------------------
