@@ -15,11 +15,14 @@ local knPaddingTop = 20
 
 local karCurrency =  	-- Alt currency table; re-indexing the enums so they don't have to be in sequence code-side (and removing cash)
 {						-- To add a new currency just add an entry to the table; the UI will do the rest. Idx == 1 will be the default one shown
-	{eType = Money.CodeEnumCurrencyType.Renown, 			strTitle = Apollo.GetString("CRB_Renown"), 				strDescription = Apollo.GetString("CRB_Renown_Desc")},
+	{eType = Money.CodeEnumCurrencyType.Renown, 			strTitle = Apollo.GetString("CRB_Renown"), 			strDescription = Apollo.GetString("CRB_Renown_Desc")},
 	{eType = Money.CodeEnumCurrencyType.ElderGems, 			strTitle = Apollo.GetString("CRB_Elder_Gems"), 			strDescription = Apollo.GetString("CRB_Elder_Gems_Desc")},
 	{eType = Money.CodeEnumCurrencyType.Glory, 			strTitle = Apollo.GetString("CRB_Glory"), 			strDescription = Apollo.GetString("CRB_Glory_Desc")},
 	{eType = Money.CodeEnumCurrencyType.Prestige, 			strTitle = Apollo.GetString("CRB_Prestige"), 			strDescription = Apollo.GetString("CRB_Prestige_Desc")},
-	{eType = Money.CodeEnumCurrencyType.CraftingVouchers, 	strTitle = Apollo.GetString("CRB_Crafting_Vouchers"), 	strDescription = Apollo.GetString("CRB_Crafting_Voucher_Desc")}
+	{eType = Money.CodeEnumCurrencyType.CraftingVouchers, 		strTitle = Apollo.GetString("CRB_Crafting_Vouchers"), 		strDescription = Apollo.GetString("CRB_Crafting_Voucher_Desc")},
+	{eType = AccountItemLib.CodeEnumAccountCurrency.Omnibits,       strTitle = Apollo.GetString("CRB_OmniBits"),              	strDescription = Apollo.GetString("CRB_OmniBits_Desc"), bAccountItem = true},
+	{eType = AccountItemLib.CodeEnumAccountCurrency.ServiceToken,   strTitle = Apollo.GetString("AccountInventory_ServiceToken"),   strDescription = Apollo.GetString("AccountInventory_ServiceToken_Desc"), bAccountItem = true},
+	{eType = AccountItemLib.CodeEnumAccountCurrency.MysticShiny,    strTitle = Apollo.GetString("CRB_FortuneCoin"),           	strDescription = Apollo.GetString("CRB_FortuneCoin_Desc"), bAccountItem = true}
 }
 
 function ForgeUI_Inventory:new(o)
@@ -278,11 +281,26 @@ function ForgeUI_Inventory:ForgeAPI_AfterRestore()
 	for idx = 1, #karCurrency do
 		local tData = karCurrency[idx]
 		local wnd = Apollo.LoadForm(self.xmlDoc, "PickerEntry", self.wndMain:FindChild("OptionsConfigureCurrencyList"), self)
-		wnd:FindChild("EntryCash"):SetMoneySystem(tData.eType) -- We'll fill in the amount during the timer
+
+		if tData.bAccountItem then
+			wnd:FindChild("EntryCash"):SetMoneySystem(Money.CodeEnumCurrencyType.GroupCurrency, 0, 0, tData.eType)
+		else
+			wnd:FindChild("EntryCash"):SetMoneySystem(tData.eType)
+		end
 		wnd:FindChild("PickerEntryBtn"):SetData(idx)
 		wnd:FindChild("PickerEntryBtn"):SetCheck(idx == self.tSettings.nAltCurrencySelected)
 		wnd:FindChild("PickerEntryBtnText"):SetText(tData.strTitle)
-		wnd:FindChild("PickerEntryBtn"):SetTooltip(tData.strDescription)
+
+		local strDescription = tData.strDescription
+		if tData.eType == AccountItemLib.CodeEnumAccountCurrency.Omnibits then
+			local tOmniBitInfo = GameLib.GetOmnibitsBonusInfo()
+			local nTotalWeeklyOmniBitBonus = tOmniBitInfo.nWeeklyBonusMax - tOmniBitInfo.nWeeklyBonusEarned;
+			if nTotalWeeklyOmniBitBonus < 0 then
+				nTotalWeeklyOmniBitBonus = 0
+			end
+			strDescription = strDescription.."\n"..String_GetWeaselString(Apollo.GetString("CRB_OmniBits_EarningsWeekly"), nTotalWeeklyOmniBitBonus)
+		end
+		wnd:FindChild("PickerEntryBtn"):SetTooltip(strDescription)
 		tData.wnd = wnd
 	end
 	self.wndMain:FindChild("OptionsConfigureCurrencyList"):ArrangeChildrenVert(0)
@@ -488,23 +506,53 @@ function ForgeUI_Inventory:UpdateAltCash(wndHandler, wndControl) -- Also from Pi
 	local nSelected = wndHandler:FindChild("PickerEntryBtn"):GetData()
 	local tData = karCurrency[nSelected]
 
+	if tData.eType == AccountItemLib.CodeEnumAccountCurrency.Omnibits then
+		local strDescription = tData.strDescription
+		local tOmniBitInfo = GameLib.GetOmnibitsBonusInfo()
+		local nTotalWeeklyOmniBitBonus = tOmniBitInfo.nWeeklyBonusMax - tOmniBitInfo.nWeeklyBonusEarned;
+		if nTotalWeeklyOmniBitBonus < 0 then
+			nTotalWeeklyOmniBitBonus = 0
+		end
+		strDescription = strDescription.."\n"..String_GetWeaselString(Apollo.GetString("CRB_OmniBits_EarningsWeekly"), nTotalWeeklyOmniBitBonus)
+		wndHandler:FindChild("PickerEntryBtn"):SetTooltip(strDescription)
+	end
+
 	if wndHandler:FindChild("PickerEntryBtn"):IsChecked() then
 		self.tSettings.nAltCurrencySelected = nSelected
 		self:UpdateAltCashDisplay()
 	end
 
 	if self.wndMain:FindChild("OptionsBtn"):IsChecked() then
-		tData.wnd:FindChild("EntryCash"):SetAmount(GameLib.GetPlayerCurrency(tData.eType):GetAmount(), true)
+		tData.wnd:FindChild("EntryCash"):SetAmount(ForgeUI_Inventory:HelperGetCurrencyAmmount(tData), true)
 	end
 end
 
 function ForgeUI_Inventory:UpdateAltCashDisplay()
 	local tData = karCurrency[self.tSettings.nAltCurrencySelected]
 
-	self.wndMain:FindChild("AltCashWindow"):SetMoneySystem(tData.eType)
-	self.wndMain:FindChild("AltCashWindow"):SetAmount(GameLib.GetPlayerCurrency(tData.eType):GetAmount(), true)
-	self.wndMain:FindChild("AltCashWindow"):SetTooltip(String_GetWeaselString(Apollo.GetString("Inventory_MoneyTooltip"), tData.strDescription))
-	self.wndMain:FindChild("MainCashWindow"):SetTooltip(String_GetWeaselString(Apollo.GetString("Inventory_MoneyTooltip"), tData.strDescription))
+	self.wndMain:FindChild("AltCashWindow"):SetAmount(self:HelperGetCurrencyAmmount(tData), true)
+	local strDescription = tData.strDescription
+	if tData.eType == AccountItemLib.CodeEnumAccountCurrency.Omnibits then
+		local tOmniBitInfo = GameLib.GetOmnibitsBonusInfo()
+		local nTotalWeeklyOmniBitBonus = tOmniBitInfo.nWeeklyBonusMax - tOmniBitInfo.nWeeklyBonusEarned;
+		if nTotalWeeklyOmniBitBonus < 0 then
+			nTotalWeeklyOmniBitBonus = 0
+		end
+		strDescription = strDescription.."\n"..String_GetWeaselString(Apollo.GetString("CRB_OmniBits_EarningsWeekly"), nTotalWeeklyOmniBitBonus)
+	end
+	self.wndMain:FindChild("AltCashWindow"):SetTooltip(String_GetWeaselString(Apollo.GetString("Inventory_MoneyTooltip"), strDescription))
+	self.wndMain:FindChild("MainCashWindow"):SetTooltip(String_GetWeaselString(Apollo.GetString("Inventory_MoneyTooltip"), strDescription))
+end
+
+
+function ForgeUI_Inventory:HelperGetCurrencyAmmount(tData)
+	local monAmount = 0
+	if tData.bAccountItem then
+		monAmount = AccountItemLib.GetAccountCurrency(tData.eType)
+	else
+		monAmount = GameLib.GetPlayerCurrency(tData.eType)
+	end
+	return monAmount
 end
 
 -----------------------------------------------------------------------------------------------
