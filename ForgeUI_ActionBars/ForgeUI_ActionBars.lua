@@ -32,7 +32,7 @@ function ForgeUI_ActionBars:new(o)
        
         -- optional
         self.settings_version = 1
-    self.tSettings = {
+    	self.tSettings = {
                 nSelectedMount = 0,
                 nSelectedPotion = 0,
                 nSelectedPath = 0,
@@ -360,6 +360,7 @@ end
 function ForgeUI_ActionBars:FillRecalls(wnd)
         local wndPopup = wnd:FindChild("Popup")
         local wndList = wnd:FindChild("List")
+		wndList:SetStyle("VScroll", false)
  
         local nSize = wndList:GetWidth()
        
