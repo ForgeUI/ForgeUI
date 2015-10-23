@@ -103,8 +103,8 @@ function ForgeUI_Nameplates:new(o)
 		crMOO = "FF7E00FF",
 		tStyle = {
 			nStyle = 0,
-			nBarHeight = 120,
-			nBarWidth = 20,
+			nBarHeight = 120, -- actually width
+			nBarWidth = 20, -- actually height
 			nShieldHeight = 8,
 			nAbsorbHeight = 8,
 			nCastHeight = 7,
@@ -1334,10 +1334,10 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	-- bar
 	local nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("Container"):GetAnchorOffsets()
 
-	nLeft = -(tStyle.nBarHeight / 2)
-	nRight = (tStyle.nBarHeight / 2)
+	nLeft = -(tStyle.nBarHeight / 2) -- actually width - height is due to mistake
+	nRight = (tStyle.nBarHeight / 2) -- actually width - height is due to mistake
 
-	nBottom = nTop + tStyle.nBarWidth
+	nBottom = nTop + tStyle.nBarWidth -- actually height, width is due to mistake
 
 	wndNameplate:FindChild("Container"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 
