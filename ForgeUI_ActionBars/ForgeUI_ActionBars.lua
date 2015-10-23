@@ -318,7 +318,7 @@ function ForgeUI_ActionBars:FillMounts(wnd)
         local nCount = 0
         for idx, tMount in pairs(tMountList) do
                 if tMount.bIsKnown then
-                        nCount = nCount + 1
+                        if nCount < 10 then nCount = nCount + 1 end
                        
                         local tSpellObject = tMount.splObject
        
