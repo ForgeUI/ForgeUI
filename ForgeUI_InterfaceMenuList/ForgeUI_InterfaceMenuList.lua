@@ -127,6 +127,7 @@ end
 
 function ForgeUI_InterfaceMenuList:OnCharacterCreated()	
 	Apollo.CreateTimer("TimeUpdateTimer", 1.0, true)
+	self:UpdateLiveEvents()
 end
 
 function ForgeUI_InterfaceMenuList:OnUpdateTimer()
@@ -449,6 +450,26 @@ function ForgeUI_InterfaceMenuList:LoadByName(strForm, wndParent, strCustomName)
 	return wndNew
 end
 
+function ForgeUI_InterfaceMenuList:UpdateLiveEvents()
+	return
+	self.nNumLiveEvents = 0
+	self.tLiveEvents = {}
+	
+	for idx, peEvent in pairs(PublicEvent.GetActiveEvents()) do
+		if peEvent:GetEventType() == PublicEvent.PublicEventType_LiveEvent then
+			self.tLiveEvents[peEvent:GetId()] = true
+			self.nNumLiveEvents = self.nNumLiveEvents + 1
+		end
+	end
+	
+	if self.nNumLiveEvents > 0 then
+		self.wndMain:FindChild("EventButton"):Show(true)
+		
+		local l, r, t, b = self.wndMain:FindChild("ButtonList"):GetAnchorOffsets()
+		self.wndMain:FindChild("ButtonList"):SetAnchorOffsets(l + 25, r, t, b)
+	end
+end
+
 function ForgeUI_InterfaceMenuList:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
 	local arTutorialAnchorMapping =
 	{
@@ -472,6 +493,10 @@ function ForgeUI_InterfaceMenuList:OnTutorial_RequestUIAnchor(eAnchor, idTutoria
 	if arTutorialAnchorMapping[eAnchor] then
 		Event_FireGenericEvent("Tutorial_RequestUIAnchorResponse", eAnchor, idTutorial, strPopupText, tRect)
 	end
+end
+
+function ForgeUI_InterfaceMenuList:OnEventMoreInfoBtn(wndHandler, wndControl)
+	Event_FireGenericEvent("LiveEvent_ToggleWindow")
 end
 
 local ForgeUI_InterfaceMenuListInst = ForgeUI_InterfaceMenuList:new()
