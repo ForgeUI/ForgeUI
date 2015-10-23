@@ -451,7 +451,6 @@ function ForgeUI_InterfaceMenuList:LoadByName(strForm, wndParent, strCustomName)
 end
 
 function ForgeUI_InterfaceMenuList:UpdateLiveEvents()
-	return
 	self.nNumLiveEvents = 0
 	self.tLiveEvents = {}
 	
