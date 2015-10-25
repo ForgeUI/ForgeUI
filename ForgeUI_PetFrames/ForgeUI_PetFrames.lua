@@ -107,11 +107,11 @@ function ForgeUI_PetFrames:UpdatePetFrames()
 		if self.tWndPetFrames[i - 1] == nil then
 			local newFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_PetFrame", self.wndPetFrames, self)
 
-			newFrame:FindChild("Border"):SetBGColor(self.tSettings.profile.crBorder)
-			newFrame:FindChild("Background"):SetBGColor(self.tSettings.profile.crBackground)
-			newFrame:FindChild("HPBar"):SetBGColor(self.tSettings.profile.crHpBar)
-			newFrame:FindChild("HPValue"):SetTextColor(self.tSettings.profile.crHpValue)
-			newFrame:FindChild("ShieldValue"):SetTextColor(self.tSettings.profile.crShieldValue)			
+			newFrame:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
+			newFrame:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
+			newFrame:FindChild("HPBar"):SetBarColor(self._DB.profile.crHpBar)
+			newFrame:FindChild("HPValue"):SetTextColor(self._DB.profile.crHpValue)
+			newFrame:FindChild("ShieldValue"):SetTextColor(self._DB.profile.crShieldValue)			
 			
 			self.tWndPetFrames[i - 1] = newFrame			
 			self.wndPetFrames:ArrangeChildrenVert()
