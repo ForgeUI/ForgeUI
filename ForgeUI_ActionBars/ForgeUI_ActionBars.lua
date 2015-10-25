@@ -37,6 +37,7 @@ function ForgeUI_ActionBars:new(o)
                 nSelectedPotion = 0,
                 nSelectedPath = 0,
                 bShowHotkeys = true,
+                bHideOutOfCombat = false,
                 tSideBar1 = {
                         bShow = true,
                         bVertical = true,
@@ -59,6 +60,7 @@ function ForgeUI_ActionBars:new(o)
                         nContentMax = 7,
                         bShowHotkey = false,
                         bShowPopup = false,
+                        bCanBeHidden = true,
                         crBorder = "FF000000",
                         strStyler = "LoadStyle_ActionBar",
                 },
@@ -70,6 +72,7 @@ function ForgeUI_ActionBars:new(o)
                         nContentMax = 5,
                         bShowHotkey = false,
                         bShowPopup = false,
+                        bCanBeHidden = false,
                         crBorder = "FF000000",
                         strStyler = "LoadStyle_ActionBar",
                 },
@@ -81,6 +84,7 @@ function ForgeUI_ActionBars:new(o)
                         nContentMax = 91,
                         bShowHotkey = false,
                         bShowPopup = false,
+                        bCanBeHidden = false,
                         crBorder = "FF000000",
                         strStyler = "LoadStyle_ActionBar",
                 },
@@ -92,6 +96,7 @@ function ForgeUI_ActionBars:new(o)
                         nContentMax = 23,
                         bShowHotkey = false,
                         bShowPopup = false,
+                        bCanBeHidden = false,
                         crBorder = "FF000000",
                         strStyler = "LoadStyle_ActionBar",
                 },
@@ -104,6 +109,7 @@ function ForgeUI_ActionBars:new(o)
                         bShowHotkey = false,
                         bShowPopup = false,
                         bVertical = true,
+                        bCanBeHidden = false,
                         crBorder = "FF000000",
                         strStyler = "LoadStyle_ActionBar",
                 },
@@ -114,6 +120,7 @@ function ForgeUI_ActionBars:new(o)
                         nContent = 2,
                         bShowHotkey = false,
                         bShowPopup = true,
+                        bCanBeHidden = true,
                         crBorder = "FF000000",
                         strStyler = "LoadStyle_ActionButton",
                 },
@@ -124,6 +131,7 @@ function ForgeUI_ActionBars:new(o)
                         nContent = 26,
                         bShowHotkey = false,
                         bShowPopup = true,
+                        bCanBeHidden = true,
                         crBorder = "FF000000",
                         strStyler = "LoadStyle_ActionButton",
                 },
@@ -134,6 +142,7 @@ function ForgeUI_ActionBars:new(o)
                         nContent = 18,
                         bShowHotkey = false,
                         bShowPopup = true,
+                        bCanBeHidden = true,
                         crBorder = "FF000000",
                         strStyler = "LoadStyle_ActionButton",
                 },
@@ -144,6 +153,7 @@ function ForgeUI_ActionBars:new(o)
                         nContent = 0,
                         bShowHotkey = false,
                         bShowPopup = false,
+                        bCanBeHidden = true,
                         crBorder = "FF000000",
                         strStyler = "LoadStyle_ActionButton",
                 },
@@ -154,6 +164,7 @@ function ForgeUI_ActionBars:new(o)
                         nContent = 27,
                         bShowHotkey = false,
                         bShowPopup = true,
+                        bCanBeHidden = true,
                         crBorder = "FF000000",
                         strStyler = "LoadStyle_ActionButton",
                 },
@@ -164,6 +175,7 @@ function ForgeUI_ActionBars:new(o)
                         nContent = 9,
                         bShowHotkey = false,
                         bShowPopup = true,
+                        bCanBeHidden = true,
                         crBorder = "FF000000",
                         strStyler = "LoadStyle_ActionButton",
                 },
@@ -615,6 +627,8 @@ function ForgeUI_ActionBars:ForgeAPI_AfterRestore()
         -- settings
        
         ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_General"]:FindChild("bShowHotkeys"), self.tSettings, "bShowHotkeys", "CreateBars")
+        
+        ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_General"]:FindChild("bHideOutOfCombat"), self.tSettings, "bHideOutOfCombat", "CreateBars")
        
         ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_Secondary1"]:FindChild("bShow"), self.tSettings.tSideBar1, "bShow", "CreateBars")
        
@@ -625,6 +639,8 @@ function ForgeUI_ActionBars:ForgeAPI_AfterRestore()
         else
                 Apollo.RegisterEventHandler("CharacterCreated",         "OnCharacterCreated", self)
         end
+        
+        Apollo.RegisterEventHandler("UnitEnteredCombat", "OnUnitEnteredCombat", self)
 end
  
 function ForgeUI_ActionBars:OnCharacterCreated()
@@ -633,7 +649,6 @@ end
  
 function ForgeUI_ActionBars:OnTimer()
         self:CreateBars()
-       
         GameLib.SetDefaultRecallCommand(GameLib.GetDefaultRecallCommand())
         self.wndRecallBtn:FindChild("GCBar"):SetContentId(GameLib.GetDefaultRecallCommand())
        
@@ -665,6 +680,12 @@ function ForgeUI_ActionBars:CreateBars()
        
         self.wndRecallBtn = self:CreateButton(self.tActionBars.tRecallButton)
         self:FillRecalls(self.wndRecallBtn)
+        
+        if self.tSettings.bHideOutOfCombat and not GameLib.GetPlayerUnit():IsInCombat() then
+        	self:HideActionBars()
+        else
+        	self:ShowActionBars() 
+        end
 end
  
 function ForgeUI_ActionBars:ShowShortcutBar(nBar, bIsVisible, nShortcuts)
@@ -793,8 +814,58 @@ function ForgeUI_ActionBars:RecallBtn_OnButtonDown( wndHandler, wndControl, eMou
         end
         wnd:FindChild("Popup"):Show(false, true)
 end
- 
- 
+
+-----------------------------------------------------------------------------------------------
+-- ForgeUI_ActionBars Hide out of combat
+-----------------------------------------------------------------------------------------------
+
+function ForgeUI_ActionBars:HideActionBars()
+	for key, tOptions in pairs(self.tActionBars) do
+		if tOptions.bCanBeHidden then
+			self.wndActionBars[tOptions.strName]:SetOpacity(0)
+		end
+	end
+end
+
+function ForgeUI_ActionBars:ShowActionBars()
+	for key, wnd in pairs(self.wndActionBars) do
+			wnd:SetOpacity(1)
+	end
+end 
+
+function ForgeUI_ActionBars:OnUnitEnteredCombat(unitID, inCombat)
+	if self.tSettings.bHideOutOfCombat and unitID == GameLib:GetPlayerUnit() then
+		if inCombat then
+			self:ShowActionBars()
+		else
+			self:HideActionBars()
+		end
+	end
+end
+
+local bMouseExited = false -- workaround because MouseExit fires with mouse still on the bar
+
+function ForgeUI_ActionBars:OnBarMouseEnter( wndHandler, wndControl, x, y )
+	if self.tSettings.bHideOutOfCombat and not GameLib.GetPlayerUnit():IsInCombat() then
+		self:ShowActionBars()
+		bMouseExited = false
+	end
+end
+
+function ForgeUI_ActionBars:OnBarMouseExit( wndHandler, wndControl, x, y )
+	if self.tSettings.bHideOutOfCombat and not GameLib.GetPlayerUnit():IsInCombat() then
+  self.timer = ApolloTimer.Create(2.0, true, "OnFadeOutTimer", self)
+  bMouseExited = true
+	end
+end
+
+function ForgeUI_ActionBars:OnFadeOutTimer()
+	if bMouseExited then
+		self:HideActionBars()
+		self.timer:Stop()
+	end
+end
+
 ----------------------------------------------------------------------------------------------
 -- ForgeUI_ActionBars Instance
 -----------------------------------------------------------------------------------------------
