@@ -26,13 +26,13 @@ local ForgeUI_InfoBar = {
 		global = {
 			fUpdatePeriod = 0.5
 		},
-	    char = {
+    	char = {
 	      tInfos = {
-			[1] = "XP",
-			[2] = "FPS",
-			[3] = "PING",
+				[1] = "XP",
+				[2] = "FPS",
+				[3] = "PING",
 	      }
-	    }
+    	}
 	}
 }
 -----------------------------------------------------------------------------------------------
@@ -72,7 +72,8 @@ end
 function ForgeUI_InfoBar:OnDocLoaded()
 	self.unitPlayer = GameLib.GetPlayerUnit()
 
-	self.wndInfoBar = Apollo.LoadForm(self.xmlDoc, "ForgeUI_InfoBar", "FixedHudStratumLow", self)
+	self.wndInfoBar = Apollo.LoadForm(self.xmlDoc, "ForgeUI_InfoBar", F:API_GetStratum("Hud"), self)
+	F:API_RegisterMover(self, self.wndInfoBar, "Infobar", "Info bar", "general")
 
 	self:SetupInfos()
 
@@ -113,7 +114,7 @@ end
 
 tInfos.XP.fnDraw = function()
 	if not GameLib.GetPlayerUnit() then return end
-	
+
 	local stats = GameLib.GetPlayerUnit():GetBasicStats()
 	if stats == nil then return end
 
