@@ -124,6 +124,8 @@ function ForgeUI_Interfaces:OnUpdateTimer()
 			local wndLiveEvent = self.wndMain:FindChild("LiveEvent")
 			wndLiveEvent:Show(true)
 
+			Print("Live event...")
+			
 			local btnLiveEvent = wndLiveEvent:FindChild("EventMoreInfoBtn")
 			btnLiveEvent:SetTooltip(string.format(
 				"%s%s%s",
