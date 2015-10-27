@@ -41,11 +41,13 @@ function ForgeUI_ActionBars:new(o)
                 tSideBar1 = {
                         bShow = true,
                         bVertical = true,
+                        bHideEmpty = false,
                         nButtons = 12,
                 },
                 tSideBar2 = {
                         bShow = false,
                         bVertical = true,
+                        bHideEmpty = false,
                         nButtons = 12,
                 }
         }
@@ -108,7 +110,6 @@ function ForgeUI_ActionBars:new(o)
                         nContentMax = 35,
                         bShowHotkey = false,
                         bShowPopup = false,
-                        bVertical = true,
                         bCanBeHidden = false,
                         crBorder = "FF000000",
                         strStyler = "LoadStyle_ActionBar",
@@ -204,7 +205,20 @@ function ForgeUI_ActionBars:CreateBar(tOptions)
        
         local tSettings = self.tSettings["t" .. tOptions.strName]
         if tSettings ~= nil then
-                if not tSettings.bShow then return end
+        	if tSettings.bShow and tSettings.bHideEmpty then
+        		wnd:AddEventHandler("MouseEnter", "OnMouseEnterSideBar", self)
+        		wnd:AddEventHandler("MouseExit", "OnMouseExitSideBar", self)
+          else
+          	wnd:RemoveEventHandler("MouseEnter", "OnMouseEnterSideBar", self)
+          	wnd:RemoveEventHandler("MouseExit", "OnMouseExitSideBar", self)
+          	if not tSettings.bShow then return end
+          end
+        elseif tOptions.bCanBeHidden and bHideOutOfCombat then
+        	wnd:AddEventHandler("MouseEnter", "OnMouseEnterActionBar", self)
+        	wnd:AddEventHandler("MouseExit", "OnMouseExitActionBar", self)
+        else
+        	wnd:RemoveEventHandler("MouseEnter", "OnMouseEnterActionBar", self)
+          wnd:RemoveEventHandler("MouseExit", "OnMouseExitActionBar", self)
         end
        
         ForgeUI.API_RegisterWindow(self, wnd, tOptions.strName, { bMaintainRatio = true, strDisplayName = tOptions.strDisplayName })
@@ -221,7 +235,7 @@ function ForgeUI_ActionBars:CreateBar(tOptions)
                         wnd:SetAnchorOffsets(nLeft, nTop, nLeft + wnd:GetHeight(), nTop + wnd:GetWidth())
                 end
         end
- 
+ 				
         local nButtons = tOptions.nContentMax - tOptions.nContentMin + 1
         local i = 0
         for id = tOptions.nContentMin, tOptions.nContentMax do
@@ -236,6 +250,7 @@ function ForgeUI_ActionBars:CreateBar(tOptions)
                        
                         local wndButton = Apollo.LoadForm(self.xmlDoc, tOptions.strContent, wndBarButton:FindChild("Holder"), self)
                         wndButton:SetContentId(id)
+                        --Print(tOptions.strContent .. ", id = " .. id .. ", i = " .. i)
                        
                         if tSettings ~= nil and tSettings.bVertical then
                                 wndBarButton:SetAnchorPoints(0, (1 / nButtons) * i, 1, (1 / nButtons) * (i + 1))
@@ -247,7 +262,6 @@ function ForgeUI_ActionBars:CreateBar(tOptions)
                        
                         ForgeUI.API_RegisterWindow(self, wndBarButton, tOptions.strName .. "_" .. i, { strParent = tOptions.strName .. "_holder", crBorder = "FFFFFFFF", bMaintainRatio = true, strDisplayName = i })
                 end
-               
                 i = i + 1
         end
        
@@ -262,8 +276,16 @@ function ForgeUI_ActionBars:CreateButton(tOptions)
                 wnd = Apollo.LoadForm(self.xmlDoc, "ForgeUI_" .. tOptions.strName, ForgeUI.HudStratum3, self)
                 self.wndActionBars[tOptions.strName] = wnd
         end
-       
+       	
         wnd:DestroyChildren()
+        
+        if tOptions.bCanBeHidden and bHideOutOfCombat then
+        	wnd:AddEventHandler("MouseEnter", "OnMouseEnterActionBar", self)
+        	wnd:AddEventHandler("MouseExit", "OnMouseExitActionBar", self)
+        else
+        	wnd:RemoveEventHandler("MouseEnter", "OnMouseEnterActionBar", self)
+          wnd:RemoveEventHandler("MouseExit", "OnMouseExitActionBar", self)
+        end
        
         ForgeUI.API_RegisterWindow(self, wnd, tOptions.strName, { bMaintainRatio = true, strDisplayName = tOptions.strDisplayName })
        
@@ -631,8 +653,16 @@ function ForgeUI_ActionBars:ForgeAPI_AfterRestore()
         ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_General"]:FindChild("bHideOutOfCombat"), self.tSettings, "bHideOutOfCombat", "CreateBars")
        
         ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_Secondary1"]:FindChild("bShow"), self.tSettings.tSideBar1, "bShow", "CreateBars")
+        
+        ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_Secondary1"]:FindChild("bVertical"), self.tSettings.tSideBar1, "bVertical", "CreateBars")
+        
+        ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_Secondary1"]:FindChild("bHideEmpty"), self.tSettings.tSideBar1, "bHideEmpty", "CreateBars")
        
         ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_Secondary2"]:FindChild("bShow"), self.tSettings.tSideBar2, "bShow", "CreateBars")
+        
+        ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_Secondary2"]:FindChild("bVertical"), self.tSettings.tSideBar2, "bVertical", "CreateBars")
+        
+        ForgeUI.API_RegisterCheckBox(self, self.wndContainers["ForgeUI_Secondary2"]:FindChild("bHideEmpty"), self.tSettings.tSideBar2, "bHideEmpty", "CreateBars")
        
         if GameLib.GetPlayerUnit() then
                 self:OnCharacterCreated()
@@ -681,11 +711,12 @@ function ForgeUI_ActionBars:CreateBars()
         self.wndRecallBtn = self:CreateButton(self.tActionBars.tRecallButton)
         self:FillRecalls(self.wndRecallBtn)
         
-        if self.tSettings.bHideOutOfCombat and not GameLib.GetPlayerUnit():IsInCombat() then
-        	self:HideActionBars()
-        else
-        	self:ShowActionBars() 
+	if self.tSettings.bHideOutOfCombat and not GameLib.GetPlayerUnit():IsInCombat() then
+        	self:HideActionBars() 
+        else 
+        	self:ShowActionBars()
         end
+        self:HideSideBars()
 end
  
 function ForgeUI_ActionBars:ShowShortcutBar(nBar, bIsVisible, nShortcuts)
@@ -831,7 +862,9 @@ function ForgeUI_ActionBars:ShowActionBars()
 	for key, wnd in pairs(self.wndActionBars) do
 			wnd:SetOpacity(1)
 	end
-end 
+end
+
+
 
 function ForgeUI_ActionBars:OnUnitEnteredCombat(unitID, inCombat)
 	if self.tSettings.bHideOutOfCombat and unitID == GameLib:GetPlayerUnit() then
@@ -843,27 +876,55 @@ function ForgeUI_ActionBars:OnUnitEnteredCombat(unitID, inCombat)
 	end
 end
 
-local bMouseExited = false -- workaround because MouseExit fires with mouse still on the bar
+local bMouseExited = false
 
-function ForgeUI_ActionBars:OnBarMouseEnter( wndHandler, wndControl, x, y )
-	if self.tSettings.bHideOutOfCombat and not GameLib.GetPlayerUnit():IsInCombat() then
-		self:ShowActionBars()
+function ForgeUI_ActionBars:OnMouseEnterActionBar( wndHandler, wndControl, x, y )
+	if not GameLib.GetPlayerUnit():IsInCombat() then
 		bMouseExited = false
+		self:ShowActionBars()
 	end
 end
 
-function ForgeUI_ActionBars:OnBarMouseExit( wndHandler, wndControl, x, y )
-	if self.tSettings.bHideOutOfCombat and not GameLib.GetPlayerUnit():IsInCombat() then
-  self.timer = ApolloTimer.Create(2.0, true, "OnFadeOutTimer", self)
-  bMouseExited = true
+function ForgeUI_ActionBars:OnMouseExitActionBar( wndHandler, wndControl, x, y )
+	if not GameLib.GetPlayerUnit():IsInCombat() then       
+		self.timer = ApolloTimer.Create(2.0, true, "OnFadeOutTimer", self)
+		bMouseExited = true
 	end
 end
+
 
 function ForgeUI_ActionBars:OnFadeOutTimer()
 	if bMouseExited then
 		self:HideActionBars()
 		self.timer:Stop()
 	end
+end
+
+function ForgeUI_ActionBars:OnMouseEnterSideBar( wndHandler, wndControl, x, y )
+	for strName, wndBarButton in pairs(wndHandler:FindChild("Holder"):GetChildren()) do
+		wndBarButton:SetOpacity(1)
+	end
+end
+
+function ForgeUI_ActionBars:HideSideBars()
+	if self.tSettings["t" .. "SideBar1"].bShow and self.tSettings["t" .. "SideBar1"].bHideEmpty then
+		self:HideSideBarButtons(self.wndActionBars["SideBar1"])
+	end
+	if self.tSettings["t" .. "SideBar2"].bShow and self.tSettings["t" .. "SideBar2"].bHideEmpty then
+		self:HideSideBarButtons(self.wndActionBars["SideBar2"])
+	end
+end
+
+function ForgeUI_ActionBars:HideSideBarButtons(wnd)
+	for strName, wndBarButton in pairs(wnd:FindChild("Holder"):GetChildren()) do
+		if wndBarButton:FindChild(self.tActionBars["t" .. string.sub(wnd:GetName(), 9)].strContent):GetContent()["strIcon"] == "" then
+			wndBarButton:SetOpacity(0)
+		end
+	end
+end
+	
+function ForgeUI_ActionBars:OnMouseExitSideBar( wndHandler, wndControl, x, y )
+	self:HideSideBarButtons(wndHandler)
 end
 
 ----------------------------------------------------------------------------------------------
