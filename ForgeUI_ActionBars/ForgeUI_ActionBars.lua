@@ -213,7 +213,7 @@ function ForgeUI_ActionBars:CreateBar(tOptions)
           	wnd:RemoveEventHandler("MouseExit", "OnMouseExitSideBar", self)
           	if not tSettings.bShow then return end
           end
-        elseif tOptions.bCanBeHidden then
+        elseif tOptions.bCanBeHidden and bHideOutOfCombat then
         	wnd:AddEventHandler("MouseEnter", "OnMouseEnterActionBar", self)
         	wnd:AddEventHandler("MouseExit", "OnMouseExitActionBar", self)
         else
@@ -279,7 +279,7 @@ function ForgeUI_ActionBars:CreateButton(tOptions)
        	
         wnd:DestroyChildren()
         
-        if tOptions.bCanBeHidden then
+        if tOptions.bCanBeHidden and bHideOutOfCombat then
         	wnd:AddEventHandler("MouseEnter", "OnMouseEnterActionBar", self)
         	wnd:AddEventHandler("MouseExit", "OnMouseExitActionBar", self)
         else
@@ -713,7 +713,7 @@ function ForgeUI_ActionBars:CreateBars()
         
 	if self.tSettings.bHideOutOfCombat and not GameLib.GetPlayerUnit():IsInCombat() then
         	self:HideActionBars() 
-	else 
+        else 
         	self:ShowActionBars()
         end
         self:HideSideBars()
