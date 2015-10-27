@@ -711,8 +711,10 @@ function ForgeUI_ActionBars:CreateBars()
         self.wndRecallBtn = self:CreateButton(self.tActionBars.tRecallButton)
         self:FillRecalls(self.wndRecallBtn)
         
-				if self.tSettings.bHideOutOfCombat and not GameLib.GetPlayerUnit():IsInCombat() then
+	if self.tSettings.bHideOutOfCombat and not GameLib.GetPlayerUnit():IsInCombat() then
         	self:HideActionBars() 
+	else 
+        	self:ShowActionBars()
         end
         self:HideSideBars()
 end
