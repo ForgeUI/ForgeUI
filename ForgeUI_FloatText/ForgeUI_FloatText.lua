@@ -690,8 +690,7 @@ function ForgeUI_FloatText:GetFloatTextLocation(bHeal, targetUnit)
 	if bHeal == false and self._DB.profile.bAdjustForTallUnits == true then
 	
 		local overheadAnchor = targetUnit:GetOverheadAnchor()		
-		if overheadAnchor.y < self._DB.profile.nTallUnitOffset then
-			ChatSystemLib.PostOnChannel(2, "returning adjusted");
+		if overheadAnchor.y < self._DB.profile.nTallUnitOffset then			
 			return CombatFloater.CodeEnumFloaterLocation.Bottom;
 		end
 	--
