@@ -20,7 +20,7 @@ local ForgeUI_FloatText = {
 			strLocation = "Chest",
 			strCollision = "IgnoreCollision",			
 			bAdjustForTallUnits = false,
-			nTallUnitOffset = 180,
+			nTallUnitOffset = 100,
 			nDamageIncomingThreshold = 0, 	--tDamageHealing.nDamageThreshold
 			nHealingIncomingThreshold = 0, 	--tDamageHealing.nHealThreshold
 			nDamageOutgoingThreshold = 0, 	--tPlayerDamageHealing.nDamageThreshold
@@ -95,7 +95,7 @@ end
 function ForgeUI_FloatText:OnDocLoaded()
 	if self.xmlDoc == nil and not self.xmlDoc:IsLoaded() then return end	
 	
-	ChatSystemLib.PostOnChannel(2, self._DB.profile.strFont);
+	ChatSystemLib.PostOnChannel(2, tostring(self._DB.profile.bAdjustForTallUnits));
 end
 
 
@@ -192,8 +192,10 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 
 	tTextOption.strFontFace = forgeUIFloatTextInstance._DB.profile.strFont
 	tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.IgnoreCollision
-	tTextOption.eLocation = forgeUIFloatTextInstance:GetFloatTextLocation();
-
+	--tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation[forgeUIFloatTextInstance._DB.profile.strLocation];
+	tTextOption.eLocation = forgeUIFloatTextInstance:GetFloatTextLocation(bHeal, unitTarget)
+-- forgeUIFloatTextInstance:GetFloatTextLocation();
+	
 
 	if not bHeal and bCritical == true then -- Crit not vuln
 		nBaseColor = 0xffea00
@@ -222,11 +224,10 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 	self.fLastOffset = nOffset
 	
 	-- set offset
-	tTextOption.fOffsetDirection = self.fLastOffset
+	tTextOption.fOffsetDirection = nOffset
 	tTextOption.fOffset = math.random(10, 80)/100
 
-	-- scale and movement
-	
+	-- scale and movement	
 	tTextOption.arFrames = forgeUIFloatTextInstance:GetOutgoingDamageAnimation(true, fMaxSize, nBaseColor, fMaxDuration);
 	
 	
@@ -685,16 +686,19 @@ function ForgeUI_FloatText:GetCriticalOutgoingDamageAnimation(fMaxSize, nBaseCol
 
 end
 
-function ForgeUI_FloatText:GetFloatTextLocation(bHeal)
+function ForgeUI_FloatText:GetFloatTextLocation(bHeal, targetUnit)
 	if bHeal == false and self._DB.profile.bAdjustForTallUnits == true then
 	
-		if overheadAnchor.y > self._DB.profile.nTallUnitOffset then
+		local overheadAnchor = targetUnit:GetOverheadAnchor()		
+		if overheadAnchor.y < self._DB.profile.nTallUnitOffset then
+			ChatSystemLib.PostOnChannel(2, "returning adjusted");
 			return CombatFloater.CodeEnumFloaterLocation.Bottom;
 		end
-	
+	--
 	end	
 	
 	return CombatFloater.CodeEnumFloaterLocation[self._DB.profile.strLocation];
+
 end
 ----------------------------------------------------------------------------------------------
 -- ForgeUI_FloatText Instance
