@@ -283,7 +283,7 @@ function ForgeUI_Nameplates:ForgeAPI_Init()
 	F:API_AddMenuToMenuItem(self, wndParent, "Style", "Style")
 	F:API_AddMenuToMenuItem(self, wndParent, "Target", "Target")
 	F:API_AddMenuToMenuItem(self, wndParent, "Player", "Player")
-	F:API_AddMenuToMenuItem(self, wndParent, "Pary player", "PartyPlayer")
+	F:API_AddMenuToMenuItem(self, wndParent, "Party player", "PartyPlayer")
 	F:API_AddMenuToMenuItem(self, wndParent, "Friendly player", "FriendlyPlayer")
 	F:API_AddMenuToMenuItem(self, wndParent, "Hostile player", "HostilePlayer")
 	F:API_AddMenuToMenuItem(self, wndParent, "Friendly NPC", "FriendlyNPC")
@@ -1548,8 +1548,8 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 		if wnd then
 			if v.nHpCutoff then
 				G:API_AddNumberBox(self, wnd, "HP cutoff", v, "nHpCutoff", { tMove = {400, 0} })
-			end
-
+			end			
+			
 			if v.crHpCutoff then
 				G:API_AddColorBox(self, wnd, "HP cutoff color", v, "crHpCutoff", { tMove = {400, 30} })
 			end
@@ -1573,6 +1573,17 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 			if v.bCleanseIndicator ~= nil then
 				G:API_AddCheckBox(self, wnd, "Show cleanse indicator", v, "bCleanseIndicator", { tMove = {400, 90} })
 			end
+			
+			
+			if v.bHideOnHealth ~= nil then
+				G:API_AddCheckBox(self, wnd, "Hide on full hp", v, "bHideOnHealth", { tMove = {400, 180} } ) 
+			end
+			
+			
+			if v.bHideOnShield ~= nil then
+				G:API_AddCheckBox(self, wnd, "Hide on full shield", v, "bHideOnShield", { tMove = { 400, 200 } } )
+			end
+
 
 			if v.crCleanseIndicator then
 				G:API_AddColorBox(self, wnd, "Cleanse indicator", v, "crCleanseIndicator", { tMove = {400, 120}, fnCallback = self.LoadStyle_Nameplates })
