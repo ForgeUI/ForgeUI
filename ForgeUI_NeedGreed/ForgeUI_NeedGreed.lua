@@ -64,13 +64,13 @@ end
 function ForgeUI_NeedGreed:ForgeAPI_AfterRegistration()
 	Apollo.RegisterEventHandler("LootRollUpdate",		"OnGroupLoot", self)
     Apollo.RegisterTimerHandler("WinnerCheckTimer", 	"OnOneSecTimer", self)
-    Apollo.RegisterEventHandler("LootRollWon", 			"OnLootRollWon", self)
-    Apollo.RegisterEventHandler("LootRollAllPassed", 	"OnLootRollAllPassed", self)
+    Apollo.RegisterEventHandler("LootRollWon", 			"OnLootRollWonEvent", self)
+    Apollo.RegisterEventHandler("LootRollAllPassed", 	"OnLootRollAllPassedEvent", self)
 	Apollo.RegisterTimerHandler("PlayerNameCheckTimer",	"OnNameCheckTimer", self)
 
-	Apollo.RegisterEventHandler("LootRollSelected", 	"OnLootRollSelected", self)
-	Apollo.RegisterEventHandler("LootRollPassed", 		"OnLootRollPassed", self)
-	Apollo.RegisterEventHandler("LootRoll", 			"OnLootRoll", self)
+	Apollo.RegisterEventHandler("LootRollSelected", 	"OnLootRollSelectedEvent", self)
+	Apollo.RegisterEventHandler("LootRollPassed", 		"OnLootRollPassedEvent", self)
+	Apollo.RegisterEventHandler("LootRoll", 			"OnLootRollEvent", self)
 
 	--Apollo.RegisterEventHandler("GroupBagItemAdded", 	"OnGroupBagItemAdded", self) -- Appears deprecated
 
@@ -279,10 +279,17 @@ end
 -----------------------------------------------------------------------------------------------
 -- Chat Message Events and Roll Counters
 -----------------------------------------------------------------------------------------------
+function ForgeUI_NeedGreed:OnLootRollAllPassedEvent(lootInfo)
+	self:OnLootRollAllPassed(lootInfo.itemLoot)
+end
 
 function ForgeUI_NeedGreed:OnLootRollAllPassed(itemLooted)
 	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_EveryonePassed"), itemLooted:GetChatLinkString())
 	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
+end
+
+function ForgeUI_NeedGreed:OnLootRollWonEvent(lootInfo)
+	self:OnLootRollWon(lootInfo.itemLoot, lootInfo.strPlayer, lootInfo.bNeed)
 end
 
 function ForgeUI_NeedGreed:OnLootRollWon(itemLoot, strWinner, bNeed)
@@ -302,6 +309,10 @@ function ForgeUI_NeedGreed:OnLootRollWon(itemLoot, strWinner, bNeed)
 			break
 		end
 	end
+end
+
+function ForgeUI_NeedGreed:OnLootRollSelectedEvent(lootInfo)
+	self:OnLootRollSelected(lootInfo.itemLoot, lootInfo.strPlayer, lootInfo.bNeed)
 end
 
 function ForgeUI_NeedGreed:OnLootRollSelected(itemLoot, strPlayer, bNeed)
@@ -338,6 +349,10 @@ function ForgeUI_NeedGreed:OnLootRollSelected(itemLoot, strPlayer, bNeed)
 	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
 end
 
+function ForgeUI_NeedGreed:OnLootRollPassedEvent(lootInfo)
+	self:OnLootRollPassed(lootInfo.itemLoot, lootInfo.strPlayer)
+end
+
 function ForgeUI_NeedGreed:OnLootRollPassed(itemLoot, strPlayer)
 	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_PlayerPassed"), strPlayer, itemLoot:GetChatLinkString())
 	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
@@ -350,6 +365,10 @@ function ForgeUI_NeedGreed:OnLootRollPassed(itemLoot, strPlayer)
 			if bIncrementedCounter then break end
 		end
 	end
+end
+
+function ForgeUI_NeedGreed:OnLootRollEvent(lootInfo)
+	self:OnLootRoll(lootInfo.itemLoot, lootInfo.strPlayer, lootInfo.nRoll, lootInfo.bNeed)
 end
 
 function ForgeUI_NeedGreed:OnLootRoll(itemLoot, strPlayer, nRoll, bNeed)
