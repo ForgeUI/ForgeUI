@@ -1,43 +1,25 @@
-# Windows image file caches
-Thumbs.db
-ehthumbs.db
+*
 
-# Folder config file
-Desktop.ini
+!.gitattributes
+!.gitignore
 
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
+!ForgeUI/
+!ForgeUI_ActionBars/
+!ForgeUI_CastBars/
+!ForgeUI_FloatText/
+!ForgeUI_Hazards/
+!ForgeUI_InfoBar/
+!ForgeUI_InterfaceMenuList/
+!ForgeUI_Inventory/
+!ForgeUI_MiniMap/
+!ForgeUI_Nameplates/
+!ForgeUI_NeedGreed/
+!ForgeUI_PetFrames/
+!ForgeUI_ResourceBars/
+!ForgeUI_SprintDash/
+!ForgeUI_Toolips/
+!ForgeUI_UnitFrames/
 
-# Windows Installer files
-*.cab
-*.msi
-*.msm
-*.msp
+!LICENSE
+!README.md
 
-# Windows shortcuts
-*.lnk
-
-# =========================
-# Operating System Files
-# =========================
-
-# OSX
-# =========================
-
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Thumbnails
-._*
-
-# Files that might appear on external disk
-.Spotlight-V100
-.Trashes
-
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk

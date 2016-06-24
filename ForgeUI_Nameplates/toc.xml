@@ -1,4 +1,4 @@
-<Addon Name="ForgeUI_Nameplates" Version="1.0.0" Author="WintyBadass" APIVersion="11" Description="">
+<Addon Name="ForgeUI_Nameplates" Version="1.0.0" Author="WintyBadass" APIVersion="12" Description="">
     <Script Name="ForgeUI_Nameplates.lua"/>
     <Form Name="ForgeUI_Nameplates.xml"/>
     <ReplaceAddon Name="Nameplates"/>
