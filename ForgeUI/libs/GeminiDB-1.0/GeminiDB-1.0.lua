@@ -32,7 +32,7 @@
 -- end
 -- @class file
 -- @name GeminiDB-1.0.lua
-local MAJOR, MINOR = "Gemini:DB-1.0a", 6
+local MAJOR, MINOR = "Gemini:DB-1.0", 7
 local APkg = Apollo.GetPackage(MAJOR)
 if APkg and (APkg.nVersion or 0) >= MINOR then
 	return -- no upgrade is needed
@@ -282,7 +282,7 @@ local preserve_keys = {
 }
 
 local realmKey = GameLib.GetRealmName()
-local charKey = GameLib.GetAccountRealmCharacter().strCharacter .. " - " .. realmKey
+local charKey = GameLib.GetPlayerCharacterName() .. " - " .. realmKey
 local localeKey = GetLocale():lower()
 
 local function populateKeys(self)
@@ -420,7 +420,7 @@ end
 -- strip all defaults from the database
 -- and cleans up empty sections
 local function OnSave(self, eLevel)
-	if eLevel ~= GameLib.CodeEnumAddonSaveLevel.General then
+	if eLevel ~= GameLib.CodeEnumAddonSaveLevel.Account then
 		return nil
 	end
 
@@ -444,7 +444,7 @@ local function OnRestore(self, eLevel, tSavedData)
 	local tCancelDefaultProcessing = { bCancelDefault = false }
 	db.callbacks:Fire("OnDatabaseImport", db, eLevel, tSavedData, tCancelDefaultProcessing)
 
-	if eLevel ~= GameLib.CodeEnumAddonSaveLevel.General or
+	if eLevel ~= GameLib.CodeEnumAddonSaveLevel.Account or
 			tCancelDefaultProcessing.bCancelDefault then
 		return
 	end
@@ -518,10 +518,7 @@ function DBObjectLib:SetProfile(name)
 	end
 
 	-- changing to the same profile, dont do anything
-	--if name == self.keys.profile then
-	--	self.callbacks:Fire("OnProfileChanged", self, name)
-	--	return
-	--end
+	if name == self.keys.profile then return end
 
 	local oldProfile = self.profile
 	local defaults = self.defaults and self.defaults.profile
