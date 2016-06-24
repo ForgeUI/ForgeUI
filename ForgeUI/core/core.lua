@@ -13,7 +13,7 @@ local A = _G["ForgeLibs"]["ForgeAddon"] -- ForgeUI addon prototype
 
 -- libraries
 local GeminiHook = Apollo.GetPackage("Gemini:Hook-1.0").tPackage
-local GeminiDB = Apollo.GetPackage("Gemini:DB-1.0a").tPackage
+local GeminiDB = Apollo.GetPackage("Gemini:DB-1.0").tPackage
 GeminiDB.callbacks = GeminiDB.callbacks or Apollo.GetPackage("Gemini:CallbackHandler-1.0").tPackage:New(GeminiDB)
 
 -----------------------------------------------------------------------------------------------
