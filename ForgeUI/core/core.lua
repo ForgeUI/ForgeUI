@@ -148,6 +148,7 @@ function F:API_GetAddon(strName)
     if tAddons[strName] then
         return tAddons[strName].tAddon
 	end
+	return Apollo.GetAddon(strName) or nil
 end
 
 function F:API_ListAddons()
