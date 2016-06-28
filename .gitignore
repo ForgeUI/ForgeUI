@@ -4,21 +4,37 @@
 !.gitignore
 
 !ForgeUI/
+!ForgeUI/**/**
 !ForgeUI_ActionBars/
+!ForgeUI_ActionBars/**/**
 !ForgeUI_CastBars/
+!ForgeUI_CastBars/**/**
 !ForgeUI_FloatText/
+!ForgeUI_FloatText/**/**
 !ForgeUI_Hazards/
+!ForgeUI_Hazards/**/**
 !ForgeUI_InfoBar/
+!ForgeUI_InfoBar/**/**
 !ForgeUI_InterfaceMenuList/
+!ForgeUI_InterfaceMenuList/**/**
 !ForgeUI_Inventory/
+!ForgeUI_Inventory/**/**
 !ForgeUI_MiniMap/
+!ForgeUI_MiniMap/**/**
 !ForgeUI_Nameplates/
+!ForgeUI_Nameplates/**/**
 !ForgeUI_NeedGreed/
+!ForgeUI_NeedGreed/**/**
 !ForgeUI_PetFrames/
+!ForgeUI_PetFrames/**/**
 !ForgeUI_ResourceBars/
+!ForgeUI_ResourceBars/**/**
 !ForgeUI_SprintDash/
+!ForgeUI_SprintDash/**/**
 !ForgeUI_Toolips/
+!ForgeUI_Toolips/**/**
 !ForgeUI_UnitFrames/
+!ForgeUI_UnitFrames/**/**
 
 !LICENSE
 !README.md
