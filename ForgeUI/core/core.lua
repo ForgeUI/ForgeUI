@@ -70,7 +70,7 @@ end
 
 function Core:ForgeAPI_Init()
 	Print("ForgeUI v" .. F:API_GetVersion() .. " has been loaded")
-	
+
 	GeminiHook:Embed(F)
 end
 
@@ -336,7 +336,7 @@ function F:Init()
 end
 
 function F:Save() RequestReloadUI() end
-function F:Reset() Core.db:ResetDB() F:Save(); end
+function F:Reset() Core.db:ResetDB() F:Save() end
 
 -- helpers
 function Core.copyTable(src, dest)

@@ -48,10 +48,12 @@ local tStrata = {}
 -----------------------------------------------------------------------------------------------
 -- Initialization
 -----------------------------------------------------------------------------------------------
+local Addon = {}
+Addon.__index = Addon
+
 function Addon:new(o)
   o = o or {}
-  setmetatable(o, self)
-  self.__index = self
+  setmetatable(o, Addon)
 
   return o
 end
@@ -98,8 +100,6 @@ function Addon:OnDocLoaded()
 
 	self.wndMain:FindChild("AuthorText"):SetText(AUTHOR)
 	self.wndMain:FindChild("VersionText"):SetText(VERSION)
-
-	self.wndBottomPanel = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Panel", tStrata.HudLow, self)
 
 	-- init Modules
 	if GameLib.GetPlayerUnit() then
@@ -321,6 +321,7 @@ _G["ForgeDB"]["char"] = {}
 
 -- ForgeLibs initialization
 _G["ForgeLibs"] = {}
+_G["ForgeLibs"]["Forge"] = Addon
 _G["ForgeLibs"]["ForgeUI"] = ForgeUI
 
 _G["F"] = ForgeUI

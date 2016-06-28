@@ -18,6 +18,7 @@
     <Script Name="core\core.lua"/>
     <Script Name="core\movers.lua"/>
     <Script Name="core\util.lua"/>
+    <Script Name="core\settings.lua"/>
     <!-- modules -->
     <Script Name="modules\forgecolor\forgecolor.lua"/>
     <Script Name="modules\profiles_module.lua"/>

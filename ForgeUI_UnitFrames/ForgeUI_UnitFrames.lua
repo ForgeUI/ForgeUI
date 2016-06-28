@@ -18,7 +18,7 @@ local Util = F:API_GetModule("util")
 -----------------------------------------------------------------------------------------------
 local ForgeUI_UnitFrames = {
 	_NAME = "ForgeUI_UnitFrames",
-  _API_VERSION = 3,
+	_API_VERSION = 3,
 	_VERSION = "2.0",
 	DISPLAY_NAME = "UnitFrames",
 
@@ -127,7 +127,7 @@ function ForgeUI_UnitFrames:ForgeAPI_Init()
 	self.xmlSprites = XmlDoc.CreateFromFile("..//ForgeUI_UnitFrames//ForgeUI_UnitFrames_Sprites.xml")
 	Apollo.LoadSprites(self.xmlSprites)
 
-	local wndParent = F:API_AddMenuItem(self, self.DISPLAY_NAME)
+	local wndParent = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 	F:API_AddMenuToMenuItem(self, wndParent, "Player frame", "Player")
 	F:API_AddMenuToMenuItem(self, wndParent, "Target frame", "Target")
 	F:API_AddMenuToMenuItem(self, wndParent, "Focus frame", "Focus")

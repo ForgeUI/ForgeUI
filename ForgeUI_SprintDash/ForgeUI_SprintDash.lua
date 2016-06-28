@@ -16,7 +16,7 @@ local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 -----------------------------------------------------------------------------------------------
 local ForgeUI_SprintDash = {
 	_NAME = "ForgeUI_SprintDash",
-  _API_VERSION = 3,
+	_API_VERSION = 3,
 	_VERSION = "2.0",
 	DISPLAY_NAME = "Sprint & Dash",
 
@@ -51,9 +51,6 @@ end
 
 function ForgeUI_SprintDash:ForgeAPI_LoadSettings()
 	self.wndSprintMeter:FindChild("Bar"):SetBarColor(self._DB.profile.crSprint)
-
-	F:API_RegisterMover(self, self.wndSprintMeter, "SprintDash_Sprint", "Sprint", "general", { bNameAsTooltip = true})
-	F:API_RegisterMover(self, self.wndDashMeter, "SprintDash_Dash", "Dash", "general", { bNameAsTooltip = true})
 end
 
 function ForgeUI_SprintDash:ForgeAPI_PopulateOptions()
@@ -79,6 +76,9 @@ function ForgeUI_SprintDash:OnDocLoaded()
 
 	self.wndSprintMeter = Apollo.LoadForm(self.xmlDoc, "SprintMeter", F:API_GetStratum("Hud"), self)
 	self.wndDashMeter = Apollo.LoadForm(self.xmlDoc, "DashMeter", F:API_GetStratum("Hud"), self)
+
+	F:API_RegisterMover(self, self.wndSprintMeter, "SprintDash_Sprint", "Sprint", "general", { bNameAsTooltip = true})
+	F:API_RegisterMover(self, self.wndDashMeter, "SprintDash_Dash", "Dash", "general", { bNameAsTooltip = true})
 
 	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnNextFrame", self)
 
