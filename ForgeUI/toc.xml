@@ -26,7 +26,4 @@
     <!-- skins -->
     <Script Name="modules\skins\skins.lua"/>
     <Script Name="modules\skins\carbine\taxi.lua"/>
-    <Script Name="modules\skins\carbine\character.lua"/>
-    <Script Name="modules\skins\carbine\vendor.lua"/>
-    <Script Name="modules\skins\carbine\chatlog.lua"/>
 </Addon>

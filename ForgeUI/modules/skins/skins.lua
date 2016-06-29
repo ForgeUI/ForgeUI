@@ -33,8 +33,6 @@ local tSkins = {}
 -- Module functions
 -----------------------------------------------------------------------------------------------
 function Skins:ForgeAPI_Init()
-	if true then return end
-
 	for k, v in pairs(tSkins) do
 		if Apollo.GetAddon(k) and self._DB.char.tLoadSkins[k] then
 			v.fnLoadSkin()
