@@ -46,15 +46,15 @@ local tGroups = {
 		},
 	},
 	[4] = {
-		sName = "Donations",
-		tPpl = {
-			[""] = "",
-		},
-	},
-	[5] = {
 		sName = "Pink Cheese",
 		tPpl = {
 			["Briex"] = "",
+		},
+	},
+	[5] = {
+		sName = "Others",
+		tPpl = {
+			["ZodBain"] = "NeedGreed API12 fix",
 		},
 	},
 }
