@@ -94,7 +94,6 @@ end
 
 function ForgeUI_Interfaces:OnCharacterCreated()
 	Apollo.CreateTimer("TimeUpdateTimer", 1.0, true)
-	self:UpdateLiveEvents()
 end
 
 function ForgeUI_Interfaces:OnUpdateTimer()
