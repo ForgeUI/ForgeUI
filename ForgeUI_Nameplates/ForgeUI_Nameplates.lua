@@ -792,10 +792,12 @@ function ForgeUI_Nameplates:DrawIA(tNameplate)
 	else
 		bShow = true
 		if nMax == -1 then
-			ia:SetSprite("HUD_TargetFrame:spr_TargetFrame_InterruptArmor_Infinite")
+			--ia:SetSprite("HUD_TargetFrame:spr_TargetFrame_InterruptArmor_Infinite")
+			ia:SetBGColor("FF2D2D2D")
 			ia:SetText("")
 		elseif nMax > 0 then
-			ia:SetSprite("HUD_TargetFrame:spr_TargetFrame_InterruptArmor_Value")
+			--ia:SetSprite("HUD_TargetFrame:spr_TargetFrame_InterruptArmor_Value")
+			ia:SetBGColor("xkcdApricot")
 			ia:SetText(nValue)
 		end
 	end
