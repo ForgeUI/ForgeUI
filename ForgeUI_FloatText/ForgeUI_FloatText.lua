@@ -1,3 +1,11 @@
+----------------------------------------------------------------------------------------------
+-- Client Lua Script for ForgeUI addon
+--
+-- name: 		ForgeUI_FloatText.lua
+-- author:		Winty Badass@Jabbit
+-- about:		FloatText addon for ForgeUI
+-----------------------------------------------------------------------------------------------
+
 require "Apollo"
 require "GameLib"
 require "CombatFloater"
@@ -6,7 +14,6 @@ require "Unit"
 
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
-
 
 local ForgeUI_FloatText = {
 	_NAME = "ForgeUI_FloatText",
@@ -31,7 +38,6 @@ local ForgeUI_FloatText = {
 
 local FloatText = Apollo.GetAddon("FloatText")
 
-
 function ForgeUI_FloatText:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_FloatText//ForgeUI_FloatText.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
@@ -46,11 +52,7 @@ function ForgeUI_FloatText:ForgeAPI_Init()
 	FloatText.OnDamageOrHealing = self.OnDamageOrHealing;
 	FloatText.OnPlayerDamageOrHealing = self.OnPlayerDamageOrHealing
 	FloatText.OnMiss = self.OnMiss;
-	
-end 
-
---function ForgeUI_FloatText:ForgeAPI_LoadSettings()	
---end
+end
 
 function ForgeUI_FloatText:ForgeAPI_PopulateOptions()
 	local wndGeneral = self.tOptionHolders["General"]
@@ -94,14 +96,11 @@ end
 
 function ForgeUI_FloatText:OnDocLoaded()
 	if self.xmlDoc == nil and not self.xmlDoc:IsLoaded() then return end	
-	
-	ChatSystemLib.PostOnChannel(2, tostring(self._DB.profile.bAdjustForTallUnits));
 end
 
 
 function ForgeUI_FloatText:GetDefaultTextOption()
-	local tTextOption =
-	{
+	local tTextOption = {
 		strFontFace 				= self._DB.profile.strFont,
 		fDuration 					= 2,
 		fScale 						= 0.9,
@@ -194,7 +193,7 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 	tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.IgnoreCollision
 	--tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation[forgeUIFloatTextInstance._DB.profile.strLocation];
 	tTextOption.eLocation = forgeUIFloatTextInstance:GetFloatTextLocation(bHeal, unitTarget)
--- forgeUIFloatTextInstance:GetFloatTextLocation();
+	-- forgeUIFloatTextInstance:GetFloatTextLocation();
 	
 
 	if not bHeal and bCritical == true then -- Crit not vuln
@@ -358,8 +357,7 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Chest
 
 	-- scale and movement
-	tTextOption.arFrames =
-	{
+	tTextOption.arFrames = {
 		[1] = {fScale = fMaxSize * .75,	fTime = 0,									nColor = nHighlightColor,	fVelocityDirection = 0,		fVelocityMagnitude = 0,},
 		[2] = {fScale = fMaxSize * 1.5,	fTime = 0.05,								nColor = nHighlightColor,	fVelocityDirection = 0,		fVelocityMagnitude = 0,},
 		[3] = {fScale = fMaxSize,		fTime = 0.1,				fAlpha = 1.0,	nColor = nBaseColor,},
@@ -380,8 +378,7 @@ end
 
 function ForgeUI_FloatText:OnCombatMomentum( eMomentumType, nCount, strText )
 	-- Passes: type enum, player's total count for that bonus type, string combines these things (ie. "3 Evade")
-	local arMomentumStrings =
-	{
+	local arMomentumStrings = {
 		[CombatFloater.CodeEnumCombatMomentum.Impulse] 				= "FloatText_Impulse",
 		[CombatFloater.CodeEnumCombatMomentum.KillingPerformance] 	= "FloatText_KillPerformance",
 		[CombatFloater.CodeEnumCombatMomentum.KillChain] 			= "FloatText_KillChain",
@@ -403,8 +400,7 @@ function ForgeUI_FloatText:OnCombatMomentum( eMomentumType, nCount, strText )
 	tTextOption.fOffset = 2.0
 	tTextOption.fOffsetDirection = 90
 	tTextOption.strFontFace = self._DB.profile.strFont
-	tTextOption.arFrames =
-	{
+	tTextOption.arFrames = {
 		[1] = {fTime = 0,		nColor = 0xFFFFFF,		fAlpha = 0,		fVelocityDirection = 90,	fVelocityMagnitude = 5,		fScale = 0.8},
 		[2] = {fTime = 0.15,							fAlpha = 1.0,	fVelocityDirection = 90,	fVelocityMagnitude = .2,},
 		[3] = {fTime = 0.5,		nColor = nBaseColor,},
@@ -439,7 +435,6 @@ function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
 		return
 	end
 
-	
 	-- modify the text to be shown
 	local tTextOption = FloatText:GetDefaultTextOption()
 	
@@ -452,8 +447,7 @@ function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
 		tTextOption.nColor = 0xbaeffb
 		tTextOption.fOffset = -0.6
 		tTextOption.fOffsetDirection = 0
-		tTextOption.arFrames =
-		{
+		tTextOption.arFrames = {
 			[1] = {fScale = 1.0,	fTime = 0,						fVelocityDirection = 0,		fVelocityMagnitude = 0,},
 			[2] = {fScale = 0.6,	fTime = 0.05,	fAlpha = 1.0,},
 			[3] = {fScale = 0.6,	fTime = .2,		fAlpha = 1.0,	fVelocityDirection = 180,	fVelocityMagnitude = 3,},
@@ -467,8 +461,7 @@ function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
 		tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Chest
 		tTextOption.fOffset = -0.8
 		tTextOption.fOffsetDirection = 0
-		tTextOption.arFrames =
-		{
+		tTextOption.arFrames = {
 			[1] = {fScale = 1.1,	fTime = 0,		fAlpha = 1.0,	nColor = 0xb0b0b0,},
 			[2] = {fScale = 0.7,	fTime = 0.1,	fAlpha = 1.0,},
 			[3] = {					fTime = 0.3,	},
@@ -504,8 +497,7 @@ function ForgeUI_FloatText:OnExperienceGained(eReason, unitTarget, strText, fDel
 	tTextOption.fOffset = 4.0 -- GOTCHA: Different
 	tTextOption.fOffsetDirection = 90
 	tTextOption.strFontFace = self._DB.profile.strFont
-	tTextOption.arFrames =
-	{
+	tTextOption.arFrames = {
 		[1] = {fTime = 0,			fAlpha = 0,		fVelocityDirection = 90,	fVelocityMagnitude = 5,		fScale = 0.8},
 		[2] = {fTime = 0.15,		fAlpha = 1.0,	fVelocityDirection = 90,	fVelocityMagnitude = .2,},
 		[3] = {fTime = 0.5,	},
@@ -548,8 +540,7 @@ function ForgeUI_FloatText:OnElderPointsGained(nAmount, nRested)
 	tTextOption.fOffset = 4.0 -- GOTCHA: Different
 	tTextOption.fOffsetDirection = 90
 	tTextOption.strFontFace = self._DB.profile.strFont
-	tTextOption.arFrames =
-	{
+	tTextOption.arFrames = {
 		[1] = {fTime = 0,			fAlpha = 0,		fVelocityDirection = 90,	fVelocityMagnitude = 5,		fScale = 0.8},
 		[2] = {fTime = 0.15,		fAlpha = 1.0,	fVelocityDirection = 90,	fVelocityMagnitude = .2,},
 		[3] = {fTime = 0.5,	},
@@ -579,8 +570,7 @@ function ForgeUI_FloatText:OnPathExperienceGained( nAmount, strText )
 	local unitToAttachTo = GameLib.GetControlledUnit()
 	local strFormatted = String_GetWeaselString(Apollo.GetString("FloatText_PathXP"), nAmount)
 
-	local tContent =
-	{
+	local tContent = {
 		eType = LuaEnumMessageType.PathXp,
 		nAmount = nAmount,
 	}
@@ -593,8 +583,7 @@ function ForgeUI_FloatText:OnPathExperienceGained( nAmount, strText )
 	tTextOption.fOffset = 4.0 -- GOTCHA: Different
 	tTextOption.fOffsetDirection = 90
 	tTextOption.strFontFace = self._DB.profile.strFont
-	tTextOption.arFrames =
-	{
+	tTextOption.arFrames = {
 		[1] = {fTime = 0,			fAlpha = 0,		fVelocityDirection = 90,	fVelocityMagnitude = 5,		fScale = 0.8},
 		[2] = {fTime = 0.15,		fAlpha = 1.0,	fVelocityDirection = 90,	fVelocityMagnitude = .2,},
 		[3] = {fTime = 0.5,	},
@@ -631,8 +620,7 @@ function ForgeUI_FloatText:OnUnitEvaded(unitSource, unitTarget, eReason, strMess
 	tTextOption.fOffset = -0.8
 	tTextOption.fOffsetDirection = 0
 
-	tTextOption.arFrames =
-	{
+	tTextOption.arFrames = {
 		[1] = {fTime = 0,		fScale = 2.0,	fAlpha = 1.0,	nColor = 0xFFFFFF,},
 		[2] = {fTime = 0.15,	fScale = 0.9,	fAlpha = 1.0,},
 		[3] = {fTime = 1.1,		fScale = 0.9,	fAlpha = 1.0,	fVelocityDirection = 0,	fVelocityMagnitude = 5,},
@@ -699,6 +687,7 @@ function ForgeUI_FloatText:GetFloatTextLocation(bHeal, targetUnit)
 	return CombatFloater.CodeEnumFloaterLocation[self._DB.profile.strLocation];
 
 end
+
 ----------------------------------------------------------------------------------------------
 -- ForgeUI_FloatText Instance
 -----------------------------------------------------------------------------------------------
