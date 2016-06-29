@@ -7,8 +7,9 @@
 -----------------------------------------------------------------------------------------------
 
 require "Window"
-
+ 
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
+local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Addon Definition
@@ -55,13 +56,16 @@ local origGenerateSpellTooltipForm
 local origGenerateItemTooltipForm
 
 function ForgeUI_ToolTips:ForgeAPI_Init()
-	ToolTips = Apollo.GetAddon("ToolTips")
+	Apollo.LoadSprites("..\ForgeUI\ForgeUI_Sprite.xml");
 
+	
+	ToolTips = Apollo.GetAddon("ToolTips")
+	-- hooks
+	ToolTips.UnitTooltipGen = self.UnitTooltipGen
+	
 	ToolTips_OnDocumentReady = ToolTips.OnDocumentReady
 	ToolTips.OnDocumentReady = ForgeUI_ToolTips.TooltipsHook_OnDocumentReady
 
-	-- hooks
-	ToolTips.UnitTooltipGen = self.UnitTooltipGen
 end
 
 function ForgeUI_ToolTips.TooltipsHook_OnDocumentReady(tooltips)
@@ -90,6 +94,10 @@ end
 GenerateBuffTooltipForm = function(luaCaller, wndParent, splSource, tFlags)
 	local wndToolTip = origGenerateBuffTooltipForm(luaCaller, wndParent, splSource, tFlags)
 
+	if not wndToolTip then
+		return
+	end
+	
 	wndToolTip:SetStyle("Picture", true)
 	wndToolTip:SetStyle("Border", false)
 	wndToolTip:SetSprite("ForgeUI_BorderLight")
@@ -109,20 +117,33 @@ GenerateBuffTooltipForm = function(luaCaller, wndParent, splSource, tFlags)
 
 	local nLeft, nTop, nRight, nBottom = wndToolTip:GetAnchorOffsets()
 	wndToolTip:SetAnchorOffsets(nLeft, nTop, nRight, nBottom - 45)
+	
+	-- show spellid of buff/debuff
+	local buffName = wndToolTip:FindChild("NameString"):GetText();
+	wndToolTip:FindChild("NameString"):SetText(buffName .. "(" .. splSource:GetId() ..")");
 
 	return wndToolTip
 end
 
-GenerateSpellTooltipForm = function(luaCaller, wndParent, splSource, tFlags)
+GenerateSpellTooltipForm = function(luaCaller, wndParent, splSource, tFlags)	
 	local wndToolTip = origGenerateSpellTooltipForm(luaCaller, wndParent, splSource, tFlags)
 
-	wndToolTip:SetStyle("Picture", false)
-	--wndToolTip:SetSprite("ForgeUI_BorderLight")
-	--wndToolTip:SetBGColor("CC000000")
+	if wndToolTip then
+		
+		wndToolTip:SetStyle("Picture", false)
+		--wndToolTip:SetSprite("ForgeUI_BorderLight")
+		--wndToolTip:SetBGColor("CC000000")
+	
+		-- show item id
+		local wndTopDataBlock 				= wndToolTip:FindChild("TopDataBlock")
+		local wndName 						= wndTopDataBlock:FindChild("NameString")
+		wndName:SetAML(string.format("<P Font=\"CRB_HeaderSmall\" TextColor=\"UI_TextHoloTitle\">%s</P>", splSource:GetName() .. "(" .. splSource:GetId() .. ")" ))
+		
+		wndToolTip:FindChild("BGArt2"):SetSprite("ForgeUI_BorderLight")
+		wndToolTip:FindChild("BGArt2"):SetBGColor("FF000000")
+		wndToolTip:FindChild("BGArt2"):SetAnchorOffsets(3, 3, -3, -3)	
 
-	wndToolTip:FindChild("BGArt2"):SetSprite("ForgeUI_BorderLight")
-	wndToolTip:FindChild("BGArt2"):SetBGColor("FF000000")
-	wndToolTip:FindChild("BGArt2"):SetAnchorOffsets(3, 3, -3, -3)
+	end
 
 	return wndToolTip
 end
@@ -228,6 +249,10 @@ end
 
 function ForgeUI_ToolTips:OnMouseOverUnitChanged(unit)
 	GenerateUnitTooltipForm(self, GameLib.GetWorldTooltipContainer(), unit, "")
+end
+
+function ForgeUI_ToolTips:ForgeAPI_LoadSettings()
+
 end
 
 -----------------------------------------------------------------------------------------------
