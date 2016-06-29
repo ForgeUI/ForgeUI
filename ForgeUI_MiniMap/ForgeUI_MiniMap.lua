@@ -41,7 +41,9 @@ local ForgeUI_MiniMap = {
         profile = {
             fZoom = 1.0,
         },
-    }
+    },
+
+	tQueuedUnits = {},
 }
 
 -- TODO: Distinguish markers for different nodes from each other
@@ -660,7 +662,7 @@ function ForgeUI_MiniMap:OnRestore(eType, tSavedData)
 	if tSavedData.tSavedShownUnits then
 		for idx, idUnit in pairs(tSavedData.tSavedShownUnits) do
 			local unitShown = GameLib.GetUnitById(idUnit)
-			if unitShown and  unitShown:IsValid() then
+			if unitShown and unitShown:IsValid() then
 				self.tQueuedUnits[#self.tQueuedUnits + 1] = unitShown
 			end
 		end
@@ -1107,9 +1109,7 @@ end
 ---------------------------------------------------------------------------------------------------
 
 function ForgeUI_MiniMap:OnOneSecTimer()
-	if self.tQueuedUnits == nil then
-		return
-	end
+	if self.tQueuedUnits == nil then return end
 
 	self.unitPlayerDisposition = GameLib.GetPlayerUnit()
 	if self.unitPlayerDisposition == nil or not self.unitPlayerDisposition:IsValid() then
@@ -1131,6 +1131,8 @@ function ForgeUI_MiniMap:OnOneSecTimer()
 end
 
 function ForgeUI_MiniMap:OnUnitCreated(unitNew)
+	if self.tQueuedUnits == nil then return end
+
 	if unitNew == nil or not unitNew:IsValid() or unitNew == GameLib.GetPlayerUnit() then
 		return
 	end
