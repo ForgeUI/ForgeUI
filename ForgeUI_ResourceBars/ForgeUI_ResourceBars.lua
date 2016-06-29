@@ -18,7 +18,7 @@ local Util = F:API_GetModule("util")
 -----------------------------------------------------------------------------------------------
 local ForgeUI_ResourceBars = {
 	_NAME = "ForgeUI_ResourceBars",
-  _API_VERSION = 3,
+	_API_VERSION = 3,
 	_VERSION = "2.0",
 	DISPLAY_NAME = "Resource bars",
 
@@ -43,11 +43,12 @@ local ForgeUI_ResourceBars = {
 			engineer = {
 				crResource1 = "FF00AEFF",
 				crResource2 = "FFFFB000",
-				bShowBars = false,
-				crBars = "FF000000"
+				bShowBars = false
 			},
 			esper = {
-				crResource1 = "FF1591DB"
+				crResource1 = "FF1591DB",
+				crResource2 = "FFFFB000",
+				bShowMentalOverflow = false
 			},
 			medic = {
 				crResource1 = "FF98C723",
@@ -188,7 +189,7 @@ function ForgeUI_ResourceBars:OnEngineerUpdate()
 	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow then
 		self:RefreshStyle_ResourceBar_Engineer(unitPlayer, nResource)
 
-		bShow = true
+		bShow = true		
 	end
 
 	if bShow ~= self.wndResource:IsShown() then
@@ -202,17 +203,26 @@ end
 
 function ForgeUI_ResourceBars:OnEsperCreated(unitPlayer)
 	self.playerMaxResource = unitPlayer:GetMaxResource(1)
+	self.nMaxMentalOverflow = 2;
+	self.nMentalOverflowStacks = 0;
 
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Esper", F:API_GetStratum("HudHigh"), self)
 	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", F:API_GetStratum("HudHigh"), self)
-
+	self.wndMentalOverflow = Apollo.LoadForm(self.xmlDoc, "MentalOverFlow_Esper", F:API_GetStratum("HudHigh"), self)
+	
+	Apollo.RegisterEventHandler("BuffAdded", "OnEsperBuffAdded", self)
+	Apollo.RegisterEventHandler("BuffUpdated", "OnEsperBuffUpdated", self)
+	Apollo.RegisterEventHandler("BuffRemoved", "OnEsperBuffRemoved", self)
+	
+	
 	F:API_RegisterMover(self, self.wndResource, "ResourceBar_Slinger", "Resource bar", "general", {
 		strStratum = "High"
 	})
+	F:API_RegisterMover(self, self.wndMentalOverflow, "MOBar_Esper", "MO Bar", "general", {strStratum = "High"});
 
 	F:API_RegisterMover(self, self.wndFocus, "ResourceBar_Focus", "Focus bar", "general", {
 		strStratum = "High"
-	})
+	})	
 
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnEsperUpdate", self)
@@ -229,39 +239,21 @@ function ForgeUI_ResourceBars:OnEsperUpdate()
 
 	local nResource = unitPlayer:GetResource(1)
 	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow  then
-		self:RefreshStyle_ResourceBar_Esper(unitPlayer, nResource)
-
 		bShow = true
+			
+		self:RefreshStyle_ResourceBar_Esper(unitPlayer, nResource)		
 	end
 
 	if bShow ~= self.wndResource:IsShown() then
 		self.wndResource:Show(bShow, true)
 	end
+	if bShow == true and self._DB.profile.esper.bShowMentalOverflow then
+		self.wndMentalOverflow:Show(true, true);
+	else
+	 	self.wndMentalOverflow:Show(false, true);
+	end
 
 	self:UpdateFocus(unitPlayer)
-end
-
-function ForgeUI_ResourceBars:OnEsperBuffAdded(unit, tBuff, nCout)
-	if not unit or not unit:IsThePlayer() then return end
-	if tMentalOverflowId[tBuff.splEffect:GetId()] then
-		self.tSettings.esper.mentalOverflowStacks = tBuff.nCount
-	end
-end
-
-function ForgeUI_ResourceBars:OnEsperBuffUpdated(unit, tBuff, nCout)
-	if not unit or not unit:IsThePlayer() then return end
-
-	if tMentalOverflowId[tBuff.splEffect:GetId()] then
-		self.tSettings.esper.mentalOverflowStacks = tBuff.nCount
-	end
-end
-
-function ForgeUI_ResourceBars:OnEsperBuffRemoved(unit, tBuff, nCout)
-	if not unit or not unit:IsThePlayer() then return end
-
-	if tMentalOverflowId[tBuff.splEffect:GetId()] then
-		self.tSettings.esper.mentalOverflowStacks = tBuff.nCount
-	end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -359,7 +351,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ForgeUI_ResourceBars:OnStalkerCreated(unitPlayer)
-	self.playerMaxResource = unitPlayer:GetMaxResource(3)
+	self.playerMaxResource = unitPlayer:GetMaxResource(3)		
 
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Stalker", F:API_GetStratum("HudHigh"), self)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
@@ -379,10 +371,11 @@ function ForgeUI_ResourceBars:OnStalkerUpdate()
 	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
-	local bShow = false
-
+	local bShow = false	
+	
+	self.playerMaxResource = unitPlayer:GetMaxResource(3)
 	local nResource = unitPlayer:GetResource(3)
-	if unitPlayer:IsInCombat() or nResource < self.playerMaxResource or self._DB.profile.bPermaShow then
+	if unitPlayer:IsInCombat() or nResource ~= self.playerMaxResource or self._DB.profile.bPermaShow then
 		self:RefreshStyle_ResourceBar_Stalker(unitPlayer, nResource)
 
 		bShow = true
@@ -548,7 +541,6 @@ function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Engineer(unitPlayer, nRes
 end
 
 -- esper
-	-- no mental overflow
 function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Esper()
 	for i = 1, self.playerMaxResource do
 		self.wndResource:FindChild("PSI" .. i):SetBGColor(self._DB.profile.crBorder)
@@ -556,8 +548,19 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Esper()
 		self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetBarColor(self._DB.profile.esper.crResource1)
 		self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetMax(1)
 	end
+	
+	if self._DB.profile.esper.bShowMentalOverflow == true then
+		--Hook up events
+		for j = 1, self.nMaxMentalOverflow do
+			self.loopvalue = "MO" .. j;
+			self.wndMentalOverflow:FindChild("MO" .. j):SetBGColor(self._DB.profile.crBorder)
+			self.wndMentalOverflow:FindChild("MO" .. j):FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
+			self.wndMentalOverflow:FindChild("MO" .. j):FindChild("ProgressBar"):SetBarColor(self._DB.profile.esper.crResource2)
+			self.wndMentalOverflow:FindChild("MO" .. j):FindChild("ProgressBar"):SetMax(1)
+		end			
+	end
 end
-
+--Apollo.GetAddon("ForgeUI_ResourceBars")
 function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Esper(unitPlayer, nResource)
 	for i = 1, self.playerMaxResource do
 		if nResource >= i then
@@ -566,39 +569,19 @@ function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Esper(unitPlayer, nResour
 			self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetProgress(0)
 		end
 	end
-end
-	-- with mental overflow
-function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Esper_MO()
-	for i = 1, self.playerMaxResource do
-		self.wndResource:FindChild("PSI" .. i):SetBGColor(self.tSettings.crBorder)
-		self.wndResource:FindChild("PSI" .. i):FindChild("Background"):SetBGColor(self.tSettings.crBackground)
-		self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.esper.crResource1)
-		self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetMax(1)
+	
+	if self._DB.profile.esper.bShowMentalOverflow == true then
+		for i = 1, self.nMaxMentalOverflow do					
+		 	if i <= self.nMentalOverflowStacks then
+				self.wndMentalOverflow:FindChild("MO" .. i):FindChild("ProgressBar"):SetProgress(1)
+			else
+				self.wndMentalOverflow:FindChild("MO" .. i):FindChild("ProgressBar"):SetProgress(0)
+			end
+		end
 	end
-	for i = 1, 2 do
-		self.wndResource:FindChild("MO" .. i):SetBGColor(self.tSettings.crBorder)
-		self.wndResource:FindChild("MO" .. i):FindChild("Background"):SetBGColor(self.tSettings.crBackground)
-		self.wndResource:FindChild("MO" .. i):FindChild("ProgressBar"):SetBarColor(self.tSettings.esper.crResource2)
-		self.wndResource:FindChild("MO" .. i):FindChild("ProgressBar"):SetMax(1)
-	end
+	
 end
 
-function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Esper_MO(unitPlayer, nResource)
-	for i = 1, self.playerMaxResource do
-		if nResource >= i then
-			self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetProgress(1)
-		else
-			self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetProgress(0)
-		end
-	end
-	for i = 1, 2 do
-		if self.tSettings.esper.mentalOverflowStacks >= i then
-			self.wndResource:FindChild("MO" .. i):FindChild("ProgressBar"):SetProgress(1)
-		else
-			self.wndResource:FindChild("MO" .. i):FindChild("ProgressBar"):SetProgress(0)
-		end
-	end
-end
 -- medic
 function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Medic()
 	for i = 1, self.playerMaxResource do
@@ -755,8 +738,24 @@ function ForgeUI_ResourceBars:PopulateOptions_Esper()
 	local wndGeneral = self.tOptionHolders["General"]
 
 	G:API_AddText(self, wndGeneral, "Esper", { tOffsets = {5, 60, 205, 90} })
-	G:API_AddColorBox(self, wndGeneral, "PSI point color", self._DB.profile.esper, "crResource1", { tMove = {0, 90},
-		fnCallback = self.ForgeAPI_LoadSettings })
+	G:API_AddColorBox(self, 
+					wndGeneral, 
+					"PSI point color", 
+					self._DB.profile.esper, 
+					"crResource1", 
+					{ tMove = {0, 90},fnCallback = self.ForgeAPI_LoadSettings })
+	G:API_AddCheckBox(self, 
+					wndGeneral, 
+					"Show Mental Overflow", 
+					self._DB.profile.esper, 
+					"bShowMentalOverflow", 
+					{tMove = {0, 120}, fnCallback = self.ForgeAPI_LoadSettings})
+	G:API_AddColorBox(self, 
+					wndGeneral, 
+					"Mental Overflow point color", 
+					self._DB.profile.esper, 
+					"crResource2", 
+					{ tMove = {200, 120},fnCallback = self.ForgeAPI_LoadSettings })
 end
 
 function ForgeUI_ResourceBars:PopulateOptions_Stalker()
@@ -782,10 +781,11 @@ function ForgeUI_ResourceBars:PopulateOptions_Engineer()
 	G:API_AddText(self, wndGeneral, "Engineer", { tOffsets = {5, 60, 205, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Volatility color", self._DB.profile.engineer, "crResource1", { tMove = {0, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Volatility color (30 - 70)", self._DB.profile.engineer, "crResource2", { tMove = {200, 90} })
-	G:API_AddColorBox(self, wndGeneral, "Line color", self._DB.profile.engineer, "crBars", { tMove = { 400, 120} , 
-		fnCallback = self.ForgeAPI_LoadSettings })
 	G:API_AddCheckBox(self, wndGeneral, "Show 30 & 70 lines", self._DB.profile.engineer, "bShowBars", { tMove = {400, 90},
 		fnCallback = self.ForgeAPI_LoadSettings })
+	G:API_AddColorBox(self, wndGeneral, "Line color", self._DB.profile.engineer, "crBars", { tMove = { 400, 120} , 
+		fnCallback = self.ForgeAPI_LoadSettings })
+
 end
 
 function ForgeUI_ResourceBars:PopulateOptions_Focus()
@@ -795,11 +795,28 @@ function ForgeUI_ResourceBars:PopulateOptions_Focus()
 	G:API_AddColorBox(self, wndFocus, "Focus color", self._DB.profile, "crFocus", { tMove = {0, 0} })
 end
 
----------------------------------------------------------------------------------------------------
--- Container Functions
----------------------------------------------------------------------------------------------------
+function ForgeUI_ResourceBars:OnEsperBuffAdded(unit, tBuff, nCout)
+	if not unit or not unit:IsThePlayer() then return end
+	
+	if tBuff.splEffect:GetId() == 77116 then
+		self.nMentalOverflowStacks = tBuff.nCount
+	end	
+end
 
-function ForgeUI_ResourceBars:OnOptionsChanged( wndHandler, wndControl, eMouseButton )
+function ForgeUI_ResourceBars:OnEsperBuffUpdated(unit, tBuff, nCout)
+	if not unit or not unit:IsThePlayer() then return end
+
+	if tBuff.splEffect:GetId() == 77116 then
+		self.nMentalOverflowStacks = tBuff.nCount
+	end	
+end
+
+function ForgeUI_ResourceBars:OnEsperBuffRemoved(unit, tBuff, nCout)
+	if not unit or not unit:IsThePlayer() then return end
+
+	if tBuff.splEffect:GetId() == 77116 then
+		self.nMentalOverflowStacks = tBuff.nCount
+	end	
 end
 
 -----------------------------------------------------------------------------------------------
