@@ -4,100 +4,105 @@ require "CombatFloater"
 require "Window"
 require "Unit"
 
-local ForgeUI
-local ForgeUI_FloatText = {}
+local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
+local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 
-local Inst
+
+local ForgeUI_FloatText = {
+	_NAME = "ForgeUI_FloatText",
+	_API_VERSION = 3,
+	_VERSION = "2.0",
+	DISPLAY_NAME = "Float Text",
+	
+	tSettings = {
+		profile = {
+			strFont = "Subtitle",
+			strLocation = "Chest",
+			strCollision = "IgnoreCollision",			
+			bAdjustForTallUnits = false,
+			nTallUnitOffset = 100,
+			nDamageIncomingThreshold = 0, 	--tDamageHealing.nDamageThreshold
+			nHealingIncomingThreshold = 0, 	--tDamageHealing.nHealThreshold
+			nDamageOutgoingThreshold = 0, 	--tPlayerDamageHealing.nDamageThreshold
+			nHealingOutgoingThreshold = 0, 	--tPlayerDamageHealing.nHealThreshold
+		}
+	}
+}
 
 local FloatText = Apollo.GetAddon("FloatText")
 
-function ForgeUI_FloatText:new(o)
-    o = o or {}
-    setmetatable(o, self)
-    self.__index = self 
 
-	-- mandatory 
-    self.api_version = 2
-	self.version = "0.1.0"
-	self.author = "WintyBadass"
-	self.strAddonName = "ForgeUI_FloatText"
-	self.strDisplayName = "Float text"
-	
-	self.wndContainers = {}
-	
-	self.tStylers = {}
-	
-	-- optional
-	self.settings_version = 1
-    self.tSettings = {
-		strFont = "Subtitle",
-		tDamageHealing = {
-			strLocation = "Bottom",
-			strCollision = "IgnoreCollision",
-			nDamageThreshold = 0,
-			nHealThreshold = 0,
-		},
-		tPlayerDamageHealing = {
-			nDamageThreshold = 0,
-			nHealThreshold = 0,
-		}
-	}
-
-
-    return o
-end
-
-function ForgeUI_FloatText:Init()
-	local bHasConfigureFunction = false
-	local strConfigureButtonText = ""
-	local tDependencies = {"ForgeUI", "FloatText"}
-    Apollo.RegisterAddon(self, bHasConfigureFunction, strConfigureButtonText, tDependencies)
-end
- 
-function ForgeUI_FloatText:OnLoad()
-	self.xmlDoc = XmlDoc.CreateFromFile("ForgeUI_FloatText.xml")
+function ForgeUI_FloatText:ForgeAPI_Init()
+	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_FloatText//ForgeUI_FloatText.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
+
+
+	--local bHasConfigureFunction = false
+	--local strConfigureButtonText = ""
+	--local tDependencies = {"ForgeUI", "FloatText"}
+    --Apollo.RegisterAddon(self, bHasConfigureFunction, strConfigureButtonText, tDependencies)
+	F:API_AddMenuItem(self, "Float Text", "General");
+	
+	FloatText.OnDamageOrHealing = self.OnDamageOrHealing;
+	FloatText.OnPlayerDamageOrHealing = self.OnPlayerDamageOrHealing
+	FloatText.OnMiss = self.OnMiss;
+	
+end 
+
+--function ForgeUI_FloatText:ForgeAPI_LoadSettings()	
+--end
+
+function ForgeUI_FloatText:ForgeAPI_PopulateOptions()
+	local wndGeneral = self.tOptionHolders["General"]
+
+	G:API_AddNumberBox(self, 
+					   	wndGeneral, 
+						"Incoming damage threshold", 
+						self._DB.profile, "nDamageIncomingThreshold", 
+						{ tOffsets = { 5, 5, 300, 30 }, 
+						strHint = "Damage below this value will not be shown" } );
+	G:API_AddNumberBox(self, 
+						wndGeneral, 
+						"Incoming heals threshold", 
+						self._DB.profile, 
+						"nHealingIncomingThreshold", 
+						{ tOffsets = { 5, 35, 300, 60 },						 
+						strHint = "Heals below this value will not be shown" } );
+	G:API_AddNumberBox(self, 
+						wndGeneral, 
+						"Outgoing damage threshold", 
+						self._DB.profile, 
+						"nDamageOutgoingThreshold", 
+						{ tOffsets ={ 275, 5, 475, 30 }, 
+						strHint = "Damage below this value will not be shown" });
+	G:API_AddNumberBox(self, 
+						wndGeneral, 
+						"Outgoing heals threshold", 
+						self._DB.profile, 
+						"nHealingOutgoingThreshold", 
+						{ tOffsets = { 275, 35, 475, 60 }, 
+						strHint = "Heals below this value will not be shown" });
+						
+	G:API_AddCheckBox(self,
+				      wndGeneral,
+					  "Adjust for tall units",
+					  self._DB.profile,
+					  "bAdjustForTallUnits",
+					  { tMove={0, 70} });
+					
 end
 
 function ForgeUI_FloatText:OnDocLoaded()
-	if self.xmlDoc == nil and not self.xmlDoc:IsLoaded() then return end
+	if self.xmlDoc == nil and not self.xmlDoc:IsLoaded() then return end	
 	
-	if ForgeUI == nil then -- forgeui loaded
-		ForgeUI = Apollo.GetAddon("ForgeUI")
-	end
-	
-	ForgeUI.API_RegisterAddon(self)
+	ChatSystemLib.PostOnChannel(2, tostring(self._DB.profile.bAdjustForTallUnits));
 end
 
-function ForgeUI_FloatText:ForgeAPI_AfterRegistration()
-	FloatText.GetDefaultTextOption = self.GetDefaultTextOption
-
-	FloatText.OnPlayerDamageOrHealing = self.OnPlayerDamageOrHealing
-	FloatText.OnDamageOrHealing = self.OnDamageOrHealing
-	FloatText.OnCombatMomentum = self.OnCombatMomentum
-	FloatText.OnMiss = self.OnMiss
-	
-	FloatText.OnPathExperienceGained = self.OnPathExperienceGained
-	FloatText.OnElderPointsGained = self.OnElderPointsGained
-	FloatText.OnExperienceGained = self.OnExperienceGained
-	
-	FloatText.OnGenericFloater = self.OnGenericFloater
-	FloatText.OnUnitEvaded = self.OnUnitEvaded
-	
-	ForgeUI.API_AddItemButton(self, "Float text", { strContainer = "Container" })
-end
-
-function ForgeUI_FloatText:ForgeAPI_AfterRestore()
-	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container"]:FindChild("nIncomingDamage"):FindChild("EditBox"), self.tSettings.tPlayerDamageHealing, "nDamageThreshold", { nMin = 0 })
-	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container"]:FindChild("nIncomingHeal"):FindChild("EditBox"), self.tSettings.tPlayerDamageHealing, "nHealThreshold", { nMin = 0 })
-	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container"]:FindChild("nOutcomingDamage"):FindChild("EditBox"), self.tSettings.tDamageHealing, "nDamageThreshold", { nMin = 0 })
-	ForgeUI.API_RegisterNumberBox(self, self.wndContainers["Container"]:FindChild("nOutcomingHeal"):FindChild("EditBox"), self.tSettings.tDamageHealing, "nHealThreshold", { nMin = 0 })
-end
 
 function ForgeUI_FloatText:GetDefaultTextOption()
 	local tTextOption =
 	{
-		strFontFace 				= Inst.tSettings.strFont,
+		strFontFace 				= self._DB.profile.strFont,
 		fDuration 					= 2,
 		fScale 						= 0.9,
 		fExpand 					= 1,
@@ -130,14 +135,17 @@ end
 function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageType, nDamage, nShieldDamaged, nAbsorptionAmount, bCritical )
 	if unitTarget == nil or not Apollo.GetConsoleVariable("ui.showCombatFloater") or nDamage == nil then
 		return
-	end
-
-
+	end	    
+	
 	if GameLib.IsControlledUnit(unitTarget) or unitTarget == GameLib.GetPlayerMountUnit() or GameLib.IsControlledUnit(unitTarget:GetUnitOwner()) then
 		self:OnPlayerDamageOrHealing( unitTarget, eDamageType, nDamage, nShieldDamaged, nAbsorptionAmount, bCritical )
 		return
 	end
-
+	
+	
+	
+	local forgeUIFloatTextInstance = F:API_GetAddon(ForgeUI_FloatText._NAME);
+	
 	-- NOTE: This needs to be changed if we're ever planning to display shield and normal damage in different formats.
 	-- NOTE: Right now, we're just telling the player the amount of damage they did and not the specific type to keep things neat
 	local nTotalDamage = nDamage
@@ -149,19 +157,20 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 		nTotalDamage = nTotalDamage + nAbsorptionAmount
 	end
 	
-	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields
 	
-	if bHeal and nTotalDamage <= Inst.tSettings.tDamageHealing.nHealThreshold then return end
-	if not bHeal and nTotalDamage <= Inst.tSettings.tDamageHealing.nDamageThreshold then return end
+	
+	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields	
+	if bHeal and nTotalDamage <= forgeUIFloatTextInstance._DB.profile.nHealingOutgoingThreshold then return end
+	if not bHeal and nTotalDamage <= forgeUIFloatTextInstance._DB.profile.nDamageOutgoingThreshold then return end
 
-	local tTextOption = self:GetDefaultTextOption()
-	local tTextOptionAbsorb = self:GetDefaultTextOption()
+	local tTextOption = forgeUIFloatTextInstance:GetDefaultTextOption()
+	local tTextOptionAbsorb = forgeUIFloatTextInstance:GetDefaultTextOption()
 
 	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then --absorption is its own separate type
 		tTextOptionAbsorb.fScale = 1.0
 		tTextOptionAbsorb.fDuration = 2
 		tTextOptionAbsorb.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.IgnoreCollision --Horizontal
-		tTextOptionAbsorb.eLocation = CombatFloater.CodeEnumFloaterLocation[Inst.tSettings.tDamageHealing.strLocation]
+		tTextOptionAbsorb.eLocation = CombatFloater.CodeEnumFloaterLocation[forgeUIFloatTextInstance._DB.profile.strLocation]
 		tTextOptionAbsorb.fOffset = -0.8
 		tTextOptionAbsorb.fOffsetDirection = 0
 		tTextOptionAbsorb.arFrames={}
@@ -181,9 +190,12 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 	local nOffsetDirection = 95
 	local fMaxDuration = 0.7
 
-	tTextOption.strFontFace = Inst.tSettings.strFont
+	tTextOption.strFontFace = forgeUIFloatTextInstance._DB.profile.strFont
 	tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.IgnoreCollision
-	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation[Inst.tSettings.tDamageHealing.strLocation]
+	--tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation[forgeUIFloatTextInstance._DB.profile.strLocation];
+	tTextOption.eLocation = forgeUIFloatTextInstance:GetFloatTextLocation(bHeal, unitTarget)
+-- forgeUIFloatTextInstance:GetFloatTextLocation();
+	
 
 	if not bHeal and bCritical == true then -- Crit not vuln
 		nBaseColor = 0xffea00
@@ -206,24 +218,19 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 
 	-- determine offset direction; re-randomize if too close to the last
 	local nOffset = math.random(0, 360)
-	if nOffset <= (self.fLastOffset + 50) and nOffset >= (self.fLastOffset - 50) then
+	if nOffset <= (self.fLastOffset + 25) and nOffset >= (self.fLastOffset - 25) then
 		nOffset = math.random(0, 360)
-	end
+	end	
 	self.fLastOffset = nOffset
-
+	
 	-- set offset
 	tTextOption.fOffsetDirection = nOffset
 	tTextOption.fOffset = math.random(10, 80)/100
 
-	-- scale and movement
-	tTextOption.arFrames =
-	{
-		[1] = {fScale = (fMaxSize) * 1.75,	fTime = 0,									nColor = 0xffffff,	},
-		[2] = {fScale = fMaxSize,			fTime = .15,			fAlpha = 1.0,},--	nColor = nBaseColor,},
-		[3] = {fScale = fMaxSize,			fTime = .3,									nColor = nBaseColor,},
-		[4] = {fScale = fMaxSize,			fTime = .5,				fAlpha = 1.0,},
-		[5] = {								fTime = fMaxDuration,	fAlpha = 0.0,},
-	}
+	-- scale and movement	
+	tTextOption.arFrames = forgeUIFloatTextInstance:GetOutgoingDamageAnimation(true, fMaxSize, nBaseColor, fMaxDuration);
+	
+	
 
 	if not bHeal then
 		self.fLastDamageTime = GameLib.GetGameTime()
@@ -256,12 +263,23 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 	if nDamage == nil then
 		return
 	end
+	
 
+	local forgeUIFloatTextInstance = F:API_GetAddon(ForgeUI_FloatText._NAME);
+
+
+	
+	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields
+	
+	if bHeal and nDamage <= forgeUIFloatTextInstance._DB.profile.nHealingIncomingThreshold then return end
+	if not bHeal and nDamage <= forgeUIFloatTextInstance._DB.profile.nDamageIncomingThreshold then return end
+
+	
 	local bShowFloater = true
-	local tTextOption = self:GetDefaultTextOption()
-	local tTextOptionAbsorb = self:GetDefaultTextOption()
+	local tTextOption = forgeUIFloatTextInstance:GetDefaultTextOption()
+	local tTextOptionAbsorb = forgeUIFloatTextInstance:GetDefaultTextOption()
 
-	tTextOption.strFontFace = Inst.tSettings.strFont
+	tTextOption.strFontFace = forgeUIFloatTextInstance._DB.profile.strFont
 	tTextOption.arFrames = {}
 	tTextOptionAbsorb.arFrames = {}
 
@@ -291,11 +309,6 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then
 		nDamage = nDamage + nAbsorptionAmount
 	end
-
-	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields
-	
-	if bHeal and nDamage <= Inst.tSettings.tPlayerDamageHealing.nHealThreshold then return end
-	if not bHeal and nDamage <= Inst.tSettings.tPlayerDamageHealing.nDamageThreshold then return end
 	
 	local nBaseColor = 0xff6d6d
 	local nHighlightColor = 0xff6d6d
@@ -389,7 +402,7 @@ function ForgeUI_FloatText:OnCombatMomentum( eMomentumType, nCount, strText )
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Back
 	tTextOption.fOffset = 2.0
 	tTextOption.fOffsetDirection = 90
-	tTextOption.strFontFace = Inst.tSettings.strFont
+	tTextOption.strFontFace = self._DB.profile.strFont
 	tTextOption.arFrames =
 	{
 		[1] = {fTime = 0,		nColor = 0xFFFFFF,		fAlpha = 0,		fVelocityDirection = 90,	fVelocityMagnitude = 5,		fScale = 0.8},
@@ -404,17 +417,17 @@ function ForgeUI_FloatText:OnCombatMomentum( eMomentumType, nCount, strText )
 	local strMessage = String_GetWeaselString(Apollo.GetString(arMomentumStrings[eMomentumType]), nCount)
 	if eMomentumType == CombatFloater.CodeEnumCombatMomentum.KillChain and nCount == 2 then
 		strMessage = Apollo.GetString("FloatText_DoubleKill")
-		tTextOption.strFontFace = Inst.tSettings.strFont
+		tTextOption.strFontFace = self._DB.profile.strFont
 	elseif eMomentumType == CombatFloater.CodeEnumCombatMomentum.KillChain and nCount == 3 then
 		strMessage = Apollo.GetString("FloatText_TripleKill")
-		tTextOption.strFontFace = Inst.tSettings.strFont
+		tTextOption.strFontFace = self._DB.profile.strFont
 		tTextOption.fScale = 1.0
 	elseif eMomentumType == CombatFloater.CodeEnumCombatMomentum.KillChain and nCount == 5 then
 		strMessage = Apollo.GetString("FloatText_PentaKill")
-		tTextOption.strFontFace = Inst.tSettings.strFont
+		tTextOption.strFontFace = self._DB.profile.strFont
 		tTextOption.fScale = 1.2
 	elseif eMomentumType == CombatFloater.CodeEnumCombatMomentum.KillChain and nCount > 5 then
-		tTextOption.strFontFace = Inst.tSettings.strFont
+		tTextOption.strFontFace = self._DB.profile.strFont
 		tTextOption.fScale = 1.5
 	end
 
@@ -426,8 +439,13 @@ function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
 		return
 	end
 
+	
 	-- modify the text to be shown
-	local tTextOption = self:GetDefaultTextOption()
+	local tTextOption = FloatText:GetDefaultTextOption()
+	
+	local forgeUIFloatTextInstance = F:API_GetAddon(ForgeUI_FloatText._NAME);
+	tTextOption.strFontFace = forgeUIFloatTextInstance._DB.profile.strFont;
+	
 	if GameLib.IsControlledUnit( unitTarget ) or unitTarget:GetType() == "Mount" then -- if the target unit is player's char
 		tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Horizontal --Vertical--Horizontal  --IgnoreCollision
 		tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Chest
@@ -485,7 +503,7 @@ function ForgeUI_FloatText:OnExperienceGained(eReason, unitTarget, strText, fDel
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Back
 	tTextOption.fOffset = 4.0 -- GOTCHA: Different
 	tTextOption.fOffsetDirection = 90
-	tTextOption.strFontFace = Inst.tSettings.strFont
+	tTextOption.strFontFace = self._DB.profile.strFont
 	tTextOption.arFrames =
 	{
 		[1] = {fTime = 0,			fAlpha = 0,		fVelocityDirection = 90,	fVelocityMagnitude = 5,		fScale = 0.8},
@@ -529,7 +547,7 @@ function ForgeUI_FloatText:OnElderPointsGained(nAmount, nRested)
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Back
 	tTextOption.fOffset = 4.0 -- GOTCHA: Different
 	tTextOption.fOffsetDirection = 90
-	tTextOption.strFontFace = Inst.tSettings.strFont
+	tTextOption.strFontFace = self._DB.profile.strFont
 	tTextOption.arFrames =
 	{
 		[1] = {fTime = 0,			fAlpha = 0,		fVelocityDirection = 90,	fVelocityMagnitude = 5,		fScale = 0.8},
@@ -574,7 +592,7 @@ function ForgeUI_FloatText:OnPathExperienceGained( nAmount, strText )
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Back
 	tTextOption.fOffset = 4.0 -- GOTCHA: Different
 	tTextOption.fOffsetDirection = 90
-	tTextOption.strFontFace = Inst.tSettings.strFont
+	tTextOption.strFontFace = self._DB.profile.strFont
 	tTextOption.arFrames =
 	{
 		[1] = {fTime = 0,			fAlpha = 0,		fVelocityDirection = 90,	fVelocityMagnitude = 5,		fScale = 0.8},
@@ -596,7 +614,7 @@ function ForgeUI_FloatText:OnGenericFloater(unitTarget, strMessage)
 	tTextOption.bUseScreenPos = true
 	tTextOption.fOffset = 0
 	tTextOption.nColor = 0x00FFFF
-	tTextOption.strFontFace = Inst.tSettings.strFont
+	tTextOption.strFontFace = self._DB.profile.strFont
 	tTextOption.bShowOnTop = true
 
 	CombatFloater.ShowTextFloater( unitTarget, strMessage, 0, tTextOption )
@@ -607,7 +625,7 @@ function ForgeUI_FloatText:OnUnitEvaded(unitSource, unitTarget, eReason, strMess
 	tTextOption.fScale = 1.0
 	tTextOption.fDuration = 2
 	tTextOption.nColor = 0xbaeffb
-	tTextOption.strFontFace = Inst.tSettings.strFont
+	tTextOption.strFontFace = self._DB.profile.strFont
 	tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.IgnoreCollision
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Chest
 	tTextOption.fOffset = -0.8
@@ -624,9 +642,64 @@ function ForgeUI_FloatText:OnUnitEvaded(unitSource, unitTarget, eReason, strMess
 	CombatFloater.ShowTextFloater( unitSource, strMessage, 0, tTextOption )
 end
 
+function ForgeUI_FloatText:GetOutgoingDamageAnimation(bCritical, fMaxSize, nBaseColor, fMaxDuration)	
+	if bCritical then
+		return self:GetCriticalOutgoingDamageAnimation(fMaxSize, nBaseColor, fMaxDuration)
+	end
+	
+	local frame1Direction
+	local frame2Direction
+	local frame3Direction
+		
+	if self.lastDirection == nil or self.lastDirection == "left" then
+		self.lastDirection = "right"
+		frame1Direction = 45
+		frame2Direction = 45
+		frame3Direction = 90
+	else
+		self.lastDirection = "left"
+		frame1Direction = 315
+		frame2Direction = 315
+		frame3Direction = 275
 
+	end
+	
+	
+	return {
+		[1] = {fScale = (fMaxSize) * 1.75,	fTime = 0,			  fVelocityDirection=frame1Direction , fVelocityMagnitude = 5.0	,					nColor = 0xffffff, },
+		[2] = {fScale = fMaxSize,			fTime = .15,		  fAlpha = 1.0, 		  fVelocityDirection=frame2Direction , fVelocityMagnitude = 3.5,},
+		[3] = {fScale = fMaxSize,			fTime = .3,			  fVelocityDirection=frame3Direction , fVelocityMagnitude = 2.0,					nColor = nBaseColor,},
+		[4] = {fScale = fMaxSize,			fTime = .5,			  fAlpha = 1.0,},
+		[5] = {								fTime = fMaxDuration, fAlpha = 0.0,},
+	}
+	
+end
+
+function ForgeUI_FloatText:GetCriticalOutgoingDamageAnimation(fMaxSize, nBaseColor, fMaxDuration)
+	return {
+		[1] = {fScale = (fMaxSize) * 1.75,	fTime = 0,			  				nColor = 0xffffff, },
+		[2] = {fScale = fMaxSize,			fTime = .15,		  fAlpha = 1.0, 		  },
+		[3] = {fScale = fMaxSize,			fTime = .3,			  				nColor = nBaseColor,},
+		[4] = {fScale = fMaxSize,			fTime = .5,			  fAlpha = 1.0,},
+		[5] = {								fTime = fMaxDuration, fAlpha = 0.0,},
+	}
+
+end
+
+function ForgeUI_FloatText:GetFloatTextLocation(bHeal, targetUnit)
+	if bHeal == false and self._DB.profile.bAdjustForTallUnits == true then
+	
+		local overheadAnchor = targetUnit:GetOverheadAnchor()		
+		if overheadAnchor.y < self._DB.profile.nTallUnitOffset then			
+			return CombatFloater.CodeEnumFloaterLocation.Bottom;
+		end
+	--
+	end	
+	
+	return CombatFloater.CodeEnumFloaterLocation[self._DB.profile.strLocation];
+
+end
 ----------------------------------------------------------------------------------------------
 -- ForgeUI_FloatText Instance
 -----------------------------------------------------------------------------------------------
-Inst = ForgeUI_FloatText:new()
-Inst:Init()
+F:API_NewAddon(ForgeUI_FloatText);

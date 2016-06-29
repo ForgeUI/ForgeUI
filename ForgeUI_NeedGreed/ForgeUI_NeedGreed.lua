@@ -1,15 +1,31 @@
+----------------------------------------------------------------------------------------------
+-- Client Lua Script for ForgeUI addon
+--
+-- name: 		ForgeUI_NeedGreed.lua
+-- author:		Winty Badass@Jabbit
+-- about:		NeedGreed addon for ForgeUI
 -----------------------------------------------------------------------------------------------
--- Client Lua Script for ForgeUI_NeedGreed
--- Copyright (c) NCsoft. All rights reserved
+
+local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
+local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
+
 -----------------------------------------------------------------------------------------------
+-- ForgeUI Addon Definition
+-----------------------------------------------------------------------------------------------
+local ForgeUI_NeedGreed = {
+	_NAME = "ForgeUI_NeedGreed",
+	_API_VERSION = 3,
+	_VERSION = "2.0",
+	DISPLAY_NAME = "NeedGreed",
 
-require "Window"
-require "Sound"
+	tSettings = {
+	}
+}
 
-local ForgeUI_NeedGreed = {}
-
-local ktEvalColors =
-{
+-----------------------------------------------------------------------------------------------
+-- Local variables
+-----------------------------------------------------------------------------------------------
+local ktEvalColors = {
 	[Item.CodeEnumItemQuality.Inferior] 		= ApolloColor.new("ItemQuality_Inferior"),
 	[Item.CodeEnumItemQuality.Average] 			= ApolloColor.new("ItemQuality_Average"),
 	[Item.CodeEnumItemQuality.Good] 			= ApolloColor.new("ItemQuality_Good"),
@@ -19,49 +35,13 @@ local ktEvalColors =
 	[Item.CodeEnumItemQuality.Artifact]		 	= ApolloColor.new("ItemQuality_Artifact"),
 }
 
-function ForgeUI_NeedGreed:new(o)
-    o = o or {}
-    setmetatable(o, self)
-    self.__index = self
+-----------------------------------------------------------------------------------------------
+-- ForgeAPI
+-----------------------------------------------------------------------------------------------
+function ForgeUI_NeedGreed:ForgeAPI_Init()
+	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_NeedGreed//ForgeUI_NeedGreed.xml")
+	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
-	-- mandatory 
-    self.api_version = 2
-	self.version = "0.1.0"
-	self.author = "WintyBadass"
-	self.strAddonName = "ForgeUI_NeedGreed"
-	self.strDisplayName = "Need vs Greed"
-	
-	self.wndContainers = {}
-	
-	self.tStylers = {}
-	
-	-- optional
-	self.settings_version = 1
-    self.tSettings = {}
-
-    return o
-end
-
-function ForgeUI_NeedGreed:Init()
-    Apollo.RegisterAddon(self)
-end
-
-function ForgeUI_NeedGreed:OnLoad()
-	self.xmlDoc = XmlDoc.CreateFromFile("ForgeUI_NeedGreed.xml")
-	self.xmlDoc:RegisterCallback("OnDocumentReady", self)
-end
-
-function ForgeUI_NeedGreed:OnDocumentReady()
-	if self.xmlDoc == nil and not self.xmlDoc:IsLoaded() then return end
-	
-	if ForgeUI == nil then -- forgeui loaded
-		ForgeUI = Apollo.GetAddon("ForgeUI")
-	end
-	
-	ForgeUI.API_RegisterAddon(self)
-end
-
-function ForgeUI_NeedGreed:ForgeAPI_AfterRegistration()
 	Apollo.RegisterEventHandler("LootRollUpdate",		"OnGroupLoot", self)
     Apollo.RegisterTimerHandler("WinnerCheckTimer", 	"OnOneSecTimer", self)
     Apollo.RegisterEventHandler("LootRollWon", 			"OnLootRollWonEvent", self)
@@ -76,24 +56,24 @@ function ForgeUI_NeedGreed:ForgeAPI_AfterRegistration()
 
 	Apollo.CreateTimer("WinnerCheckTimer", 1.0, false)
 	Apollo.StopTimer("WinnerCheckTimer")
-	
-	Apollo.CreateTimer("PlayerNameCheckTimer", 2.0, false)	
-	
-	self.wndContainer = Apollo.LoadForm(self.xmlDoc, "Container", nil, self)
-	
-	ForgeUI.API_RegisterWindow(self, self.wndContainer, "ForgeUI_NeedGreedContainer", { strDisplayName = "Need vs Greed", bSizable = false })
+	Apollo.CreateTimer("PlayerNameCheckTimer", 2.0, false)
 
 	self.bTimerRunning = false
 	self.tKnownLoot = {}
 	self.tLootRolls = {}
 	self.tBlacklist = {}
 	self.tPlayerWhoRolled = {}
-	
+
 	self.strMyPlayerName = nil
-		
+
 	if GameLib.GetLootRolls() then
 		self:OnGroupLoot()
 	end
+end
+
+function ForgeUI_NeedGreed:OnDocLoaded()
+	self.wndContainer = Apollo.LoadForm(self.xmlDoc, "Container", nil, self)
+	F:API_RegisterMover(self, self.wndContainer, "NeedGreed", "NeedGreed container", "general", {})
 end
 
 -----------------------------------------------------------------------------------------------
@@ -148,7 +128,7 @@ function ForgeUI_NeedGreed:OnNameCheckTimer()
 end
 
 function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
-	if nLoot == 0 then 
+	if nLoot == 0 then
 		self.wndContainer:DestroyChildren()
 		return
 	end
@@ -160,26 +140,26 @@ function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
 				bShouldBeDestroyed = false
 			end
 		end
-		
+
 		if bShouldBeDestroyed then
 			wnd:Destroy()
 		end
 	end
-	
+
 	--self.wndContainer:DestroyChildren()
 	for k, tCurrentElement in pairs(tLoot) do
 		local bShouldBeAdded = true
 		local bBlacklistApplies = false
-		
+
 		local wndLoot
-		
+
 		for _, wnd in pairs(self.wndContainer:GetChildren()) do
 			if wnd:GetData().nLootId == tCurrentElement.nLootId then
 				bShouldBeAdded = false
 				wndLoot = wnd
 			end
 		end
-		
+
 		if bShouldBeAdded then
 			for idx, tBlacklistElement in ipairs(self.tBlacklist) do
 				if self.tBlacklist[idx].itemDrop == tCurrentElement.itemDrop and self.tBlacklist[idx].nLootId == tCurrentElement.nLootId then
@@ -187,11 +167,11 @@ function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
 				end
 			end
 		end
-			
+
 		if bShouldBeAdded and not bBlacklistApplies then
 			wndLoot = Apollo.LoadForm(self.xmlDoc, "ForgeUI_NeedGreedForm", self.wndContainer, self)
 			wndLoot:SetData(tCurrentElement)
-										
+
 			local itemCurrent = tCurrentElement.itemDrop
 			local itemModData = tCurrentElement.tModData
 			local tGlyphData = tCurrentElement.tSigilData
@@ -200,7 +180,7 @@ function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
 			wndLoot:FindChild("GiantItemIcon"):SetData(itemCurrent)
 			wndLoot:FindChild("GiantItemIcon"):SetSprite(itemCurrent:GetIcon())
 			self:HelperBuildItemTooltip(wndLoot:FindChild("GiantItemIcon"), itemCurrent, itemModData, tGlyphData)
-			
+
 			if GameLib.IsNeedRollAllowed(tCurrentElement.nLootId) == true then
 				wndLoot:FindChild("NeedBtn"):Show(true)
 				wndLoot:FindChild("NeedNotOption"):Show(false)
@@ -212,18 +192,18 @@ function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
 				wndLoot:FindChild("NeedRolls"):Show(true)
 				wndLoot:FindChild("NeedRolls"):ToFront()
 			end
-			
+
 			table.insert(self.tBlacklist, 1, tCurrentElement)
 			self.tBlacklist[1].tPlayerRolls = {}
 		end
-		
+
 		if not bBlacklistApplies then
 			local nTimeLeft = math.floor(tCurrentElement.nTimeLeft / 1000)
 			wndLoot:FindChild("TimeLeftText"):Show(true)
-		
+
 			local nTimeLeftSecs = nTimeLeft % 60
 			local nTimeLeftMins = math.floor(nTimeLeft / 60)
-		
+
 			local strTimeLeft = tostring(nTimeLeftMins)
 			if nTimeLeft < 0 then
 				strTimeLeft = "0:00"
@@ -235,13 +215,13 @@ function ForgeUI_NeedGreed:DrawAllLoot(tLoot, nLoot)
 			wndLoot:FindChild("TimeLeftText"):SetText(strTimeLeft)
 		end
 	end
-	
+
 	self:ArrangeLoot()
 end
 
 function ForgeUI_NeedGreed:ArrangeLoot()
 	local i = 1
-	
+
 	for k, v in pairs(self.wndContainer:GetChildren()) do
 		v:SetAnchorOffsets(0, -45 * i, 0, -45 * (i - 1))
 		i = i + 1
@@ -299,10 +279,10 @@ function ForgeUI_NeedGreed:OnLootRollWon(itemLoot, strWinner, bNeed)
 	else
 		strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
 	end
-	
+
 	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_ItemWon"), strWinner, itemLoot:GetChatLinkString(), strNeedOrGreed)
 	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
-	
+
 	for idx, tBlacklistElement in ipairs(self.tBlacklist) do
 		if tBlacklistElement.itemDrop == itemLoot then
 			table.remove(self.tBlacklist, idx)
@@ -318,11 +298,11 @@ end
 function ForgeUI_NeedGreed:OnLootRollSelected(itemLoot, strPlayer, bNeed)
 	local strNeedOrGreed = nil
 	local bPlayerIsRoller = false
-	
+
 	if strPlayer == self.strMyPlayerName then
 		bPlayerIsRoller = true
 	end
-	
+
 	if bNeed then
 		strNeedOrGreed = Apollo.GetString("NeedVsGreed_NeedRoll")
 		if not bPlayerIsRoller then
@@ -356,9 +336,9 @@ end
 function ForgeUI_NeedGreed:OnLootRollPassed(itemLoot, strPlayer)
 	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_PlayerPassed"), strPlayer, itemLoot:GetChatLinkString())
 	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
-	
+
 	if strPlayer == self.strMyPlayerName then return end
-		
+
 	for idx, tCurrentElement in pairs(self.tKnownLoot) do
 		if tCurrentElement.itemDrop == itemLoot then
 			bIncrementedCounter = self:UpdateLootRollCounters(tCurrentElement, strPlayer, "Pass")
@@ -378,7 +358,7 @@ function ForgeUI_NeedGreed:OnLootRoll(itemLoot, strPlayer, nRoll, bNeed)
 	else
 		strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
 	end
-	
+
 	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_OnLootRoll"), strPlayer, nRoll, itemLoot:GetChatLinkString(), strNeedOrGreed)
 	Event_FireGenericEvent("GenericEvent_LootChannelMessage", strResult)
 end
@@ -399,7 +379,7 @@ function ForgeUI_NeedGreed:OnNeedBtn(wndHandler, wndControl)
 	GameLib.RollOnLoot(wndLoot:GetData().nLootId, true)
 	self:UpdateKnownLoot()
 	wndLoot:Destroy()
-	
+
 	self:ArrangeLoot()
 end
 
@@ -409,7 +389,7 @@ function ForgeUI_NeedGreed:OnGreedBtn(wndHandler, wndControl)
 	GameLib.RollOnLoot(wndLoot:GetData().nLootId, false)
 	self:UpdateKnownLoot()
 	wndLoot:Destroy()
-	
+
 	self:ArrangeLoot()
 end
 
@@ -419,7 +399,7 @@ function ForgeUI_NeedGreed:OnPassBtn(wndHandler, wndControl)
 	GameLib.PassOnLoot(wndLoot:GetData().nLootId, true)
 	self:UpdateKnownLoot()
 	wndLoot:Destroy()
-	
+
 	self:ArrangeLoot()
 end
 
@@ -433,15 +413,15 @@ end
 function ForgeUI_NeedGreed:OnMouseEnterRollCounter(wndHandler, wndControl, x, y)
 	local xml = XmlDoc.new()
 	xml:StartTooltip(1000)
-	
+
 	if wndControl:GetText() == "0" then
 		xml:AddLine("None")
 		wndControl:SetTooltipDoc(xml)
 		return
 	end
-	
+
 	wndMain = wndHandler:GetParent():GetParent()
-	
+
 	if wndControl:GetName() == "NeedRolls" then
 		self:WhoRolledHelper(xml, wndMain, "Need")
 	elseif wndControl:GetName() == "GreedRolls" then
@@ -465,5 +445,4 @@ function ForgeUI_NeedGreed:WhoRolledHelper(xml, wndMain, strRollType)
 	end
 end
 
-local ForgeUI_NeedGreedInst = ForgeUI_NeedGreed:new()
-ForgeUI_NeedGreedInst:Init()
+F:API_NewAddon(ForgeUI_NeedGreed)

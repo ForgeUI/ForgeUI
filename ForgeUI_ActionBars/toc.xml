@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Addon Author="WintyBadass" APIVersion="11" Name="ForgeUI_ActionBars" Description="">
+<Addon Author="WintyBadass" APIVersion="12" Name="ForgeUI_ActionBars" Description="">
     <Script Name="ForgeUI_ActionBars.lua"/>
     <Form Name="ForgeUI_ActionBars.xml"/>
-	<ReplaceAddon Name="ActionBarFrame"/>
-	<ReplaceAddon Name="ActionBarShortcut"/>
-	<ReplaceAddon Name="Medic"/>
-	<ReplaceAddon Name="PathFrame"/>
-	<ReplaceAddon Name="RecallFrame"/>
+    <ReplaceAddon Name="ActionBarFrame"/>
+    <ReplaceAddon Name="ActionBarShortcut"/>
+    <ReplaceAddon Name="Medic"/>
+    <ReplaceAddon Name="PathFrame"/>
+    <ReplaceAddon Name="RecallFrame"/>
 </Addon>

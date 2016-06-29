@@ -1,79 +1,62 @@
+----------------------------------------------------------------------------------------------
+-- Client Lua Script for ForgeUI addon
+--
+-- name: 		ForgeUI_Hazards.lua
+-- author:		Winty Badass@Jabbit
+-- about:		Hazrds frames addon for ForgeUI
+-----------------------------------------------------------------------------------------------
+
 require "Window"
 require "HazardsLib"
- 
-local ForgeUI
-local ForgeUI_Hazards = {} 
 
-function ForgeUI_Hazards:new(o)
-    o = o or {}
-    setmetatable(o, self)
-    self.__index = self 
+local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
+local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 
-	self.tHazards = {}
+local Util = F:API_GetModule("util")
 
-    -- mandatory 
-    self.api_version = 2
-	self.version = "1.0.0"
-	self.author = "WintyBadass"
-	self.strAddonName = "ForgeUI_Hazards"
-	self.strDisplayName = "Hazards"
-	
-	self.wndContainers = {}
-	
-	self.tStylers = {}
-	
-	-- optional
-	self.settings_version = 1
-    self.tSettings = {
-		tHazards = {
-			["Default"] = { strName = "Unknown", nMin = 0, crBar = "FFFFFFFF" },
-			[HazardsLib.HazardType_Radiation] = { strName = "Radiation", nMin = 0, crBar = "FF25F400" },
-			[HazardsLib.HazardType_Temperature] = { strName = "Temperature", nMin = 0, crBar = "FFF40000" },
-			[HazardsLib.HazardType_Proximity] = { strName = "Proximity", nMin = 0, crBar = "FFFF9900" },
-			[HazardsLib.HazardType_Timer] = { strName = "Timer", nMin = 0, crBar = "FFFF9900" },
-			[HazardsLib.HazardType_Breath] = { strName = "Breath", nMin = 0, crBar = "FF1591DB" },
+-----------------------------------------------------------------------------------------------
+-- ForgeUI Addon Definition
+-----------------------------------------------------------------------------------------------
+local ForgeUI_Hazards = {
+	_NAME = "ForgeUI_Hazards",
+	_API_VERSION = 3,
+	_VERSION = "2.0",
+	DISPLAY_NAME = "Hazards",
+
+	tSettings = {
+		profile = {
+			tHazards = {
+				["Default"] = { strName = "Unknown", nMin = 0, crBar = "FFFFFFFF" },
+				[HazardsLib.HazardType_Radiation] = { strName = "Radiation", nMin = 0, crBar = "FF25F400" },
+				[HazardsLib.HazardType_Temperature] = { strName = "Temperature", nMin = 0, crBar = "FFF40000" },
+				[HazardsLib.HazardType_Proximity] = { strName = "Proximity", nMin = 0, crBar = "FFFF9900" },
+				[HazardsLib.HazardType_Timer] = { strName = "Timer", nMin = 0, crBar = "FFFF9900" },
+				[HazardsLib.HazardType_Breath] = { strName = "Breath", nMin = 0, crBar = "FF1591DB" },
+			}
 		}
-	}
+	},
 
-    return o
-end
+	tHazards = {},
+}
 
-function ForgeUI_Hazards:Init()
-	local bHasConfigureFunction = false
-	local strConfigureButtonText = ""
-	local tDependencies = {
-		"ForgeUI"
-	}
-    Apollo.RegisterAddon(self, bHasConfigureFunction, strConfigureButtonText, tDependencies)
-end
- 
-
-function ForgeUI_Hazards:OnLoad()
-	self.xmlDoc = XmlDoc.CreateFromFile("ForgeUI_Hazards.xml")
-	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
-end
-
-function ForgeUI_Hazards:OnDocLoaded()
-	if self.xmlDoc == nil and not self.xmlDoc:IsLoaded() then return end
-	
-	if ForgeUI == nil then -- forgeui loaded
-		ForgeUI = Apollo.GetAddon("ForgeUI")
-	end
-	
-	ForgeUI.API_RegisterAddon(self)
-end
-
--------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
 -- ForgeAPI
--------------------------------------------------------------------------------
-function ForgeUI_Hazards:ForgeAPI_AfterRegistration()
+-----------------------------------------------------------------------------------------------
+function ForgeUI_Hazards:ForgeAPI_PreInit()
 	Apollo.RegisterEventHandler("BreathChanged", "OnBreathChanged", self)
 	Apollo.RegisterEventHandler("HazardEnabled", "OnHazardEnable", self)
 	Apollo.RegisterEventHandler("HazardRemoved", "OnHazardRemove", self)
 	Apollo.RegisterEventHandler("HazardUpdated", "OnHazardsUpdated", self)
-	
-	self.wndHazardsHolder = Apollo.LoadForm(self.xmlDoc, "HazardsHolder", ForgeUI.HudStratum3, self)
-	ForgeUI.API_RegisterWindow(self, self.wndHazardsHolder, "ForgeUI_HazardMeter", { strDisplayName = "Breath and Hazard bars" })
+end
+
+function ForgeUI_Hazards:ForgeAPI_Init()
+	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_Hazards//ForgeUI_Hazards.xml")
+	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
+end
+
+function ForgeUI_Hazards:OnDocLoaded()
+	self.wndHazardsHolder = Apollo.LoadForm(self.xmlDoc, "HazardsHolder", F:API_GetStratum("Hud"), self)
+	F:API_RegisterMover(self, self.wndHazardsHolder, "Hazards", "Hazards", "misc", {})
 end
 
 -------------------------------------------------------------------------------
@@ -120,7 +103,8 @@ function ForgeUI_Hazards:UpdateHazard(nID, tOptions)
 	
 	if tOptions.nValue then
 		wndHazard:FindChild("ProgressBar"):SetProgress(tOptions.nValue)
-		wndHazard:FindChild("Text"):SetText(wndHazard:GetData().strName .. " - " .. ForgeUI.Round((tOptions.nValue / wndHazard:GetData().nMax) * 100, 0))
+		--wndHazard:FindChild("Text"):SetText(wndHazard:GetData().strName .. " - " .. Util.Round((tOptions.nValue / wndHazard:GetData().nMax) * 100, 0))
+		wndHazard:FindChild("Text"):SetText(wndHazard:GetData().strName .. " - " .. Util:Round(tOptions.nValue, 0))
 	end
 	
 	if tOptions.strTooltip then
@@ -151,7 +135,7 @@ function ForgeUI_Hazards:OnBreathChanged(nBreath)
 	end
 	
 	if self.tHazards[idHazard] == nil then
-		local tHazard = self.tSettings.tHazards[eHazardType] or self.tSettings.tHazards["default"]
+		local tHazard = self._DB.profile.tHazards[eHazardType] or self._DB.profile.tHazards["default"]
 
 		self:CreateHazard(idHazard, tHazard.strName, tHazard.nMin, nBreathMax, tHazard.crBar)
 	end
@@ -170,7 +154,7 @@ function ForgeUI_Hazards:OnHazardEnable(idHazard, strDisplayTxt)
 		end
 	end
 	
-	local tHazard = self.tSettings.tHazards[eHazardType] or self.tSettings.tHazards["default"]
+	local tHazard = self._DB.profile.tHazards[eHazardType] or self._DB.profile.tHazards["default"]
 
 	self:CreateHazard(idHazard, tHazard.strName, tHazard.nMin, tData.fMaxValue, tHazard.crBar, { strTooltip = tData.strTooltip })
 	
@@ -180,7 +164,7 @@ end
 function ForgeUI_Hazards:OnHazardsUpdated()
 	for idx, tData in ipairs(HazardsLib.GetHazardActiveList()) do
 		if not self.tHazards[tData.nId] then
-			local tHazard = self.tSettings.tHazards[tData.eHazardType] or self.tSettings.tHazards["default"]
+			local tHazard = self._DB.profile.tHazards[tData.eHazardType] or self._DB.profile.tHazards["default"]
 		
 			self:CreateHazard(tData.nId, tHazard.strName, tHazard.nMin, tData.fMaxValue, tHazard.crBar)
 		end
@@ -193,5 +177,4 @@ function ForgeUI_Hazards:OnHazardRemove(idHazard)
 	self:RemoveHazard(idHazard)
 end
 
-local ForgeUI_HazardsInst = ForgeUI_Hazards:new()
-ForgeUI_HazardsInst:Init()
+F:API_NewAddon(ForgeUI_Hazards)

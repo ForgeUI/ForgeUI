@@ -1,60 +1,68 @@
+----------------------------------------------------------------------------------------------
+-- Client Lua Script for ForgeUI addon
+--
+-- name: 		ForgeUI_InfoBar.lua
+-- author:		Winty Badass@Jabbit
+-- about:		Info bar addon for ForgeUI
+-----------------------------------------------------------------------------------------------
+
 require "Window"
 
-local ForgeUI 
-local ForgeUI_InfoBar = {} 
- 
------------------------------------------------------------------------------------------------
--- Constants
------------------------------------------------------------------------------------------------
+local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
+local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 
- 
------------------------------------------------------------------------------------------------
--- Initialization
------------------------------------------------------------------------------------------------
-function ForgeUI_InfoBar:new(o)
-    o = o or {}
-    setmetatable(o, self)
-    self.__index = self 
+local Util = F:API_GetModule("util")
 
-     -- mandatory 
-    self.api_version = 2
-	self.version = "0.1.0"
-	self.author = "WintyBadass"
-	self.strAddonName = "ForgeUI_InfoBar"
-	self.strDisplayName = "InfoBar"
-	
-	self.wndContainers = {}
-	
-	-- optional
-	self.tSettings = {
+-----------------------------------------------------------------------------------------------
+-- ForgeUI Addon Definition
+-----------------------------------------------------------------------------------------------
+local ForgeUI_InfoBar = {
+	_NAME = "ForgeUI_InfoBar",
+	_API_VERSION = 3,
+	_VERSION = "2.0",
+	DISPLAY_NAME = "Info bar",
+
+	tSettings = {
+		global = {
+			fUpdatePeriod = 0.5
+		},
+    	char = {
+	      tInfos = {
+				[1] = "XP",
+				[2] = "FPS",
+				[3] = "PING",
+	      }
+    	}
 	}
-
-	self.stats = {}
-	
-	self.currentXP = 0
-	self.neededXP = 0
-	self.restedXP = 0
-	self.currentPathXP = 0
-	self.neededPathXP = 0
-	
-    return o
-end
-
-function ForgeUI_InfoBar:Init()
-	local bHasConfigureFunction = false
-	local strConfigureButtonText = ""
-	local tDependencies = {
-		"ForgeUI"
-	}
-    Apollo.RegisterAddon(self, bHasConfigureFunction, strConfigureButtonText, tDependencies)
-end
- 
+}
+-----------------------------------------------------------------------------------------------
+-- Locals
+-----------------------------------------------------------------------------------------------
+local _UpdateTimer
+local tWndInfos = {}
+local tInfos = {
+	["XP"] = {
+		strKey = "XP",
+		nWidth = 70,
+		fnDraw = nil,
+	},
+	["FPS"] = {
+		strKey = "FPS",
+		nWidth = 65,
+		fnDraw = nil,
+	},
+	["PING"] = {
+		strKey = "PING",
+		nWidth = 65,
+		fnDraw = nil,
+	},
+}
 
 -----------------------------------------------------------------------------------------------
--- ForgeUI_InfoBar OnLoad
+-- ForgeAPI
 -----------------------------------------------------------------------------------------------
-function ForgeUI_InfoBar:OnLoad()
-	self.xmlDoc = XmlDoc.CreateFromFile("ForgeUI_InfoBar.xml")
+function ForgeUI_InfoBar:ForgeAPI_Init()
+	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_InfoBar//ForgeUI_InfoBar.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 end
 
@@ -62,81 +70,74 @@ end
 -- ForgeUI_InfoBar OnDocLoaded
 -----------------------------------------------------------------------------------------------
 function ForgeUI_InfoBar:OnDocLoaded()
-	if self.xmlDoc == nil or not self.xmlDoc:IsLoaded() then return end
-
-	if ForgeUI == nil then -- forgeui loaded
-		ForgeUI = Apollo.GetAddon("ForgeUI")
-	end
-	
-	ForgeUI.API_RegisterAddon(self)
-end
-
-function ForgeUI_InfoBar:ForgeAPI_AfterRegistration()
 	self.unitPlayer = GameLib.GetPlayerUnit()
 
-	self.wndInfoBar = Apollo.LoadForm(self.xmlDoc, "ForgeUI_InfoBar", "FixedHudStratumLow", self)
-	ForgeUI.API_RegisterWindow(self, self.wndInfoBar, "ForgeUI_InfoBar", { strDisplayName = "Info bar" })
-	
-	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnNextFrame", self)
+	self.wndInfoBar = Apollo.LoadForm(self.xmlDoc, "ForgeUI_InfoBar", F:API_GetStratum("Hud"), self)
+	F:API_RegisterMover(self, self.wndInfoBar, "Infobar", "Info bar", "general")
+
+	self:SetupInfos()
+
+	_UpdateTimer = ApolloTimer.Create(self._DB.global.fUpdatePeriod, true, "OnUpdate", self)
 end
 
-function ForgeUI_InfoBar:OnNextFrame()
-	self.stats = GameLib.GetPlayerUnit():GetBasicStats()
-	if self.stats == nil then return end
-	
-	self.restedXP = GetRestXp()
-	if self.stats.nLevel == 50 then
-		self.currentXP = GetPeriodicElderPoints()
-		self.neededXP = GameLib.ElderPointsDailyMax
+function ForgeUI_InfoBar:SetupInfos()
+	local wnd = self.wndInfoBar:FindChild("Background"):FindChild("List")
+	wnd:DestroyChildren()
+	tWndInfos = {}
+
+	for k, v in pairs(self._DB.char.tInfos) do
+		tWndInfos[v] = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Info", wnd, self)
+		tWndInfos[v]:SetAnchorOffsets(0, 0, tInfos[v].nWidth, 0)
+	end
+
+	wnd:ArrangeChildrenHorz()
+end
+
+function ForgeUI_InfoBar:OnUpdate()
+	for k, v in pairs(tWndInfos) do
+		v:SetText(tInfos[k].fnDraw())
+	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- Draw functions
+-----------------------------------------------------------------------------------------------
+local GetFrameRate = GameLib.GetFrameRate
+tInfos.FPS.fnDraw = function()
+	return Util:Round(GetFrameRate(), 0) .. " fps"
+end
+
+local GetPing = GameLib.GetLatency
+tInfos.PING.fnDraw = function()
+	return Util:Round(GetPing(), 0) .. " ms"
+end
+
+tInfos.XP.fnDraw = function()
+	if not GameLib.GetPlayerUnit() then return end
+
+	local stats = GameLib.GetPlayerUnit():GetBasicStats()
+	if stats == nil then return end
+
+	local restedXP = GetRestXp()
+	local currentXP
+	local neededXP
+	if stats.nLevel == 50 then
+		currentXP = GetPeriodicElderPoints()
+		neededXP = GameLib.ElderPointsDailyMax
 	else
-		self.currentXP = GetXp() - GetXpToCurrentLevel()
-		self.neededXP = GetXpToNextLevel()
+		currentXP = GetXp() - GetXpToCurrentLevel()
+		neededXP = GetXpToNextLevel()
 	end
-	
-	self.nCurrentPathLevel = PlayerPathLib.GetPathLevel()
-	local nNextLevel = math.min(30, self.nCurrentPathLevel + 1) -- TODO replace with variable
 
-	local nLastLevelXP = PlayerPathLib.GetPathXPAtLevel(self.nCurrentPathLevel)
-	self.currentPathXP =  PlayerPathLib.GetPathXP() - nLastLevelXP
-	self.neededPathXP = PlayerPathLib.GetPathXPAtLevel(nNextLevel) - nLastLevelXP
-	
-	local framesPerSecond = ForgeUI.Round(GameLib.GetFrameRate(), 0)
-	local latency = GameLib.GetLatency()
-
-	self.wndInfoBar:FindChild("Level"):SetText(ForgeUI.Round(self.currentXP / self.neededXP * 100, 1) .. "% XP")
-	self.wndInfoBar:FindChild("FPS"):SetText(framesPerSecond .. "fps")
-	self.wndInfoBar:FindChild("MS"):SetText(latency .. "ms")
+	return Util:Round(currentXP / neededXP * 100, 1) .. "% XP"
 end
-
-function ForgeUI_InfoBar:OnForgeButton( wndHandler, wndControl, eMouseButton )
-	ForgeUI:OnForgeUIOn()
-end
-
-function ForgeUI_InfoBar:OnGenerateTooltip( wndHandler, wndControl, eToolTipType, x, y )
-	local xml = nil
-
-	if wndControl:GetName() == "Level" then
-		xml = XmlDoc.new()
-		xml:StartTooltip(1000)
-		if self.stats.nLevel == 50 then
-			xml:AddLine("EG: " .. math.floor(self.currentXP / 75000)) -- TODO replace with variable
-		else
-			xml:AddLine("XP: " .. ForgeUI.ShortNum(self.currentXP) .. "/" .. ForgeUI.ShortNum(self.neededXP) .. " - rested: " .. ForgeUI.ShortNum(self.restedXP) , crWhite, "CRB_InterfaceMedium")
-		end
-		if self.neededPathXP ~= 0 then
-			xml:AddLine("Path XP: " .. self.currentPathXP .. "/" .. self.neededPathXP .. " (" .. ForgeUI.Round(self.currentPathXP / self.neededPathXP, 1) .. "%) - " .. self.nCurrentPathLevel .. "lvl", crWhite, "CRB_InterfaceMedium")
-		end
-	end
-	
-	wndControl:SetTooltipDoc(xml)
-end
-
----------------------------------------------------------------------------------------------------
--- ForgeUI_Movables Functions
----------------------------------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------------------------
--- ForgeUI_InfoBar Instance
+-- API
 -----------------------------------------------------------------------------------------------
-local ForgeUI_InfoBarInst = ForgeUI_InfoBar:new()
-ForgeUI_InfoBarInst:Init()
+function ForgeUI_InfoBar:OnForgeButton() F:API_ShowMainWindow(true) end
+
+-----------------------------------------------------------------------------------------------
+-- ForgeUI addon registration
+-----------------------------------------------------------------------------------------------
+F:API_NewAddon(ForgeUI_InfoBar)

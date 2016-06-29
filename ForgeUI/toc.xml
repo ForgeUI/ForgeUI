@@ -1,16 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Addon Author="WintyBadass" APIVersion="11" Name="ForgeUI" Description="">
-    <Script Name="ForgeUI.lua"/>
-    <!-- xmls -->
-    <Form Name="ForgeUI.xml"/>
-    <Form Name="ForgeUI_UIElements.xml"/>
-    <!-- modules -->
-    <Script Name="ForgeComm.lua"/>
-    <Script Name="ForgeColor\ForgeColor.lua"/>
-    <Script Name="ForgeThemes\ForgeThemes.lua"/>
-    <Script Name="ForgeOptions\ForgeOptions.lua"/>
-    <Script Name="ForgeNotifications\ForgeNotifications.lua"/>
-    <!-- themes -->
+<Addon Author="WintyBadass" APIVersion="12" Name="ForgeUI" Description="">
     <!-- libraries -->
-    <Script Name="Libs\LibJSON\LibJSON-2.5.lua"/>
+    <Script Name="libs\LibJSON-2.5\LibJSON-2.5.lua"/>
+    <Script Name="libs\GeminiDB-1.0\GeminiDB-1.0.lua"/>
+    <Script Name="libs\CallbackHandler-1.0\CallbackHandler-1.0.lua"/>
+    <Script Name="libs\GeminiHook-1.0\GeminiHook-1.0.lua"/>
+    <!-- addon script -->
+    <Script Name="ForgeUI.lua"/>
+    <!-- addon xml -->
+    <Form Name="ForgeUI.xml"/>
+    <Form Name="ForgeUI_Options.xml"/>
+    <!-- forge libraries -->
+    <Script Name="core\addon.lua"/>
+    <Script Name="core\module.lua"/>
+    <Script Name="interface\gui.lua"/>
+    <!-- core scripts -->
+    <Script Name="core\core.lua"/>
+    <Script Name="core\movers.lua"/>
+    <Script Name="core\util.lua"/>
+    <Script Name="core\settings.lua"/>
+    <!-- modules -->
+    <Script Name="modules\forgecolor\forgecolor.lua"/>
+    <Script Name="modules\profiles_module.lua"/>
+    <Script Name="modules\credits_module.lua"/>
+    <!-- skins -->
+    <Script Name="modules\skins\skins.lua"/>
+    <Script Name="modules\skins\carbine\taxi.lua"/>
+    <Script Name="modules\skins\carbine\character.lua"/>
+    <Script Name="modules\skins\carbine\vendor.lua"/>
+    <Script Name="modules\skins\carbine\chatlog.lua"/>
 </Addon>

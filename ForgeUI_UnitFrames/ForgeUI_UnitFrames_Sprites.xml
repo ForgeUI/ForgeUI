@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sprites>
+    <Sprite Name="ForgeUI_BuffBorder" Cycle="1">
+        <Frame Texture="ForgeUI_UnitFrames\sprites\buff-border.png" x0="0" x1="0" x2="0" x3="3" x4="13" x5="16" y0="0" y1="0" y2="0" y3="3" y4="13" y5="16" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="ForgeUI_DebuffBorder" Cycle="1">
+        <Frame Texture="ForgeUI_UnitFrames\sprites\debuff-border.png" x0="0" x1="0" x2="0" x3="3" x4="13" x5="16" y0="0" y1="0" y2="0" y3="3" y4="13" y5="16" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+</Sprites>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Sprites>
+    <Sprite Name="ForgeUI_Border" Cycle="1">
+        <Frame Texture="ForgeUI\media\textures\border.png" x0="0" x1="0" x2="0" x3="1" x4="15" x5="16" y0="0" y1="0" y2="0" y3="1" y4="15" y5="16" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="ForgeUI_InnerWindow" Cycle="1">
+        <Frame Texture="ForgeUI\media\textures\inner_window.png" x0="0" x1="0" x2="0" x3="1" x4="15" x5="16" y0="0" y1="0" y2="0" y3="1" y4="15" y5="16" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="ForgeUI_EditBox" Cycle="1">
+        <Frame Texture="ForgeUI\media\textures\editbox.png" x0="0" x1="0" x2="0" x3="1" x4="15" x5="16" y0="0" y1="0" y2="0" y3="1" y4="14" y5="16" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="ForgeUI_Smooth" Cycle="1">
+        <Frame Texture="ForgeUI\media\textures\smooth.png" x0="0" x1="0" x2="0" x3="0" x4="256" x5="256" y0="0" y1="0" y2="0" y3="0" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="ForgeUI_Minimalist" Cycle="1">
+        <Frame Texture="ForgeUI\media\textures\minimalist.png" x0="0" x1="0" x2="0" x3="0" x4="256" x5="256" y0="0" y1="0" y2="0" y3="0" y4="32" y5="32" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <Sprite Name="ForgeUI_BorderLight" Cycle="1">
+        <Frame Texture="ForgeUI\media\textures\border_light.png" x0="0" x1="0" x2="0" x3="1" x4="15" x5="16" y0="0" y1="0" y2="0" y3="1" y4="15" y5="16" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+    <AutoButton Name="ForgeUI_CloseButton" Texture="ForgeUI\media\textures\close_button.png" x0="0" x1="0" x2="0" x3="1" x4="15" x5="16" y0="0" y1="0" y2="0" y3="1" y4="15" y5="16" Stretchy="1" StateBits="15" Direction="Across"/>
+    <AutoButton Name="ForgeUI_Button" Texture="ForgeUI\media\textures\button.png" x0="0" x1="0" x2="0" x3="1" x4="15" x5="16" y0="0" y1="0" y2="0" y3="1" y4="15" y5="16" Stretchy="1" StateBits="15" Direction="Across"/>
+    <AutoButton Name="ForgeUI_CheckBox" Texture="ForgeUI\media\textures\checkbox.png" x0="0" x1="0" x2="0" x3="0" x4="0" x5="32" y0="0" y1="0" y2="0" y3="0" y4="0" y5="32" Stretchy="1" StateBits="15" Direction="Across"/>
+    <Sprite Name="ForgeUI_OuterGlow" Cycle="1">
+        <Frame Texture="ForgeUI\media\textures\outer_glow.png" x0="0" x1="0" x2="0" x3="7" x4="9" x5="16" y0="0" y1="0" y2="0" y3="7" y4="9" y5="16" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+    </Sprite>
+</Sprites>
