@@ -111,8 +111,11 @@ function Util:GetTime()
 end
 
 function Util:Round(num, idp)
-  local mult = 10^(idp or 0)
-  return math.floor(num * mult + 0.5) / mult
+	if idp and idp>0 then
+		local mult = 10^idp
+		return math.floor(num * mult + 0.5) / mult
+	end
+	return math.floor(num + 0.5)
 end
 
 function Util:ConvertAlpha(value)	

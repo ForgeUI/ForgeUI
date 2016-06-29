@@ -25,7 +25,6 @@ local ForgeUI_Interfaces = {
   tSettings = {
     global = {
       tPinnedAddons = {
-        Apollo.GetString("InterfaceMenu_Store"),
         Apollo.GetString("InterfaceMenu_AccountInventory"),
         Apollo.GetString("CRB_Achievements"),
         Apollo.GetString("MarketplaceCredd_Title"),
@@ -35,9 +34,6 @@ local ForgeUI_Interfaces = {
         Apollo.GetString("InterfaceMenu_Inventory"),
         Apollo.GetString("InterfaceMenu_Mail"),
       }
-    },
-    char = {
-      bLiveEventSeen = false
     }
   }
 }
@@ -60,12 +56,11 @@ function ForgeUI_Interfaces:OnDocumentReady()
 	Apollo.RegisterTimerHandler("QueueRedrawTimer", 					      "OnQueuedRedraw", self)
 	Apollo.RegisterEventHandler("ApplicationWindowSizeChanged", 		"ButtonListRedraw", self)
 	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences", 		"OnUpdateTimer", self)
-  Apollo.RegisterEventHandler("LiveEvent_WindowClosed",           "OnLiveEventClosed", self)
 
-  Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop",         "OnToggleShop", self)
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop",         "OnToggleShop", self)
 	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes",     "OnToggleFortunes", self)
 
-  self.wndMain = Apollo.LoadForm(self.xmlDoc , "ForgeUI_InterfacesForm", "FixedHudStratumHigh", self)
+	self.wndMain = Apollo.LoadForm(self.xmlDoc , "ForgeUI_InterfacesForm", "FixedHudStratumHigh", self)
 	self.wndList = Apollo.LoadForm(self.xmlDoc , "FullListFrame", nil, self)
 
 	self.wndMain:FindChild("OpenFullListBtn"):AttachWindow(self.wndList)
@@ -86,7 +81,7 @@ function ForgeUI_Interfaces:OnDocumentReady()
 		self:OnCharacterCreated()
 	end
 
-  Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Store"), {"InterfaceMenu_ToggleShop", "Store", ""})
+	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Store"), {"InterfaceMenu_ToggleShop", "Store", ""})
 	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenuList_Fortunes"), {"InterfaceMenu_ToggleFortunes", "", ""})
 end
 
@@ -103,50 +98,6 @@ function ForgeUI_Interfaces:OnUpdateTimer()
 		Event_FireGenericEvent("InterfaceMenuListHasLoaded")
 		self.wndMain:FindChild("OpenFullListBtn"):Enable(true)
 		self.bHasLoaded = true
-	end
-
-	if self.bHasLoaded and not self.bLiveEventLoaded and GameLib.IsCharacterLoaded() then
-		-- PublicEventStart will catch it if this loads too early
-		local bLiveEventActive = false
-		for idx, peEvent in pairs(PublicEvent.GetActiveEvents() or {}) do
-			if peEvent:GetEventType() == PublicEvent.PublicEventType_LiveEvent then
-				bLiveEventActive = true
-				break
-			end
-		end
-
-		--reset bLiveEventSeen if it was previously active and now isn't.
-		if not bLiveEventActive then
-			self._DB.char.bLiveEventSeen = false
-		end
-
-		if bLiveEventActive then
-			local wndLiveEvent = self.wndMain:FindChild("LiveEvent")
-			wndLiveEvent:Show(true)
-
-			Print("Live event...")
-			
-			local btnLiveEvent = wndLiveEvent:FindChild("EventMoreInfoBtn")
-			btnLiveEvent:SetTooltip(string.format(
-				"%s%s%s",
-				Apollo.GetString("Event_WorldEventTitle"),
-				Apollo.GetString("Chat_ColonBreak"),
-				Apollo.GetString("Event_ShadesEveTitle")
-			))
-
-			local wndButtons = self.wndMain:FindChild("ButtonList")
-			local nLeft, nTop, nRight, nBottom = wndButtons:GetAnchorOffsets()
-
-			wndButtons:SetAnchorOffsets(nLeft + wndLiveEvent:GetWidth(), nTop, nRight, nBottom)
-
-			if not self._DB.char.bLiveEventSeen then
-				Event_FireGenericEvent("LiveEvent_ToggleWindow")
-				self._DB.char.bLiveEventSeen = true
-				wndLiveEvent:FindChild("EventAlert"):Show(true)
-			end
-
-			self.bLiveEventLoaded = true
-		end
 	end
 end
 
@@ -361,10 +312,6 @@ function ForgeUI_Interfaces:OnDrawAlert(strWindowName, tParams)
 	end
 end
 
-function ForgeUI_Interfaces:OnLiveEventClosed()
-	self.wndMain:FindChild("EventAlert"):Show(false)
-end
-
 -----------------------------------------------------------------------------------------------
 -- Helpers and Errata
 -----------------------------------------------------------------------------------------------
@@ -413,10 +360,6 @@ function ForgeUI_Interfaces:OnOpenFullListCheck(wndHandler, wndControl)
 	self:FullListRedraw()
 end
 
-function ForgeUI_Interfaces:OnEventMoreInfoBtn(wndHandler, wndControl)
-	Event_FireGenericEvent("LiveEvent_ToggleWindow")
-end
-
 function ForgeUI_Interfaces:LoadByName(strForm, wndParent, strCustomName)
 	local wndNew = wndParent:FindChild(strCustomName)
 	if not wndNew then
@@ -459,7 +402,16 @@ function ForgeUI_Interfaces:OnToggleFortunes()
 	GameLib.OpenFortunes()
 end
 
+function ForgeUI_Interfaces:OnMouseButtonDown( wndHandler, wndControl, eMouseButton )
+	if wndControl:GetName() == "StoreBtn" then
+		GameLib.OpenStore()
+	elseif wndControl:GetName() == "FortunesBtn" then
+		GameLib.OpenFortunes()
+	end
+end
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI addon registration
 -----------------------------------------------------------------------------------------------
 F:API_NewAddon(ForgeUI_Interfaces)
+
