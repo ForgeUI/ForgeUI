@@ -24,6 +24,8 @@ local ForgeUI_ToolTips = {
 		profile = {
 			strTooltipPosition = "TPT_NavText", -- TPT_OnCursor
 			bShowInCombat = false,
+			bShowBuffId = false,
+			bShowSpellId = false,
 		}
 	}
 }
@@ -43,8 +45,6 @@ local ktClassToIcon = {
 	[GameLib.CodeEnumClass.Spellslinger]  	= "ForgeUI_Spellslinger",
 }
 
-local ForgeUI_ToolTipsInst
-
 local GenerateUnitTooltipForm
 local GenerateBuffTooltipForm
 local GenerateSpellTooltipForm
@@ -57,21 +57,13 @@ local origGenerateItemTooltipForm
 
 function ForgeUI_ToolTips:ForgeAPI_Init()
 	Apollo.LoadSprites("..\ForgeUI\ForgeUI_Sprite.xml");
-
 	
 	ToolTips = Apollo.GetAddon("ToolTips")
-	-- hooks
-	ToolTips.UnitTooltipGen = self.UnitTooltipGen
 	
-	ToolTips_OnDocumentReady = ToolTips.OnDocumentReady
-	ToolTips.OnDocumentReady = ForgeUI_ToolTips.TooltipsHook_OnDocumentReady
-
+	F:PostHook(ToolTips, "OnDocumentReady", self.OnDocumentReady)
 end
 
-function ForgeUI_ToolTips.TooltipsHook_OnDocumentReady(tooltips)
-	ToolTips_OnDocumentReady(tooltips)
-	local ToolTipsInst = tooltips
-
+function ForgeUI_ToolTips:OnDocumentReady(tooltips)
 	origGenerateUnitTooltipForm = ToolTips.UnitTooltipGen
 	ToolTips.UnitTooltipGen = GenerateUnitTooltipForm
 
@@ -83,9 +75,6 @@ function ForgeUI_ToolTips.TooltipsHook_OnDocumentReady(tooltips)
 
 	origGenerateItemTooltipForm = Tooltip.GetItemTooltipForm
 	Tooltip.GetItemTooltipForm = GenerateItemTooltipForm
-
-	--local wndContainer = GameLib.GetWorldTooltipContainer()
-	--wndContainer:SetTooltipType(Window[ForgeUI_ToolTipsInst.tSettings.strTooltipPosition])
 end
 
 -----------------------------------------------------------------------------------------------
@@ -104,23 +93,27 @@ GenerateBuffTooltipForm = function(luaCaller, wndParent, splSource, tFlags)
 	wndToolTip:SetBGColor("FF000000")
 
 	wndToolTip:FindChild("NameString"):SetStyle("Picture", false)
-	--wndToolTip:FindChild("NameString"):SetSprite("ForgeUI_BorderLight")
-	--wndToolTip:FindChild("NameString"):SetBGColor("CC000000")
-	--wndToolTip:FindChild("NameString"):SetFont("Nameplates")
+	wndToolTip:FindChild("NameString"):SetSprite("ForgeUI_BorderLight")
+	wndToolTip:FindChild("NameString"):SetBGColor("CC000000")
+	wndToolTip:FindChild("NameString"):SetFont("Nameplates")
 
 	wndToolTip:FindChild("DispellableString"):SetFont("Nameplates")
 
 	wndToolTip:FindChild("GeneralDescriptionString"):SetStyle("Picture", false)
-	--wndToolTip:FindChild("GeneralDescriptionString"):SetSprite("ForgeUI_BorderLight")
-	--wndToolTip:FindChild("GeneralDescriptionString"):SetBGColor("CC000000")
-	--wndToolTip:FindChild("GeneralDescriptionString"):SetFont("Nameplates")
+	wndToolTip:FindChild("GeneralDescriptionString"):SetSprite("ForgeUI_BorderLight")
+	wndToolTip:FindChild("GeneralDescriptionString"):SetBGColor("CC000000")
+	wndToolTip:FindChild("GeneralDescriptionString"):SetFont("Nameplates")
 
 	local nLeft, nTop, nRight, nBottom = wndToolTip:GetAnchorOffsets()
 	wndToolTip:SetAnchorOffsets(nLeft, nTop, nRight, nBottom - 45)
 	
 	-- show spellid of buff/debuff
 	local buffName = wndToolTip:FindChild("NameString"):GetText();
-	wndToolTip:FindChild("NameString"):SetText(buffName .. "(" .. splSource:GetId() ..")");
+	if ForgeUI_ToolTips._DB.profile.bShowBuffId then
+		wndToolTip:FindChild("NameString"):SetText(buffName .. " (" .. splSource:GetId() ..")")
+	else
+		wndToolTip:FindChild("NameString"):SetText(buffName)
+	end
 
 	return wndToolTip
 end
@@ -131,13 +124,17 @@ GenerateSpellTooltipForm = function(luaCaller, wndParent, splSource, tFlags)
 	if wndToolTip then
 		
 		wndToolTip:SetStyle("Picture", false)
-		--wndToolTip:SetSprite("ForgeUI_BorderLight")
-		--wndToolTip:SetBGColor("CC000000")
+		wndToolTip:SetSprite("ForgeUI_BorderLight")
+		wndToolTip:SetBGColor("CC000000")
 	
 		-- show item id
-		local wndTopDataBlock 				= wndToolTip:FindChild("TopDataBlock")
-		local wndName 						= wndTopDataBlock:FindChild("NameString")
-		wndName:SetAML(string.format("<P Font=\"CRB_HeaderSmall\" TextColor=\"UI_TextHoloTitle\">%s</P>", splSource:GetName() .. "(" .. splSource:GetId() .. ")" ))
+		local wndTopDataBlock = wndToolTip:FindChild("TopDataBlock")
+		local wndName = wndTopDataBlock:FindChild("NameString")
+		if ForgeUI_ToolTips._DB.profile.bShowSpellId then
+			wndName:SetAML(string.format("<P Font=\"CRB_HeaderSmall\" TextColor=\"UI_TextHoloTitle\">%s</P>", splSource:GetName() .. " (" .. splSource:GetId() .. ")" ))
+		else
+			wndName:SetAML(string.format("<P Font=\"CRB_HeaderSmall\" TextColor=\"UI_TextHoloTitle\">%s</P>", splSource:GetName()))
+		end
 		
 		wndToolTip:FindChild("BGArt2"):SetSprite("ForgeUI_BorderLight")
 		wndToolTip:FindChild("BGArt2"):SetBGColor("FF000000")
