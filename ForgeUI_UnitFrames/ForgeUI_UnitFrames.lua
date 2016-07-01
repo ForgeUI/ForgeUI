@@ -646,6 +646,15 @@ function ForgeUI_UnitFrames:ForgeAPI_PopulateOptions()
 		if v.bAlignDebuffsRight ~= nil then
 			G:API_AddCheckBox(self, wnd, "Align debuffs from right", v, "bAlignDebuffsRight", { tMove = {200, 270}, fnCallback = self.CreateBuffs })
 		end
+
+		if v.strFullSprite ~= nil then -- TODO: dynamic loading of textures. maybe some library?	
+			local wndCombo = G:API_AddComboBox(self, wnd, "Texture", v, "strFullSprite", { tMove = {0, 330}, tWidths = { 150, 50 },
+				fnCallback = self["UpdateStyle_" .. k .. "Frame"]
+			})
+			G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Smooth","ForgeUI_Smooth", {})
+			G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Flat", "ForgeUI_Flat", {})
+			G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Minimalist", "ForgeUI_Minimalist", {})
+		end
 	end
 end
 
