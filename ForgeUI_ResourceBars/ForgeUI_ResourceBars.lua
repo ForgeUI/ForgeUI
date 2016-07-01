@@ -26,6 +26,7 @@ local ForgeUI_ResourceBars = {
 		profile = {
 			bSmoothBars = false,
 			bPermaShow = false,
+			bPermaShowFocus = false,
 			crBorder = "FF000000",
 			crBackground = "FF101010",
 			crFocus = "FFFFFFFF",
@@ -495,7 +496,7 @@ function ForgeUI_ResourceBars:UpdateFocus(unitPlayer)
 	local nMana = unitPlayer:GetFocus()
 	local nMaxMana = unitPlayer:GetMaxFocus()
 
-	if nMana < nMaxMana then
+	if nMana < nMaxMana or self._DB.profile.bPermaShowFocus then
 		bShow = true
 
 		self:RefreshStyle_Focus(unitPlayer, nMana, nMaxMana)
@@ -793,6 +794,7 @@ function ForgeUI_ResourceBars:PopulateOptions_Focus()
 	if not wndFocus then return end
 
 	G:API_AddColorBox(self, wndFocus, "Focus color", self._DB.profile, "crFocus", { tMove = {0, 0} })
+	G:API_AddCheckBox(self, wndFocus, "Always show focus bar", self._DB.profile, "bPermaShowFocus", { tMove = {0, 30} })
 end
 
 function ForgeUI_ResourceBars:OnEsperBuffAdded(unit, tBuff, nCout)
