@@ -21,13 +21,13 @@ local ForgeUI_ActionBars = {
 	DISPLAY_NAME = "Action bars",
 
 	tSettings = {
-    char = {
-  		nSelectedMount = 0,
-  		nSelectedPotion = 0,
-  		nSelectedPath = 0,
-    },
-    profile = {
-  		tFrames = {
+		char = {
+			nSelectedMount = 0,
+			nSelectedPotion = 0,
+			nSelectedPath = 0,
+		},
+		profile = {
+			tFrames = {
 				[1] = {
 					strKey = "ForgeUI_ActionBar",
 					strName = "Action bar",
