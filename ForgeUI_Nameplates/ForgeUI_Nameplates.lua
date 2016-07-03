@@ -9,6 +9,8 @@
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeUI GUI library
 
+local Util = F:API_GetModule("util")
+
 require "Window"
 
 -----------------------------------------------------------------------------------------------
@@ -88,8 +90,8 @@ local ForgeUI_Nameplates = {
 			crMOO = "FF7E00FF",
 			tStyle = {
 				nStyle = 0,
-				nBarHeight = 120,
-				nBarWidth = 20,
+				nBarWidth = 120,
+				nBarHeight = 20,
 				nShieldHeight = 8,
 				nAbsorbHeight = 8,
 				nCastHeight = 7,
@@ -117,6 +119,8 @@ local ForgeUI_Nameplates = {
 					crName = "FFFFFFFF",
 					crHealth = "FF75CC26",
 					bClassColors = false,
+					bShowHpValue = false,
+					bShowShieldValue = false,
 				},
 				FriendlyPlayer = {
 					bEnabled = true,
@@ -134,6 +138,8 @@ local ForgeUI_Nameplates = {
 					crName = "FFFFFFFF",
 					crHealth = "FF75CC26",
 					bClassColors = true,
+					bShowHpValue = false,
+					bShowShieldValue = false,
 				},
 				PartyPlayer = {
 					bEnabled = true,
@@ -151,6 +157,8 @@ local ForgeUI_Nameplates = {
 					crName = "FF43C8F3",
 					crHealth = "FF75CC26",
 					bClassColors = true,
+					bShowHpValue = false,
+					bShowShieldValue = false,
 				},
 				HostilePlayer = {
 					bEnabled = true,
@@ -165,6 +173,8 @@ local ForgeUI_Nameplates = {
 					crNameNoPvP = "FFFF9900",
 					crHealth = "FFFF0000",
 					bClassColors = true,
+					bShowHpValue = false,
+					bShowShieldValue = false,
 				},
 				FriendlyNPC = {
 					bEnabled = true,
@@ -175,6 +185,8 @@ local ForgeUI_Nameplates = {
 					nShowInfo = 0,
 					crName = "FF76CD26",
 					crHealth = "FF75CC26",
+					bShowHpValue = false,
+					bShowShieldValue = false,
 				},
 				NeutralNPC = {
 					bEnabled = true,
@@ -185,6 +197,8 @@ local ForgeUI_Nameplates = {
 					nShowInfo = 1,
 					crName = "FFFFF569",
 					crHealth = "FFF3D829",
+					bShowHpValue = false,
+					bShowShieldValue = false,
 				},
 				HostileNPC = {
 					bEnabled = true,
@@ -200,6 +214,8 @@ local ForgeUI_Nameplates = {
 					crHpCutoff = "FFCCCCCC",
 					crName = "FFD9544D",
 					crHealth = "FFE50000",
+					bShowHpValue = false,
+					bShowShieldValue = false,
 				},
 				UnknownNPC = {
 					bEnabled = true,
@@ -503,6 +519,8 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 			healthHealthFill = wnd:FindChild("Container:Health:HealthBars:MaxHealth:HealthFill"),
 			healthHealthLabel = wnd:FindChild("Container:Health:HealthLabel"),
 			ia = wnd:FindChild("Container:Health:IA"),
+			hpText = wnd:FindChild("HpValue"),
+			shieldText = wnd:FindChild("ShieldValue"),
 
 			castBarLabel = wnd:FindChild("Container:CastBar:Label"),
 			castBarCastFill = wnd:FindChild("Container:CastBar:CastFill"),
@@ -757,6 +775,12 @@ function ForgeUI_Nameplates:DrawHealth(tNameplate)
 		self:SetBarValue(tNameplate.wnd.healthHealthFill, 0, nHealth, nMaxHealth)
 
 		tNameplate.hpPercentage = (nHealth / nMaxHealth) * 100
+		
+		if tNameplate.tSettings.bShowHpValue then
+			tNameplate.wnd.hpText:SetText(Util:ShortNum(nHealth))
+		else
+			tNameplate.wnd.hpText:SetText("")
+		end
 
 		fnDrawIndicators(self, tNameplate)
 
@@ -814,6 +838,12 @@ function ForgeUI_Nameplates:DrawShield(tNameplate)
 
 		if bShow then
 			self:SetBarValue(tNameplate.wnd.healthShieldFill, 0, nShield, nShieldMax)
+		end
+		
+		if bShow and tNameplate.tSettings.bShowShieldValue then
+			tNameplate.wnd.shieldText:SetText(Util:ShortNum(nShield))
+		else
+			tNameplate.wnd.shieldText:SetText("")
 		end
 	end
 
@@ -1296,10 +1326,10 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	-- bar
 	local nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("Container"):GetAnchorOffsets()
 
-	nLeft = -(tStyle.nBarHeight / 2)
-	nRight = (tStyle.nBarHeight / 2)
+	nLeft = -(tStyle.nBarWidth / 2)
+	nRight = (tStyle.nBarWidth / 2)
 
-	nBottom = nTop + tStyle.nBarWidth
+	nBottom = nTop + tStyle.nBarHeight
 
 	wndNameplate:FindChild("Container"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 
@@ -1341,6 +1371,15 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	nBottom = 3 + tStyle.nCastHeight
 
 	wndNameplate:FindChild("CastBar"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+	
+	-- hp & shield values
+	if tStyle.nStyle == 0 then
+		wndNameplate:FindChild("ShieldValue"):SetAnchorPoints(1, 1, 1, 1)
+		wndNameplate:FindChild("ShieldValue"):SetAnchorOffsets(-57, -20, -7, 15)
+	elseif tStyle.nStyle == 1 then
+		wndNameplate:FindChild("ShieldValue"):SetAnchorPoints(0, 0, 0, 1)
+		wndNameplate:FindChild("ShieldValue"):SetAnchorOffsets(-52, -3, -2, 23)
+	end
 end
 
 function ForgeUI_Nameplates:OnStyleChanged()
@@ -1541,8 +1580,8 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	-- style options
 	local wndStyle = self.tOptionHolders["Style"]
 	
-	G:API_AddNumberBox(self, wndStyle, "Nameplate height", self._DB.profile.tStyle, "nBarHeight", { tMove = { 0, 30 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddNumberBox(self, wndStyle, "Nameplate width", self._DB.profile.tStyle, "nBarWidth", { tMove = { 0, 60 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Nameplate width", self._DB.profile.tStyle, "nBarWidth", { tMove = { 0, 30 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Nameplate height", self._DB.profile.tStyle, "nBarHeight", { tMove = { 0, 60 }, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddNumberBox(self, wndStyle, "Shield height", self._DB.profile.tStyle, "nShieldHeight", { tMove = { 200, 30 }, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddNumberBox(self, wndStyle, "Absorb height", self._DB.profile.tStyle, "nAbsorbHeight", { tMove = { 200, 60 }, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddNumberBox(self, wndStyle, "Castbar height", self._DB.profile.tStyle, "nCastHeight", { tMove = { 400, 30 }, fnCallback = self.LoadStyle_Nameplates })
@@ -1556,7 +1595,7 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 		local wnd = self.tOptionHolders[k]
 		if wnd then
 			if v.nHpCutoff then
-				G:API_AddNumberBox(self, wnd, "HP cutoff", v, "nHpCutoff", { tMove = {400, 0}, strTooltip = "Show nameplate only if HP is below this percentage.", })
+				G:API_AddNumberBox(self, wnd, "HP cutoff", v, "nHpCutoff", { tMove = {400, 0}, strTooltip = "Recolor nameplate when HP is below this percentage.", })
 			end			
 			
 			if v.crHpCutoff then
@@ -1610,6 +1649,14 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 				G:API_AddCheckBox(self, wnd, "Reposition for big units", v, "bReposition", { tMove = {200, 60} })
 			end
 
+			if v.bShowHpValue ~= nil then
+				G:API_AddCheckBox(self, wnd, "Show HP text", v, "bShowHpValue", { tMove = {400, 270}, fnCallback = self.LoadStyle_Nameplates })
+			end
+			
+			if v.bShowShieldValue ~= nil then
+				G:API_AddCheckBox(self, wnd, "Show shield text", v, "bShowShieldValue", { tMove = {400, 300}, fnCallback = self.LoadStyle_Nameplates })
+			end
+			
 			if v.nShowGuild then
 				local wndCombo = G:API_AddComboBox(self, wnd, "Guild", v, "nShowGuild", { tMove = {0, 90}, tWidths = { 150, 50 } })
 				G:API_AddOptionToComboBox(self, wndCombo, "Never", 0, {})
@@ -1680,3 +1727,4 @@ fnRepositionNameplate = ForgeUI_Nameplates.RepositionNameplate
 -- ForgeUI_Nameplates Instance
 -----------------------------------------------------------------------------------------------
 ForgeUI_Nameplates = F:API_NewAddon(ForgeUI_Nameplates)
+
