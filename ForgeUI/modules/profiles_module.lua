@@ -32,7 +32,11 @@ end
 function ProfilesModule:ForgeAPI_PopulateOptions()
 	local wndProfiles = self.tOptionHolders["Profiles"]
 
-	G:API_AddText(self, wndProfiles, string.format("<T TextColor=\"%s\" Font=\"%s\">%s</T>", "FFFFFFFF", "Nameplates", "Current profile: ") .. string.format("<T TextColor=\"%s\" Font=\"%s\">%s</T>", "FFFF0000", "Nameplates", tostring(F:API_GetProfileName())))
+	G:API_AddText(self, wndProfiles,
+		string.format("<T TextColor=\"%s\" Font=\"%s\">%s</T>", "FFFFFFFF", "Nameplates", "Current profile: ")
+		.. string.format("<T TextColor=\"%s\" Font=\"%s\">%s</T>", "FFFF0000", "Nameplates", tostring(F:API_GetProfileName())))
+
+	Apollo.GetAddon("ForgeUI").wndMain:FindChild("ProfileText"):SetText(F:API_GetProfileName())
 
 	-- new profile
 	G:API_EditBox(self, wndProfiles, "", nil, nil, {

@@ -617,6 +617,10 @@ function Gui:API_AddNumberBox(tModule, wnd, strText, tSettings, strKey, tOptions
 		if tOptions.strHint then
 			wndNumberBox:FindChild("NumberBox"):SetPrompt(tOptions.strHint)
 		end
+
+		if tOptions.strTooltip then
+			wndNumberBox:SetTooltip(tOptions.strTooltip)
+		end
 	end
 
 	-- data

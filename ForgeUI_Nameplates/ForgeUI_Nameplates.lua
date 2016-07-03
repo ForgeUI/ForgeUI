@@ -32,14 +32,8 @@ krtNpcRankEnums = {
 	[Unit.CodeEnumRank.Fodder] 		= "fodder",
 }
 
-tAllowedNames = {
-	["Thayd Cargo Lifter"] = 274008,
-}
-
 tNameSwaps = {
 	["Briex Sper"] = "Pink Cheese",
-	["Meeko Briarthorn"] = "Pink Cheese2",
-	["Thayd Cargo Lifter"] = "Lifty",
 }
 
 -----------------------------------------------------------------------------------------------
@@ -70,13 +64,13 @@ local ForgeUI_Nameplates = {
 	_VERSION = "3.0",
 	DISPLAY_NAME = "Nameplates",
 
-  tPreloadUnits = {},
+	tPreloadUnits = {},
 
 	arWindowPool = {},
 	arUnit2Nameplate = {},
 	arWnd2Nameplate = {},
 
-  tSettings = {
+	tSettings = {
 		profile = {
 			nMaxRange = 75,
 			bUseOcclusion = true,
@@ -443,10 +437,7 @@ end
 function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	local strNewUnitType = self:GetUnitType(unitNew)
 
-	if tAllowedNames[unitNew:GetName()] == unitNew:GetId() then
-	else
-		if not self._DB.profile.tUnits[strNewUnitType].bEnabled then return end
-	end
+	if not self._DB.profile.tUnits[strNewUnitType].bEnabled then return end
 
 	local idUnit = unitNew:GetId()
 	if self.arUnit2Nameplate[idUnit] ~= nil and self.arUnit2Nameplate[idUnit].wndNameplate:IsValid() then
@@ -683,7 +674,7 @@ function ForgeUI_Nameplates:DrawName(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 	local wndName = tNameplate.wnd.wndName
 
-	local bShow = self:GetBooleanOption("nShowName", tNameplate) or tAllowedNames[unitOwner:GetName()]
+	local bShow = self:GetBooleanOption("nShowName", tNameplate)
 	if wndName:IsShown() ~= bShow then
 		wndName:Show(bShow, true)
 	end
@@ -1081,7 +1072,7 @@ function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 	local bDontShowNameplate = not tNameplate.bOnScreen or tNameplate.bGibbed or not tNameplate.bIsImportant and self._DB.profile.bOnlyImportantNPC
 		or (unitOwner:IsDead() and not self._DB.profile.bShowDead)
 
-	if bDontShowNameplate and not tNameplate.bIsTarget and not tAllowedNames[unitOwner:GetName()] then
+	if bDontShowNameplate and not tNameplate.bIsTarget then
 		return false
 	end
 
@@ -1356,17 +1347,14 @@ function ForgeUI_Nameplates:OnStyleChanged()
 	if self._DB.profile.tStyle.nStyle == 0 then
 		self._DB.profile.tStyle.nAbsorbHeight = 8
 		self._DB.profile.tStyle.nShieldHeight = 8
-
-		self.wndContainers["Container_Style"]:FindChild("nAbsorbHeight"):FindChild("EditBox"):SetText(8)
-		self.wndContainers["Container_Style"]:FindChild("nShieldHeight"):FindChild("EditBox"):SetText(8)
+		--self._DB.profile.crShield = "FF0699F3"
 	elseif self._DB.profile.tStyle.nStyle == 1 then
 		self._DB.profile.tStyle.nAbsorbHeight = 4
 		self._DB.profile.tStyle.nShieldHeight = 4
-
-		self.wndContainers["Container_Style"]:FindChild("nAbsorbHeight"):FindChild("EditBox"):SetText(4)
-		self.wndContainers["Container_Style"]:FindChild("nShieldHeight"):FindChild("EditBox"):SetText(4)
+		--self._DB.profile.crShield = "FFFFFFFF"
 	end
 
+	self:RefreshConfig()
 	self:LoadStyle_Nameplates()
 end
 
@@ -1549,16 +1537,30 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	G:API_AddColorBox(self, wndGeneral, "Absorb bar", self._DB.profile, "crAbsorb", { tMove = {200, 210}, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddColorBox(self, wndGeneral, "MOO bar", self._DB.profile, "crMOO", { tMove = {400, 210}, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddColorBox(self, wndGeneral, "Dead unit name", self._DB.profile, "crDead", { tMove = {400, 150}, fnCallback = self.LoadStyle_Nameplates })
+	
+	-- style options
+	local wndStyle = self.tOptionHolders["Style"]
+	
+	G:API_AddNumberBox(self, wndStyle, "Nameplate height", self._DB.profile.tStyle, "nBarHeight", { tMove = { 0, 30 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Nameplate width", self._DB.profile.tStyle, "nBarWidth", { tMove = { 0, 60 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Shield height", self._DB.profile.tStyle, "nShieldHeight", { tMove = { 200, 30 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Absorb height", self._DB.profile.tStyle, "nAbsorbHeight", { tMove = { 200, 60 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Castbar height", self._DB.profile.tStyle, "nCastHeight", { tMove = { 400, 30 }, fnCallback = self.LoadStyle_Nameplates })
+	
+	local wndComboStyle = G:API_AddComboBox(self, wndStyle, "Style", self._DB.profile.tStyle, "nStyle", { fnCallback = self.OnStyleChanged })
+	G:API_AddOptionToComboBox(self, wndComboStyle , "Modern", 0, {})
+	G:API_AddOptionToComboBox(self, wndComboStyle , "Classic", 1, {})
 
+	-- specific options
 	for k, v in pairs(self._DB.profile.tUnits) do
 		local wnd = self.tOptionHolders[k]
 		if wnd then
 			if v.nHpCutoff then
-				G:API_AddNumberBox(self, wnd, "HP cutoff", v, "nHpCutoff", { tMove = {400, 0} })
+				G:API_AddNumberBox(self, wnd, "HP cutoff", v, "nHpCutoff", { tMove = {400, 0}, strTooltip = "Show nameplate only if HP is below this percentage.", })
 			end			
 			
 			if v.crHpCutoff then
-				G:API_AddColorBox(self, wnd, "HP cutoff color", v, "crHpCutoff", { tMove = {400, 30} })
+				G:API_AddColorBox(self, wnd, "HP cutoff color", v, "crHpCutoff", { tMove = {400, 30}, })
 			end
 
 			if v.crName then
