@@ -43,7 +43,7 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 	})
 
 	-- delete profile
-	local wndCombo = G:API_AddComboBox(tModule, wndProfiles, "Delete profile", nil, nil, {
+	local wndCombo = G:API_AddComboBox(self, wndProfiles, "Delete profile", nil, nil, {
 		fnCallback = F.API_RemoveProfile,
 		tWidths = { 195, 0 },
 		tMove = { 400, 60 },
@@ -55,7 +55,7 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 	end
 
 	-- select profile
-	local wndCombo = G:API_AddComboBox(tModule, wndProfiles, "Select profile", nil, nil, {
+	local wndCombo = G:API_AddComboBox(self, wndProfiles, "Select profile", nil, nil, {
 		fnCallback = F.API_ChangeProfile,
 		tWidths = { 195, 0 },
 		tMove = { 0, 60 },
@@ -66,7 +66,7 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 	end
 
 	-- copy profile
-	local wndCombo = G:API_AddComboBox(tModule, wndProfiles, "Copy profile from", nil, nil, {
+	local wndCombo = G:API_AddComboBox(self, wndProfiles, "Copy profile from", nil, nil, {
 		fnCallback = F.API_CopyProfile,
 		tWidths = { 195, 0 },
 		tMove = { 200, 60 },
@@ -75,6 +75,12 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 	for k, v in pairs(F:API_GetProfiles()) do
 		G:API_AddOptionToComboBox(self, wndCombo, v, v)
 	end
+
+	-- reset profile
+	local wndButton = G:API_AddButton(self, wndProfiles, "Reset current profile", {
+		tOffsets = { 400, 125, 595, 150 },
+		fnCallback = F.API_ResetProfile,
+	})
 end
 
 ProfilesModule = F:API_NewModule(ProfilesModule)

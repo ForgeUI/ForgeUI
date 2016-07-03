@@ -66,6 +66,7 @@ local EnumWindowType = {
 	["ComboBoxItem"] = 6,
 	["EditBox"] = 7,
 	["NumberBox"] = 6,
+	["Button"] = 9,
 }
 
 -----------------------------------------------------------------------------------------------
@@ -118,6 +119,63 @@ function Gui:API_AddText(tModule, wnd, strText, tOptions)
 	wndText:SetAnchorOffsets(nLeft, nTop, nLeft + nTextWidth, nBottom)
 
 	return wndText
+end
+
+-----------------------------------------------------------------------------------------------
+-- Button
+-----------------------------------------------------------------------------------------------
+function Gui:API_AddButton(tModule, wnd, strText, tOptions)
+	-- defaults
+	local tData = {
+		tModule = tModule,
+		eType = EnumWindowType.Button,
+	}
+
+	local strFont = self.tDefaults.strFont
+
+	-- load wnnd
+	local wndButton = Apollo.LoadForm(xmlDoc, "ForgeUI_Button", wnd, self)
+
+	-- options
+	if tOptions then
+		if tOptions.tOffsets then
+			wndButton:SetAnchorOffsets(unpack(tOptions.tOffsets))
+		end
+
+		if tOptions.tMove then
+			local nLeft, nTop, nRight, nBottom = wndButton:GetAnchorOffsets()
+			nLeft = nLeft + tOptions.tMove[1]
+			nTop = nTop + tOptions.tMove[2]
+			nRight = nRight + tOptions.tMove[1]
+			nBottom = nBottom + tOptions.tMove[2]
+			wndButton:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+		end
+
+		if tOptions.strFont then
+			strFont = tOptions.strFont
+		end
+
+		if tOptions.fnCallback then
+			tData.fnCallback = tOptions.fnCallback
+		end
+	end
+
+	-- set wnd
+	wndButton:SetText(strText)
+	wndButton:SetFont(strFont)
+	wndButton:AddEventHandler("ButtonSignal", "OnButtonSignal", self)
+	wndButton:SetData(tData)
+
+	return wndButton
+end
+
+function Gui:OnButtonSignal(wndControl)
+	local tData = wndControl:GetData()
+	if tData == nil then return end
+
+	if tData.fnCallback ~= nil then
+		tData.fnCallback()
+	end
 end
 
 -----------------------------------------------------------------------------------------------

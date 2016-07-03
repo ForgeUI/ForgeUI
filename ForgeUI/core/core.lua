@@ -256,6 +256,7 @@ function F:API_ChangeProfile(...) Core.db:SetProfile(...) end
 function F:API_CopyProfile(...) Core.db:CopyProfile(...) end
 function F:API_RemoveProfile(...) Core.db:DeleteProfile(...) end
 function F:API_NewProfile(...) Core.db:SetProfile(...) end
+function F:API_ResetProfile(...) Core.db:ResetProfile(...) end
 
 function F:API_GetClassColor(unit)
 	if type(unit) == "string" then

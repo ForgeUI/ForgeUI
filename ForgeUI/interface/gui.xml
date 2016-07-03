@@ -47,4 +47,5 @@
             </Control>
         </Control>
     </Form>
+    <Form Class="Button" Base="ForgeUI_Button" Font="Nameplates" ButtonType="PushButton" RadioGroup="" LAnchorPoint="0" LAnchorOffset="5" TAnchorPoint="0" TAnchorOffset="5" RAnchorPoint="0" RAnchorOffset="80" BAnchorPoint="0" BAnchorOffset="30" DT_VCENTER="1" DT_CENTER="1" BGColor="UI_BtnBGDefault" TextColor="UI_BtnTextDefault" NormalTextColor="UI_BtnTextDefault" PressedTextColor="UI_BtnTextDefault" FlybyTextColor="UI_BtnTextDefault" PressedFlybyTextColor="UI_BtnTextDefault" DisabledTextColor="UI_BtnTextDefault" TooltipType="OnCursor" Name="ForgeUI_Button" Border="0" Picture="0" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="1" TooltipColor="" FocusedTextColor="ffffffff" Text="Button" Tooltip="" TextId=""/>
 </Forms>
