@@ -39,14 +39,14 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 		strHint = "New profile (enter to confirm)",
 		tWidths = { 200, 0 },
 		tMove = { 0, 120 },
-		fnCallbackReturn = self.OnNewProfile,
+		fnCallbackReturn = F.API_NewProfile,
 	})
 
 	-- delete profile
 	local wndCombo = G:API_AddComboBox(tModule, wndProfiles, "Delete profile", nil, nil, {
-		fnCallback = self.OnDeleteProfile,
+		fnCallback = F.API_RemoveProfile,
 		tWidths = { 200, 0 },
-		tMove = { 205, 60 },
+		tMove = { 410, 60 },
 		bInnerText = true,
 	})
 
@@ -56,7 +56,7 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 
 	-- select profile
 	local wndCombo = G:API_AddComboBox(tModule, wndProfiles, "Select profile", nil, nil, {
-		fnCallback = self.OnSelectProfile,
+		fnCallback = F.API_ChangeProfile,
 		tWidths = { 200, 0 },
 		tMove = { 0, 60 },
 		bInnerText = true,
@@ -64,18 +64,17 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 	for k, v in pairs(F:API_GetProfiles()) do
 		G:API_AddOptionToComboBox(self, wndCombo, v, v)
 	end
-end
 
-function ProfilesModule:OnSelectProfile(vValue, strKey)
-	F:API_ChangeProfile(vValue)
-end
-
-function ProfilesModule:OnDeleteProfile(vValue, strKey)
-	F:API_RemoveProfile(vValue)
-end
-
-function ProfilesModule:OnNewProfile(strValue, strKey)
-	F:API_NewProfile(strValue)
+	-- copy profile
+	local wndCombo = G:API_AddComboBox(tModule, wndProfiles, "Copy profile from", nil, nil, {
+		fnCallback = F.API_CopyProfile,
+		tWidths = { 200, 0 },
+		tMove = { 205, 60 },
+		bInnerText = true,
+	})
+	for k, v in pairs(F:API_GetProfiles()) do
+		G:API_AddOptionToComboBox(self, wndCombo, v, v)
+	end
 end
 
 ProfilesModule = F:API_NewModule(ProfilesModule)

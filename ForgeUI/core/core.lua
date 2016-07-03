@@ -111,6 +111,7 @@ function F:API_NewAddon(tAddon, tParams)
 	Core.db.RegisterCallback(addon, "OnProfileChanged", "RefreshConfig")
 	Core.db.RegisterCallback(addon, "OnProfileDeleted", "RefreshConfig")
 	Core.db.RegisterCallback(addon, "OnProfileReset", "RefreshConfig")
+	Core.db.RegisterCallback(addon, "OnProfileCopied", "RefreshConfig")
 
 	Apollo.RegisterAddon(addon)
 
@@ -192,6 +193,7 @@ function F:API_NewModule(tModule, tParams)
 	Core.db.RegisterCallback(module, "OnProfileChanged", "RefreshConfig")
 	Core.db.RegisterCallback(module, "OnProfileDeleted", "RefreshConfig")
 	Core.db.RegisterCallback(module, "OnProfileReset", "RefreshConfig")
+	Core.db.RegisterCallback(module, "OnProfileCopied", "RefreshConfig")
 
 	tModules[tModule._NAME] = {
         ["tModule"] = module,
@@ -251,6 +253,7 @@ end
 function F:API_GetProfileName() return Core.db:GetCurrentProfile() end
 function F:API_GetProfiles() return Core.db:GetProfiles() end
 function F:API_ChangeProfile(...) Core.db:SetProfile(...) end
+function F:API_CopyProfile(...) Core.db:CopyProfile(...) end
 function F:API_RemoveProfile(...) Core.db:DeleteProfile(...) end
 function F:API_NewProfile(...) Core.db:SetProfile(...) end
 
