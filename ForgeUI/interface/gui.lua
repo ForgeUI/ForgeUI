@@ -208,9 +208,12 @@ function Gui:API_AddCheckBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 		tModule = tModule,
 		tSettings = tSettings,
 		strKey = strKey,
-		bCheck = tSettings[strKey],
 		eType = EnumWindowType.CheckBox,
 	}
+	
+	if tSettings ~= nil then
+		tData.bCheck = tSettings[strKey]
+	end
 
 	local strFont = self.tDefaults.strFont
 	local strText = strText

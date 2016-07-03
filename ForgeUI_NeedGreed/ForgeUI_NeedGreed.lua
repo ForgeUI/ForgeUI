@@ -73,7 +73,7 @@ end
 
 function ForgeUI_NeedGreed:OnDocLoaded()
 	self.wndContainer = Apollo.LoadForm(self.xmlDoc, "Container", nil, self)
-	F:API_RegisterMover(self, self.wndContainer, "NeedGreed", "NeedGreed container", "general", {})
+	F:API_RegisterMover(self, self.wndContainer, "NeedGreed", "NeedGreed", "general", {})
 end
 
 -----------------------------------------------------------------------------------------------

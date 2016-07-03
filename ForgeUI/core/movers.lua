@@ -23,7 +23,8 @@ local Movers = {
 
 		},
 		global = {
-			nScope = 0,
+			nScope = 1,
+			nGridSize = 25,
 		}
 	}
 }
@@ -142,20 +143,31 @@ function Movers:ForgeAPI_Init()
 	self.wndMoversForm = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_MoversForm", nil, self)
 	self.wndMoversForm:FindChild("SaveButton"):AddEventHandler("ButtonSignal", "LockMovers", self)
 	self.wndMoversForm:FindChild("CancelButton"):AddEventHandler("ButtonSignal", "CancelChanges", self)
+	self.wndGrid = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_MoversGrid", "FixedHudStratumLow", self)
 
 	local wndScope = G:API_AddComboBox(self, self.wndMoversForm:FindChild("Scope"), "Scope", nil, nil, {
 		tOffsets = { 0, 0, 200, 25 },
 		fnCallback = Movers.OnScopeSet,
 	})
-	G:API_AddOptionToComboBox(self, wndScope, "All", "all", { bDefault = true })
-	G:API_AddOptionToComboBox(self, wndScope, "General", "general")
+	G:API_AddOptionToComboBox(self, wndScope, "All", "all")
+	G:API_AddOptionToComboBox(self, wndScope, "General", "general", { bDefault = true })
 	G:API_AddOptionToComboBox(self, wndScope, "Misc", "misc")
-
+	
+	self.wndShowGrid = G:API_AddCheckBox(self, self.wndMoversForm:FindChild("Grid"), "Show grid", nil, nil, {
+		fnCallback = (function(...) self.wndGrid:Show(not self.wndGrid:IsShown(), true) end),
+	})
+	
+	G:API_AddNumberBox(self, self.wndMoversForm:FindChild("Grid"), "Grid size", self._DB.global, "nGridSize", {
+		tMove = { 150, 0 }, fnCallback = self.GenerateGrid,
+	})
+		
 	for k, v in pairs(tScopes["all"]) do
 		UpdateParentPosition(v)
 
 		v:Show(false, true)
 	end
+	
+	self:GenerateGrid()
 end
 
 function Movers:ForgeAPI_LoadSettings()
@@ -175,7 +187,7 @@ function Movers:UnlockMovers()
 		F:API_GetStratum(v):Show(false, true)
 	end
 
-	for k, v in pairs(tScopes["all"]) do
+	for k, v in pairs(tScopes["general"]) do
 		UpdateMoverPosition(v)
 
 		v:Show(true, true)
@@ -185,6 +197,8 @@ end
 function Movers:LockMovers()
 	F:API_ShowMainWindow(true)
 	self.wndMoversForm:Show(false, true)
+	self.wndGrid:Show(false, true)
+	self.wndShowGrid:FindChild("CheckBox"):SetCheck(false)
 
 	for _, v in pairs(F:API_GetStrata()) do
 		F:API_GetStratum(v):Show(true, true)
@@ -200,6 +214,8 @@ end
 function Movers:CancelChanges()
 	F:API_ShowMainWindow(true)
 	self.wndMoversForm:Show(false, true)
+	self.wndGrid:Show(false, true)
+	self.wndShowGrid:FindChild("CheckBox"):SetCheck(false)
 
 	for _, v in pairs(F:API_GetStrata()) do
 		F:API_GetStratum(v):Show(true, true)
@@ -219,6 +235,56 @@ function Movers:OnScopeSet(strScope)
 
 	for k, v in pairs(tScopes[strScope]) do
 		v:Show(true, true)
+	end
+end
+
+function Movers:GenerateGrid()
+	self.wndGrid:DestroyAllPixies()
+	
+	local nHeight = self.wndGrid:GetHeight()
+	local nWidth = self.wndGrid:GetWidth()
+	local nStep = self._DB.global.nGridSize
+	
+	local tPixie = {}
+	
+	for i = 0, nWidth / 2, nStep do
+		tPixie = {
+			bLine = false,
+			strSprite = "WhiteFill",
+			cr = "FF2D2D2D",
+			loc = {
+				fPoints = {0, 0, 0, 1},
+				nOffsets = {nWidth / 2 + i, 0, nWidth / 2 + i + 1, 0},
+			},
+		}
+		
+		if i == 0 then
+			tPixie.cr = "FFFF0000"
+		end
+		
+		self.wndGrid:AddPixie(tPixie)
+		tPixie.loc.nOffsets = {nWidth / 2 - (i + 1), 0, nWidth / 2 - i, 0}
+		self.wndGrid:AddPixie(tPixie)
+	end
+	
+	for i = 0, nHeight / 2, nStep do
+		tPixie = {
+			bLine = false,
+			strSprite = "WhiteFill",
+			cr = "FF2D2D2D",
+			loc = {
+				fPoints = {0, 0, 1, 0},
+				nOffsets = {0, nHeight / 2 + i, 0, nHeight / 2 + i + 1},
+			},
+		}
+		
+		if i == 0 then
+			tPixie.cr = "FFFF0000"
+		end
+		
+		self.wndGrid:AddPixie(tPixie)
+		tPixie.loc.nOffsets = {0, nHeight / 2 - (i + 1), 0, nHeight / 2 - i}
+		self.wndGrid:AddPixie(tPixie)
 	end
 end
 
