@@ -1588,7 +1588,7 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 			
 			
 			if v.bHideOnShield ~= nil then
-				G:API_AddCheckBox(self, wnd, "Hide on full shield", v, "bHideOnShield", { tMove = { 400, 200 } } )
+				G:API_AddCheckBox(self, wnd, "Hide on full shield", v, "bHideOnShield", { tMove = { 400, 210 } } )
 			end
 
 
