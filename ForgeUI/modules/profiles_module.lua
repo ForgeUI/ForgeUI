@@ -49,9 +49,10 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 		tMove = { 400, 60 },
 		bInnerText = true,
 	})
-
 	for k, v in pairs(F:API_GetProfiles()) do
-		G:API_AddOptionToComboBox(self, wndCombo, v, v)
+		if v ~= F:API_GetProfileName() then
+			G:API_AddOptionToComboBox(self, wndCombo, v, v)
+		end
 	end
 
 	-- select profile
@@ -62,7 +63,9 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 		bInnerText = true,
 	})
 	for k, v in pairs(F:API_GetProfiles()) do
-		G:API_AddOptionToComboBox(self, wndCombo, v, v)
+		if v ~= F:API_GetProfileName() then
+			G:API_AddOptionToComboBox(self, wndCombo, v, v)
+		end
 	end
 
 	-- copy profile
@@ -73,7 +76,9 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 		bInnerText = true,
 	})
 	for k, v in pairs(F:API_GetProfiles()) do
-		G:API_AddOptionToComboBox(self, wndCombo, v, v)
+		if v ~= F:API_GetProfileName() then
+			G:API_AddOptionToComboBox(self, wndCombo, v, v)
+		end
 	end
 
 	-- reset profile
@@ -81,6 +86,8 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 		tOffsets = { 400, 125, 595, 150 },
 		fnCallback = F.API_ResetProfile,
 	})
+
+	G:API_AddText()
 end
 
 ProfilesModule = F:API_NewModule(ProfilesModule)

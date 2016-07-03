@@ -127,19 +127,23 @@ function F:API_NewAddon(tAddon, tParams)
 
 	if addon.OnDocLoaded then
 		GeminiHook:PostHook(addon, "OnDocLoaded", function()
-			local bSucces, sErrMsg = pcall(addon.ForgeAPI_LoadSettings, addon)
-			if not bSucces then Print(sErrMsg) end
+			addon:ForgeAPI_LoadSettings()
+			--local bSucces, sErrMsg = pcall(addon.ForgeAPI_LoadSettings, addon)
+			--if not bSucces then Print(sErrMsg) end
 
-			local bSucces, sErrMsg = pcall(addon.ForgeAPI_PopulateOptions, addon)
-			if not bSucces then Print(sErrMsg) end
+			addon:ForgeAPI_PopulateOptions()
+			--local bSucces, sErrMsg = pcall(addon.ForgeAPI_PopulateOptions, addon)
+			--if not bSucces then Print(sErrMsg) end
 		end)
 		tAddons[tAddon._NAME].bHooked = true
 	elseif bInit then
-		local bSucces, sErrMsg = pcall(addon.ForgeAPI_LoadSettings, addon)
-		if not bSucces then Print(sErrMsg) end
+		addon:ForgeAPI_LoadSettings()
+		--local bSucces, sErrMsg = pcall(addon.ForgeAPI_LoadSettings, addon)
+		--if not bSucces then Print(sErrMsg) end
 
-		local bSucces, sErrMsg = pcall(addon.ForgeAPI_PopulateOptions, addon)
-		if not bSucces then Print(sErrMsg) end
+		addon:ForgeAPI_PopulateOptions()
+		--local bSucces, sErrMsg = pcall(addon.ForgeAPI_PopulateOptions, addon)
+		--if not bSucces then Print(sErrMsg) end
 	end
 
 	return addon
@@ -207,19 +211,23 @@ function F:API_NewModule(tModule, tParams)
 
 	if module.OnDocLoaded then
 		GeminiHook:PostHook(module, "OnDocLoaded", function()
-			local bSucces, sErrMsg = pcall(module.ForgeAPI_LoadSettings, module)
-			if not bSucces then Print(sErrMsg) end
+			module:ForgeAPI_LoadSettings()
+			--local bSucces, sErrMsg = pcall(module.ForgeAPI_LoadSettings, module)
+			--if not bSucces then Print(sErrMsg) end
 
-			local bSucces, sErrMsg = pcall(module.ForgeAPI_PopulateOptions, module)
-			if not bSucces then Print(sErrMsg) end
+			module:ForgeAPI_PopulateOptions()
+			--local bSucces, sErrMsg = pcall(module.ForgeAPI_PopulateOptions, module)
+			--if not bSucces then Print(sErrMsg) end
 		end)
 		tModules[tModule._NAME].bHooked = true
 	elseif bInit then
-		local bSucces, sErrMsg = pcall(module.ForgeAPI_LoadSettings, module)
-		if not bSucces then Print(sErrMsg) end
+		module:ForgeAPI_LoadSettings()
+		--local bSucces, sErrMsg = pcall(module.ForgeAPI_LoadSettings, module)
+		--if not bSucces then Print(sErrMsg) end
 
-		local bSucces, sErrMsg = pcall(module.ForgeAPI_PopulateOptions, module)
-		if not bSucces then Print(sErrMsg) end
+		module:ForgeAPI_PopulateOptions()
+		--local bSucces, sErrMsg = pcall(module.ForgeAPI_PopulateOptions, module)
+		--if not bSucces then Print(sErrMsg) end
 	end
 
 	return module
@@ -302,11 +310,13 @@ function F:Init()
 			v.tModule.bInit = true
 
 			if not v.bHooked then
-				local bSucces, sErrMsg = pcall(v.tModule.ForgeAPI_LoadSettings, v.tModule)
-				if not bSucces then Print(sErrMsg) end
+				v.tModule:ForgeAPI_LoadSettings()
+				--local bSucces, sErrMsg = pcall(v.tModule.ForgeAPI_LoadSettings, v.tModule)
+				--if not bSucces then Print(sErrMsg) end
 
-				local bSucces, sErrMsg = pcall(v.tModule.ForgeAPI_PopulateOptions, v.tModule)
-				if not bSucces then Print(sErrMsg) end
+				v.tModule:ForgeAPI_PopulateOptions()
+				--local bSucces, sErrMsg = pcall(v.tModule.ForgeAPI_PopulateOptions, v.tModule)
+				--if not bSucces then Print(sErrMsg) end
 			end
 		end
 	end
@@ -330,11 +340,13 @@ function F:Init()
 			v.tAddon.bInit = true
 
 			if not v.bHooked then
-				local bSucces, sErrMsg = pcall(v.tAddon.ForgeAPI_LoadSettings, v.tAddon)
-				if not bSucces then Print(sErrMsg) end
+				v.tAddon:ForgeAPI_LoadSettings()
+				--local bSucces, sErrMsg = pcall(v.tAddon.ForgeAPI_LoadSettings, v.tAddon)
+				--if not bSucces then Print(sErrMsg) end
 
-				local bSucces, sErrMsg = pcall(v.tAddon.ForgeAPI_PopulateOptions, v.tAddon)
-				if not bSucces then Print(sErrMsg) end
+				v.tAddon:ForgeAPI_PopulateOptions()
+				--local bSucces, sErrMsg = pcall(v.tAddon.ForgeAPI_PopulateOptions, v.tAddon)
+				--if not bSucces then Print(sErrMsg) end
 			end
 		end
 	end
