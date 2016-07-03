@@ -49,7 +49,7 @@ local ForgeUI_ActionBars = {
 					strName = "Utility bar 1",
 					strSnapTo = "bottom",
 					tMove = { -296, 0 },
-					tSpecialButtons = { 3, 2, 1 },
+					tSpecialButtons = { },
 					nButtonSize = 50,
 					nRows = 1,
 					nColumns = 3,
@@ -65,7 +65,7 @@ local ForgeUI_ActionBars = {
 					strName = "Utility bar 2",
 					strSnapTo = "bottom",
 					tMove = { 296, 0 },
-					tSpecialButtons = { 4, 5, 6 },
+					tSpecialButtons = { },
 					nButtonSize = 50,
 					nRows = 1,
 					nColumns = 3,
@@ -77,6 +77,38 @@ local ForgeUI_ActionBars = {
 					bShow = true,
 				},
 				[4] = {
+					strKey = "ForgeUI_UtilBarThree",
+					strName = "Utility bar 3",
+					strSnapTo = "bottom",
+					tMove = { -296, -55 },
+					tSpecialButtons = { },
+					nButtonSize = 50,
+					nRows = 1,
+					nColumns = 3,
+					nMinId = 0,
+					nButtonPaddingVer = 3,
+					nButtonPaddingHor = 3,
+					bDrawHotkey = true,
+					bDrawShortcutBottom = false,
+					bShow = true,
+				},
+				[5] = {
+					strKey = "ForgeUI_UtilBarFour",
+					strName = "Utility bar 4",
+					strSnapTo = "bottom",
+					tMove = { 296, -55 },
+					tSpecialButtons = { },
+					nButtonSize = 50,
+					nRows = 1,
+					nColumns = 3,
+					nMinId = 0,
+					nButtonPaddingVer = 3,
+					nButtonPaddingHor = 3,
+					bDrawHotkey = true,
+					bDrawShortcutBottom = false,
+					bShow = true,
+				},
+				[6] = {
 					strKey = "ForgeUI_BarOne",
 					strName = "Bar 1",
 					strSnapTo = "right",
@@ -93,7 +125,7 @@ local ForgeUI_ActionBars = {
 					bShow = true,
 					bShowMouseover = false,
 				},
-				[5] = {
+				[7] = {
 					strKey = "ForgeUI_BarTwo",
 					strName = "Bar 2",
 					strSnapTo = "right",
@@ -110,7 +142,7 @@ local ForgeUI_ActionBars = {
 					bShow = false,
 					bShowMouseover = false,
 				},
-				[6] = {
+				[8] = {
 					strKey = "ForgeUI_BarThree",
 					strName = "Bar 3",
 					strSnapTo = "left",
@@ -127,7 +159,7 @@ local ForgeUI_ActionBars = {
 					bShowMouseover = false,
 					bShow = false,
 				},
-				[7] = {
+				[9] = {
 					strKey = "ForgeUI_ShortcutBar",
 					strName = "Shortcut bar",
 					strSnapTo = "top",
@@ -165,7 +197,8 @@ local tSnapToOffsets = {
 	["left"] = { 5, 0, 5, 0 },
 }
 
-local tSpecialButtons = {} -- defined at the end of the file
+local tSpecialButtons
+
 -----------------------------------------------------------------------------------------------
 -- Local
 -----------------------------------------------------------------------------------------------
@@ -188,6 +221,18 @@ function ForgeUI_ActionBars:ForgeAPI_Init()
 end
 
 function ForgeUI_ActionBars:ForgeAPI_LoadSettings()
+	-- TODO: This is one fucking ugly hack
+	-- If GeminiDB gets { 3, 2, 1 } as default, and then user removes some value from this table
+	-- GeminiDB still uses this table as base and than pastes updated table on top of it.
+	-- So If i remove 2 from default and reload table new table is { 3, 1, 1 } instead of { 3, 1 }
+	-- FIX IT !!!
+	if #self._DB.profile.tFrames[2].tSpecialButtons == 0 then
+		self._DB.profile.tFrames[2].tSpecialButtons = { 3, 2, 1 }
+	end
+	if #self._DB.profile.tFrames[3].tSpecialButtons == 0 then
+		self._DB.profile.tFrames[3].tSpecialButtons = { 4, 5, 6 }
+	end
+
 	for _, tBar in pairs(self._DB.profile.tFrames) do
 		self:SetupBar(tBar, false, true)
 		self:SetupButtons(tBar)
@@ -729,61 +774,6 @@ function ForgeUI_ActionBars:OnGenerateTooltip(wndControl, wndHandler, eType, arg
         end
 end
  
-function ForgeUI_ActionBars:OnSpellBtn( wndHandler, wndControl, eMouseButton )
-        local sType = wndControl:GetParent():GetData().sType
-        if sType == "stance" then
-                self.wndStanceBtn:FindChild("Popup"):Show(false, true)
-                GameLib.SetCurrentClassInnateAbilityIndex(wndHandler:GetData())
-        elseif sType == "mount" then
-                self.wndMountBtn:FindChild("Popup"):Show(false, true)
-                self.tSettings.nSelectedMount = wndControl:GetData():GetId()
-                GameLib.SetShortcutMount(self.tSettings.nSelectedMount)
-        elseif sType == "potion" then
-                self.wndPotionBtn:FindChild("Popup"):Show(false, true)
-                self.tSettings.nSelectedPotion = wndControl:GetData():GetItemId()
-                GameLib.SetShortcutPotion(wndControl:GetData():GetItemId())
-        elseif sType == "path" then
-                local tActionSet = ActionSetLib.GetCurrentActionSet()
-               
-                self.tSettings.nSelectedPath = wndControl:GetData()
-               
-                Event_FireGenericEvent("PathAbilityUpdated", self.tSettings.nSelectedPath)
-                tActionSet[10] = self.tSettings.nSelectedPath
-                ActionSetLib.RequestActionSetChanges(tActionSet)
-               
-                self.wndPathBtn:FindChild("Popup"):Show(false, true)
-        end
-end
- 
----------------------------------------------------------------------------------------------------
--- ForgeUI_BarButton Functions
----------------------------------------------------------------------------------------------------
- 
-function ForgeUI_ActionBars:BarButton_OnMouseDown( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
-        if wndControl:GetName() == "ForgeUI_BarButton" and eMouseButton == 1 then
-                wndControl:FindChild("Popup"):Show(true, true)
-               
-                self:FillMounts(self.wndMountBtn)
-                self:FillStances(self.wndStanceBtn)
-                self:FillPath(self.wndPathBtn)
-                self:FillPotions(self.wndPotionBtn)
-                self:FillRecalls(self.wndRecallBtn)
-        end
-end
- 
-function ForgeUI_ActionBars:RecallBtn_OnButtonDown( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
-        local wnd = wndControl:GetParent():GetParent():GetParent()
-        if wndControl:GetName() == "GCBar" and eMouseButton == 1 then
-                GameLib.SetDefaultRecallCommand(wndControl:GetData())
-                wnd:FindChild("GCBar"):SetContentId(wndControl:GetData())
-        end
-        wnd:FindChild("Popup"):Show(false, true)
-end
-
------------------------------------------------------------------------------------------------
--- ForgeUI_ActionBars Hide out of combat
------------------------------------------------------------------------------------------------
-
 function ForgeUI_ActionBars:HideActionBars()
 	for key, tOptions in pairs(self.tActionBars) do
 		if tOptions.bCanBeHidden then
@@ -962,6 +952,34 @@ function ForgeUI_ActionBars:ForgeAPI_PopulateOptions()
 		if v.nButtonPaddingVer ~= nil then
 			G:API_AddNumberBox(self, wnd, "Vertical padding ", v, "nButtonPaddingVer", { tMove = {400, 120},
 				fnCallback = function(...) self:PositionButtons(v, true) end })
+		end
+
+		local wndAddCombo = G:API_AddComboBox(self, wnd, "Add button", nil, nil, { tMove = {0, 180},
+			fnCallback = (function(module, value, key)
+				table.insert(v.tSpecialButtons, value)
+				self:ForgeAPI_LoadSettings()
+				self:RefreshConfig()
+			end)
+		})
+		for i = 1, #tSpecialButtons do
+			G:API_AddOptionToComboBox(self, wndAddCombo, tSpecialButtons[i].strName, i)
+		end
+
+		local wndRemoveCombo = G:API_AddComboBox(self, wnd, "Remove button", nil, nil, { tMove = {200, 180},
+			fnCallback = (function(module, value, key)
+				for i = 0, #v.tSpecialButtons do
+					if v.tSpecialButtons[i] == value then
+						table.remove(v.tSpecialButtons, i)
+					end
+				end
+				self:ForgeAPI_LoadSettings()
+				self:RefreshConfig()
+			end)
+		})
+		if v.tSpecialButtons ~= nil then
+			for _, val in pairs(v.tSpecialButtons) do
+				G:API_AddOptionToComboBox(self, wndRemoveCombo, tSpecialButtons[val].strName, val)
+			end
 		end
 	end
 end
