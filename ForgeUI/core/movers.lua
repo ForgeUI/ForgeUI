@@ -154,8 +154,19 @@ function Movers:ForgeAPI_Init()
 	G:API_AddOptionToComboBox(self, wndScope, "Misc", "misc")
 	
 	self.wndShowGrid = G:API_AddCheckBox(self, self.wndMoversForm:FindChild("Grid"), "Show grid", nil, nil, {
-		fnCallback = (function(...) self.wndGrid:Show(not self.wndGrid:IsShown(), true) end),
-	})
+		fnCallback = (function(...)
+			self.wndGrid:Show(self.wndShowGrid:IsChecked() or self.wndShowFill:IsChecked(), true)
+			self:GenerateGrid()
+		end),
+	}):FindChild("CheckBox")
+
+	self.wndShowFill = G:API_AddCheckBox(self, self.wndMoversForm:FindChild("Grid"), "Fill background", nil, nil, {
+		tMove = { 0, 30 },
+		fnCallback = (function(...)
+			self.wndGrid:Show(self.wndShowGrid:IsChecked() or self.wndShowFill:IsChecked(), true)
+			self:GenerateGrid()
+		end),
+	}):FindChild("CheckBox")
 	
 	G:API_AddNumberBox(self, self.wndMoversForm:FindChild("Grid"), "Grid size", self._DB.global, "nGridSize", {
 		tMove = { 150, 0 }, fnCallback = self.GenerateGrid,
@@ -198,7 +209,8 @@ function Movers:LockMovers()
 	F:API_ShowMainWindow(true)
 	self.wndMoversForm:Show(false, true)
 	self.wndGrid:Show(false, true)
-	self.wndShowGrid:FindChild("CheckBox"):SetCheck(false)
+	self.wndShowGrid:SetCheck(false)
+	self.wndShowFill:SetCheck(false)
 
 	for _, v in pairs(F:API_GetStrata()) do
 		F:API_GetStratum(v):Show(true, true)
@@ -215,7 +227,8 @@ function Movers:CancelChanges()
 	F:API_ShowMainWindow(true)
 	self.wndMoversForm:Show(false, true)
 	self.wndGrid:Show(false, true)
-	self.wndShowGrid:FindChild("CheckBox"):SetCheck(false)
+	self.wndShowGrid:SetCheck(false)
+	self.wndShowFill:SetCheck(false)
 
 	for _, v in pairs(F:API_GetStrata()) do
 		F:API_GetStratum(v):Show(true, true)
@@ -245,46 +258,59 @@ function Movers:GenerateGrid()
 	local nWidth = self.wndGrid:GetWidth()
 	local nStep = self._DB.global.nGridSize
 	
-	local tPixie = {}
-	
-	for i = 0, nWidth / 2, nStep do
-		tPixie = {
+	if self.wndShowFill:IsChecked() then
+		self.wndGrid:AddPixie({
 			bLine = false,
 			strSprite = "WhiteFill",
-			cr = "FF2D2D2D",
+			cr = "FFFFFFFF",
 			loc = {
-				fPoints = {0, 0, 0, 1},
-				nOffsets = {nWidth / 2 + i, 0, nWidth / 2 + i + 1, 0},
+				fPoints = {0, 0, 1, 1},
+				nOffsets = {0, 0, 0, 0},
 			},
-		}
-		
-		if i == 0 then
-			tPixie.cr = "FFFF0000"
-		end
-		
-		self.wndGrid:AddPixie(tPixie)
-		tPixie.loc.nOffsets = {nWidth / 2 - (i + 1), 0, nWidth / 2 - i, 0}
-		self.wndGrid:AddPixie(tPixie)
+		})
 	end
-	
-	for i = 0, nHeight / 2, nStep do
-		tPixie = {
-			bLine = false,
-			strSprite = "WhiteFill",
-			cr = "FF2D2D2D",
-			loc = {
-				fPoints = {0, 0, 1, 0},
-				nOffsets = {0, nHeight / 2 + i, 0, nHeight / 2 + i + 1},
-			},
-		}
-		
-		if i == 0 then
-			tPixie.cr = "FFFF0000"
+
+	if self.wndShowGrid:IsChecked() then
+		local tPixie = {}
+		for i = 0, nWidth / 2, nStep do
+			tPixie = {
+				bLine = false,
+				strSprite = "WhiteFill",
+				cr = "FF00FF00",
+				loc = {
+					fPoints = {0, 0, 0, 1},
+					nOffsets = {nWidth / 2 + i, 0, nWidth / 2 + i + 1, 0},
+				},
+			}
+			
+			if i == 0 then
+				tPixie.cr = "FFFF0000"
+			end
+			
+			self.wndGrid:AddPixie(tPixie)
+			tPixie.loc.nOffsets = {nWidth / 2 - (i + 1), 0, nWidth / 2 - i, 0}
+			self.wndGrid:AddPixie(tPixie)
 		end
 		
-		self.wndGrid:AddPixie(tPixie)
-		tPixie.loc.nOffsets = {0, nHeight / 2 - (i + 1), 0, nHeight / 2 - i}
-		self.wndGrid:AddPixie(tPixie)
+		for i = 0, nHeight / 2, nStep do
+			tPixie = {
+				bLine = false,
+				strSprite = "WhiteFill",
+				cr = "FF00FF00",
+				loc = {
+					fPoints = {0, 0, 1, 0},
+					nOffsets = {0, nHeight / 2 + i, 0, nHeight / 2 + i + 1},
+				},
+			}
+			
+			if i == 0 then
+				tPixie.cr = "FFFF0000"
+			end
+			
+			self.wndGrid:AddPixie(tPixie)
+			tPixie.loc.nOffsets = {0, nHeight / 2 - (i + 1), 0, nHeight / 2 - i}
+			self.wndGrid:AddPixie(tPixie)
+		end
 	end
 end
 
