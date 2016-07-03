@@ -86,8 +86,6 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 		tOffsets = { 400, 125, 595, 150 },
 		fnCallback = F.API_ResetProfile,
 	})
-
-	G:API_AddText()
 end
 
 ProfilesModule = F:API_NewModule(ProfilesModule)
