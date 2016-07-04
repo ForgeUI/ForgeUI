@@ -95,6 +95,7 @@ local ForgeUI_Nameplates = {
 				nShieldHeight = 8,
 				nAbsorbHeight = 8,
 				nCastHeight = 7,
+				strFullSprite = "ForgeUI_Smooth",
 			},
 			tUnits = {
 				Target = {
@@ -1300,6 +1301,9 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 
 	wnd.healthShieldFill:SetBarColor(self._DB.profile.crShield)
 	wnd.healthAbsorbFill:SetBarColor(self._DB.profile.crAbsorb)
+	wnd.healthHealthFill:SetFullSprite(self._DB.profile.tStyle.strFullSprite)
+	wnd.healthShieldFill:SetFullSprite(self._DB.profile.tStyle.strFullSprite)
+	wnd.healthAbsorbFill:SetFullSprite(self._DB.profile.tStyle.strFullSprite)
 
 	if tNameplate.strUnitType == "HostileNPC" then
 		wnd.indicator:SetBGColor(self._DB.profile.tUnits["HostileNPC"].crThreatIndicator)
@@ -1589,6 +1593,13 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	local wndComboStyle = G:API_AddComboBox(self, wndStyle, "Style", self._DB.profile.tStyle, "nStyle", { fnCallback = self.OnStyleChanged })
 	G:API_AddOptionToComboBox(self, wndComboStyle , "Modern", 0, {})
 	G:API_AddOptionToComboBox(self, wndComboStyle , "Classic", 1, {})
+
+	local wndCombo = G:API_AddComboBox(self, wndStyle, "Texture", self._DB.profile.tStyle, "strFullSprite", { tMove = {0, 90}, tWidths = { 150, 50 },
+		fnCallback = self.LoadStyle_Nameplates
+	})
+	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Smooth","ForgeUI_Smooth", {})
+	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Flat", "ForgeUI_Flat", {})
+	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Minimalist", "ForgeUI_Minimalist", {})
 
 	-- specific options
 	for k, v in pairs(self._DB.profile.tUnits) do
