@@ -187,9 +187,12 @@ function Gui:API_AddColorBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 		tModule = tModule,
 		tSettings = tSettings,
 		strKey = strKey,
-		strColor = tSettings[strKey],
 		eType = EnumWindowType.ColorBox,
 	}
+
+	if tSettings ~= nil then
+		tData.strColor = tSettings[strKey]
+	end
 
 	local strFont = self.tDefaults.strFont
 	local strText = strText
@@ -548,6 +551,14 @@ function Gui:API_EditBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 	end
 
 	return wndEditBox
+end
+
+function Gui:OnEditBoxChanged(wndHandler, wndControl, strText)
+	local tData = wndControl:GetParent():GetParent():GetData()
+
+	if tData.tModule and tData.fnCallback then
+		tData.fnCallback(tData.tModule, strText, tData.strKey)
+	end
 end
 
 function Gui:OnEditBoxReturn(wndHandler, wndControl, strText)

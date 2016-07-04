@@ -36,6 +36,15 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 		string.format("<T TextColor=\"%s\" Font=\"%s\">%s</T>", "FFFFFFFF", "Nameplates", "Current profile: ")
 		.. string.format("<T TextColor=\"%s\" Font=\"%s\">%s</T>", "FFFF0000", "Nameplates", tostring(F:API_GetProfileName())))
 
+	G:API_AddText(self, wndProfiles, "Macro for current profile: ", { tMove = { 0, 400 } })
+	self.wndEditBox = G:API_EditBox(self, wndProfiles, "", nil, nil, {
+		tMove = { 150, 395 }, tWidths = { 440, 0 },
+		fnCallback = (function()
+			self.wndEditBox:SetText('/eval F:API_ChangeProfile("' .. F:API_GetProfileName() .. '")')
+		end)
+	}):FindChild("EditBox")
+	self.wndEditBox:SetText('/eval F:API_ChangeProfile("' .. F:API_GetProfileName() .. '")')
+
 	Apollo.GetAddon("ForgeUI").wndMain:FindChild("ProfileText"):SetText(F:API_GetProfileName())
 
 	-- new profile
