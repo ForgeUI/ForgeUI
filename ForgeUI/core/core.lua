@@ -25,8 +25,7 @@ local Core = {
 	_VERSION = "1.0",
 
 	tSettings = {
-		global = {
-			bAdvanced = false,
+		profile = {
 			tClassColors = {
 				[GameLib.CodeEnumClass.Engineer] = "FFEFAB48",
 				[GameLib.CodeEnumClass.Esper] = "FF1591DB",
@@ -41,7 +40,6 @@ local Core = {
 				[Unit.CodeEnumDisposition.Hostile] = "FFE50000",
 				[Unit.CodeEnumDisposition.Unknown] = "FF666666",
 			},
-			bDebug = false,
 		},
 	},
 }
@@ -266,15 +264,17 @@ function F:API_RemoveProfile(...) Core.db:DeleteProfile(...) end
 function F:API_NewProfile(...) Core.db:SetProfile(...) end
 function F:API_ResetProfile(...) Core.db:ResetProfile(...) end
 
+function F:API_GetCoreDB() return Core._DB.profile end
+
 function F:API_GetClassColor(unit)
 	if type(unit) == "string" then
-		return Core._DB.global.tClassColors[GameLib.CodeEnumClass[unit]]
+		return Core._DB.profile.tClassColors[GameLib.CodeEnumClass[unit]]
 	else
 		if not unit then return "FFFFFFFF" end
 		if unit:GetClassId() ~= 23 then
-			return Core._DB.global.tClassColors[unit:GetClassId()]
+			return Core._DB.profile.tClassColors[unit:GetClassId()]
 		else
-			return Core._DB.global.tDispositionColors[unit:GetDispositionTo(GameLib.GetPlayerUnit())]
+			return Core._DB.profile.tDispositionColors[unit:GetDispositionTo(GameLib.GetPlayerUnit())]
 		end
 	end
 end

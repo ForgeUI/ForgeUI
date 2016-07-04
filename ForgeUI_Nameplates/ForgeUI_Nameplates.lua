@@ -1026,6 +1026,7 @@ function ForgeUI_Nameplates:UpdateInfo(tNameplate)
 
 	wnd.info_level:SetText(tostring(unitOwner:GetLevel()))
 	if unitOwner:GetType() == "Player" then
+		wnd.info_class:SetBGColor(F:API_GetClassColor(tNameplate.unitOwner))
 		wnd.info_class:SetSprite("ForgeUI_" .. krtClassEnums[tNameplate.unitClassID] .. "_t")
 	elseif tNameplate.unitClassID ~= 6 and tNameplate.unitClassID >= 0 then
 		wnd.info_class:SetSprite("ForgeUI_npc_rank_" .. krtNpcRankEnums[tNameplate.unitClassID] .. "_t")
@@ -1288,6 +1289,7 @@ end
 function ForgeUI_Nameplates:LoadStyle_Nameplates()
 	for idx, tNameplate in pairs(self.arUnit2Nameplate) do
 		self:LoadStyle_Nameplate(tNameplate)
+		self:UpdateInfo(tNameplate)
 	end
 end
 
@@ -1589,7 +1591,7 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	G:API_AddNumberBox(self, wndStyle, "Shield height", self._DB.profile.tStyle, "nShieldHeight", { tMove = { 200, 30 }, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddNumberBox(self, wndStyle, "Absorb height", self._DB.profile.tStyle, "nAbsorbHeight", { tMove = { 200, 60 }, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddNumberBox(self, wndStyle, "Castbar height", self._DB.profile.tStyle, "nCastHeight", { tMove = { 400, 30 }, fnCallback = self.LoadStyle_Nameplates })
-	
+
 	local wndComboStyle = G:API_AddComboBox(self, wndStyle, "Style", self._DB.profile.tStyle, "nStyle", { fnCallback = self.OnStyleChanged })
 	G:API_AddOptionToComboBox(self, wndComboStyle , "Modern", 0, {})
 	G:API_AddOptionToComboBox(self, wndComboStyle , "Classic", 1, {})
