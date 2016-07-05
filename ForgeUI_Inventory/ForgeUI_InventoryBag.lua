@@ -26,7 +26,7 @@ local ForgeUI_Inventory = {
     DISPLAY_NAME = "Inventory",
 
 	tSettings = {
-		profile = {
+		global = {
 			bShouldSortItems = false,
 			nSortItemType = 2,
 			nAltCurrencySelected = 1,
@@ -229,12 +229,12 @@ function ForgeUI_Inventory:ForgeAPI_Init()
 	self.wndMainBagWindow:SetCannotUseSprite("ClientSprites:LootCloseBox_Holo")
 	--self.wndMainBagWindow:SetOpacity(0.05)
 	
-	self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self._DB.profile.nSortItemType])
-	self.wndMainBagWindow:SetSort(self._DB.profile.bShouldSortItems)
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortOff"):SetCheck(not self._DB.profile.bShouldSortItems)
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortAlpha"):SetCheck(self._DB.profile.bShouldSortItems and self._DB.profile.nSortItemType == 1)
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortCategory"):SetCheck(self._DB.profile.bShouldSortItems and self._DB.profile.nSortItemType == 2)
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortQuality"):SetCheck(self._DB.profile.bShouldSortItems and self._DB.profile.nSortItemType == 3)
+	self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self._DB.global.nSortItemType])
+	self.wndMainBagWindow:SetSort(self._DB.global.bShouldSortItems)
+	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortOff"):SetCheck(not self._DB.global.bShouldSortItems)
+	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortAlpha"):SetCheck(self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 1)
+	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortCategory"):SetCheck(self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 2)
+	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortQuality"):SetCheck(self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 3)
 
 	self.wndIconBtnSortDropDown = self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown")
 	self.wndIconBtnSortDropDown:AttachWindow(self.wndIconBtnSortDropDown:FindChild("ItemSortPrompt"))
@@ -250,7 +250,7 @@ function ForgeUI_Inventory:ForgeAPI_Init()
 			wnd:FindChild("EntryCash"):SetMoneySystem(tData.eType)
 		end
 		wnd:FindChild("PickerEntryBtn"):SetData(idx)
-		wnd:FindChild("PickerEntryBtn"):SetCheck(idx == self._DB.profile.nAltCurrencySelected)
+		wnd:FindChild("PickerEntryBtn"):SetCheck(idx == self._DB.global.nAltCurrencySelected)
 		wnd:FindChild("PickerEntryBtnText"):SetText(tData.strTitle)
 
 		local strDescription = tData.strDescription
@@ -268,12 +268,12 @@ function ForgeUI_Inventory:ForgeAPI_Init()
 	self.wndMain:FindChild("OptionsConfigureCurrencyList"):ArrangeChildrenVert(0)
 
 	self:UpdateAltCashDisplay()
-	self.wndMainBagWindow:SetSort(self._DB.profile.bShouldSortItems)
-	self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self._DB.profile.nSortItemType])
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortOff"):SetCheck(not self._DB.profile.bShouldSortItems)
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortAlpha"):SetCheck(self._DB.profile.bShouldSortItems and self._DB.profile.nSortItemType == 1)
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortCategory"):SetCheck(self._DB.profile.bShouldSortItems and self._DB.profile.nSortItemType == 2)
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortQuality"):SetCheck(self._DB.profile.bShouldSortItems and self._DB.profile.nSortItemType == 3)
+	self.wndMainBagWindow:SetSort(self._DB.global.bShouldSortItems)
+	self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self._DB.global.nSortItemType])
+	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortOff"):SetCheck(not self._DB.global.bShouldSortItems)
+	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortAlpha"):SetCheck(self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 1)
+	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortCategory"):SetCheck(self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 2)
+	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortQuality"):SetCheck(self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 3)
 
 	Event_FireGenericEvent("AddonFullyLoaded", {addon = self, strName = self._NAME})
 end
@@ -484,7 +484,7 @@ function ForgeUI_Inventory:UpdateAltCash(wndHandler, wndControl) -- Also from Pi
 	end
 
 	if wndHandler:FindChild("PickerEntryBtn"):IsChecked() then
-		self._DB.profile.nAltCurrencySelected = nSelected
+		self._DB.global.nAltCurrencySelected = nSelected
 		self:UpdateAltCashDisplay()
 	end
 
@@ -494,7 +494,7 @@ function ForgeUI_Inventory:UpdateAltCash(wndHandler, wndControl) -- Also from Pi
 end
 
 function ForgeUI_Inventory:UpdateAltCashDisplay()
-	local tData = karCurrency[self._DB.profile.nAltCurrencySelected]
+	local tData = karCurrency[self._DB.global.nAltCurrencySelected]
 
 	self.wndMain:FindChild("AltCashWindow"):SetAmount(self:HelperGetCurrencyAmmount(tData), true)
 	local strDescription = tData.strDescription
@@ -768,32 +768,32 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ForgeUI_Inventory:OnOptionsSortItemsOff(wndHandler, wndControl)
-	self._DB.profile.bShouldSortItems = false
-	self.wndMainBagWindow:SetSort(self._DB.profile.bShouldSortItems)
+	self._DB.global.bShouldSortItems = false
+	self.wndMainBagWindow:SetSort(self._DB.global.bShouldSortItems)
 	self.wndIconBtnSortDropDown:SetCheck(false)
 end
 
 function ForgeUI_Inventory:OnOptionsSortItemsName(wndHandler, wndControl)
-	self._DB.profile.bShouldSortItems = true
-	self._DB.profile.nSortItemType = 1
-	self.wndMainBagWindow:SetSort(self._DB.profile.bShouldSortItems)
-	self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self._DB.profile.nSortItemType])
+	self._DB.global.bShouldSortItems = true
+	self._DB.global.nSortItemType = 1
+	self.wndMainBagWindow:SetSort(self._DB.global.bShouldSortItems)
+	self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self._DB.global.nSortItemType])
 	self.wndIconBtnSortDropDown:SetCheck(false)
 end
 
 function ForgeUI_Inventory:OnOptionsSortItemsByCategory(wndHandler, wndControl)
-	self._DB.profile.bShouldSortItems = true
-	self._DB.profile.nSortItemType = 2
-	self.wndMainBagWindow:SetSort(self._DB.profile.bShouldSortItems)
-	self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self._DB.profile.nSortItemType])
+	self._DB.global.bShouldSortItems = true
+	self._DB.global.nSortItemType = 2
+	self.wndMainBagWindow:SetSort(self._DB.global.bShouldSortItems)
+	self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self._DB.global.nSortItemType])
 	self.wndIconBtnSortDropDown:SetCheck(false)
 end
 
 function ForgeUI_Inventory:OnOptionsSortItemsByQuality(wndHandler, wndControl)
-	self._DB.profile.bShouldSortItems = true
-	self._DB.profile.nSortItemType = 3
-	self.wndMainBagWindow:SetSort(self._DB.profile.bShouldSortItems)
-	self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self._DB.profile.nSortItemType])
+	self._DB.global.bShouldSortItems = true
+	self._DB.global.nSortItemType = 3
+	self.wndMainBagWindow:SetSort(self._DB.global.bShouldSortItems)
+	self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self._DB.global.nSortItemType])
 	self.wndIconBtnSortDropDown:SetCheck(false)
 end
 
