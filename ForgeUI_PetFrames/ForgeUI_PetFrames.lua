@@ -40,8 +40,6 @@ tEngineerStances = {
 function ForgeUI_PetFrames:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_PetFrames//ForgeUI_PetFrames.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
-
-	F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 end
 
 
@@ -71,6 +69,7 @@ function ForgeUI_PetFrames:AfterOnCharacterCreated()
 	self.wndPetFrames = Apollo.LoadForm(self.xmlDoc, "ForgeUI_PetFrames", F:API_GetStratum("Hud"), self)
 	self.wndPetControl = Apollo.LoadForm(self.xmlDoc, "ForgeUI_PetControl", F:API_GetStratum("Hud"), self)
 
+	F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 	F:API_RegisterMover(self, self.wndPetFrames, "PetFrames", "Pet frames", "general")
 	F:API_RegisterMover(self, self.wndPetControl, "PetControl", "Pet control", "general")
 
@@ -82,7 +81,6 @@ function ForgeUI_PetFrames:AfterOnCharacterCreated()
 	Apollo.RegisterEventHandler("PetDespawned", "OnPetDespawned", self)
 	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnNextFrame", self)
 	Apollo.RegisterEventHandler("Mount", "OnMount", self)
-
 end
 
 function ForgeUI_PetFrames:OnFrameClick( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
@@ -196,6 +194,8 @@ function ForgeUI_PetFrames:MountPetTimer()
 end
 
 function ForgeUI_PetFrames:ForgeAPI_LoadSettings()
+	if self.tWndPetFrames == nil then return end
+
 	for k, v in pairs(self.tWndPetFrames) do
 		v:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
 		v:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
@@ -206,6 +206,8 @@ function ForgeUI_PetFrames:ForgeAPI_LoadSettings()
 end
 
 function ForgeUI_PetFrames:ForgeAPI_PopulateOptions()
+	if self.tOptionHolders == nil then return end
+
 	local wnd = self.tOptionHolders["General"]
 
 	G:API_AddColorBox(self, wnd, "Border color", self._DB.profile, "crBorder", { tMove = { 0, 0 }, fnCallback = self.ForgeAPI_LoadSettings })
