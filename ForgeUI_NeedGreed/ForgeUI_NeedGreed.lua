@@ -42,18 +42,6 @@ function ForgeUI_NeedGreed:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_NeedGreed//ForgeUI_NeedGreed.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
-	Apollo.RegisterEventHandler("LootRollUpdate",		"OnGroupLoot", self)
-    Apollo.RegisterTimerHandler("WinnerCheckTimer", 	"OnOneSecTimer", self)
-    Apollo.RegisterEventHandler("LootRollWon", 			"OnLootRollWonEvent", self)
-    Apollo.RegisterEventHandler("LootRollAllPassed", 	"OnLootRollAllPassedEvent", self)
-	Apollo.RegisterTimerHandler("PlayerNameCheckTimer",	"OnNameCheckTimer", self)
-
-	Apollo.RegisterEventHandler("LootRollSelected", 	"OnLootRollSelectedEvent", self)
-	Apollo.RegisterEventHandler("LootRollPassed", 		"OnLootRollPassedEvent", self)
-	Apollo.RegisterEventHandler("LootRoll", 			"OnLootRollEvent", self)
-
-	--Apollo.RegisterEventHandler("GroupBagItemAdded", 	"OnGroupBagItemAdded", self) -- Appears deprecated
-
 	Apollo.CreateTimer("WinnerCheckTimer", 1.0, false)
 	Apollo.StopTimer("WinnerCheckTimer")
 	Apollo.CreateTimer("PlayerNameCheckTimer", 2.0, false)
@@ -74,6 +62,16 @@ end
 function ForgeUI_NeedGreed:OnDocLoaded()
 	self.wndContainer = Apollo.LoadForm(self.xmlDoc, "Container", nil, self)
 	F:API_RegisterMover(self, self.wndContainer, "NeedGreed", "NeedGreed", "general", {})
+
+	Apollo.RegisterEventHandler("LootRollUpdate",		"OnGroupLoot", self)
+	Apollo.RegisterTimerHandler("WinnerCheckTimer", 	"OnOneSecTimer", self)
+	Apollo.RegisterEventHandler("LootRollWon", 			"OnLootRollWonEvent", self)
+	Apollo.RegisterEventHandler("LootRollAllPassed", 	"OnLootRollAllPassedEvent", self)
+	Apollo.RegisterTimerHandler("PlayerNameCheckTimer",	"OnNameCheckTimer", self)
+
+	Apollo.RegisterEventHandler("LootRollSelected", 	"OnLootRollSelectedEvent", self)
+	Apollo.RegisterEventHandler("LootRollPassed", 		"OnLootRollPassedEvent", self)
+	Apollo.RegisterEventHandler("LootRoll", 			"OnLootRollEvent", self)
 end
 
 -----------------------------------------------------------------------------------------------

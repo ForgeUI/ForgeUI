@@ -438,8 +438,6 @@ function ForgeUI_MiniMap:OnDocLoaded()
 	Apollo.RegisterEventHandler("Group_Left", 							"OnGroupLeft", self)					-- ( reason )
 	Apollo.RegisterEventHandler("Group_UpdatePosition", 				"OnGroupUpdatePosition", self)			-- ( arMembers )
 
-	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 			"OnTutorial_RequestUIAnchor", self)
-
 	self.wndMain 			= Apollo.LoadForm(self.xmlDoc , "Minimap", F:API_GetStratum("Hud"), self)
 	self.wndMiniMap 		= self.wndMain:FindChild("MapContent")
 	self.wndZoneName 		= self.wndMain:FindChild("MapZoneName")
@@ -1632,30 +1630,6 @@ function ForgeUI_MiniMap:OnRefreshRadar(newUnit)
 		for idx, tCur in pairs(self.tUnitsHidden) do
 			self:OnUnitCreated(tCur.unitObject)
 		end
-	end
-end
-
----------------------------------------------------------------------------------------------------
--- Tutorial anchor request
----------------------------------------------------------------------------------------------------
-
-function ForgeUI_MiniMap:OnTutorial_RequestUIAnchor(eAnchor, idTutorial, strPopupText)
-	local tAnchors =
-	{
-		[GameLib.CodeEnumTutorialAnchor.ForgeUI_MiniMap] = true,
-	}
-
-	if not tAnchors[eAnchor] then
-		return
-	end
-
-	local tAnchorMapping =
-	{
-		[GameLib.CodeEnumTutorialAnchor.ForgeUI_MiniMap] = self.wndMain,
-	}
-
-	if tAnchorMapping[eAnchor] then
-		Event_FireGenericEvent("Tutorial_ShowCallout", eAnchor, idTutorial, strPopupText, tAnchorMapping[eAnchor])
 	end
 end
 
