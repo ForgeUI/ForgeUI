@@ -91,6 +91,7 @@ function Addon:OnDocLoaded()
 		HudLow = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "FixedHudStratumLow", self),
 		Hud = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "FixedHudStratum", self),
 		HudHigh = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "DefaultStratum", self),
+		HudHighest = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", nil, self),
 	}
 
 	-- ForgeUI window initialization

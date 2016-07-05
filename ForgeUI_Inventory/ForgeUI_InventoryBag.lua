@@ -182,7 +182,7 @@ function ForgeUI_Inventory:ForgeAPI_Init()
 
 	self.wndDeleteConfirm 	= Apollo.LoadForm(self.xmlDoc, "InventoryDeleteNotice", nil, self)
 	self.wndSalvageConfirm 	= Apollo.LoadForm(self.xmlDoc, "InventorySalvageNotice", nil, self)
-	self.wndMain 			= Apollo.LoadForm(self.xmlDoc, "InventoryBag", F:API_GetStratum(), self)
+	self.wndMain 			= Apollo.LoadForm(self.xmlDoc, "InventoryBag", F:API_GetStratum("HudHighest"), self)
 	self.wndSplit 			= Apollo.LoadForm(self.xmlDoc, "SplitStackContainer", nil, self)
 	self.wndMain:FindChild("VirtualInvToggleBtn"):AttachWindow(self.wndMain:FindChild("VirtualInvContainer"))
 	self.wndMain:Show(false, true)
@@ -202,7 +202,7 @@ function ForgeUI_Inventory:ForgeAPI_Init()
 
 	local nLeft, nTop, nRight, nBottom = self.wndMain:GetAnchorOffsets()
 	self.nFirstEverWidth = nRight - nLeft
-	self.wndMain:SetSizingMinimum(238, 270)
+	self.wndMain:SetSizingMinimum(245, 285)
 	--self.wndMain:SetSizingMaximum(1200, 700)
 
 	nLeft, nTop, nRight, nBottom = self.wndMain:FindChild("MainGridContainer"):GetAnchorOffsets()
