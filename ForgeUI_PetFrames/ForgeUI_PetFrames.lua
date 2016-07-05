@@ -40,6 +40,8 @@ tEngineerStances = {
 function ForgeUI_PetFrames:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_PetFrames//ForgeUI_PetFrames.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
+
+	F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 end
 
 
@@ -66,7 +68,6 @@ function ForgeUI_PetFrames:OnCharacterCreated()
 end
 
 function ForgeUI_PetFrames:AfterOnCharacterCreated()
-
 	self.wndPetFrames = Apollo.LoadForm(self.xmlDoc, "ForgeUI_PetFrames", F:API_GetStratum("Hud"), self)
 	self.wndPetControl = Apollo.LoadForm(self.xmlDoc, "ForgeUI_PetControl", F:API_GetStratum("Hud"), self)
 
@@ -195,7 +196,21 @@ function ForgeUI_PetFrames:MountPetTimer()
 end
 
 function ForgeUI_PetFrames:ForgeAPI_LoadSettings()
+	for k, v in pairs(self.tWndPetFrames) do
+		v:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
+		v:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
+		v:FindChild("HPBar"):SetBarColor(self._DB.profile.crHpBar)
+		v:FindChild("HPValue"):SetTextColor(self._DB.profile.crHpValue)
+		v:FindChild("ShieldValue"):SetTextColor(self._DB.profile.crShieldValue)
+	end
+end
 
+function ForgeUI_PetFrames:ForgeAPI_PopulateOptions()
+	local wnd = self.tOptionHolders["General"]
+
+	G:API_AddColorBox(self, wnd, "Border color", self._DB.profile, "crBorder", { tMove = { 0, 0 }, fnCallback = self.ForgeAPI_LoadSettings })
+	G:API_AddColorBox(self, wnd, "Background color", self._DB.profile, "crBackground", { tMove = { 0, 30 }, fnCallback = self.ForgeAPI_LoadSettings })
+	G:API_AddColorBox(self, wnd, "Health bar color", self._DB.profile, "crHpBar", { tMove = { 0, 60 }, fnCallback = self.ForgeAPI_LoadSettings })
 end
 
 -----------------------------------------------------------------------------------------------
