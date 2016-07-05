@@ -1,0 +1,5 @@
+<Addon Name="ForgeUI_Inventory" Version="" Author="WintyBadass" APIVersion="12" Description="">
+    <Script Name="ForgeUI_InventoryBag.lua"/>
+    <Form Name="ForgeUI_InventoryBag.xml"/>
+    <ReplaceAddon Name="Inventory"/>
+</Addon>

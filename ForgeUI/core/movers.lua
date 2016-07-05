@@ -117,13 +117,18 @@ local function RegisterMover(luaCaller, wnd, strKey, strName, strScope, tOptions
 	wndMover:SetData(tData)
 end
 
-function ResetMover(luaCaller, strKey)
+local function ResetMover(luaCaller, strKey)
 	Movers._DB.profile[luaCaller._NAME][strKey] = nil
 end
 
 local function UpdateMoverPosition(wndMover)
 	local tData = wndMover:GetData()
 	wndMover:SetAnchorOffsets(tData.wndParent:GetAnchorOffsets())
+
+	local nLeft, nTop, nRight, nBottom = wndMover:GetAnchorOffsets()
+	Movers._DB.profile[tData.strParent][tData.strKey] = {
+		nLeft, nTop, nRight, nBottom,
+	}
 end
 
 local function UpdateParentPosition(wndMover)
@@ -327,5 +332,6 @@ function F:UnlockMovers() Movers:UnlockMovers() end
 -----------------------------------------------------------------------------------------------
 function F:API_RegisterMover(...) return RegisterMover(...) end
 function F:API_ResetMover(...) return ResetMover(...) end
+function F:API_UpdateMover(strKey) UpdateMoverPosition(tScopes["all"][strKey]) end
 
 Movers = F:API_NewModule(Movers)
