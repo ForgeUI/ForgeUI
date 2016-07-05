@@ -26,6 +26,7 @@ local Core = {
 
 	tSettings = {
 		profile = {
+			nColorPreset = 0,
 			tClassColors = {
 				[GameLib.CodeEnumClass.Engineer] = "FFEFAB48",
 				[GameLib.CodeEnumClass.Esper] = "FF1591DB",
@@ -271,6 +272,7 @@ function F:API_GetClassColor(unit)
 		return Core._DB.profile.tClassColors[GameLib.CodeEnumClass[unit]]
 	else
 		if not unit then return "FFFFFFFF" end
+		if not Core._DB.profile.tClassColors then return "FFFFFFFF" end
 		if unit:GetClassId() ~= 23 then
 			return Core._DB.profile.tClassColors[unit:GetClassId()]
 		else

@@ -404,6 +404,7 @@ function ForgeUI_ActionBars:EditButtons(tBar)
 		if tBar.tSpecialButtons and tSpecialButtons[tBar.tSpecialButtons[k]].fnFill then
 			tSpecialButtons[tBar.tSpecialButtons[k]].fnFill(self, wndBarButton)
 			wndBarButton:AddEventHandler("MouseButtonDown", "BarButton_OnMouseDown", self)
+			wndBarButton:SetData(tSpecialButtons[tBar.tSpecialButtons[k]].fnFill)
 		end
 	end
 end
@@ -813,9 +814,12 @@ end
 ---------------------------------------------------------------------------------------------------
 function ForgeUI_ActionBars:BarButton_OnMouseDown( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
 	if wndControl:GetName() == "ForgeUI_BarButton" and eMouseButton == 1 then
-		wndControl:FindChild("Popup"):Show(true, true)
+		local fnFill = wndControl:GetData()
+		if fnFill ~= nil and type(fnFill) == 'function' then
+			fnFill(self, wndControl)
+		end
 
-		--self:FillMounts(wndControl)
+		wndControl:FindChild("Popup"):Show(true, true)
 	end
 end
 

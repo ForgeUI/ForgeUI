@@ -69,9 +69,6 @@ function Settings:ForgeAPI_PopulateOptions()
 
     G:API_AddText(self, wnd, "Press 'Save changes' button after changing class colors", { tMove = { 0, 150 } })
 
-    if F:API_GetCoreDB()["nColorPreset"] == nil then
-        F:API_GetCoreDB()["nColorPreset"] = 0
-    end
     local wndCombo = G:API_AddComboBox(self, wnd, "Color preset", F:API_GetCoreDB(), "nColorPreset", { tMove = {0, 60}, tWidths = { 150, 100 },
         fnCallback = (function()
             local nColorPreset = F:API_GetCoreDB()["nColorPreset"]
