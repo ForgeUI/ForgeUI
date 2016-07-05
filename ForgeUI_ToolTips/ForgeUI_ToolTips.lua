@@ -22,13 +22,16 @@ local ForgeUI_ToolTips = {
     settings_version = 2,
     tSettings = {
 		profile = {
-			strTooltipPosition = "TPT_NavText", -- TPT_OnCursor
+			strTooltipPosition = "TPT_NavText", -- TPT_NavText TPT_OnCursor
 			bShowInCombat = false,
 			bShowBuffId = false,
 			bShowSpellId = false,
 		}
 	}
 }
+
+-- /eval F:API_GetAddon("ForgeUI_ToolTips")._DB.profile.strTooltipPosition = "TPT_NavText"
+-- /eval F:API_GetAddon("ForgeUI_ToolTips")._DB.profile.strTooltipPosition = "TPT_OnCursor"
 
 -----------------------------------------------------------------------------------------------
 -- Local variables
@@ -75,6 +78,9 @@ function ForgeUI_ToolTips:OnDocumentReady(tooltips)
 
 	origGenerateItemTooltipForm = Tooltip.GetItemTooltipForm
 	Tooltip.GetItemTooltipForm = GenerateItemTooltipForm
+
+	local wndContainer = GameLib.GetWorldTooltipContainer()
+	wndContainer:SetTooltipType(Window[ForgeUI_ToolTips._DB.profile.strTooltipPosition])
 end
 
 -----------------------------------------------------------------------------------------------
