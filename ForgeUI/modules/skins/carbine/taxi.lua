@@ -9,7 +9,7 @@
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 local Skins = F:API_GetModule("skins")
 
-function fnUseSkin(luaCaller)
+local function fnUseSkin(luaCaller)
 	if not luaCaller.tWndRefs.wndMain then return end
 
 	Skins:HandleFrame(luaCaller.tWndRefs.wndMain)
@@ -42,7 +42,7 @@ function fnUseSkin(luaCaller)
 	Skins:HandleCloseButton(luaCaller.tWndRefs.wndMain:FindChild("CloseButton"))
 end
 
-function LoadSkin()
+local function LoadSkin()
 	local addon = Apollo.GetAddon("TaxiMap")
 	
 	F:PostHook(addon, "OnInvokeTaxiWindow", fnUseSkin)
