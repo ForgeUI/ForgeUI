@@ -31,6 +31,7 @@ local ForgeUI_UnitFrames = {
 					bAlignBuffsRight = false,
 					bAlignDebuffsRight = false,
 					bShowLevel = false,
+					bShowPvP = false,
 					crBorder = "FF000000",
 					crBackground = "FF101010",
 					crHpBar = "FF272727",
@@ -50,6 +51,7 @@ local ForgeUI_UnitFrames = {
 					bAlignBuffsRight = false,
 					bAlignDebuffsRight = false,
 					bShowLevel = false,
+					bShowPvP = false,
 					crBorder = "FF000000",
 					crBackground = "FF101010",
 					crHpBar = "FF272727",
@@ -430,18 +432,28 @@ function ForgeUI_UnitFrames:RefreshStyle(unit, name, hpBar, strType)
 	local strName = unit:GetName()
 	local nNameWidth = Apollo.GetTextWidth("Nameplates", strName .. "  ") + 2
 
+	local _, nTop, _, nRight = name:GetAnchorOffsets()
+	name:SetAnchorOffsets(-(nNameWidth / 2), nTop, (nNameWidth / 2), nRight)
 	name:SetText(strName)
-	name:SetAnchorOffsets(-(nNameWidth / 2), 0, (nNameWidth / 2), 0)
 	if self._DB.profile.tFrames[strType].bNameClassColor then
 		name:SetTextColor(F:API_GetClassColor(unit))
 	else
 		name:SetTextColor(self._DB.profile.tFrames[strType].crName)
 	end
 
-	local wndLevel = name:FindChild("LVL")
-	if wndLevel then
-		wndLevel:SetText(unit:GetLevel())
-		wndLevel:Show(self._DB.profile.tFrames[strType].bShowLevel)
+	if self._DB.profile.tFrames[strType].bShowLevel ~= nil then
+		local wndLevel = name:FindChild("LVL")
+		if wndLevel then
+			wndLevel:SetText(unit:GetLevel())
+			wndLevel:Show(self._DB.profile.tFrames[strType].bShowLevel)
+		end
+	end
+
+	if self._DB.profile.tFrames[strType].bShowPvP ~= nil then
+		local wndPvP = name:FindChild("PvP")
+		if wndPvP then
+			wndPvP:Show(unit:IsPvpFlagged())
+		end
 	end
 
 	if self._DB.profile.tFrames[strType].bHealthClassColor then
@@ -472,7 +484,6 @@ function ForgeUI_UnitFrames:UpdateStyle_PlayerFrame()
 	local nNameWidth = Apollo.GetTextWidth("Nameplates", strName .. "  ")
 
 	self.wndPlayerFrame:FindChild("Name"):SetText(strName)
-	self.wndPlayerFrame:FindChild("Name"):SetAnchorOffsets(-(nNameWidth / 2), 0, (nNameWidth / 2), 0)
 	if self._DB.profile.tFrames.Player.bNameClassColor then
 		self.wndPlayerFrame:FindChild("Name"):SetTextColor(F:API_GetClassColor(unit))
 	else
@@ -636,6 +647,10 @@ function ForgeUI_UnitFrames:ForgeAPI_PopulateOptions()
 
 		if v.bShowLevel ~= nil then
 			G:API_AddCheckBox(self, wnd, "Show level", v, "bShowLevel", { tMove = {0, 210}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+
+		if v.bShowPvP ~= nil then
+			G:API_AddCheckBox(self, wnd, "Show PvP indicator", v, "bShowPvP", { tMove = {200, 210}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
 		end
 
 		if v.bShowBuffs ~= nil then
