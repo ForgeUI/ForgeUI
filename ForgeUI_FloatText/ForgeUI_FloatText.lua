@@ -678,10 +678,9 @@ function ForgeUI_FloatText:GetFloatTextLocation(bHeal, targetUnit)
 	if bHeal == false and self._DB.profile.bAdjustForTallUnits == true then
 	
 		local overheadAnchor = targetUnit:GetOverheadAnchor()		
-		if overheadAnchor.y < self._DB.profile.nTallUnitOffset then			
+		if overheadAnchor ~= nil and overheadAnchor.y < self._DB.profile.nTallUnitOffset then			
 			return CombatFloater.CodeEnumFloaterLocation.Bottom;
 		end
-	--
 	end	
 	
 	return CombatFloater.CodeEnumFloaterLocation[self._DB.profile.strLocation];
