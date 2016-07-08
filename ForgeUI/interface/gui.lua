@@ -309,6 +309,10 @@ function Gui:API_AddCheckBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 		if tOptions.fnCallback then
 			tData.fnCallback = tOptions.fnCallback
 		end
+
+		if tOptions.strTooltip then
+			wndCheckBox:SetTooltip(tOptions.strTooltip)
+		end
 	end
 
 	-- data

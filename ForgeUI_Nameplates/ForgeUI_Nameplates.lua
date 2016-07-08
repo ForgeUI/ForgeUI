@@ -1569,7 +1569,7 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	local wndGeneral = self.tOptionHolders["General"]
 
 	G:API_AddNumberBox(self, wndGeneral, "Draw distance", self._DB.profile, "nMaxRange", { tMove = {0, 0} })
-	G:API_AddCheckBox(self, wndGeneral, "Use occlusion", self._DB.profile, "bOcclusion", { tMove = {0, 30} })
+	G:API_AddCheckBox(self, wndGeneral, "Use occlusion", self._DB.profile, "bUseOcclusion", { tMove = {0, 30}, strTooltip = "If checked, nameplates will not be drawn behind objects." })
 	G:API_AddCheckBox(self, wndGeneral, "Show titles", self._DB.profile, "bShowTitles", { tMove = {0, 60} })
 	G:API_AddCheckBox(self, wndGeneral, "Show only important NPC", self._DB.profile, "bOnlyImportantNPC", { tMove = {0, 90} })
 	G:API_AddCheckBox(self, wndGeneral, "Show objectives", self._DB.profile, "bShowObjectives", { tMove = {200, 0} })
