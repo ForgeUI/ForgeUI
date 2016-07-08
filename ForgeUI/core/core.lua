@@ -133,6 +133,8 @@ function F:API_NewAddon(tAddon, tParams)
 			addon:ForgeAPI_PopulateOptions()
 			--local bSucces, sErrMsg = pcall(addon.ForgeAPI_PopulateOptions, addon)
 			--if not bSucces then Print(sErrMsg) end
+
+			addon.bLoaded = true
 		end)
 		tAddons[tAddon._NAME].bHooked = true
 	elseif bInit then
@@ -143,6 +145,8 @@ function F:API_NewAddon(tAddon, tParams)
 		addon:ForgeAPI_PopulateOptions()
 		--local bSucces, sErrMsg = pcall(addon.ForgeAPI_PopulateOptions, addon)
 		--if not bSucces then Print(sErrMsg) end
+
+		addon.bLoaded = true
 	end
 
 	return addon
@@ -348,6 +352,8 @@ function F:Init()
 				v.tAddon:ForgeAPI_PopulateOptions()
 				--local bSucces, sErrMsg = pcall(v.tAddon.ForgeAPI_PopulateOptions, v.tAddon)
 				--if not bSucces then Print(sErrMsg) end
+
+				v.tAddon.bLoaded = true
 			end
 		end
 	end

@@ -36,6 +36,7 @@ function Prototype:new(o)
 	setmetatable(o, Prototype)
 
 	o.bInit = false
+	o.bLoaded = false
 
 	return o
 end
@@ -57,6 +58,8 @@ function Prototype:RefreshConfig()
 	self:ForgeAPI_LoadSettings()
 	self:ForgeAPI_PopulateOptions()
 end
+
+function Prototype:IsLoaded() return self.bLoaded end
 
 function Prototype:ForgeAPI_PreInit() end
 function Prototype:ForgeAPI_Init() end

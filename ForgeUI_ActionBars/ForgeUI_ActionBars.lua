@@ -7,6 +7,7 @@
 -----------------------------------------------------------------------------------------------
 
 require "Window"
+require "HousingLib"
 
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
@@ -175,9 +176,27 @@ local ForgeUI_ActionBars = {
 					bDrawHotkey = true,
 					bDrawShortcutBottom = false,
 				},
+				[10] = {
+					strKey = "ForgeUI_VehicleBar",
+					strName = "Vehicle bar",
+					strSnapTo = "bottom",
+					strContentType = "RMSBar",
+					nButtons = 8,
+					nButtonSize = 50,
+					nRows = 1,
+					nColumns = 8,
+					nMinId = 0,
+					nButtonPaddingVer = 3,
+					nButtonPaddingHor = 3,
+					bDrawHotkey = true,
+					bDrawShortcutBottom = false,
+					strScope = "misc",
+				},
 			}
 		}
-	}
+	},
+
+	tQueuedBars = {},
 }
 
 -----------------------------------------------------------------------------------------------
@@ -211,11 +230,13 @@ local bVehicleShown = false
 -----------------------------------------------------------------------------------------------
 -- ForgeAPI
 -----------------------------------------------------------------------------------------------
-function ForgeUI_ActionBars:ForgeAPI_Init()
-  self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_ActionBars//ForgeUI_ActionBars.xml")
-	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
-
+function ForgeUI_ActionBars:ForgeAPI_PreInit()
 	Apollo.RegisterEventHandler("ShowActionBarShortcut", "ShowShortcutBar", self)
+end
+
+function ForgeUI_ActionBars:ForgeAPI_Init()
+	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_ActionBars//ForgeUI_ActionBars.xml")
+	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
 	wndMenuItem = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 end
@@ -247,6 +268,13 @@ function ForgeUI_ActionBars:OnDocLoaded()
 	for k, v in pairs(self._DB.profile.tFrames) do
 		self:GenerateBar(v)
 	end
+
+	self.bLoaded = true
+
+	for k, v in pairs(self.tQueuedBars) do
+		self:ShowShortcutBar(k, v.bIsVisible, v.nShortcuts)
+	end
+	self.tQueuedBars = {}
 end
 
 -----------------------------------------------------------------------------------------------
@@ -290,21 +318,21 @@ function ForgeUI_ActionBars:SetupBar(tBar, bResetMover, bResetAnchors)
 	wndBar:SetAnchorPoints(unpack(tSnapToPoints[tBar.strSnapTo]))
 	wndBar:SetAnchorOffsets(self:Helper_BarOffsets(tBar, bResetAnchors))
 
-	if tBar.bShow ~= nil then
+	if tBar.strKey == "ForgeUI_ShortcutBar" then
+		wndBar:Show(bShortcutShown)
+	elseif tBar.strKey == "ForgeUI_VehicleBar" then
+		wndBar:Show(bVehicleShown)
+	elseif tBar.strKey == "ForgeUI_ActionBar" then
+		wndBar:Show(not bVehicleShown)
+	elseif tBar.bShow ~= nil then
 		wndBar:Show(tBar.bShow)
-	else -- special bars
-		if tBar.strKey == "ForgeUI_ShortcutBar" then
-			wndBar:Show(bShortcutShown)
-		elseif tBar.strKey == "ForgeUI_VehicleBar" then
-			wndBar:Show(bVehicleShown)
-		end
 	end
 
 	if bResetMover then
 		F:API_ResetMover(self, tBar.strKey)
 	end
 
-	F:API_RegisterMover(self, wndBar, tBar.strKey, tBar.strName, "general", { strStratum = "high", bSizable = false })
+	F:API_RegisterMover(self, wndBar, tBar.strKey, tBar.strName, tBar.strScope or "general", { strStratum = "high", bSizable = false })
 end
 
 function ForgeUI_ActionBars:SetupButtons(tBar)
@@ -378,8 +406,15 @@ function ForgeUI_ActionBars:EditButtons(tBar)
 		end
 
 		if not tBar.tSpecialButtons then
-			tActionButton.ContentId = tBar.nMinId + i
-			tActionButton.ContentType = tBar.strContentType
+			-- TODO : Come with better idea
+			-- Vehicle bar dismound button workaround
+			if tBar.strKey == "ForgeUI_VehicleBar" and i == 7 then
+				tActionButton.ContentId = 8
+				tActionButton.ContentType = "GCBar"
+			else
+				tActionButton.ContentId = tBar.nMinId + i
+				tActionButton.ContentType = tBar.strContentType
+			end
 		else
 			tActionButton.ContentId = tSpecialButtons[tBar.tSpecialButtons[k]].nContentId
 			tActionButton.ContentType = tSpecialButtons[tBar.tSpecialButtons[k]].strContent
@@ -832,11 +867,21 @@ function ForgeUI_ActionBars:RecallBtn_OnButtonDown( wndHandler, wndControl, eMou
 end
 
 function ForgeUI_ActionBars:ShowShortcutBar(nBar, bIsVisible, nShortcuts)
+	if not self:IsLoaded() then
+		self.tQueuedBars[nBar] = {
+			bIsVisible = bIsVisible,
+			nShortcuts = nShortcuts,
+		}
+
+		return
+	end
+
 	if nBar == ActionSetLib.CodeEnumShortcutSet.VehicleBar then -- vehiclebar
 		bVehicleShown = bIsVisible
 
-		if bIsVisible then
-		elseif self.wndVehicleBar ~= nil then
+		if tBars["ForgeUI_ActionBar"] then
+			tBars["ForgeUI_ActionBar"]:Show(not bVehicleShown)
+			tBars["ForgeUI_VehicleBar"]:Show(bVehicleShown)
 		end
 	end
 
