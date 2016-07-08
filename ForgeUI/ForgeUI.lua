@@ -7,6 +7,7 @@
 -----------------------------------------------------------------------------------------------
 
 require "Window"
+require "ApolloTimer"
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition
@@ -44,6 +45,7 @@ end
 -- Locals
 -----------------------------------------------------------------------------------------------
 local tStrata = {}
+local TimerButtonDelay
 
 -----------------------------------------------------------------------------------------------
 -- Initialization
@@ -84,6 +86,9 @@ function Addon:OnDocLoaded()
 
 	Apollo.RegisterSlashCommand("forgeui", "OnForgeUIOn", self)
 
+	TimerButtonDelay = ApolloTimer.Create(0.03, true, "OnTimerButtonDelay", self)
+	TimerButtonDelay:Stop()
+	
 	-- create overlays
 	tStrata = {
 		World = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "InWorldHudStratum", self),
@@ -101,6 +106,11 @@ function Addon:OnDocLoaded()
 
 	self.wndMain:FindChild("AuthorText"):SetText(AUTHOR)
 	self.wndMain:FindChild("VersionText"):SetText(VERSION)
+	
+	self.wndResetButton = self.wndMain:FindChild("DefaultsButton")
+	--self.wndResetButton:Enable(false)
+	self.wndResetButton:SetData({ nVal = 0 })
+	self.wndResetButton:FindChild("ProgressBar"):SetMax(100)
 
 	-- init Modules
 	if GameLib.GetPlayerUnit() then
@@ -120,7 +130,28 @@ function Addon:OnForgeUIOff() self.wndMain:Close() end
 ---------------------------------------------------------------------------------------------------
 function Addon:OnSaveButtonPressed() ForgeUI:Save() end
 function Addon:OnUnlockButtonPressed() ForgeUI:UnlockMovers() end
-function Addon:OnDefaultsButtonPressed() ForgeUI:Reset() end
+
+function Addon:OnDefaultsMouseEnter( wndHandler, wndControl, x, y )
+	TimerButtonDelay:Start()
+end
+
+function Addon:OnDefaultsExit( wnd )
+	if wnd:GetName() ~= "ProgressBar" then return end
+	self.wndResetButton:SetData({ nVal = 0 })
+	TimerButtonDelay:Stop()
+	wnd:SetProgress(0)
+end
+
+function Addon:OnDefaultsSignal( wndHandler )
+	if wndHandler:GetName() ~= "ProgressBar" then return end
+	if self.wndResetButton:GetData().nVal > 100 then ForgeUI:Reset() end
+end
+
+function Addon:OnTimerButtonDelay()
+	local tmp = self.wndResetButton:GetData().nVal
+	self.wndResetButton:SetData({ nVal = tmp + 1 })
+	self.wndResetButton:FindChild("ProgressBar"):SetProgress(tmp)
+end
 
 ---------------------------------------------------------------------------------------------------
 -- ForgeUI_Item Functions
