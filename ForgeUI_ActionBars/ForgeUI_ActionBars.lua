@@ -1003,29 +1003,29 @@ function ForgeUI_ActionBars:ForgeAPI_PopulateOptions()
 				fnCallback = function(...) self:PositionButtons(v, true) end })
 		end
 
-		local wndAddCombo = G:API_AddComboBox(self, wnd, "Add button", nil, nil, { tMove = {0, 180},
-			fnCallback = (function(module, value, key)
-				table.insert(v.tSpecialButtons, value)
-				self:ForgeAPI_LoadSettings()
-				self:RefreshConfig()
-			end)
-		})
-		for i = 1, #tSpecialButtons do
-			G:API_AddOptionToComboBox(self, wndAddCombo, tSpecialButtons[i].strName, i)
-		end
-
-		local wndRemoveCombo = G:API_AddComboBox(self, wnd, "Remove button", nil, nil, { tMove = {200, 180},
-			fnCallback = (function(module, value, key)
-				for i = 0, #v.tSpecialButtons do
-					if v.tSpecialButtons[i] == value then
-						table.remove(v.tSpecialButtons, i)
-					end
-				end
-				self:ForgeAPI_LoadSettings()
-				self:RefreshConfig()
-			end)
-		})
 		if v.tSpecialButtons ~= nil then
+			local wndAddCombo = G:API_AddComboBox(self, wnd, "Add button", nil, nil, { tMove = {0, 180},
+				fnCallback = (function(module, value, key)
+					table.insert(v.tSpecialButtons, value)
+					self:ForgeAPI_LoadSettings()
+					self:RefreshConfig()
+				end)
+			})
+			for i = 1, #tSpecialButtons do
+				G:API_AddOptionToComboBox(self, wndAddCombo, tSpecialButtons[i].strName, i)
+			end
+
+			local wndRemoveCombo = G:API_AddComboBox(self, wnd, "Remove button", nil, nil, { tMove = {200, 180},
+				fnCallback = (function(module, value, key)
+					for i = 0, #v.tSpecialButtons do
+						if v.tSpecialButtons[i] == value then
+							table.remove(v.tSpecialButtons, i)
+						end
+					end
+					self:ForgeAPI_LoadSettings()
+					self:RefreshConfig()
+				end)
+			})
 			for _, val in pairs(v.tSpecialButtons) do
 				G:API_AddOptionToComboBox(self, wndRemoveCombo, tSpecialButtons[val].strName, val)
 			end
