@@ -1406,6 +1406,8 @@ function ForgeUI_Nameplates:OnNameplateNameClick(wndHandler, wndCtrl, eMouseButt
 	if GameLib.GetTargetUnit() ~= unitOwner and eMouseButton == GameLib.CodeEnumInputMouse.Left then
 		GameLib.SetTargetUnit(unitOwner)
 		return true
+	elseif GameLib.GetTargetUnit() == unitOwner then
+		return true
 	end
 
 	return false
