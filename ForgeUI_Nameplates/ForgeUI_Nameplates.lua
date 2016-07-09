@@ -83,7 +83,7 @@ local ForgeUI_Nameplates = {
 			bShowAbsorb = true,
 			bFrequentUpdate = false,
 			bShowDead = true,
-			bClickable = false,
+			bClickable = true,
 			crShield = "FF0699F3",
 			crAbsorb = "FFFFC600",
 			crDead = "FF666666",
@@ -1298,8 +1298,6 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 		wnd.indicator:SetBGColor(self._DB.profile.tUnits["PartyPlayer"].crCleanseIndicator)
 	end
 
-	wndNameplate:FindChild("Container"):SetStyle("IgnoreMouse", not self._DB.profile.bClickable)
-
 	--style
 	local tStyle = self._DB.profile.tStyle
 
@@ -1391,19 +1389,20 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ForgeUI_Nameplates:OnNameplateNameClick(wndHandler, wndCtrl, eMouseButton)
-	if not self._DB.profile.bClickable then return end
+	if not self._DB.profile.bClickable then return false end
+	if eMouseButton == GameLib.CodeEnumInputMouse.Right then return false end
 
 	local tNameplate = self.arWnd2Nameplate[wndHandler:GetParent():GetId()]
-	if tNameplate == nil then
-		return
-	end
+	if not tNameplate then return false end
 
 	local unitOwner = tNameplate.unitOwner
-
-	if unitOwner:IsThePlayer() and not self.tSettings.bSelfClickable then return end
+	
 	if GameLib.GetTargetUnit() ~= unitOwner and eMouseButton == GameLib.CodeEnumInputMouse.Left then
 		GameLib.SetTargetUnit(unitOwner)
+		return true
 	end
+
+	return false
 end
 
 function ForgeUI_Nameplates:OnWorldLocationOnScreen(wndHandler, wndControl, bOnScreen)
