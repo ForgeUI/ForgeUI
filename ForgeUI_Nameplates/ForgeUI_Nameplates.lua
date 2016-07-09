@@ -447,7 +447,6 @@ function ForgeUI_Nameplates:UpdateNameplateVisibility(tNameplate)
 
 	if bNewShow ~= tNameplate.bShow then
 		tNameplate.bShow = bNewShow
-		tNameplate.wndReposition:Show(bNewShow)
 		wndNameplate:Show(bNewShow, not bNewShow) -- removes weird glitching when occluding nameplates
 	end
 end
@@ -468,7 +467,6 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		local poolEntry = table.remove(self.arWindowPool)
 		wnd = poolEntry[1]
 		wndReferences = poolEntry[2]
-		wndRepositionReferences = poolEntry[3]
 	end
 
 	if wnd == nil or not wnd:IsValid() then
@@ -481,7 +479,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	local tNameplate =
 	{
 		unitOwner 		= unitNew,
-		idUnit 				= idUnit,
+		idUnit 			= idUnit,
 		wndNameplate	= wnd,
 		strUnitType		= strNewUnitType,
 		unitClassID 	= unitNew:IsACharacter() and unitNew:GetClassId() or unitNew:GetRank(),
@@ -499,9 +497,8 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		eDisposition	= unitNew:GetDispositionTo(self.unitPlayer),
 		tActivation		= unitNew:GetActivationState(),
 
-		bShow					= false,
-		wnd						= wndReferences,
-		wndReposition	= wndRepositionReferences,
+		bShow			= false,
+		wnd				= wndReferences,
 	}
 
 	if wndReferences == nil then
@@ -533,13 +530,6 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 			info_level = wnd:FindChild("NameRewardContainer:Name:Info:Level"),
 			info_class = wnd:FindChild("NameRewardContainer:Name:Info:Class"),
 		}
-	end
-
-	if not tNameplate.wndReposition then
-		tNameplate.wndReposition = Apollo.LoadForm(self.xmlNameplate, "Reposition", "InWorldHudStratum", self)
-		tNameplate.wndReposition:SetUnit(unitNew, 0)
-	else
-		tNameplate.wndReposition:SetUnit(unitNew, 0)
 	end
 
 	self.arUnit2Nameplate[idUnit] = tNameplate
@@ -608,19 +598,15 @@ function ForgeUI_Nameplates:OnUnitDestroyed(unitOwner)
 
 	local tNameplate = self.arUnit2Nameplate[idUnit]
 	local wndNameplate = tNameplate.wndNameplate
-	local wndReposition = tNameplate.wndReposition
 
 	self.arWnd2Nameplate[wndNameplate:GetId()] = nil
 	if #self.arWindowPool < self._DB.profile.knNameplatePoolLimit then
 		wndNameplate:Show(false, true)
 		wndNameplate:SetUnit(nil)
 
-		wndReposition:Show(false, true)
-		wndReposition:SetUnit(nil)
-		table.insert(self.arWindowPool, {wndNameplate, tNameplate.wnd, wndReposition })
+		table.insert(self.arWindowPool, {wndNameplate, tNameplate.wnd })
 	else
 		wndNameplate:Destroy()
-		wndReposition:Destroy()
 		tNameplate.wnd = nil
 		tNameplate = nil
 	end
@@ -1033,27 +1019,24 @@ function ForgeUI_Nameplates:UpdateInfo(tNameplate)
 end
 
 function ForgeUI_Nameplates:RepositionNameplate(tNameplate)
-	if tNameplate.tSettings.bReposition then
-		local wndNameplate = tNameplate.wndNameplate
+    if tNameplate.tSettings.bReposition then
+        local wndNameplate = tNameplate.wndNameplate
 
-		local nX, nY = wndNameplate:GetPos()
-		if nY < 0 or tNameplate.bRepositioned then
-			local wndReposition = tNameplate.wndReposition
+        local tOverhead = tNameplate.unitOwner:GetOverheadAnchor()
+        if tOverhead == nil then return end
 
-			local nX, nY = wndReposition:GetPos()
-			if nY > 0 and tNameplate.bRepositioned then
-				tNameplate.bRepositioned = false
+        if tOverhead.y < 25 and not tNameplate.bRepositioned then
 
-				wndReposition:SetUnit(tNameplate.unitOwner, 0)
-				wndNameplate:SetUnit(tNameplate.unitOwner, 1)
-			elseif not tNameplate.bRepositioned then
-				tNameplate.bRepositioned = true
+            tNameplate.bRepositioned = true
+            wndNameplate:SetUnit(tNameplate.unitOwner, 0)
 
-				wndReposition:SetUnit(tNameplate.unitOwner, 1)
-				wndNameplate:SetUnit(tNameplate.unitOwner, 0)
-			end
-		end
-	end
+        elseif tOverhead.y > 25 and tNameplate.bRepositioned then
+
+            tNameplate.bRepositioned = false
+            wndNameplate:SetUnit(tNameplate.unitOwner, 1)
+
+        end
+    end
 end
 
 function ForgeUI_Nameplates:SetBarValue(wndBar, fMin, fValue, fMax)
