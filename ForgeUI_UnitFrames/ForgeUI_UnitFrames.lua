@@ -145,15 +145,15 @@ function ForgeUI_UnitFrames:OnDocLoaded()
 	F:API_RegisterMover(self, self.wndPlayerFrame:FindChild("ShieldBar"), "UnitFrames_PlayerShieldBar", "Shield", "general", { strParent = "UnitFrames_PlayerFrame" })
 	F:API_RegisterMover(self, self.wndPlayerFrame:FindChild("AbsorbBar"), "UnitFrames_PlayerAbsorbBar", "Absorb", "general", { strParent = "UnitFrames_PlayerFrame" })
 
-	self.wndTargetFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_TargetFrame", "FixedHudStratumLow", self)
+	self.wndTargetFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_TargetFrame", F:API_GetStratum("Hud"), self)
 	F:API_RegisterMover(self, self.wndTargetFrame, "UnitFrames_TargetFrame", "Target frame", "general", {})
 	F:API_RegisterMover(self, self.wndTargetFrame:FindChild("ShieldBar"), "UnitFrames_TargetShieldBar", "Shield", "general", { strParent = "UnitFrames_TargetFrame" })
 	F:API_RegisterMover(self, self.wndTargetFrame:FindChild("AbsorbBar"), "UnitFrames_TargetAbsorbBar", "Absorb", "general", { strParent = "UnitFrames_TargetFrame" })
 
-	self.wndToTFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ToTFrame", "FixedHudStratumLow", self)
+	self.wndToTFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ToTFrame", F:API_GetStratum("Hud"), self)
 	F:API_RegisterMover(self, self.wndToTFrame, "UnitFrames_ToTFrame", "ToT frame", "general", {})
 
-	self.wndFocusFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_FocusFrame", "FixedHudStratumLow", self)
+	self.wndFocusFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_FocusFrame", F:API_GetStratum("Hud"), self)
 	F:API_RegisterMover(self, self.wndFocusFrame, "UnitFrames_FocusFrame", "Focus frame", "general", {})
 	F:API_RegisterMover(self, self.wndFocusFrame:FindChild("ShieldBar"), "UnitFrames_FocusShieldBar", "Shield", "general", { strParent = "UnitFrames_FocusFrame" })
 	F:API_RegisterMover(self, self.wndFocusFrame:FindChild("AbsorbBar"), "UnitFrames_FocusAbsorbBar", "Absorb", "general", { strParent = "UnitFrames_FocusFrame" })
@@ -452,7 +452,7 @@ function ForgeUI_UnitFrames:RefreshStyle(unit, name, hpBar, strType)
 	if self._DB.profile.tFrames[strType].bShowPvP ~= nil then
 		local wndPvP = name:FindChild("PvP")
 		if wndPvP then
-			wndPvP:Show(unit:IsPvpFlagged())
+			wndPvP:Show(self._DB.profile.tFrames[strType].bShowPvP and unit:IsPvpFlagged())
 		end
 	end
 
