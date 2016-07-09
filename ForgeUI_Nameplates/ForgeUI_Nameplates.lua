@@ -1389,15 +1389,11 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ForgeUI_Nameplates:OnNameplateNameClick(wndHandler, wndCtrl, eMouseButton)
+	if wndHandler ~= wndCtrl then return end -- Fixes ghost clicks
+	
 	if not self._DB.profile.bClickable then return false end
 	if eMouseButton == GameLib.CodeEnumInputMouse.Right then return false end
 	
-	-- For some reason these two cause ghost clicks
-	-- (click on nameplate registers, even if not clicking on any nameplate)
-	-- TODO : Investigate why this happens
-	if wndCtrl:GetName() == "RewardContainer" then return false end
-	if wndCtrl:GetName() == "Info" then return false end
-
 	local tNameplate = self.arWnd2Nameplate[wndHandler:GetParent():GetId()]
 	if not tNameplate then return false end
 
