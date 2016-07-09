@@ -96,6 +96,7 @@ local ForgeUI_Nameplates = {
 				nAbsorbHeight = 8,
 				nCastHeight = 7,
 				strFullSprite = "ForgeUI_Smooth",
+				strIASprite = "ForgeUI_shield"
 			},
 			tUnits = {
 				Target = {
@@ -811,12 +812,10 @@ function ForgeUI_Nameplates:DrawIA(tNameplate)
 	else
 		bShow = true
 		if nMax == -1 then
-			--ia:SetSprite("HUD_TargetFrame:spr_TargetFrame_InterruptArmor_Infinite")
 			ia:SetBGColor("FF2D2D2D")
-			ia:SetText("")
+			ia:SetText("-")
 		elseif nMax > 0 then
-			--ia:SetSprite("HUD_TargetFrame:spr_TargetFrame_InterruptArmor_Value")
-			ia:SetBGColor("xkcdApricot")
+			ia:SetBGColor("FF795548")
 			ia:SetText(nValue)
 		end
 	end
@@ -1300,6 +1299,7 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	local wndNameplate = tNameplate.wndNameplate
 
 	wnd.targetMarker:SetBGColor(self._DB.profile.tUnits["Target"].crTargetMarker)
+	wnd.ia:SetSprite(self._DB.profile.tStyle.strIASprite)
 
 	wnd.healthShieldFill:SetBarColor(self._DB.profile.crShield)
 	wnd.healthAbsorbFill:SetBarColor(self._DB.profile.crAbsorb)
@@ -1602,6 +1602,12 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Smooth","ForgeUI_Smooth", {})
 	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Flat", "ForgeUI_Flat", {})
 	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Minimalist", "ForgeUI_Minimalist", {})
+
+	local wndComboIA = G:API_AddComboBox(self, wndStyle, "IA icon", self._DB.profile.tStyle, "strIASprite", { tMove = {300, 90}, tWidths = { 150, 50 },
+		fnCallback = self.LoadStyle_Nameplates
+	})
+	G:API_AddOptionToComboBox(self, wndComboIA, "Shield","ForgeUI_shield", {})
+	G:API_AddOptionToComboBox(self, wndComboIA, "Square", "ForgeUI_Border", {})
 
 	-- specific options
 	for k, v in pairs(self._DB.profile.tUnits) do
