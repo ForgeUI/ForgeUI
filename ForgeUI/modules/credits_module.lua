@@ -38,6 +38,7 @@ local tGroups = {
 		sName = "Externists",
 		tPpl = {
 			["Vim Exe"] = "code reviews",
+			["veex-ua"] = "code reviews & bug-fixes",
 			["Chaarp Shooter"] = "debugging & help with code",
 			["Ringo Noyamano"] = "debugging & design decisions",
 			["Miss Sistray"] = "class & mob icons",
