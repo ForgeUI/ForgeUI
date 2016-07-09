@@ -296,6 +296,10 @@ function ForgeUI:API_AddMenuItem(tModule, strText, strWindow, tOptions)
 
 	Inst:SortItemsByPriority()
 
+	if tOptions and tOptions.bDefault then
+		Inst:ItemListPressed(wndItem, wndItem:FindChild("Button"))
+	end
+
 	return wndItem
 end
 

@@ -23,6 +23,7 @@
     <Script Name="modules\profiles_module.lua"/>
     <Script Name="modules\credits_module.lua"/>
     <Script Name="modules\settings_module.lua"/>
+    <Script Name="modules\welcome_module.lua"/>
     <!-- skins -->
     <Script Name="modules\skins\skins.lua"/>
     <Script Name="modules\skins\carbine\taxi.lua"/>
