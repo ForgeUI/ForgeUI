@@ -44,7 +44,7 @@ function CreditsModule:ForgeAPI_PopulateOptions()
     G:API_AddText(self, wndHome, "- To cycle between mounts, use scroll-wheel.", { tMove = { 0, 150 } })
     G:API_AddText(self, wndHome, "- /reloadui fixes most of the problems :)", { tMove = { 0, 180 } })
 
-	G:API_AddText(self, wndHome, "- Click on those color-boxes to bring up color picker: ", { tMove = { 0, 210 } })
+	G:API_AddText(self, wndHome, "- Click on these color-boxes to bring up color picker: ", { tMove = { 0, 210 } })
 	G:API_AddColorBox(self, wndHome, "", self.tTmpSettings, "crColor", { tMove = { 310, 205 } })
 
     G:API_AddText(self, wndHome, "Because ForgeUI is still in beta, please report any bugs here:", { tMove = { 0, 365 } })
