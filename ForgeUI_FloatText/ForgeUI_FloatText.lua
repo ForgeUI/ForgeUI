@@ -42,55 +42,36 @@ function ForgeUI_FloatText:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_FloatText//ForgeUI_FloatText.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
-
-	--local bHasConfigureFunction = false
-	--local strConfigureButtonText = ""
-	--local tDependencies = {"ForgeUI", "FloatText"}
-    --Apollo.RegisterAddon(self, bHasConfigureFunction, strConfigureButtonText, tDependencies)
-	F:API_AddMenuItem(self, "Float Text", "General");
+	F:API_AddMenuItem(self, "Float Text", "General")
 	
-	FloatText.OnDamageOrHealing = self.OnDamageOrHealing;
+	FloatText.OnDamageOrHealing = self.OnDamageOrHealing
 	FloatText.OnPlayerDamageOrHealing = self.OnPlayerDamageOrHealing
-	FloatText.OnMiss = self.OnMiss;
+	FloatText.OnMiss = self.OnMiss
 end
 
 function ForgeUI_FloatText:ForgeAPI_PopulateOptions()
 	local wndGeneral = self.tOptionHolders["General"]
 
-	G:API_AddNumberBox(self, 
-					   	wndGeneral, 
-						"Incoming damage threshold", 
-						self._DB.profile, "nDamageIncomingThreshold", 
-						{ tOffsets = { 5, 5, 300, 30 }, 
-						strHint = "Damage below this value will not be shown" } );
-	G:API_AddNumberBox(self, 
-						wndGeneral, 
-						"Incoming heals threshold", 
-						self._DB.profile, 
-						"nHealingIncomingThreshold", 
-						{ tOffsets = { 5, 35, 300, 60 },						 
-						strHint = "Heals below this value will not be shown" } );
-	G:API_AddNumberBox(self, 
-						wndGeneral, 
-						"Outgoing damage threshold", 
-						self._DB.profile, 
-						"nDamageOutgoingThreshold", 
-						{ tOffsets ={ 275, 5, 475, 30 }, 
-						strHint = "Damage below this value will not be shown" });
-	G:API_AddNumberBox(self, 
-						wndGeneral, 
-						"Outgoing heals threshold", 
-						self._DB.profile, 
-						"nHealingOutgoingThreshold", 
-						{ tOffsets = { 275, 35, 475, 60 }, 
-						strHint = "Heals below this value will not be shown" });
+	G:API_AddNumberBox(self, wndGeneral, "Incoming damage threshold", self._DB.profile, "nDamageIncomingThreshold", {
+		tOffsets = { 5, 5, 300, 30 }, 
+		strHint = "Damage below this value will not be shown"
+	})
+	G:API_AddNumberBox(self, wndGeneral, "Incoming heals threshold", self._DB.profile, "nHealingIncomingThreshold", {
+		tOffsets = { 5, 35, 300, 60 },						 
+		strHint = "Heals below this value will not be shown"
+	} )
+	G:API_AddNumberBox(self, wndGeneral, "Outgoing damage threshold", self._DB.profile, "nDamageOutgoingThreshold", {
+		tOffsets ={ 275, 5, 475, 30 }, 
+		strHint = "Damage below this value will not be shown"
+	})
+	G:API_AddNumberBox(self, wndGeneral, "Outgoing heals threshold", self._DB.profile, "nHealingOutgoingThreshold", {
+		tOffsets = { 275, 35, 475, 60 }, 
+		strHint = "Heals below this value will not be shown"
+	})
 						
-	G:API_AddCheckBox(self,
-				      wndGeneral,
-					  "Adjust for tall units",
-					  self._DB.profile,
-					  "bAdjustForTallUnits",
-					  { tMove={0, 70} });
+	G:API_AddCheckBox(self,wndGeneral, "Adjust for tall units", self._DB.profile, "bAdjustForTallUnits", {
+		tMove = { 0, 70 }
+	})
 					
 end
 
@@ -143,7 +124,7 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 	
 	
 	
-	local forgeUIFloatTextInstance = F:API_GetAddon(ForgeUI_FloatText._NAME);
+	local forgeUIFloatTextInstance = F:API_GetAddon(ForgeUI_FloatText._NAME)
 	
 	-- NOTE: This needs to be changed if we're ever planning to display shield and normal damage in different formats.
 	-- NOTE: Right now, we're just telling the player the amount of damage they did and not the specific type to keep things neat
@@ -191,11 +172,8 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 
 	tTextOption.strFontFace = forgeUIFloatTextInstance._DB.profile.strFont
 	tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.IgnoreCollision
-	--tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation[forgeUIFloatTextInstance._DB.profile.strLocation];
 	tTextOption.eLocation = forgeUIFloatTextInstance:GetFloatTextLocation(bHeal, unitTarget)
-	-- forgeUIFloatTextInstance:GetFloatTextLocation();
 	
-
 	if not bHeal and bCritical == true then -- Crit not vuln
 		nBaseColor = 0xffea00
 		fMaxSize = 1.0
@@ -227,10 +205,8 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 	tTextOption.fOffset = math.random(10, 80)/100
 
 	-- scale and movement	
-	tTextOption.arFrames = forgeUIFloatTextInstance:GetOutgoingDamageAnimation(true, fMaxSize, nBaseColor, fMaxDuration);
+	tTextOption.arFrames = forgeUIFloatTextInstance:GetOutgoingDamageAnimation(true, fMaxSize, nBaseColor, fMaxDuration)
 	
-	
-
 	if not bHeal then
 		self.fLastDamageTime = GameLib.GetGameTime()
 	end
@@ -254,25 +230,17 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 end
 
 function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDamage, nShieldDamaged, nAbsorptionAmount, bCritical)
-	if unitPlayer == nil or not Apollo.GetConsoleVariable("ui.showCombatFloater") then
-		return
-	end
+	if unitPlayer == nil or not Apollo.GetConsoleVariable("ui.showCombatFloater") then return end
 
 	-- If there is no damage, don't show a floater
-	if nDamage == nil then
-		return
-	end
-	
+	if nDamage == nil then return end
 
-	local forgeUIFloatTextInstance = F:API_GetAddon(ForgeUI_FloatText._NAME);
-
-
+	local forgeUIFloatTextInstance = F:API_GetAddon(ForgeUI_FloatText._NAME)
 	
 	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields
 	
 	if bHeal and nDamage <= forgeUIFloatTextInstance._DB.profile.nHealingIncomingThreshold then return end
 	if not bHeal and nDamage <= forgeUIFloatTextInstance._DB.profile.nDamageIncomingThreshold then return end
-
 	
 	local bShowFloater = true
 	local tTextOption = forgeUIFloatTextInstance:GetDefaultTextOption()
@@ -292,8 +260,7 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 		tTextOptionAbsorb.fOffsetDirection = 0--125
 
 		-- scale and movement
-		tTextOptionAbsorb.arFrames =
-		{
+		tTextOptionAbsorb.arFrames = {
 			[1] = {fScale = 1.1,	fTime = 0,									fVelocityDirection = 0,		fVelocityMagnitude = 0,},
 			[2] = {fScale = 0.7,	fTime = 0.05,				fAlpha = 1.0,},
 			[3] = {fScale = 0.7,	fTime = .2 + nStallTime,	fAlpha = 1.0,	fVelocityDirection = 180,	fVelocityMagnitude = 3,},
@@ -431,15 +398,13 @@ function ForgeUI_FloatText:OnCombatMomentum( eMomentumType, nCount, strText )
 end
 
 function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
-	if unitTarget == nil or not Apollo.GetConsoleVariable("ui.showCombatFloater") then
-		return
-	end
+	if unitTarget == nil or not Apollo.GetConsoleVariable("ui.showCombatFloater") then return end
 
 	-- modify the text to be shown
 	local tTextOption = FloatText:GetDefaultTextOption()
 	
-	local forgeUIFloatTextInstance = F:API_GetAddon(ForgeUI_FloatText._NAME);
-	tTextOption.strFontFace = forgeUIFloatTextInstance._DB.profile.strFont;
+	local forgeUIFloatTextInstance = F:API_GetAddon(ForgeUI_FloatText._NAME)
+	tTextOption.strFontFace = forgeUIFloatTextInstance._DB.profile.strFont
 	
 	if GameLib.IsControlledUnit( unitTarget ) or unitTarget:GetType() == "Mount" then -- if the target unit is player's char
 		tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Horizontal --Vertical--Horizontal  --IgnoreCollision
@@ -454,7 +419,6 @@ function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
 			[4] = {fScale = 0.6,	fTime = .45,	fAlpha = 0.2,	fVelocityDirection = 180,},
 		}
 	else
-
 		tTextOption.fScale = 1.0
 		tTextOption.fDuration = 2
 		tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.IgnoreCollision --Horizontal
@@ -476,9 +440,7 @@ function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
 end
 
 function ForgeUI_FloatText:OnExperienceGained(eReason, unitTarget, strText, fDelay, nAmount)
-	if not Apollo.GetConsoleVariable("ui.showCombatFloater") or nAmount < 0 then
-		return
-	end
+	if not Apollo.GetConsoleVariable("ui.showCombatFloater") or nAmount < 0 then return end
 
 	local strFormatted = ""
 	local eMessageType = LuaEnumMessageType.XPAwarded
@@ -523,9 +485,7 @@ function ForgeUI_FloatText:OnExperienceGained(eReason, unitTarget, strText, fDel
 end
 
 function ForgeUI_FloatText:OnElderPointsGained(nAmount, nRested)
-	if not Apollo.GetConsoleVariable("ui.showCombatFloater") or nAmount < 0 then
-		return
-	end
+	if not Apollo.GetConsoleVariable("ui.showCombatFloater") or nAmount < 0 then return end
 
 	local tContent = {}
 	tContent.eType = LuaEnumMessageType.XPAwarded
@@ -562,9 +522,7 @@ function ForgeUI_FloatText:OnElderPointsGained(nAmount, nRested)
 end
 
 function ForgeUI_FloatText:OnPathExperienceGained( nAmount, strText )
-	if not Apollo.GetConsoleVariable("ui.showCombatFloater") then
-		return
-	end
+	if not Apollo.GetConsoleVariable("ui.showCombatFloater") then return end
 
 	local eMessageType = LuaEnumMessageType.PathXp
 	local unitToAttachTo = GameLib.GetControlledUnit()
@@ -652,7 +610,6 @@ function ForgeUI_FloatText:GetOutgoingDamageAnimation(bCritical, fMaxSize, nBase
 
 	end
 	
-	
 	return {
 		[1] = {fScale = (fMaxSize) * 1.75,	fTime = 0,			  fVelocityDirection=frame1Direction , fVelocityMagnitude = 5.0	,					nColor = 0xffffff, },
 		[2] = {fScale = fMaxSize,			fTime = .15,		  fAlpha = 1.0, 		  fVelocityDirection=frame2Direction , fVelocityMagnitude = 3.5,},
@@ -679,15 +636,14 @@ function ForgeUI_FloatText:GetFloatTextLocation(bHeal, targetUnit)
 	
 		local overheadAnchor = targetUnit:GetOverheadAnchor()		
 		if overheadAnchor ~= nil and overheadAnchor.y < self._DB.profile.nTallUnitOffset then			
-			return CombatFloater.CodeEnumFloaterLocation.Bottom;
+			return CombatFloater.CodeEnumFloaterLocation.Bottom
 		end
 	end	
 	
-	return CombatFloater.CodeEnumFloaterLocation[self._DB.profile.strLocation];
-
+	return CombatFloater.CodeEnumFloaterLocation[self._DB.profile.strLocation]
 end
 
 ----------------------------------------------------------------------------------------------
 -- ForgeUI_FloatText Instance
 -----------------------------------------------------------------------------------------------
-F:API_NewAddon(ForgeUI_FloatText);
+F:API_NewAddon(ForgeUI_FloatText)
