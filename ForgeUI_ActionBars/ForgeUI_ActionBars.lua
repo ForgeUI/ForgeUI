@@ -339,9 +339,11 @@ end
 
 function ForgeUI_ActionBars:SetupBar(tBar, bResetMover, bResetAnchors)
 	local wndBar = tBars[tBar.strKey]
+	wndBar:SetData(tBar)
 
 	wndBar:SetAnchorPoints(unpack(tSnapToPoints[tBar.strSnapTo]))
 	wndBar:SetAnchorOffsets(self:Helper_BarOffsets(tBar, bResetAnchors))
+	wndBar:SetOpacity(1)
 
 	if tBar.strKey == "ForgeUI_ShortcutBar" then
 		wndBar:Show(bShortcutShown)
