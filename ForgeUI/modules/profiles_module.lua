@@ -55,6 +55,12 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 		fnCallbackReturn = F.API_NewProfile,
 	})
 
+	-- reset profile
+	local wndButton = G:API_AddButton(self, wndProfiles, "Reset current profile", {
+		tOffsets = { 400, 125, 595, 150 },
+		fnCallback = F.API_ResetProfile,
+	})
+
 	-- delete profile
 	local wndCombo = G:API_AddComboBox(self, wndProfiles, "Delete profile", nil, nil, {
 		fnCallback = F.API_RemoveProfile,
@@ -93,12 +99,6 @@ function ProfilesModule:ForgeAPI_PopulateOptions()
 			G:API_AddOptionToComboBox(self, wndCombo, v, v)
 		end
 	end
-
-	-- reset profile
-	local wndButton = G:API_AddButton(self, wndProfiles, "Reset current profile", {
-		tOffsets = { 400, 125, 595, 150 },
-		fnCallback = F.API_ResetProfile,
-	})
 end
 
 ProfilesModule = F:API_NewModule(ProfilesModule)
