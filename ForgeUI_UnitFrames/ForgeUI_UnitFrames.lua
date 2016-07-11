@@ -32,6 +32,7 @@ local ForgeUI_UnitFrames = {
 					bAlignDebuffsRight = false,
 					bShowLevel = false,
 					bShowPvP = false,
+					bHideOOC = false,
 					crBorder = "FF000000",
 					crBackground = "FF101010",
 					crHpBar = "FF272727",
@@ -137,6 +138,8 @@ function ForgeUI_UnitFrames:ForgeAPI_Init()
 	F:API_AddMenuToMenuItem(self, wndParent, "Focus frame", "Focus")
 	F:API_AddMenuToMenuItem(self, wndParent, "ToT frame", "ToT")
 	F:API_AddMenuToMenuItem(self, wndParent, "Other", "Other")
+
+	Apollo.RegisterEventHandler("UnitEnteredCombat", "OnUnitEnteredCombat", self)
 end
 
 function ForgeUI_UnitFrames:OnDocLoaded()
@@ -144,6 +147,9 @@ function ForgeUI_UnitFrames:OnDocLoaded()
 	F:API_RegisterMover(self, self.wndPlayerFrame, "UnitFrames_PlayerFrame", "Player frame", "general")
 	F:API_RegisterMover(self, self.wndPlayerFrame:FindChild("ShieldBar"), "UnitFrames_PlayerShieldBar", "Shield", "general", { strParent = "UnitFrames_PlayerFrame" })
 	F:API_RegisterMover(self, self.wndPlayerFrame:FindChild("AbsorbBar"), "UnitFrames_PlayerAbsorbBar", "Absorb", "general", { strParent = "UnitFrames_PlayerFrame" })
+
+	self.wndPlayerFrame:AddEventHandler("MouseEnter", "OnMouseEnter", self)
+	self.wndPlayerFrame:AddEventHandler("MouseExit", "OnMouseExit", self)
 
 	self.wndTargetFrame = Apollo.LoadForm(self.xmlDoc, "ForgeUI_TargetFrame", F:API_GetStratum("Hud"), self)
 	F:API_RegisterMover(self, self.wndTargetFrame, "UnitFrames_TargetFrame", "Target frame", "general", {})
@@ -180,6 +186,24 @@ function ForgeUI_UnitFrames:OnNextFrame()
 	if unitPlayer == nil or not unitPlayer then return end
 
 	self:UpdatePlayerFrame(unitPlayer)
+end
+
+function ForgeUI_UnitFrames:OnUnitEnteredCombat(unit, bInCombat)
+	if not unit:IsThePlayer() then return end
+	if not self.wndPlayerFrame then return end
+	if not self._DB.profile.tFrames.Player.bHideOOC then return end
+	self.wndPlayerFrame:SetOpacity(bInCombat and 1 or 0)
+end
+
+function ForgeUI_UnitFrames:OnMouseEnter()
+	if not self._DB.profile.tFrames.Player.bHideOOC then return end
+	self.wndPlayerFrame:SetOpacity(1)
+end
+
+function ForgeUI_UnitFrames:OnMouseExit(wndHandler, wndControl)
+	if not self._DB.profile.tFrames.Player.bHideOOC then return end
+	if wndControl:GetName() ~= "ForgeUI_PlayerFrame" then return end
+	self.wndPlayerFrame:SetOpacity(GameLib.GetPlayerUnit():IsInCombat() and 1 or 0)
 end
 
 -- Player Frame
@@ -496,6 +520,12 @@ function ForgeUI_UnitFrames:UpdateStyle_PlayerFrame()
 		self.wndPlayerFrame:FindChild("HP_ProgressBar"):SetBarColor(self._DB.profile.tFrames.Player.crHpBar)
 	end
 
+	if self._DB.profile.tFrames.Player.bHideOOC then
+		self.wndPlayerFrame:SetOpacity(GameLib.GetPlayerUnit():IsInCombat() and 1 or 0)
+	else
+		self.wndPlayerFrame:SetOpacity(1)
+	end
+
 	self.wndPlayerFrame:FindChild("HPBar"):SetBGColor(self._DB.profile.tFrames.Player.crBorder)
 	self.wndPlayerFrame:FindChild("Background"):SetBGColor(self._DB.profile.tFrames.Player.crBackground)
 	self.wndPlayerFrame:FindChild("HP_ProgressBar"):SetFullSprite(self._DB.profile.tFrames.Player.strFullSprite)
@@ -631,6 +661,10 @@ function ForgeUI_UnitFrames:ForgeAPI_PopulateOptions()
 
 		if v.bNameClassColor ~= nil then
 			G:API_AddCheckBox(self, wnd, "Class color for name", v, "bNameClassColor", { tMove = {200, 120}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
+		end
+
+		if v.bHideOOC ~= nil then
+			G:API_AddCheckBox(self, wnd, "Hide out of combat", v, "bHideOOC", { tMove = {400, 120}, fnCallback = self["UpdateStyle_" .. k .. "Frame"] })
 		end
 
 		if v.bHealthClassColor ~= nil then
