@@ -43,6 +43,7 @@ function ForgeColor:API_ShowPicker(tModule, crDef, tOptions)
 		end
 
 		self.wndPicker = Apollo.LoadForm(self.xmlDoc, "ForgeColor_Picker", ForgeUI.wndMain, self)
+		self.wndPicker:FindChild("ColorBox"):AddEventHandler("EditBoxReturn", "OnEditBoxChanged", self)
 		self:Init()
 	end
 
@@ -112,17 +113,17 @@ function ForgeColor:Init()
 	self.v = 1
 	self.a = 1
 
-	self.wndPicker:FindChild("CloseButton"):AddEventHandler("ButtonSignal", 				"API_HidePicker", self)
+	self.wndPicker:FindChild("CloseButton"):AddEventHandler("ButtonSignal", "API_HidePicker", self)
 
-	self.wndPicker:FindChild("Picker:Gradient"):AddEventHandler("MouseButtonDown", 			"OnPickerDown", self)
-	self.wndPicker:FindChild("Picker:Gradient"):AddEventHandler("MouseButtonUp", 			"OnPickerUp", self)
-	self.wndPicker:FindChild("Picker:Gradient"):AddEventHandler("MouseExit", 				"OnPickerExit", self)
-	self.wndPicker:FindChild("Picker:Gradient"):AddEventHandler("MouseMove", 				"OnPickerMove", self)
+	self.wndPicker:FindChild("Picker:Gradient"):AddEventHandler("MouseButtonDown", "OnPickerDown", self)
+	self.wndPicker:FindChild("Picker:Gradient"):AddEventHandler("MouseButtonUp", "OnPickerUp", self)
+	self.wndPicker:FindChild("Picker:Gradient"):AddEventHandler("MouseExit", "OnPickerExit", self)
+	self.wndPicker:FindChild("Picker:Gradient"):AddEventHandler("MouseMove", "OnPickerMove", self)
 
-	self.wndPicker:FindChild("ColorSelector:Gradient"):AddEventHandler("MouseButtonDown", 	"OnSelectorDown", self)
-	self.wndPicker:FindChild("ColorSelector:Gradient"):AddEventHandler("MouseButtonUp", 	"OnSelectorUp", self)
-	self.wndPicker:FindChild("ColorSelector:Gradient"):AddEventHandler("MouseExit", 		"OnSelectorExit", self)
-	self.wndPicker:FindChild("ColorSelector:Gradient"):AddEventHandler("MouseMove", 		"OnSelectorMove", self)
+	self.wndPicker:FindChild("ColorSelector:Gradient"):AddEventHandler("MouseButtonDown", "OnSelectorDown", self)
+	self.wndPicker:FindChild("ColorSelector:Gradient"):AddEventHandler("MouseButtonUp", "OnSelectorUp", self)
+	self.wndPicker:FindChild("ColorSelector:Gradient"):AddEventHandler("MouseExit", "OnSelectorExit", self)
+	self.wndPicker:FindChild("ColorSelector:Gradient"):AddEventHandler("MouseMove", "OnSelectorMove", self)
 
 	for _, cr in pairs(tSavedColors) do
 		local color = Apollo.LoadForm(self.xmlDoc, "ForgeColor_Color", self.wndPicker:FindChild("SavedColors"), self)
@@ -143,8 +144,14 @@ function ForgeColor:SetHue( hue )
 	self.wndPicker:FindChild("Picker:Gradient"):SetBGColor(self:RGBAToHex(self:HSVtoRGB(newHue, 1, 1, 1)))
 end
 
-function ForgeColor:UpdateColor()
-	local crNew = self:RGBAToHex(self:HSVtoRGB(self.h, self.s, self.v, self.a))
+function ForgeColor:UpdateColor(crColor)
+	local crNew = "FF000000"
+
+	if not crColor then
+		crNew = self:RGBAToHex(self:HSVtoRGB(self.h, self.s, self.v, self.a))
+	elseif string.len(crColor) == 8 then
+		crNew = crColor
+	end
 
 	self.wndPicker:FindChild("ColorBox"):SetTextColor(crNew)
 	self.wndPicker:FindChild("ColorBox"):SetText(crNew)
@@ -202,6 +209,19 @@ end
 
 function ForgeColor:OnPickerExit()
 	bPickerMouse = false
+end
+
+function ForgeColor:OnEditBoxChanged(wndControl)
+	strColor = wndControl:GetText()
+	nLen = string.len(strColor)
+
+	if nLen == 6 then
+		strColor = "FF" .. string.upper(strColor)
+	elseif nLen ~= 8 then
+		return
+	end
+
+	self:UpdateColor(strColor)
 end
 
 -----------------------------------------------------------------------------------------------
