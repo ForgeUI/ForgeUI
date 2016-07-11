@@ -505,11 +505,11 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 		tNameplate.wnd = {
 			health = wnd:FindChild("Container:Health"),
 			castBar = wnd:FindChild("Container:CastBar"),
-			level = wnd:FindChild("NameRewardContainer:Level"),
+			level = wnd:FindChild("Level"),
 			wndGuild = wnd:FindChild("Guild"),
-			wndName = wnd:FindChild("NameRewardContainer:Name"),
+			wndName = wnd:FindChild("Name"),
 
-			nameRewardContainer = wnd:FindChild("NameRewardContainer:RewardContainer"),
+			nameRewardContainer = wnd:FindChild("RewardContainer"),
 			healthMaxShield = wnd:FindChild("Container:Health:HealthBars:MaxShield"),
 			healthShieldFill = wnd:FindChild("Container:Health:HealthBars:MaxShield:ShieldFill"),
 			healthMaxAbsorb = wnd:FindChild("Container:Health:HealthBars:MaxAbsorb"),
@@ -523,12 +523,12 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 
 			castBarLabel = wnd:FindChild("Container:CastBar:Label"),
 			castBarCastFill = wnd:FindChild("Container:CastBar:CastFill"),
-			questRewards = wnd:FindChild("NameRewardContainer:Name:RewardContainer:QuestRewards"),
+			questRewards = wnd:FindChild("Name:RewardContainer:QuestRewards"),
 			targetMarker = wnd:FindChild("Container:Health:TargetMarker"),
 			indicator = wnd:FindChild("Container:Health:Indicator"),
-			info = wnd:FindChild("NameRewardContainer:Name:Info"),
-			info_level = wnd:FindChild("NameRewardContainer:Name:Info:Level"),
-			info_class = wnd:FindChild("NameRewardContainer:Name:Info:Class"),
+			info = wnd:FindChild("Name:Info"),
+			info_level = wnd:FindChild("Name:Info:Level"),
+			info_class = wnd:FindChild("Name:Info:Class"),
 		}
 	end
 
@@ -698,8 +698,9 @@ function ForgeUI_Nameplates:DrawName(tNameplate)
 		end
 
 		if tNameplate.strName ~= strNewName then
-			wndName:SetText(strNewName)
 			tNameplate.strName = strNewName
+			
+			wndName:SetTextRaw(strNewName)
 
 			local nNameWidth = Apollo.GetTextWidth("Nameplates", strNewName .. " ")
 			local nLeft, nTop, nRight, nBottom = wndName:GetAnchorOffsets()
