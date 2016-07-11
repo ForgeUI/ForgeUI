@@ -236,11 +236,7 @@ function F:API_NewModule(tModule, tParams)
 end
 
 function F:API_GetModule(strName)
-    if tModules[strName] and not tModules[strName].tParams.bPrivate then
-        return tModules[strName].tModule
-    else
-        return nil
-    end
+    return tModules[strName].tModule
 end
 
 function F:API_ListModules()
@@ -261,12 +257,21 @@ function F:API_GetNamespace(strName)
 end
 
 function F:API_GetProfileName() return Core.db:GetCurrentProfile() end
-function F:API_GetProfiles() return Core.db:GetProfiles() end
 function F:API_ChangeProfile(...) Core.db:SetProfile(...) end
 function F:API_CopyProfile(...) Core.db:CopyProfile(...) end
 function F:API_RemoveProfile(...) Core.db:DeleteProfile(...) end
 function F:API_NewProfile(...) Core.db:SetProfile(...) end
 function F:API_ResetProfile(...) Core.db:ResetProfile(...) end
+
+-- This fixes a problem of not seeing default profiles of other characters
+-- function F:API_GetProfiles() return Core.db:GetProfiles() end
+function F:API_GetProfiles()
+	local tProfiles = {}
+	for k in pairs(Core.db.sv.profileKeys) do
+		table.insert(tProfiles, k)
+	end
+	return tProfiles
+end
 
 function F:API_GetCoreDB() return Core._DB.profile end
 
@@ -377,4 +382,4 @@ function Core.copyTable(src, dest)
 	return dest
 end
 
-Core = F:API_NewModule(Core, { bPrivate = true })
+Core = F:API_NewModule(Core)
