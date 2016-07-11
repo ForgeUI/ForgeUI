@@ -44,6 +44,7 @@ local ForgeUI_ActionBars = {
 					bDrawHotkey = true,
 					bDrawShortcutBottom = false,
 					bShow = true,
+					bHideOOC = false,
 				},
 				[2] = {
 					strKey = "ForgeUI_UtilBarOne",
@@ -60,6 +61,7 @@ local ForgeUI_ActionBars = {
 					bDrawHotkey = true,
 					bDrawShortcutBottom = false,
 					bShow = true,
+					bHideOOC = false,
 				},
 				[3] = {
 					strKey = "ForgeUI_UtilBarTwo",
@@ -76,6 +78,7 @@ local ForgeUI_ActionBars = {
 					bDrawHotkey = true,
 					bDrawShortcutBottom = false,
 					bShow = true,
+					bHideOOC = false,
 				},
 				[4] = {
 					strKey = "ForgeUI_UtilBarThree",
@@ -92,6 +95,7 @@ local ForgeUI_ActionBars = {
 					bDrawHotkey = true,
 					bDrawShortcutBottom = false,
 					bShow = true,
+					bHideOOC = false,
 				},
 				[5] = {
 					strKey = "ForgeUI_UtilBarFour",
@@ -108,6 +112,7 @@ local ForgeUI_ActionBars = {
 					bDrawHotkey = true,
 					bDrawShortcutBottom = false,
 					bShow = true,
+					bHideOOC = false,
 				},
 				[6] = {
 					strKey = "ForgeUI_BarOne",
@@ -239,6 +244,8 @@ function ForgeUI_ActionBars:ForgeAPI_Init()
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
 	wndMenuItem = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
+
+	Apollo.RegisterEventHandler("UnitEnteredCombat", "OnUnitEnteredCombat", self)
 end
 
 function ForgeUI_ActionBars:ForgeAPI_LoadSettings()
@@ -277,6 +284,16 @@ function ForgeUI_ActionBars:OnDocLoaded()
 	self.tQueuedBars = {}
 end
 
+function ForgeUI_ActionBars:OnUnitEnteredCombat(unit, bInCombat)
+	if not unit:IsThePlayer() then return end
+
+	for _, v in pairs(self._DB.profile.tFrames) do
+		if v.bHideOOC then
+			tBars[v.strKey]:SetOpacity(bInCombat and 1 or 0)
+		end
+	end
+end
+
 -----------------------------------------------------------------------------------------------
 -- Addon functions
 -----------------------------------------------------------------------------------------------
@@ -299,7 +316,11 @@ function ForgeUI_ActionBars:OnMouseEnter( wndHandler, wndControl )
 	if not tBar or type(tBar) ~= "table" then return end
 
 	if tBar.bShowMouseover then
-		for k, v in pairs(wndControl:GetChildren()) do v:Show(true) end
+		wndControl:SetOpacity(1)
+	end
+
+	if tBar.bHideOOC then
+		wndControl:SetOpacity(1)
 	end
 end
 
@@ -308,7 +329,11 @@ function ForgeUI_ActionBars:OnMouseExit( wndHandler, wndControl )
 	if not tBar or type(tBar) ~= "table" then return end
 
 	if tBar.bShowMouseover then
-		for k, v in pairs(wndControl:GetChildren()) do v:Show(false) end
+		wndControl:SetOpacity(0)
+	end
+
+	if tBar.bHideOOC and not GameLib.GetPlayerUnit():IsInCombat() then
+		wndControl:SetOpacity(0)
 	end
 end
 
@@ -326,6 +351,14 @@ function ForgeUI_ActionBars:SetupBar(tBar, bResetMover, bResetAnchors)
 		wndBar:Show(not bVehicleShown)
 	elseif tBar.bShow ~= nil then
 		wndBar:Show(tBar.bShow)
+	end
+
+	if tBar.bShowMouseover then
+		wndBar:SetOpacity(0)
+	end
+
+	if tBar.bHideOOC and not GameLib.GetPlayerUnit():IsInCombat() then
+		wndBar:SetOpacity(0)
 	end
 
 	if bResetMover then
@@ -351,7 +384,6 @@ function ForgeUI_ActionBars:PositionButtons(tBar, bPositionBar)
 	local tButtons = {}
 
 	for k, v in pairs(wndBar:GetChildren()) do
-		v:Show(false)
 		tButtons[k - 1] = v
 	end
 
@@ -361,7 +393,6 @@ function ForgeUI_ActionBars:PositionButtons(tBar, bPositionBar)
 
 			if tBar.strSnapTo == "bottom" or tBar.strSnapTo == "top" then
 				if tButtons[nButton] then
-					tButtons[nButton]:Show(true and not tBar.bShowMouseover)
 					tButtons[nButton]:SetAnchorOffsets(
 						j * tBar.nButtonSize - j + j * tBar.nButtonPaddingHor,
 						i * tBar.nButtonSize - i + i * tBar.nButtonPaddingVer,
@@ -371,7 +402,6 @@ function ForgeUI_ActionBars:PositionButtons(tBar, bPositionBar)
 				end
 			elseif tBar.strSnapTo == "right" or tBar.strSnapTo == "left" then
 				if tButtons[nButton] then
-					tButtons[nButton]:Show(true and not tBar.bShowMouseover)
 					tButtons[nButton]:SetAnchorOffsets(
 						j * tBar.nButtonSize - j + j * tBar.nButtonPaddingHor,
 						i * tBar.nButtonSize - i + i * tBar.nButtonPaddingVer,
@@ -809,14 +839,6 @@ function ForgeUI_ActionBars:OnGenerateTooltip(wndControl, wndHandler, eType, arg
                 wndControl:SetTooltipDoc(xml)
         end
 end
- 
-function ForgeUI_ActionBars:HideActionBars()
-	for key, tOptions in pairs(self.tActionBars) do
-		if tOptions.bCanBeHidden then
-			self.wndActionBars[tOptions.strName]:SetOpacity(0)
-		end
-	end
-end
 
 function ForgeUI_ActionBars:OnSpellBtn( wndHandler, wndControl, eMouseButton )
 	local sType = wndControl:GetParent():GetData().sType
@@ -958,7 +980,12 @@ function ForgeUI_ActionBars:ForgeAPI_PopulateOptions()
 
 		if v.bShowMouseover ~= nil then
 			G:API_AddCheckBox(self, wnd, "Show on mouseover", v, "bShowMouseover", { tMove = {200, 0},
-				fnCallback = function(...) self:PositionButtons(v) end })
+				fnCallback = function(...) self:SetupBar(v) end })
+		end
+
+		if v.bHideOOC ~= nil then
+			G:API_AddCheckBox(self, wnd, "Hide out of combat", v, "bHideOOC", { tMove = {400, 0},
+				fnCallback = function(...) self:SetupBar(v) end })
 		end
 
 		if v.bDrawHotkey ~= nil then
