@@ -27,6 +27,7 @@ local Core = {
 	tSettings = {
 		profile = {
 			nColorPreset = 0,
+			b24Hour = true,
 			tClassColors = {
 				[GameLib.CodeEnumClass.Engineer] = "FFEFAB48",
 				[GameLib.CodeEnumClass.Esper] = "FF1591DB",
@@ -266,10 +267,16 @@ function F:API_ResetProfile(...) Core.db:ResetProfile(...) end
 -- This fixes a problem of not seeing default profiles of other characters
 -- function F:API_GetProfiles() return Core.db:GetProfiles() end
 function F:API_GetProfiles()
-	local tProfiles = {}
-	for k in pairs(Core.db.sv.profileKeys) do
-		table.insert(tProfiles, k)
+	local tProfiles = Core.db:GetProfiles()
+
+	for _, i in pairs(Core.db.sv.profileKeys) do
+		local ok = true
+		for _, j in pairs(tProfiles) do
+			if i == j then ok = false end
+		end
+		if ok then table.insert(tProfiles, i) end
 	end
+
 	return tProfiles
 end
 
