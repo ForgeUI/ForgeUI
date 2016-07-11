@@ -56,6 +56,10 @@ function Settings:ForgeAPI_PopulateOptions()
         fnCallback = self.ForgeAPI_LoadSettings
     })
 
+    G:API_AddCheckBox(self, wnd, "24h mode", F:API_GetCoreDB(), "b24Hour", { tMove = {400, 0},
+        fnCallback = self.ForgeAPI_LoadSettings
+    })
+
     G:API_AddColorBox(self, wnd, "Engineer", F:API_GetCoreDB().tClassColors, GameLib.CodeEnumClass.Engineer, { tMove = { 0, 90 } })
     G:API_AddColorBox(self, wnd, "Esper", F:API_GetCoreDB().tClassColors, GameLib.CodeEnumClass.Esper, { tMove = { 150, 90 } })
     G:API_AddColorBox(self, wnd, "Medic", F:API_GetCoreDB().tClassColors, GameLib.CodeEnumClass.Medic, { tMove = { 300, 90 } })

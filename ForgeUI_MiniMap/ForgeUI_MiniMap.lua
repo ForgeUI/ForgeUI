@@ -569,39 +569,31 @@ function ForgeUI_MiniMap:OnOptionsUpdated()
 end
 
 function ForgeUI_MiniMap:OnUpdateTimer()
-
-	--Toggle Visibility based on ui preference
-	local nVisibility = Apollo.GetConsoleVariable("hud.TimeDisplay")
-
 	local tLocalTime = GameLib.GetLocalTime()
 	local tServerTime = GameLib.GetServerTime()
-	local b24Hour = true
+	local b24Hour = F:API_GetCoreDB().b24Hour
 	local nLocalHour = tLocalTime.nHour > 12 and tLocalTime.nHour - 12 or tLocalTime.nHour == 0 and 12 or tLocalTime.nHour
 	local nServerHour = tServerTime.nHour > 12 and tServerTime.nHour - 12 or tServerTime.nHour == 0 and 12 or tServerTime.nHour
 
-	self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d", tostring(tLocalTime.nHour), tostring(tLocalTime.nMinute)))
-
-	if nVisibility == 2 then --Local 12hr am/pm
-		self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d", tostring(nLocalHour), tostring(tLocalTime.nMinute)))
-
-		b24Hour = false
-	elseif nVisibility == 3 then --Server 24hr
-		self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d", tostring(tServerTime.nHour), tostring(tServerTime.nMinute)))
-	elseif nVisibility == 4 then --Server 12hr am/pm
-		self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d", tostring(nServerHour), tostring(tServerTime.nMinute)))
-
-		b24Hour = false
-	end
-
-	nLocalHour = b24Hour and tLocalTime.nHour or nLocalHour
-	nServerHour = b24Hour and tServerTime.nHour or nServerHour
-
-	self.wndMain:FindChild("Time"):SetTooltip(
-		string.format("%s%02d:%02d\n%s%02d:%02d",
-			Apollo.GetString("OptionsHUD_Local"), tostring(nLocalHour), tostring(tLocalTime.nMinute),
-			Apollo.GetString("OptionsHUD_Server"), tostring(nServerHour), tostring(tServerTime.nMinute)
+	if b24Hour then
+		self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d", tostring(tLocalTime.nHour), tostring(tLocalTime.nMinute)))
+		self.wndMain:FindChild("Time"):SetTooltip(
+			string.format("%s%02d:%02d\n%s%02d:%02d",
+				Apollo.GetString("OptionsHUD_Local"), tostring(tLocalTime.nHour), tostring(tLocalTime.nMinute),
+				Apollo.GetString("OptionsHUD_Server"), tostring(tServerTime.nHour), tostring(tServerTime.nMinute)
+			)
 		)
-	)
+	else
+		local suffix = tLocalTime.nHour >= 12 and "pm" or "am"
+
+		self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d%s", tostring(nLocalHour), tostring(tLocalTime.nMinute), suffix))
+		self.wndMain:FindChild("Time"):SetTooltip(
+			string.format("%s%02d:%02d%s\n%s%02d:%02d%s",
+				Apollo.GetString("OptionsHUD_Local"), tostring(nLocalHour), tostring(tLocalTime.nMinute), suffix,
+				Apollo.GetString("OptionsHUD_Server"), tostring(nServerHour), tostring(tServerTime.nMinute), suffix
+			)
+		)
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
