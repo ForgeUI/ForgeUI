@@ -86,6 +86,13 @@ function Settings:ForgeAPI_PopulateOptions()
                 F:API_GetCoreDB().tClassColors[GameLib.CodeEnumClass.Spellslinger] = "FFFF8C00"
                 F:API_GetCoreDB().tClassColors[GameLib.CodeEnumClass.Stalker] = "FF8A2BE2"
                 F:API_GetCoreDB().tClassColors[GameLib.CodeEnumClass.Warrior] = "FFB22222"
+            elseif nColorPreset == 2 then
+                F:API_GetCoreDB().tClassColors[GameLib.CodeEnumClass.Engineer] = "FFFFC830"
+                F:API_GetCoreDB().tClassColors[GameLib.CodeEnumClass.Esper] = "FF1591DB"
+                F:API_GetCoreDB().tClassColors[GameLib.CodeEnumClass.Medic] = "FF00D030"
+                F:API_GetCoreDB().tClassColors[GameLib.CodeEnumClass.Spellslinger] = "FFF47E2F"
+                F:API_GetCoreDB().tClassColors[GameLib.CodeEnumClass.Stalker] = "FFD23EF4"
+                F:API_GetCoreDB().tClassColors[GameLib.CodeEnumClass.Warrior] = "FFF54F4F"
             end
 
             --F:API_GetCoreDB().tDispositionColors[Unit.CodeEnumDisposition.Friendly] = "FF75CC26"
@@ -103,6 +110,7 @@ function Settings:ForgeAPI_PopulateOptions()
     })
 	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI", 0, {})
     G:API_AddOptionToComboBox(self, wndCombo, "Carbine", 1, {})
+    G:API_AddOptionToComboBox(self, wndCombo, "Mischh", 2, {})
 end
 
 -----------------------------------------------------------------------------------------------
