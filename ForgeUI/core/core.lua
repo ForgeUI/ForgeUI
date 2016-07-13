@@ -11,6 +11,9 @@ local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeUI GUI library
 local M = _G["ForgeLibs"]["ForgeModule"] -- ForgeUI module prototype
 local A = _G["ForgeLibs"]["ForgeAddon"] -- ForgeUI addon prototype
 
+-- integrating CallbackHandler to F
+F.callbacks = F.callbacks or Apollo.GetPackage("Gemini:CallbackHandler-1.0").tPackage:New(F)
+
 -- libraries
 local GeminiHook = Apollo.GetPackage("Gemini:Hook-1.0").tPackage
 local GeminiDB = Apollo.GetPackage("Gemini:DB-1.0").tPackage
@@ -66,12 +69,30 @@ function Core:ForgeAPI_PreInit()
 	local ForgeUI = Apollo.GetAddon("ForgeUI")
 
 	self.db = GeminiDB:New(ForgeUI)
+
+	-- db callbacks
+	self.db.RegisterCallback(self, "OnProfileChanged", "OnDatabaseUpdate")
+	self.db.RegisterCallback(self, "OnProfileDeleted", "OnDatabaseUpdate")
+	self.db.RegisterCallback(self, "OnProfileReset", "OnDatabaseUpdate")
+	self.db.RegisterCallback(self, "OnProfileCopied", "OnDatabaseUpdate")
 end
 
 function Core:ForgeAPI_Init()
 	Print("ForgeUI v" .. F:API_GetVersion() .. " has been loaded")
 
 	GeminiHook:Embed(F)
+end
+
+function Core:OnDatabaseUpdate()
+	self:RefreshConfig()
+
+	for k, v in pairs(tModules) do
+		if k ~= "core" then v.tModule:RefreshConfig() end
+	end
+
+	for _, v in pairs(tAddons) do
+		v.tAddon:RefreshConfig()
+	end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -107,12 +128,6 @@ function F:API_NewAddon(tAddon, tParams)
 		}
 	end
 
-	-- db callbacks
-	Core.db.RegisterCallback(addon, "OnProfileChanged", "RefreshConfig")
-	Core.db.RegisterCallback(addon, "OnProfileDeleted", "RefreshConfig")
-	Core.db.RegisterCallback(addon, "OnProfileReset", "RefreshConfig")
-	Core.db.RegisterCallback(addon, "OnProfileCopied", "RefreshConfig")
-
 	Apollo.RegisterAddon(addon)
 
 	tAddons[tAddon._NAME] = {
@@ -128,24 +143,14 @@ function F:API_NewAddon(tAddon, tParams)
 	if addon.OnDocLoaded then
 		GeminiHook:PostHook(addon, "OnDocLoaded", function()
 			addon:ForgeAPI_LoadSettings()
-			--local bSucces, sErrMsg = pcall(addon.ForgeAPI_LoadSettings, addon)
-			--if not bSucces then Print(sErrMsg) end
-
 			addon:ForgeAPI_PopulateOptions()
-			--local bSucces, sErrMsg = pcall(addon.ForgeAPI_PopulateOptions, addon)
-			--if not bSucces then Print(sErrMsg) end
 
 			addon.bLoaded = true
 		end)
 		tAddons[tAddon._NAME].bHooked = true
 	elseif bInit then
 		addon:ForgeAPI_LoadSettings()
-		--local bSucces, sErrMsg = pcall(addon.ForgeAPI_LoadSettings, addon)
-		--if not bSucces then Print(sErrMsg) end
-
 		addon:ForgeAPI_PopulateOptions()
-		--local bSucces, sErrMsg = pcall(addon.ForgeAPI_PopulateOptions, addon)
-		--if not bSucces then Print(sErrMsg) end
 
 		addon.bLoaded = true
 	end
@@ -196,12 +201,6 @@ function F:API_NewModule(tModule, tParams)
 		}
 	end
 
-	-- db callbacks
-	Core.db.RegisterCallback(module, "OnProfileChanged", "RefreshConfig")
-	Core.db.RegisterCallback(module, "OnProfileDeleted", "RefreshConfig")
-	Core.db.RegisterCallback(module, "OnProfileReset", "RefreshConfig")
-	Core.db.RegisterCallback(module, "OnProfileCopied", "RefreshConfig")
-
 	tModules[tModule._NAME] = {
         ["tModule"] = module,
         ["tParams"] = tParams or {},
@@ -215,22 +214,12 @@ function F:API_NewModule(tModule, tParams)
 	if module.OnDocLoaded then
 		GeminiHook:PostHook(module, "OnDocLoaded", function()
 			module:ForgeAPI_LoadSettings()
-			--local bSucces, sErrMsg = pcall(module.ForgeAPI_LoadSettings, module)
-			--if not bSucces then Print(sErrMsg) end
-
 			module:ForgeAPI_PopulateOptions()
-			--local bSucces, sErrMsg = pcall(module.ForgeAPI_PopulateOptions, module)
-			--if not bSucces then Print(sErrMsg) end
 		end)
 		tModules[tModule._NAME].bHooked = true
 	elseif bInit then
 		module:ForgeAPI_LoadSettings()
-		--local bSucces, sErrMsg = pcall(module.ForgeAPI_LoadSettings, module)
-		--if not bSucces then Print(sErrMsg) end
-
 		module:ForgeAPI_PopulateOptions()
-		--local bSucces, sErrMsg = pcall(module.ForgeAPI_PopulateOptions, module)
-		--if not bSucces then Print(sErrMsg) end
 	end
 
 	return module
@@ -328,12 +317,7 @@ function F:Init()
 
 			if not v.bHooked then
 				v.tModule:ForgeAPI_LoadSettings()
-				--local bSucces, sErrMsg = pcall(v.tModule.ForgeAPI_LoadSettings, v.tModule)
-				--if not bSucces then Print(sErrMsg) end
-
 				v.tModule:ForgeAPI_PopulateOptions()
-				--local bSucces, sErrMsg = pcall(v.tModule.ForgeAPI_PopulateOptions, v.tModule)
-				--if not bSucces then Print(sErrMsg) end
 			end
 		end
 	end
@@ -358,12 +342,7 @@ function F:Init()
 
 			if not v.bHooked then
 				v.tAddon:ForgeAPI_LoadSettings()
-				--local bSucces, sErrMsg = pcall(v.tAddon.ForgeAPI_LoadSettings, v.tAddon)
-				--if not bSucces then Print(sErrMsg) end
-
 				v.tAddon:ForgeAPI_PopulateOptions()
-				--local bSucces, sErrMsg = pcall(v.tAddon.ForgeAPI_PopulateOptions, v.tAddon)
-				--if not bSucces then Print(sErrMsg) end
 
 				v.tAddon.bLoaded = true
 			end
