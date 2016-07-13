@@ -1,0 +1,12 @@
+[submodule "ForgeUI/libs/GeminiEvent"]
+	path = ForgeUI/libs/GeminiEvent
+	url = https://github.com/wildstarnasa/GeminiEvent.git
+[submodule "ForgeUI/libs/CallbackHandler"]
+	path = ForgeUI/libs/CallbackHandler
+	url = https://github.com/wildstarnasa/CallbackHandler.git
+[submodule "ForgeUI/libs/GeminiDB"]
+	path = ForgeUI/libs/GeminiDB
+	url = https://github.com/wildstarnasa/GeminiDB.git
+[submodule "ForgeUI/libs/GeminiHook"]
+	path = ForgeUI/libs/GeminiHook
+	url = https://github.com/wildstarnasa/GeminiHook.git
