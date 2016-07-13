@@ -74,6 +74,22 @@ local function RegisterMover(luaCaller, wnd, strKey, strName, strScope, tOptions
 
 		wndMover:SetAnchorPoints(wnd:GetAnchorPoints())
 		wndMover:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+		wndMover:DestroyChildren()
+		wndMover:AddEventHandler("MouseButtonDown", "OnMoverClick", F)
+
+		local wndPos = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_Positionator", wndMover, F)
+
+		wndPos:FindChild("Move:Left"):AddEventHandler("ButtonSignal", "OnMoverPosButtonClick", F)
+		wndPos:FindChild("Move:Up"):AddEventHandler("ButtonSignal", "OnMoverPosButtonClick", F)
+		wndPos:FindChild("Move:Right"):AddEventHandler("ButtonSignal", "OnMoverPosButtonClick", F)
+		wndPos:FindChild("Move:Down"):AddEventHandler("ButtonSignal", "OnMoverPosButtonClick", F)
+		wndPos:FindChild("Size:Width:Up"):AddEventHandler("ButtonSignal", "OnMoverSizeButtonClick", F)
+		wndPos:FindChild("Size:Width:Down"):AddEventHandler("ButtonSignal", "OnMoverSizeButtonClick", F)
+		wndPos:FindChild("Size:Height:Up"):AddEventHandler("ButtonSignal", "OnMoverSizeButtonClick", F)
+		wndPos:FindChild("Size:Height:Down"):AddEventHandler("ButtonSignal", "OnMoverSizeButtonClick", F)
+
+		wndPos:FindChild("Size:Height:Text"):SetText("Height: " .. wndMover:GetHeight())
+		wndPos:FindChild("Size:Width:Text"):SetText("Width: " .. wndMover:GetWidth())
 
 		if not Movers.tSettings.profile[luaCaller._NAME] then
 			Movers.tSettings.profile[luaCaller._NAME] = {}
@@ -327,6 +343,55 @@ function F:OnMoverMove(wndHandler, wndControl)
 
 	tData.wndParent:SetAnchorOffsets(wndControl:GetAnchorOffsets())
 	tData.wndParent:SetAnchorPoints(wndControl:GetAnchorPoints())
+end
+
+function F:OnMoverClick(wndHandler, wndControl, eMouseButton)
+	local wndPos = wndControl:FindChild("ForgeUI_Positionator")
+	if not wndPos then return end
+	if eMouseButton ~= GameLib.CodeEnumInputMouse.Right then return end
+
+	wndPos:Show(true, true)
+end
+
+function F:OnMoverPosButtonClick(wndHandler, wndControl)
+	local wndMover = wndControl:GetParent():GetParent():GetParent()
+	local strName = wndControl:GetName()
+
+	local nLeft, nTop, nRight, nBottom = wndMover:GetAnchorOffsets()
+
+	if strName == "Left" then
+		wndMover:SetAnchorOffsets(nLeft - 1, nTop, nRight - 1, nBottom)
+	elseif strName == "Up" then
+		wndMover:SetAnchorOffsets(nLeft, nTop - 1, nRight, nBottom - 1)
+	elseif strName == "Right" then
+		wndMover:SetAnchorOffsets(nLeft + 1, nTop, nRight + 1, nBottom)
+	elseif strName == "Down" then
+		wndMover:SetAnchorOffsets(nLeft, nTop + 1, nRight, nBottom + 1)
+	end
+end
+
+function F:OnMoverSizeButtonClick(wndHandler, wndControl)
+	local wndMover = wndControl:GetParent():GetParent():GetParent():GetParent()
+	local strName = wndControl:GetName()
+	local strParentName = wndControl:GetParent():GetName()
+
+	local nLeft, nTop, nRight, nBottom = wndMover:GetAnchorOffsets()
+
+	if strParentName == "Height" then
+		if strName == "Up" then
+			wndMover:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + 1)
+		elseif strName == "Down" then
+			wndMover:SetAnchorOffsets(nLeft, nTop, nRight, nBottom - 1)
+		end
+		wndControl:GetParent():FindChild("Text"):SetText("Height: " .. wndMover:GetHeight())
+	elseif strParentName == "Width" then
+		if strName == "Up" then
+			wndMover:SetAnchorOffsets(nLeft, nTop, nRight + 1, nBottom)
+		elseif strName == "Down" then
+			wndMover:SetAnchorOffsets(nLeft, nTop, nRight - 1, nBottom)
+		end
+		wndControl:GetParent():FindChild("Text"):SetText("Width: " .. wndMover:GetWidth())
+	end
 end
 
 function F:UnlockMovers() Movers:UnlockMovers() end
