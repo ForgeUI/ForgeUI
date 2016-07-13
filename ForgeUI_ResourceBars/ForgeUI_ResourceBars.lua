@@ -31,6 +31,7 @@ local ForgeUI_ResourceBars = {
 			crBackground = "FF101010",
 			crFocus = "FFFFFFFF",
 			bCenterText = false,
+			strFullSprite = "ForgeUI_Smooth",
 			warrior = {
 				crResource1 = "FFE53805",
 				crResource2 = "FFEF0000",
@@ -149,6 +150,9 @@ end
 function ForgeUI_ResourceBars:ForgeAPI_PopulateOptions()
 	local wndGeneral = self.tOptionHolders["General"]
 
+	self["PopulateOptions_" .. self.playerClass](self)
+	self:PopulateOptions_Focus()
+
 	G:API_AddColorBox(self, wndGeneral, "Border color", self._DB.profile, "crBorder", { tMove = {0, 0},
 		fnCallback = self.ForgeAPI_LoadSettings })
 	G:API_AddColorBox(self, wndGeneral, "Background color", self._DB.profile, "crBackground", { tMove = {200, 0},
@@ -157,8 +161,12 @@ function ForgeUI_ResourceBars:ForgeAPI_PopulateOptions()
 	G:API_AddCheckBox(self, wndGeneral, "Center text value", self._DB.profile, "bCenterText", { tMove = {0, 30},
 		fnCallback = self.ForgeAPI_LoadSettings })
 
-	self["PopulateOptions_" .. self.playerClass](self)
-	self:PopulateOptions_Focus()
+	local wndCombo = G:API_AddComboBox(self, wndGeneral, "Texture", self._DB.profile, "strFullSprite", { tMove = {400, 30}, tWidths = { 150, 50 },
+		fnCallback = self.ForgeAPI_LoadSettings
+	})
+	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Smooth","ForgeUI_Smooth", {})
+	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Flat", "ForgeUI_Flat", {})
+	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Minimalist", "ForgeUI_Minimalist", {})
 end
 
 -----------------------------------------------------------------------------------------------
@@ -516,6 +524,7 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Engineer()
 	self.wndResource:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
 	self.wndResource:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
+	self.wndResource:FindChild("ProgressBar"):SetFullSprite(self._DB.profile.strFullSprite)
 
 	if self._DB.profile.bCenterText then
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, 0, 0, 0)
@@ -548,16 +557,17 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Esper()
 		self.wndResource:FindChild("PSI" .. i):FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 		self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetBarColor(self._DB.profile.esper.crResource1)
 		self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetMax(1)
+		self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetFullSprite(self._DB.profile.strFullSprite)
 	end
 	
 	if self._DB.profile.esper.bShowMentalOverflow == true then
 		--Hook up events
 		for j = 1, self.nMaxMentalOverflow do
-			self.loopvalue = "MO" .. j;
 			self.wndMentalOverflow:FindChild("MO" .. j):SetBGColor(self._DB.profile.crBorder)
 			self.wndMentalOverflow:FindChild("MO" .. j):FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 			self.wndMentalOverflow:FindChild("MO" .. j):FindChild("ProgressBar"):SetBarColor(self._DB.profile.esper.crResource2)
 			self.wndMentalOverflow:FindChild("MO" .. j):FindChild("ProgressBar"):SetMax(1)
+			self.wndMentalOverflow:FindChild("MO" .. i):FindChild("ProgressBar"):SetFullSprite(self._DB.profile.strFullSprite)
 		end			
 	end
 end
@@ -589,6 +599,7 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Medic()
 		self.wndResource:FindChild("ACU" .. i):SetBGColor(self._DB.profile.crBorder)
 		self.wndResource:FindChild("ACU" .. i):FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 		self.wndResource:FindChild("ACU" .. i):FindChild("ProgressBar"):SetMax(3)
+		self.wndResource:FindChild("ACU" .. i):FindChild("ProgressBar"):SetFullSprite(self._DB.profile.strFullSprite)
 	end
 end
 
@@ -621,6 +632,7 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Slinger()
 		self.wndResource:FindChild("RUNE" .. i):SetBGColor(self._DB.profile.crBorder)
 		self.wndResource:FindChild("RUNE" .. i):FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 		self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetMax(25)
+		self.wndResource:FindChild("RUNE" .. i):FindChild("ProgressBar"):SetFullSprite(self._DB.profile.strFullSprite)
 	end
 end
 
@@ -655,6 +667,7 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Stalker()
 	self.wndResource:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
 	self.wndResource:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 	self.wndResource:FindChild("ProgressBar"):SetBarColor(self._DB.profile.stalker.crResource1)
+	self.wndResource:FindChild("ProgressBar"):SetFullSprite(self._DB.profile.strFullSprite)
 
 	if self._DB.profile.bCenterText then
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, 0, 0, 0)
@@ -680,6 +693,7 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Warrior()
 	self.wndResource:FindChild("Border"):SetBGColor(self._DB.profile.crBorder)
 	self.wndResource:FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
+	self.wndResource:FindChild("ProgressBar"):SetFullSprite(self._DB.profile.strFullSprite)
 
 	if self._DB.profile.bCenterText then
 		self.wndResource:FindChild("Value"):SetAnchorOffsets(0, 0, 0, 0)
@@ -715,7 +729,6 @@ end
 function ForgeUI_ResourceBars:PopulateOptions_Warrior()
 	local wndGeneral = self.tOptionHolders["General"]
 
-	G:API_AddText(self, wndGeneral, "Warrior", { tOffsets = {5, 60, 205, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Energy color (low)", self._DB.profile.warrior, "crResource1", { tMove = {0, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Energy color (high)", self._DB.profile.warrior, "crResource2", { tMove = {0, 120} })
 
@@ -727,7 +740,6 @@ end
 function ForgeUI_ResourceBars:PopulateOptions_Slinger()
 	local wndGeneral = self.tOptionHolders["General"]
 
-	G:API_AddText(self, wndGeneral, "Spellslinger", { tOffsets = {5, 60, 205, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Rune color", self._DB.profile.slinger, "crResource1", { tMove = {0, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Rune color (not full)", self._DB.profile.slinger, "crResource2", { tMove = {0, 120} })
 	G:API_AddColorBox(self, wndGeneral, "Surged color", self._DB.profile.slinger, "crResource3", { tMove = {200, 90} })
@@ -738,31 +750,17 @@ end
 function ForgeUI_ResourceBars:PopulateOptions_Esper()
 	local wndGeneral = self.tOptionHolders["General"]
 
-	G:API_AddText(self, wndGeneral, "Esper", { tOffsets = {5, 60, 205, 90} })
-	G:API_AddColorBox(self, 
-					wndGeneral, 
-					"PSI point color", 
-					self._DB.profile.esper, 
-					"crResource1", 
-					{ tMove = {0, 90},fnCallback = self.ForgeAPI_LoadSettings })
-	G:API_AddCheckBox(self, 
-					wndGeneral, 
-					"Show Mental Overflow", 
-					self._DB.profile.esper, 
-					"bShowMentalOverflow", 
-					{tMove = {0, 120}, fnCallback = self.ForgeAPI_LoadSettings})
-	G:API_AddColorBox(self, 
-					wndGeneral, 
-					"Mental Overflow point color", 
-					self._DB.profile.esper, 
-					"crResource2", 
-					{ tMove = {200, 120},fnCallback = self.ForgeAPI_LoadSettings })
+	G:API_AddColorBox(self, wndGeneral, "PSI point color", self._DB.profile.esper, "crResource1", {
+		tMove = {0, 90}, fnCallback = self.ForgeAPI_LoadSettings })
+	G:API_AddCheckBox(self, wndGeneral, "Show Mental Overflow", self._DB.profile.esper, "bShowMentalOverflow", {
+		tMove = {0, 120}, fnCallback = self.ForgeAPI_LoadSettings })
+	G:API_AddColorBox(self, wndGeneral, "Mental Overflow point color", self._DB.profile.esper, "crResource2", {
+		tMove = {200, 120}, fnCallback = self.ForgeAPI_LoadSettings })
 end
 
 function ForgeUI_ResourceBars:PopulateOptions_Stalker()
 	local wndGeneral = self.tOptionHolders["General"]
 
-	G:API_AddText(self, wndGeneral, "Stalker", { tOffsets = {5, 60, 205, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Suit power color (low)", self._DB.profile.stalker, "crResource2", { tMove = {0, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Suit power color", self._DB.profile.stalker, "crResource1", { tMove = {200, 90} })
 	G:API_AddNumberBox(self, wndGeneral, "Suit power threshold", self._DB.profile.stalker, "nBreakpoint", { tMove = {400, 90} })
@@ -771,7 +769,6 @@ end
 function ForgeUI_ResourceBars:PopulateOptions_Medic()
 	local wndGeneral = self.tOptionHolders["General"]
 
-	G:API_AddText(self, wndGeneral, "Medic", { tOffsets = {5, 60, 205, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Actuator color", self._DB.profile.medic, "crResource1", { tMove = {0, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Power charge color", self._DB.profile.medic, "crResource2", { tMove = {200, 90} })
 end
@@ -779,7 +776,6 @@ end
 function ForgeUI_ResourceBars:PopulateOptions_Engineer()
 	local wndGeneral = self.tOptionHolders["General"]
 
-	G:API_AddText(self, wndGeneral, "Engineer", { tOffsets = {5, 60, 205, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Volatility color", self._DB.profile.engineer, "crResource1", { tMove = {0, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Volatility color (30 - 70)", self._DB.profile.engineer, "crResource2", { tMove = {200, 90} })
 	G:API_AddCheckBox(self, wndGeneral, "Show 30 & 70 lines", self._DB.profile.engineer, "bShowBars", { tMove = {400, 90},
