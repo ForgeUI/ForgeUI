@@ -62,6 +62,13 @@ function Util:CopyTable(tNew, tOld)
 	return tNew
 end
 
+function Util:TableConcat(t1, t2)
+    for i = 1, #t2 do
+        t1[#t1 + 1] = t2[i]
+    end
+    return t1
+end
+
 function Util:ShortNum(num)
 	local tmp = tostring(num)
     if not num then

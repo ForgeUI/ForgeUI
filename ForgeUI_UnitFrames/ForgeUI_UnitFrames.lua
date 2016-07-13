@@ -132,14 +132,14 @@ function ForgeUI_UnitFrames:ForgeAPI_Init()
 	self.xmlSprites = XmlDoc.CreateFromFile("..//ForgeUI_UnitFrames//ForgeUI_UnitFrames_Sprites.xml")
 	Apollo.LoadSprites(self.xmlSprites)
 
+	F:API_RegisterEvent(self, "PlayerEnteredCombat", "OnPlayerEnteredCombat")
+
 	local wndParent = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 	F:API_AddMenuToMenuItem(self, wndParent, "Player frame", "Player")
 	F:API_AddMenuToMenuItem(self, wndParent, "Target frame", "Target")
 	F:API_AddMenuToMenuItem(self, wndParent, "Focus frame", "Focus")
 	F:API_AddMenuToMenuItem(self, wndParent, "ToT frame", "ToT")
 	F:API_AddMenuToMenuItem(self, wndParent, "Other", "Other")
-
-	Apollo.RegisterEventHandler("UnitEnteredCombat", "OnUnitEnteredCombat", self)
 end
 
 function ForgeUI_UnitFrames:OnDocLoaded()
@@ -188,9 +188,7 @@ function ForgeUI_UnitFrames:OnNextFrame()
 	self:UpdatePlayerFrame(unitPlayer)
 end
 
-function ForgeUI_UnitFrames:OnUnitEnteredCombat(unit, bInCombat)
-	if not unit:IsThePlayer() then return end
-	if not self.wndPlayerFrame then return end
+function ForgeUI_UnitFrames:OnPlayerEnteredCombat(_, bInCombat)
 	if not self._DB.profile.tFrames.Player.bHideOOC then return end
 	self.wndPlayerFrame:SetOpacity(bInCombat and 1 or 0)
 end

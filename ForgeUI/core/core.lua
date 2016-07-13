@@ -11,11 +11,9 @@ local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeUI GUI library
 local M = _G["ForgeLibs"]["ForgeModule"] -- ForgeUI module prototype
 local A = _G["ForgeLibs"]["ForgeAddon"] -- ForgeUI addon prototype
 
--- integrating CallbackHandler to F
-F.callbacks = F.callbacks or Apollo.GetPackage("Gemini:CallbackHandler-1.0").tPackage:New(F)
-
 -- libraries
 local GeminiHook = Apollo.GetPackage("Gemini:Hook-1.0").tPackage
+local GeminiEvent = Apollo.GetPackage("Gemini:Event-1.0").tPackage
 local GeminiDB = Apollo.GetPackage("Gemini:DB-1.0").tPackage
 GeminiDB.callbacks = GeminiDB.callbacks or Apollo.GetPackage("Gemini:CallbackHandler-1.0").tPackage:New(GeminiDB)
 
@@ -81,6 +79,14 @@ function Core:ForgeAPI_Init()
 	Print("ForgeUI v" .. F:API_GetVersion() .. " has been loaded")
 
 	GeminiHook:Embed(F)
+
+	Apollo.RegisterEventHandler("UnitEnteredCombat", "OnUnitEnteredCombat", self)
+end
+
+function Core:OnUnitEnteredCombat(unit, bInCombat)
+	if not unit:IsThePlayer() then return end
+
+	F:API_SendEvent("PlayerEnteredCombat", bInCombat)
 end
 
 function Core:OnDatabaseUpdate()
@@ -290,6 +296,10 @@ function F:API_RegisterNamespaceDefaults(o, tDefaults)
 	db:RegisterDefaults(tDefaults)
 end
 
+function F:API_SendEvent(...) GeminiEvent.SendEvent(...) end
+function F:API_UnregisterEvent(...) GeminiEvent.UnregisterEvent(...) end
+function F:API_RegisterEvent(...) GeminiEvent.RegisterEvent(...) end
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI intern API
 -----------------------------------------------------------------------------------------------
@@ -366,6 +376,13 @@ function Core.copyTable(src, dest)
 		end
 	end
 	return dest
+end
+
+function Core.TableConcat(t1, t2)
+    for i = 1, #t2 do
+        t1[#t1 + 1] = t2[i]
+    end
+    return t1
 end
 
 Core = F:API_NewModule(Core)

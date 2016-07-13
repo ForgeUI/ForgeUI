@@ -243,9 +243,9 @@ function ForgeUI_ActionBars:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_ActionBars//ForgeUI_ActionBars.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
-	wndMenuItem = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
+	F:API_RegisterEvent(self, "PlayerEnteredCombat", "OnPlayerEnteredCombat")
 
-	Apollo.RegisterEventHandler("UnitEnteredCombat", "OnUnitEnteredCombat", self)
+	wndMenuItem = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 end
 
 function ForgeUI_ActionBars:ForgeAPI_LoadSettings()
@@ -284,9 +284,7 @@ function ForgeUI_ActionBars:OnDocLoaded()
 	self.tQueuedBars = {}
 end
 
-function ForgeUI_ActionBars:OnUnitEnteredCombat(unit, bInCombat)
-	if not unit:IsThePlayer() then return end
-
+function ForgeUI_ActionBars:OnPlayerEnteredCombat(_, bInCombat)
 	for _, v in pairs(self._DB.profile.tFrames) do
 		if v.bHideOOC then
 			tBars[v.strKey]:SetOpacity(bInCombat and 1 or 0)
