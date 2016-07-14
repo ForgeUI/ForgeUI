@@ -567,7 +567,7 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Esper()
 			self.wndMentalOverflow:FindChild("MO" .. j):FindChild("Background"):SetBGColor(self._DB.profile.crBackground)
 			self.wndMentalOverflow:FindChild("MO" .. j):FindChild("ProgressBar"):SetBarColor(self._DB.profile.esper.crResource2)
 			self.wndMentalOverflow:FindChild("MO" .. j):FindChild("ProgressBar"):SetMax(1)
-			self.wndMentalOverflow:FindChild("MO" .. i):FindChild("ProgressBar"):SetFullSprite(self._DB.profile.strFullSprite)
+			self.wndMentalOverflow:FindChild("MO" .. j):FindChild("ProgressBar"):SetFullSprite(self._DB.profile.strFullSprite)
 		end			
 	end
 end
