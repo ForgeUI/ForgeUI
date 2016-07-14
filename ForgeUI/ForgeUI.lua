@@ -25,7 +25,7 @@ local API_VERSION = 3
 local MAJOR_VERSION = 0
 local MINOR_VERSION = 5
 local PATCH_VERSION = 2
-local PATCH_SUFFIX = 0
+local PATCH_SUFFIX = 1
 local PATCH_SUFFIXES = {
 	[-2] = "alpha", [-1] = "beta", [0] = "",
 	[1] = "a", [2] = "b", [3] = "c",
