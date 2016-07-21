@@ -476,8 +476,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 
 	wnd:SetUnit(unitNew, 1)
 
-	local tNameplate =
-	{
+	local tNameplate = {
 		unitOwner 		= unitNew,
 		idUnit 			= idUnit,
 		wndNameplate	= wnd,
@@ -537,7 +536,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 
 	self:UpdateNameplateRewardInfo(tNameplate)
 
-	self:DrawName(tNameplate)
+	self:DrawName(tNameplate, true)
 	self:DrawGuild(tNameplate)
 	self:DrawHealth(tNameplate)
 	self:DrawIndicators(tNameplate)
@@ -675,12 +674,13 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 	tNameplate.wnd.healthHealthFill:SetBarColor(crBarColor)
 end
 
-function ForgeUI_Nameplates:DrawName(tNameplate)
+function ForgeUI_Nameplates:DrawName(tNameplate, bOverride)
 	local wndNameplate = tNameplate.wndNameplate
 	local unitOwner = tNameplate.unitOwner
 	local wndName = tNameplate.wnd.wndName
 
-	local bShow = self:GetBooleanOption("nShowName", tNameplate)
+	-- HACK: bOverride solves weird reposition of name. bOverride is set once, right after nameplate creation. 
+	local bShow = bOverride or self:GetBooleanOption("nShowName", tNameplate)
 	if wndName:IsShown() ~= bShow then
 		wndName:Show(bShow, true)
 	end
