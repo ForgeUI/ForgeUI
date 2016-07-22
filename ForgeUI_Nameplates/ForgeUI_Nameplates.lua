@@ -369,6 +369,8 @@ function ForgeUI_Nameplates:ForgeAPI_LoadSettings()
 
 	self:UpdateAllNameplates()
 	self:LoadStyle_Nameplates()
+
+	Apollo.SetConsoleVariable("ui.occludeNameplatePositions", self._DB.profile.bUseOcclusion)
 end
 
 function ForgeUI_Nameplates:UpdateAllNameplates()
@@ -1785,7 +1787,9 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	local wndGeneral = self.tOptionHolders["General"]
 
 	G:API_AddNumberBox(self, wndGeneral, "Draw distance", self._DB.profile, "nMaxRange", { tMove = {0, 0} })
-	G:API_AddCheckBox(self, wndGeneral, "Use occlusion", self._DB.profile, "bUseOcclusion", { tMove = {0, 30}, strTooltip = "If checked, nameplates will not be drawn behind objects." })
+	G:API_AddCheckBox(self, wndGeneral, "Use occlusion", self._DB.profile, "bUseOcclusion", { tMove = {0, 30},
+		strTooltip = "If checked, nameplates will not be drawn behind objects.",
+		fnCallback = (function(...) Apollo.SetConsoleVariable("ui.occludeNameplatePositions", arg[2]) end) })
 	G:API_AddCheckBox(self, wndGeneral, "Show titles", self._DB.profile, "bShowTitles", { tMove = {200, 30} })
 	G:API_AddCheckBox(self, wndGeneral, "Show only important NPC", self._DB.profile, "bOnlyImportantNPC", { tMove = {0, 60} })
 	G:API_AddCheckBox(self, wndGeneral, "Track player combat state", self._DB.profile, "bCombatStatePlayer", { tMove = {200, 60},
