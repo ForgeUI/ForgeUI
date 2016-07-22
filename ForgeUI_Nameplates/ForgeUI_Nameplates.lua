@@ -84,17 +84,27 @@ local ForgeUI_Nameplates = {
 			bFrequentUpdate = false,
 			bShowDead = true,
 			bClickable = true,
+			bMOOBar = true,
+			bMOODuration = true,
+			bCombatStatePlayer = false,
+			bShortNames = false,
 			crShield = "FF0699F3",
 			crAbsorb = "FFFFC600",
 			crDead = "FF666666",
-			crMOO = "FF7E00FF",
+			crHealthbarMOO = "FF7E00FF",
+			crCastbarNormal = "FFFEB308",
+			crCastbarMOO = "FFBC00BB",
 			tStyle = {
 				nStyle = 0,
 				nBarWidth = 120,
 				nBarHeight = 20,
+				nBarOffset = 80,
 				nShieldHeight = 8,
 				nAbsorbHeight = 8,
 				nCastHeight = 7,
+				nCastOffsetY = 7,
+				nCastTextOffsetY = 7,
+				bCastTextCenter = false,
 				strFullSprite = "ForgeUI_Smooth",
 				strIASprite = "ForgeUI_shield"
 			},
@@ -174,6 +184,8 @@ local ForgeUI_Nameplates = {
 					crName = "FFFF0000",
 					crNameNoPvP = "FFFF9900",
 					crHealth = "FFFF0000",
+					bHideBarsNoPvP = true,
+					bHideCastNoPvP = true,
 					bClassColors = true,
 					bShowHpValue = false,
 					bShowShieldValue = false,
@@ -273,6 +285,11 @@ local ForgeUI_Nameplates = {
 					nShowName = 0,
 					crName = "FFFFFFFF"
 				},
+				Scanner = {
+					bEnabled = false,
+					nShowName = 0,
+					nShowBars = 0,
+				},
 
 			},
 			knNameplatePoolLimit = 500,
@@ -318,6 +335,10 @@ function ForgeUI_Nameplates:NameplatesInit()
 	Apollo.RegisterEventHandler("UnitMemberOfGuildChange", 		"OnUnitMemberOfGuildChange", self)
 	Apollo.RegisterEventHandler("GuildChange", 					"OnGuildChange", self)
 	Apollo.RegisterEventHandler("UnitGibbed",					"OnUnitGibbed", self)
+
+	Apollo.RegisterEventHandler("StartSpellThreshold", 	"OnStartSpellThreshold", self)
+	Apollo.RegisterEventHandler("ClearSpellThreshold", 	"OnClearSpellThreshold", self)
+	Apollo.RegisterEventHandler("UpdateSpellThreshold", "OnUpdateSpellThreshold", self)
 
 	self.bRedrawRewardIcons = true
 	local tRewardUpdateEvents = {
@@ -476,7 +497,8 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 
 	wnd:SetUnit(unitNew, 1)
 
-	local tNameplate = {
+	local tNameplate =
+	{
 		unitOwner 		= unitNew,
 		idUnit 			= idUnit,
 		wndNameplate	= wnd,
@@ -506,9 +528,9 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 			castBar = wnd:FindChild("Container:CastBar"),
 			level = wnd:FindChild("Level"),
 			wndGuild = wnd:FindChild("Guild"),
-			wndName = wnd:FindChild("Name"),
+			wndName = wnd:FindChild("NameRewardContainer:Name"),
 
-			nameRewardContainer = wnd:FindChild("RewardContainer"),
+			nameRewardContainer = wnd:FindChild("NameRewardContainer:Name:RewardContainer"),
 			healthMaxShield = wnd:FindChild("Container:Health:HealthBars:MaxShield"),
 			healthShieldFill = wnd:FindChild("Container:Health:HealthBars:MaxShield:ShieldFill"),
 			healthMaxAbsorb = wnd:FindChild("Container:Health:HealthBars:MaxAbsorb"),
@@ -522,12 +544,12 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 
 			castBarLabel = wnd:FindChild("Container:CastBar:Label"),
 			castBarCastFill = wnd:FindChild("Container:CastBar:CastFill"),
-			questRewards = wnd:FindChild("Name:RewardContainer:QuestRewards"),
+			questRewards = wnd:FindChild("NameRewardContainer:Name:RewardContainer:QuestRewards"),
 			targetMarker = wnd:FindChild("Container:Health:TargetMarker"),
 			indicator = wnd:FindChild("Container:Health:Indicator"),
-			info = wnd:FindChild("Name:Info"),
-			info_level = wnd:FindChild("Name:Info:Level"),
-			info_class = wnd:FindChild("Name:Info:Class"),
+			info = wnd:FindChild("NameRewardContainer:Name:Info"),
+			info_level = wnd:FindChild("NameRewardContainer:Name:Info:Level"),
+			info_class = wnd:FindChild("NameRewardContainer:Name:Info:Class"),
 		}
 	end
 
@@ -536,7 +558,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 
 	self:UpdateNameplateRewardInfo(tNameplate)
 
-	self:DrawName(tNameplate, true)
+	self:DrawName(tNameplate)
 	self:DrawGuild(tNameplate)
 	self:DrawHealth(tNameplate)
 	self:DrawIndicators(tNameplate)
@@ -665,8 +687,10 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 		crBarColor = tSettings.crHpCutoff
 	end
 
-	if unitOwner:IsInCCState(Unit.CodeEnumCCState.Vulnerability) then
-		crBarColor = self._DB.profile.crMOO
+	if self._DB.profile.bMOOBar then
+		if unitOwner:IsInCCState(Unit.CodeEnumCCState.Vulnerability) then
+			crBarColor = self._DB.profile.crHealthbarMOO
+		end
 	end
 
 	tNameplate.wnd.wndName:SetTextColor(crNameColors)
@@ -674,33 +698,45 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 	tNameplate.wnd.healthHealthFill:SetBarColor(crBarColor)
 end
 
-function ForgeUI_Nameplates:DrawName(tNameplate, bOverride)
+function ForgeUI_Nameplates:HelperGetName(tNameplate)
+	local unitOwner = tNameplate.unitOwner
+	local nameIterator = unitOwner:GetName():gmatch("[^ ]+")
+	local strNameFirst = nameIterator() or ""
+	local strNameSecond = nameIterator() or ""
+
+	local strNewName = ""
+	if self._DB.profile.bShowTitles then
+		strNewName = unitOwner:GetTitleOrName()
+	else
+		strNewName = unitOwner:GetName()
+	end
+
+	if tNameSwaps[unitOwner:GetName()] then
+		strNewName = tNameSwaps[unitOwner:GetName()]
+	elseif self._DB.profile.bShortNames then
+		strNewName = strNewName:gsub(" "..strNameSecond, "")
+	end
+
+	return strNewName
+end
+
+function ForgeUI_Nameplates:DrawName(tNameplate)
 	local wndNameplate = tNameplate.wndNameplate
 	local unitOwner = tNameplate.unitOwner
 	local wndName = tNameplate.wnd.wndName
 
-	-- HACK: bOverride solves weird reposition of name. bOverride is set once, right after nameplate creation. 
-	local bShow = bOverride or self:GetBooleanOption("nShowName", tNameplate)
+	local bShow = self:GetBooleanOption("nShowName", tNameplate)
 	if wndName:IsShown() ~= bShow then
 		wndName:Show(bShow, true)
 	end
 
 	if bShow then
-		local strNewName
-		if self._DB.profile.bShowTitles then
-			strNewName = unitOwner:GetTitleOrName()
-		else
-			strNewName = unitOwner:GetName()
-		end
-
-		if tNameSwaps[unitOwner:GetName()] then
-			strNewName = tNameSwaps[unitOwner:GetName()]
-		end
+		local strNewName = self:HelperGetName(tNameplate)
 
 		if tNameplate.strName ~= strNewName then
 			tNameplate.strName = strNewName
-			
-			wndName:SetTextRaw(strNewName)
+
+			wndName:SetText(strNewName)
 
 			local nNameWidth = Apollo.GetTextWidth("Nameplates", strNewName .. " ")
 			local nLeft, nTop, nRight, nBottom = wndName:GetAnchorOffsets()
@@ -760,11 +796,16 @@ function ForgeUI_Nameplates:DrawHealth(tNameplate)
 		bShow = bHealth or bShield
 	end
 
+	-- hide health bar for non flagged hostile players
+	if tNameplate.tSettings.bHideBarsNoPvP and tNameplate.strUnitType == "HostilePlayer" and not unitOwner:IsPvpFlagged() and not tNameplate.bIsTarget then
+		bShow = false
+	end
+
 	if bShow then
 		self:SetBarValue(tNameplate.wnd.healthHealthFill, 0, nHealth, nMaxHealth)
 
 		tNameplate.hpPercentage = (nHealth / nMaxHealth) * 100
-		
+
 		if tNameplate.tSettings.bShowHpValue then
 			tNameplate.wnd.hpText:SetText(Util:ShortNum(nHealth))
 		else
@@ -826,7 +867,7 @@ function ForgeUI_Nameplates:DrawShield(tNameplate)
 		if bShow then
 			self:SetBarValue(tNameplate.wnd.healthShieldFill, 0, nShield, nShieldMax)
 		end
-		
+
 		if bShow and tNameplate.tSettings.bShowShieldValue then
 			tNameplate.wnd.shieldText:SetText(Util:ShortNum(nShield))
 		else
@@ -882,14 +923,170 @@ function ForgeUI_Nameplates:DrawAbsorb(tNameplate)
 	end
 end
 
+function ForgeUI_Nameplates:OnStartSpellThreshold(idSpell, nMaxThresholds, eCastMethod) -- Event
+	local unitPlayer = GameLib.GetPlayerUnit()
+	if unitPlayer == nil or not unitPlayer:IsValid() then return end
+
+	local tNameplate = self.arUnit2Nameplate[unitPlayer:GetId()]
+
+	local splObject = GameLib.GetSpell(idSpell)
+
+	if tNameplate ~= nil then
+
+		tNameplate.tTapCast = {
+			idSpell = idSpell,
+			strSpellName = splObject:GetName(),
+			nThreshold = 1,
+			nMaxThreshold = nMaxThresholds,
+			bActive = true,
+		}
+
+		local bShow = self:GetBooleanOption("nShowCast", tNameplate)
+
+		local wndCastBar = tNameplate.wnd.castBar
+		if bShow ~= wndCastBar:IsShown() then
+			wndCastBar:Show(bShow)
+		end
+
+		if bShow then
+			tNameplate.wnd.castBarCastFill:SetBarColor(self._DB.profile.crCastbarNormal)
+
+			local strCastName = tNameplate.tTapCast.strSpellName
+			tNameplate.wnd.castBarLabel:SetText(string.format("%s (%s/%s)", strCastName, "1", nMaxThresholds))
+			tNameplate.strCastName = strCastName
+
+			local nCastDuration = nMaxThresholds
+			if nCastDuration ~= tNameplate.nCastDuration then
+				tNameplate.wnd.castBarCastFill:SetMax(nCastDuration)
+				tNameplate.nCastDuration = nCastDuration
+			end
+
+			local nCastElapsed = tNameplate.tTapCast.nThreshold
+			if nCastElapsed ~= tNameplate.nCastElapsed then
+				tNameplate.wnd.castBarCastFill:SetProgress(nCastElapsed)
+				tNameplate.nCastElapsed = nCastElapsed
+			end
+
+		end
+
+	end
+end
+
+function ForgeUI_Nameplates:OnUpdateSpellThreshold(idSpell, nNewThreshold) -- Event
+	local unitPlayer = GameLib.GetPlayerUnit()
+	if unitPlayer == nil or not unitPlayer:IsValid() then return end
+
+	local tNameplate = self.arUnit2Nameplate[unitPlayer:GetId()]
+
+	if tNameplate ~= nil then
+
+		local bShow = self:GetBooleanOption("nShowCast", tNameplate)
+
+		local wndCastBar = tNameplate.wnd.castBar
+		if bShow ~= wndCastBar:IsShown() then
+			wndCastBar:Show(bShow)
+		end
+
+		local strCastName = tNameplate.tTapCast.strSpellName
+		local nMaxThresholds = tNameplate.tTapCast.nMaxThreshold
+		tNameplate.wnd.castBarLabel:SetText(string.format("%s (%s/%s)", strCastName, nNewThreshold, nMaxThresholds))
+		tNameplate.strCastName = strCastName
+
+		local nCastDuration = tNameplate.tTapCast.nMaxThreshold
+		if nCastDuration ~= tNameplate.nCastDuration then
+			tNameplate.wnd.castBarCastFill:SetMax(nCastDuration)
+			tNameplate.nCastDuration = nCastDuration
+		end
+
+		local nCastElapsed = nNewThreshold
+		if nCastElapsed ~= tNameplate.nCastElapsed then
+			tNameplate.wnd.castBarCastFill:SetProgress(nCastElapsed)
+			tNameplate.nCastElapsed = nCastElapsed
+			tNameplate.tTapCast.nThreshold = nNewThreshold
+		end
+
+	end
+end
+
+function ForgeUI_Nameplates:OnClearSpellThreshold(idSpell) -- Event
+	local unitPlayer = GameLib.GetPlayerUnit()
+	local tNameplate = self.arUnit2Nameplate[unitPlayer:GetId()]
+	if unitPlayer == nil or not unitPlayer:IsValid() or tNameplate == nil then return end
+
+	tNameplate.wnd.castBar:Show(false)
+	tNameplate.wnd.castBarCastFill:SetProgress(0)
+
+	tNameplate.tTapCast = nil
+end
+
+function ForgeUI_Nameplates:DrawMOOBar(tNameplate)
+	local unitOwner = tNameplate.unitOwner
+	if unitOwner == nil or unitOwner:IsDead() then return end
+
+	local nCCTimeRemaining = unitOwner:GetCCStateTimeRemaining(Unit.CodeEnumCCState.Vulnerability)
+	local nCCTimeMax = unitOwner:GetCCStateTotalTime(Unit.CodeEnumCCState.Vulnerability)
+
+	if nCCTimeRemaining > 0 then
+
+		tNameplate.wnd.castBarCastFill:SetBarColor(self._DB.profile.crCastbarMOO)
+
+--		local strCastName = string.format("%s (%s)", "MoO", ForgeUI.Round(time, 1))
+		local strCastName = ""
+		if strCastName ~= tNameplate.strCastName then
+			tNameplate.wnd.castBarLabel:SetText(strCastName)
+			tNameplate.strCastName = strCastName
+		end
+
+		if nCCTimeMax ~= tNameplate.nCastDuration then
+			tNameplate.wnd.castBarCastFill:SetMax(nCCTimeMax)
+			tNameplate.nCastDuration = nCCTimeMax
+		end
+
+		if nCCTimeRemaining ~= tNameplate.nCastElapsed then
+			tNameplate.wnd.castBarCastFill:SetProgress(nCCTimeRemaining)
+			tNameplate.nCastElapsed = nCCTimeRemaining
+		end
+
+		if not tNameplate.wnd.castBar:IsShown() then
+			tNameplate.wnd.castBar:Show(true, true)
+		end
+	else
+		tNameplate.wnd.castBar:Show(false)
+	end
+end
+
 function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
+	-- TapCast check (only for unitPlayer)
+	if tNameplate.tTapCast ~= nil and tNameplate.tTapCast.bActive and tNameplate.unitOwner:ShouldShowCastBar() then
+		-- new cast started that interrupted TapCast
+		tNameplate.tTapCast.bActive = false
+	elseif tNameplate.tTapCast ~= nil and not tNameplate.tTapCast.bActive and not tNameplate.unitOwner:ShouldShowCastBar() then
+		-- cast ended while inactive TapCast still running. updating castbar
+		tNameplate.tTapCast.bActive = true
+		return self:OnUpdateSpellThreshold(tNameplate.tTapCast.idSpell, tNameplate.tTapCast.nThreshold)
+	elseif tNameplate.tTapCast ~= nil and not tNameplate.unitOwner:ShouldShowCastBar() then
+		-- do not update cast bar if TapCast active (unless new cast started)
+		return
+	end
+
 	local wndNameplate = tNameplate.wndNameplate
 	local unitOwner = tNameplate.unitOwner
+
+	if self._DB.profile.bMOODuration then -- MoO duration bar
+		if unitOwner:IsInCCState(Unit.CodeEnumCCState.Vulnerability) then
+			return self:DrawMOOBar(tNameplate)
+		end
+	end
 
 	-- Casting; has some onDraw parameters we need to check
 	tNameplate.bIsCasting = unitOwner:ShouldShowCastBar()
 
 	local bShow = tNameplate.bIsCasting and self:GetBooleanOption("nShowCast", tNameplate)
+
+	-- hide cast bar for non flagged hostile players
+	if tNameplate.tSettings.bHideCastNoPvP and tNameplate.strUnitType == "HostilePlayer" and not unitOwner:IsPvpFlagged() and not tNameplate.bIsTarget then
+		bShow = false
+	end
 
 	local wndCastBar = tNameplate.wnd.castBar
 	if bShow ~= wndCastBar:IsShown() then
@@ -897,6 +1094,8 @@ function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
 	end
 
 	if bShow then
+		tNameplate.wnd.castBarCastFill:SetBarColor(self._DB.profile.crCastbarNormal)
+
 		local strCastName = unitOwner:GetCastName()
 		if strCastName ~= tNameplate.strCastName then
 			tNameplate.wnd.castBarLabel:SetText(strCastName)
@@ -1157,12 +1356,14 @@ function ForgeUI_Nameplates:GetUnitType(unit)
 		end
 	elseif unit:GetType() == "Mount" then
 		return "Mount"
+	elseif unit:GetType() == "Scanner" then
+		return "Scanner"
 	elseif unit:GetType() == "Pickup" then
 		if string.match(unit:GetName(), self.unitPlayer:GetName()) then
 			return "Pickup"
 		end
 		return "PickupNotPlayer"
-	elseif unit:GetHealth() == nil and not unit:IsDead() then
+	elseif unit:GetHealth() == nil and (not unit:IsDead() or unit:GetLevel() == nil) then
 		return "Simple"
 	else
 		if eDisposition == 0 then
@@ -1179,7 +1380,11 @@ end
 
 function ForgeUI_Nameplates:GetBooleanOption(strOption, tNameplate)
 	local nOption = -1
+
 	local unit = tNameplate.unitOwner
+	if self._DB.profile.bCombatStatePlayer then -- track player combat state
+		unit = self.unitPlayer
+	end
 
 	if tNameplate.bIsTarget then
 		nOption = self._DB.profile.tUnits.Target[strOption]
@@ -1190,21 +1395,24 @@ function ForgeUI_Nameplates:GetBooleanOption(strOption, tNameplate)
 		nOption = tNameplate.tSettings[strOption]
 	end
 
-	if nOption == 0 then
+	if nOption == 0 then -- Never
 		return false
-	elseif nOption == 1 then
+	elseif nOption == 1 then -- Out of combat
 		if not unit:IsInCombat() then
 			return true
 		else
 			return false
 		end
-	elseif nOption == 2 then
-		if unit:IsInCombat() or unit:GetHealth() ~= unit:GetMaxHealth() then
+	elseif nOption == 2 then -- In combat
+		-- if unit:IsInCombat() or unit:GetHealth() ~= unit:GetMaxHealth() then
+		-- removed max health check: because we want to see nameplates ONLY in combat and not when unit isn't full health
+		-- can be re implemented via separate option if needed
+		if unit:IsInCombat() then
 			return true
 		else
 			return false
 		end
-	elseif nOption == 3 then
+	elseif nOption == 3 then -- Always
 		return true
 	end
 end
@@ -1288,6 +1496,7 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	wnd.healthShieldFill:SetBarColor(self._DB.profile.crShield)
 	wnd.healthAbsorbFill:SetBarColor(self._DB.profile.crAbsorb)
 	wnd.healthHealthFill:SetFullSprite(self._DB.profile.tStyle.strFullSprite)
+	wnd.castBarCastFill:SetFullSprite(self._DB.profile.tStyle.strFullSprite)
 	wnd.healthShieldFill:SetFullSprite(self._DB.profile.tStyle.strFullSprite)
 	wnd.healthAbsorbFill:SetFullSprite(self._DB.profile.tStyle.strFullSprite)
 
@@ -1302,6 +1511,14 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	--style
 	local tStyle = self._DB.profile.tStyle
 
+	-- nameplate vertical offset
+	local nLeft, nTop, nRight, nBottom = wndNameplate:GetAnchorOffsets()
+
+	nTop = -150 + tStyle.nBarOffset
+	nBottom = nTop + 80
+
+	wndNameplate:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+
 	-- indicators
 	if tStyle.nStyle == 0 then
 		wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, 7)
@@ -1312,7 +1529,7 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	end
 
 	-- bar
-	local nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("Container"):GetAnchorOffsets()
+	nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("Container"):GetAnchorOffsets()
 
 	nLeft = -(tStyle.nBarWidth / 2)
 	nRight = (tStyle.nBarWidth / 2)
@@ -1353,13 +1570,24 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 		wndNameplate:FindChild("MaxAbsorb"):SetAnchorOffsets(0, - tStyle.nAbsorbHeight, 0, 1)
 	end
 
-	-- cast
+	-- castbar
 	nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("CastBar"):GetAnchorOffsets()
 
-	nBottom = 3 + tStyle.nCastHeight
+	nTop = -4 + tStyle.nCastOffsetY
+	nBottom = nTop + tStyle.nCastHeight
 
 	wndNameplate:FindChild("CastBar"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
-	
+
+	-- cast text
+	nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("Container:CastBar:Label"):GetAnchorOffsets()
+
+	nTop = -16 + tStyle.nCastTextOffsetY
+	nBottom = nTop + 16
+
+	wndNameplate:FindChild("Container:CastBar:Label"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+
+	wndNameplate:FindChild("Container:CastBar:Label"):SetTextFlags("dt_center", self._DB.profile.tStyle.bCastTextCenter)
+
 	-- hp & shield values
 	if tStyle.nStyle == 0 then
 		wndNameplate:FindChild("ShieldValue"):SetAnchorPoints(1, 1, 1, 1)
@@ -1391,10 +1619,10 @@ end
 
 function ForgeUI_Nameplates:OnNameplateNameClick(wndHandler, wndCtrl, eMouseButton)
 	if wndHandler ~= wndCtrl then return end -- Fixes ghost clicks
-	
+
 	if not self._DB.profile.bClickable then return false end
 	if eMouseButton == GameLib.CodeEnumInputMouse.Right then return false end
-	
+
 	local tNameplate = self.arWnd2Nameplate[wndHandler:GetParent():GetId()]
 	if not tNameplate then return false end
 
@@ -1558,40 +1786,51 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 
 	G:API_AddNumberBox(self, wndGeneral, "Draw distance", self._DB.profile, "nMaxRange", { tMove = {0, 0} })
 	G:API_AddCheckBox(self, wndGeneral, "Use occlusion", self._DB.profile, "bUseOcclusion", { tMove = {0, 30}, strTooltip = "If checked, nameplates will not be drawn behind objects." })
-	G:API_AddCheckBox(self, wndGeneral, "Show titles", self._DB.profile, "bShowTitles", { tMove = {0, 60} })
-	G:API_AddCheckBox(self, wndGeneral, "Show only important NPC", self._DB.profile, "bOnlyImportantNPC", { tMove = {0, 90} })
+	G:API_AddCheckBox(self, wndGeneral, "Show titles", self._DB.profile, "bShowTitles", { tMove = {200, 30} })
+	G:API_AddCheckBox(self, wndGeneral, "Show only important NPC", self._DB.profile, "bOnlyImportantNPC", { tMove = {0, 60} })
+	G:API_AddCheckBox(self, wndGeneral, "Track player combat state", self._DB.profile, "bCombatStatePlayer", { tMove = {200, 60},
+		strTooltip = "if checked, [In combat / Out of combat] visibility settings will track player combat state instead of unit combat state." })
+	G:API_AddCheckBox(self, wndGeneral, "Short names", self._DB.profile, "bShortNames", { tMove = {400, 60} })
 	G:API_AddCheckBox(self, wndGeneral, "Show objectives", self._DB.profile, "bShowObjectives", { tMove = {200, 0} })
-	G:API_AddCheckBox(self, wndGeneral, "Show shields", self._DB.profile, "bShowShield", { tMove = {200, 60} })
-	G:API_AddCheckBox(self, wndGeneral, "Show absorbs", self._DB.profile, "bShowAbsorb", { tMove = {200, 90} })
+	G:API_AddCheckBox(self, wndGeneral, "Show shields", self._DB.profile, "bShowShield", { tMove = {0, 150} })
+	G:API_AddCheckBox(self, wndGeneral, "Show absorbs", self._DB.profile, "bShowAbsorb", { tMove = {0, 180} })
 	G:API_AddCheckBox(self, wndGeneral, "Frequent updates", self._DB.profile, "bFrequentUpdate", { tMove = {400, 0} })
-	G:API_AddCheckBox(self, wndGeneral, "Clickable nameplates", self._DB.profile, "bClickable", { tMove = {400, 60}, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddCheckBox(self, wndGeneral, "Show nameplates for dead units", self._DB.profile, "bShowDead", { tOffsets = { 5, 155, 300, 180 } })
-	G:API_AddColorBox(self, wndGeneral, "Shield bar", self._DB.profile, "crShield", { tMove = {0, 210}, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddColorBox(self, wndGeneral, "Absorb bar", self._DB.profile, "crAbsorb", { tMove = {200, 210}, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddColorBox(self, wndGeneral, "MOO bar", self._DB.profile, "crMOO", { tMove = {400, 210}, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddColorBox(self, wndGeneral, "Dead unit name", self._DB.profile, "crDead", { tMove = {400, 150}, fnCallback = self.LoadStyle_Nameplates })
-	
+	G:API_AddCheckBox(self, wndGeneral, "Clickable nameplates", self._DB.profile, "bClickable", { tMove = {400, 30}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddCheckBox(self, wndGeneral, "Show nameplates for dead units", self._DB.profile, "bShowDead", { tOffsets = { 5, 125, 300, 150 } })
+	G:API_AddCheckBox(self, wndGeneral, "Show MOO bar", self._DB.profile, "bMOOBar", { tMove = {0, 240} })
+	G:API_AddCheckBox(self, wndGeneral, "Show MOO duration bar", self._DB.profile, "bMOODuration", { tMove = {0, 270} })
+	G:API_AddColorBox(self, wndGeneral, "Shield bar", self._DB.profile, "crShield", { tMove = {400, 150}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddColorBox(self, wndGeneral, "Absorb bar", self._DB.profile, "crAbsorb", { tMove = {400, 180}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddColorBox(self, wndGeneral, "MOO bar", self._DB.profile, "crHealthbarMOO", { tMove = {400, 240}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddColorBox(self, wndGeneral, "MOO duration bar", self._DB.profile, "crCastbarMOO", { tMove = {400, 270}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddColorBox(self, wndGeneral, "Dead unit name", self._DB.profile, "crDead", { tMove = {400, 120}, fnCallback = self.LoadStyle_Nameplates })
+
 	-- style options
 	local wndStyle = self.tOptionHolders["Style"]
-	
+
 	G:API_AddNumberBox(self, wndStyle, "Nameplate width", self._DB.profile.tStyle, "nBarWidth", { tMove = { 0, 30 }, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddNumberBox(self, wndStyle, "Nameplate height", self._DB.profile.tStyle, "nBarHeight", { tMove = { 0, 60 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddNumberBox(self, wndStyle, "Shield height", self._DB.profile.tStyle, "nShieldHeight", { tMove = { 200, 30 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddNumberBox(self, wndStyle, "Absorb height", self._DB.profile.tStyle, "nAbsorbHeight", { tMove = { 200, 60 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddNumberBox(self, wndStyle, "Castbar height", self._DB.profile.tStyle, "nCastHeight", { tMove = { 400, 30 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Nameplate vertical offset", self._DB.profile.tStyle, "nBarOffset", { tOffsets = { 5, 95, 300, 120 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Shield height", self._DB.profile.tStyle, "nShieldHeight", { tMove = { 300, 30 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Absorb height", self._DB.profile.tStyle, "nAbsorbHeight", { tMove = { 300, 60 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Castbar height", self._DB.profile.tStyle, "nCastHeight", { tMove = { 0, 180 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Castbar vertical offset", self._DB.profile.tStyle, "nCastOffsetY", { tOffsets = { 5, 215, 300, 240 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Cast text vertical offset", self._DB.profile.tStyle, "nCastTextOffsetY", { tOffsets = { 205, 185, 500, 210 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddCheckBox(self, wndStyle, "Center cast text", self._DB.profile.tStyle, "bCastTextCenter", { tMove = {200, 210}, fnCallback = self.LoadStyle_Nameplates })
 
 	local wndComboStyle = G:API_AddComboBox(self, wndStyle, "Style", self._DB.profile.tStyle, "nStyle", { fnCallback = self.OnStyleChanged })
 	G:API_AddOptionToComboBox(self, wndComboStyle , "Modern", 0, {})
 	G:API_AddOptionToComboBox(self, wndComboStyle , "Classic", 1, {})
 
-	local wndCombo = G:API_AddComboBox(self, wndStyle, "Texture", self._DB.profile.tStyle, "strFullSprite", { tMove = {0, 90}, tWidths = { 150, 50 },
+	local wndCombo = G:API_AddComboBox(self, wndStyle, "Texture", self._DB.profile.tStyle, "strFullSprite", { tMove = {0, 120}, tWidths = { 150, 50 },
 		fnCallback = self.LoadStyle_Nameplates
 	})
 	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Smooth","ForgeUI_Smooth", {})
 	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Flat", "ForgeUI_Flat", {})
 	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Minimalist", "ForgeUI_Minimalist", {})
+	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Edge", "ForgeUI_Edge", {})
 
-	local wndComboIA = G:API_AddComboBox(self, wndStyle, "IA icon", self._DB.profile.tStyle, "strIASprite", { tMove = {300, 90}, tWidths = { 150, 50 },
+	local wndComboIA = G:API_AddComboBox(self, wndStyle, "IA icon", self._DB.profile.tStyle, "strIASprite", { tMove = {300, 120}, tWidths = { 150, 50 },
 		fnCallback = self.LoadStyle_Nameplates
 	})
 	G:API_AddOptionToComboBox(self, wndComboIA, "Shield","ForgeUI_shield", {})
@@ -1603,8 +1842,8 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 		if wnd then
 			if v.nHpCutoff then
 				G:API_AddNumberBox(self, wnd, "HP cutoff", v, "nHpCutoff", { tMove = {400, 0}, strTooltip = "Recolor nameplate when HP is below this percentage.", })
-			end			
-			
+			end
+
 			if v.crHpCutoff then
 				G:API_AddColorBox(self, wnd, "HP cutoff color", v, "crHpCutoff", { tMove = {400, 30}, })
 			end
@@ -1615,6 +1854,14 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 
 			if v.crNameNoPvP then
 				G:API_AddColorBox(self, wnd, "Name color (PvP off)", v, "crNameNoPvP", { tMove = {200, 150} })
+			end
+
+			if v.bHideBarsNoPvP ~= nil then
+				G:API_AddCheckBox(self, wnd, "Hide bars (PvP off)", v, "bHideBarsNoPvP", { tMove = {200, 30} })
+			end
+
+			if v.bHideCastNoPvP ~= nil then
+				G:API_AddCheckBox(self, wnd, "Hide cast (PvP off)", v, "bHideCastNoPvP", { tMove = {200, 60} })
 			end
 
 			if v.crHealth then
@@ -1628,13 +1875,13 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 			if v.bCleanseIndicator ~= nil then
 				G:API_AddCheckBox(self, wnd, "Show cleanse indicator", v, "bCleanseIndicator", { tMove = {400, 90} })
 			end
-			
-			
+
+
 			if v.bHideOnHealth ~= nil then
-				G:API_AddCheckBox(self, wnd, "Hide on full hp", v, "bHideOnHealth", { tMove = {400, 180} } ) 
+				G:API_AddCheckBox(self, wnd, "Hide on full hp", v, "bHideOnHealth", { tMove = {400, 180} } )
 			end
-			
-			
+
+
 			if v.bHideOnShield ~= nil then
 				G:API_AddCheckBox(self, wnd, "Hide on full shield", v, "bHideOnShield", { tMove = { 400, 210 } } )
 			end
@@ -1659,11 +1906,11 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 			if v.bShowHpValue ~= nil then
 				G:API_AddCheckBox(self, wnd, "Show HP text", v, "bShowHpValue", { tMove = {400, 270}, fnCallback = self.LoadStyle_Nameplates })
 			end
-			
+
 			if v.bShowShieldValue ~= nil then
 				G:API_AddCheckBox(self, wnd, "Show shield text", v, "bShowShieldValue", { tMove = {400, 300}, fnCallback = self.LoadStyle_Nameplates })
 			end
-			
+
 			if v.nShowGuild then
 				local wndCombo = G:API_AddComboBox(self, wnd, "Guild", v, "nShowGuild", { tMove = {0, 90}, tWidths = { 150, 50 } })
 				G:API_AddOptionToComboBox(self, wndCombo, "Never", 0, {})
@@ -1723,6 +1970,7 @@ fnDrawShield = ForgeUI_Nameplates.DrawShield
 fnDrawAbsorb = ForgeUI_Nameplates.DrawAbsorb
 
 fnDrawRewards = ForgeUI_Nameplates.DrawRewards
+fnDrawMOOBar = ForgeUI_Nameplates.DrawMOOBar
 fnDrawCastBar = ForgeUI_Nameplates.DrawCastBar
 fnColorNameplate = ForgeUI_Nameplates.ColorNameplate
 fnDrawIndicators = ForgeUI_Nameplates.DrawIndicators
