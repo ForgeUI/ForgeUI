@@ -370,6 +370,7 @@ function ForgeUI:API_RemoveMenuItem(wnd)
 		wnd:Destroy()
 	end
 
+	Inst:CollapseAllMenuItems()
 	Inst:SortItemsByPriority()
 end
 
