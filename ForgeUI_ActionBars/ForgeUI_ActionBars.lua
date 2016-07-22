@@ -348,7 +348,7 @@ function ForgeUI_ActionBars:SetupBar(tBar, bResetMover, bResetAnchors)
 	elseif tBar.strKey == "ForgeUI_VehicleBar" then
 		wndBar:Show(bVehicleShown)
 	elseif tBar.strKey == "ForgeUI_ActionBar" then
-		wndBar:Show(not bVehicleShown)
+		wndBar:Show(not bVehicleShown and tBar.bShow)
 	elseif tBar.bShow ~= nil then
 		wndBar:Show(tBar.bShow)
 	end
