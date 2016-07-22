@@ -75,7 +75,7 @@ function ForgeUI_Interfaces:OnDocumentReady()
 	self.wndMain:FindChild("OpenFullListBtn"):AttachWindow(self.wndList)
 	self.wndMain:FindChild("OpenFullListBtn"):Enable(false)
 
-	self:LoadSettings()
+	self:ForgeAPI_LoadSettings()
 
 	Apollo.CreateTimer("QueueRedrawTimer", 0.3, false)
 
@@ -433,7 +433,9 @@ end
 -----------------------------------------------------------------------------------------------
 -- Loading setting
 -----------------------------------------------------------------------------------------------
-function ForgeUI_Interfaces:LoadSettings()
+function ForgeUI_Interfaces:ForgeAPI_LoadSettings()
+	if not self.wndMain then return end
+
 	local wndStore = self.wndMain:FindChild("StoreContainer")
 	local wndFortunes = self.wndMain:FindChild("FortunesContainer")
 	local wndButtonList = self.wndMain:FindChild("ButtonList")
@@ -478,9 +480,9 @@ function ForgeUI_Interfaces:ForgeAPI_PopulateOptions()
 	-- general settings
 	local wndGeneral = self.tOptionHolders["General"]
 
-	G:API_AddCheckBox(self, wndGeneral, "Show bar", self._DB.global, "bShowMain", { tMove = {0, 0}, fnCallback = self.LoadSettings })
-	G:API_AddCheckBox(self, wndGeneral, "Show store", self._DB.global, "bShowStore", { tMove = {0, 30}, fnCallback = self.LoadSettings })
-	G:API_AddCheckBox(self, wndGeneral, "Show fortunes", self._DB.global, "bShowFortunes", { tMove = {0, 60}, fnCallback = self.LoadSettings })
+	G:API_AddCheckBox(self, wndGeneral, "Show interface menu bar", self._DB.global, "bShowMain", { tMove = {0, 0}, fnCallback = self.ForgeAPI_LoadSettings })
+	G:API_AddCheckBox(self, wndGeneral, "Show store", self._DB.global, "bShowStore", { tMove = {0, 30}, fnCallback = self.ForgeAPI_LoadSettings })
+	G:API_AddCheckBox(self, wndGeneral, "Show fortunes", self._DB.global, "bShowFortunes", { tMove = {0, 60}, fnCallback = self.ForgeAPI_LoadSettings })
 end
 
 -----------------------------------------------------------------------------------------------

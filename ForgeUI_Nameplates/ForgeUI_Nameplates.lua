@@ -1789,7 +1789,7 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	G:API_AddCheckBox(self, wndGeneral, "Show titles", self._DB.profile, "bShowTitles", { tMove = {200, 30} })
 	G:API_AddCheckBox(self, wndGeneral, "Show only important NPC", self._DB.profile, "bOnlyImportantNPC", { tMove = {0, 60} })
 	G:API_AddCheckBox(self, wndGeneral, "Track player combat state", self._DB.profile, "bCombatStatePlayer", { tMove = {200, 60},
-		strTooltip = "if checked, [In combat / Out of combat] visibility settings will track player combat state instead of unit combat state." })
+		strTooltip = "If checked, [In combat / Out of combat] visibility settings will be based on player combat state instead of unit combat state." })
 	G:API_AddCheckBox(self, wndGeneral, "Short names", self._DB.profile, "bShortNames", { tMove = {400, 60} })
 	G:API_AddCheckBox(self, wndGeneral, "Show objectives", self._DB.profile, "bShowObjectives", { tMove = {200, 0} })
 	G:API_AddCheckBox(self, wndGeneral, "Show shields", self._DB.profile, "bShowShield", { tMove = {0, 150} })
