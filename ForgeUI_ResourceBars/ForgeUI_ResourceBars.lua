@@ -167,6 +167,7 @@ function ForgeUI_ResourceBars:ForgeAPI_PopulateOptions()
 	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Smooth","ForgeUI_Smooth", {})
 	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Flat", "ForgeUI_Flat", {})
 	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Minimalist", "ForgeUI_Minimalist", {})
+	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Edge", "ForgeUI_Edge", {})
 end
 
 -----------------------------------------------------------------------------------------------
@@ -198,7 +199,7 @@ function ForgeUI_ResourceBars:OnEngineerUpdate()
 	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow then
 		self:RefreshStyle_ResourceBar_Engineer(unitPlayer, nResource)
 
-		bShow = true		
+		bShow = true
 	end
 
 	if bShow ~= self.wndResource:IsShown() then
@@ -218,12 +219,12 @@ function ForgeUI_ResourceBars:OnEsperCreated(unitPlayer)
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Esper", F:API_GetStratum("HudHigh"), self)
 	self.wndFocus = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Focus", F:API_GetStratum("HudHigh"), self)
 	self.wndMentalOverflow = Apollo.LoadForm(self.xmlDoc, "MentalOverFlow_Esper", F:API_GetStratum("HudHigh"), self)
-	
+
 	Apollo.RegisterEventHandler("BuffAdded", "OnEsperBuffAdded", self)
 	Apollo.RegisterEventHandler("BuffUpdated", "OnEsperBuffUpdated", self)
 	Apollo.RegisterEventHandler("BuffRemoved", "OnEsperBuffRemoved", self)
-	
-	
+
+
 	F:API_RegisterMover(self, self.wndResource, "ResourceBar_Slinger", "Resource bar", "general", {
 		strStratum = "High"
 	})
@@ -231,7 +232,7 @@ function ForgeUI_ResourceBars:OnEsperCreated(unitPlayer)
 
 	F:API_RegisterMover(self, self.wndFocus, "ResourceBar_Focus", "Focus bar", "general", {
 		strStratum = "High"
-	})	
+	})
 
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnEsperUpdate", self)
@@ -249,8 +250,8 @@ function ForgeUI_ResourceBars:OnEsperUpdate()
 	local nResource = unitPlayer:GetResource(1)
 	if unitPlayer:IsInCombat() or nResource > 0 or self._DB.profile.bPermaShow  then
 		bShow = true
-			
-		self:RefreshStyle_ResourceBar_Esper(unitPlayer, nResource)		
+
+		self:RefreshStyle_ResourceBar_Esper(unitPlayer, nResource)
 	end
 
 	if bShow ~= self.wndResource:IsShown() then
@@ -360,7 +361,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ForgeUI_ResourceBars:OnStalkerCreated(unitPlayer)
-	self.playerMaxResource = unitPlayer:GetMaxResource(3)		
+	self.playerMaxResource = unitPlayer:GetMaxResource(3)
 
 	self.wndResource = Apollo.LoadForm(self.xmlDoc, "ResourceBar_Stalker", F:API_GetStratum("HudHigh"), self)
 	self.wndResource:FindChild("ProgressBar"):SetMax(self.playerMaxResource)
@@ -380,8 +381,8 @@ function ForgeUI_ResourceBars:OnStalkerUpdate()
 	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
-	local bShow = false	
-	
+	local bShow = false
+
 	self.playerMaxResource = unitPlayer:GetMaxResource(3)
 	local nResource = unitPlayer:GetResource(3)
 	if unitPlayer:IsInCombat() or nResource ~= self.playerMaxResource or self._DB.profile.bPermaShow then
@@ -559,7 +560,7 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Esper()
 		self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetMax(1)
 		self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetFullSprite(self._DB.profile.strFullSprite)
 	end
-	
+
 	if self._DB.profile.esper.bShowMentalOverflow == true then
 		--Hook up events
 		for j = 1, self.nMaxMentalOverflow do
@@ -568,7 +569,7 @@ function ForgeUI_ResourceBars:LoadStyle_ResourceBar_Esper()
 			self.wndMentalOverflow:FindChild("MO" .. j):FindChild("ProgressBar"):SetBarColor(self._DB.profile.esper.crResource2)
 			self.wndMentalOverflow:FindChild("MO" .. j):FindChild("ProgressBar"):SetMax(1)
 			self.wndMentalOverflow:FindChild("MO" .. j):FindChild("ProgressBar"):SetFullSprite(self._DB.profile.strFullSprite)
-		end			
+		end
 	end
 end
 --Apollo.GetAddon("ForgeUI_ResourceBars")
@@ -580,9 +581,9 @@ function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Esper(unitPlayer, nResour
 			self.wndResource:FindChild("PSI" .. i):FindChild("ProgressBar"):SetProgress(0)
 		end
 	end
-	
+
 	if self._DB.profile.esper.bShowMentalOverflow == true then
-		for i = 1, self.nMaxMentalOverflow do					
+		for i = 1, self.nMaxMentalOverflow do
 		 	if i <= self.nMentalOverflowStacks then
 				self.wndMentalOverflow:FindChild("MO" .. i):FindChild("ProgressBar"):SetProgress(1)
 			else
@@ -590,7 +591,7 @@ function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Esper(unitPlayer, nResour
 			end
 		end
 	end
-	
+
 end
 
 -- medic
@@ -780,7 +781,7 @@ function ForgeUI_ResourceBars:PopulateOptions_Engineer()
 	G:API_AddColorBox(self, wndGeneral, "Volatility color (30 - 70)", self._DB.profile.engineer, "crResource2", { tMove = {200, 90} })
 	G:API_AddCheckBox(self, wndGeneral, "Show 30 & 70 lines", self._DB.profile.engineer, "bShowBars", { tMove = {400, 90},
 		fnCallback = self.ForgeAPI_LoadSettings })
-	G:API_AddColorBox(self, wndGeneral, "Line color", self._DB.profile.engineer, "crBars", { tMove = { 400, 120} , 
+	G:API_AddColorBox(self, wndGeneral, "Line color", self._DB.profile.engineer, "crBars", { tMove = { 400, 120} ,
 		fnCallback = self.ForgeAPI_LoadSettings })
 
 end
@@ -795,10 +796,10 @@ end
 
 function ForgeUI_ResourceBars:OnEsperBuffAdded(unit, tBuff, nCout)
 	if not unit or not unit:IsThePlayer() then return end
-	
+
 	if tBuff.splEffect:GetId() == 77116 then
 		self.nMentalOverflowStacks = tBuff.nCount
-	end	
+	end
 end
 
 function ForgeUI_ResourceBars:OnEsperBuffUpdated(unit, tBuff, nCout)
@@ -806,7 +807,7 @@ function ForgeUI_ResourceBars:OnEsperBuffUpdated(unit, tBuff, nCout)
 
 	if tBuff.splEffect:GetId() == 77116 then
 		self.nMentalOverflowStacks = tBuff.nCount
-	end	
+	end
 end
 
 function ForgeUI_ResourceBars:OnEsperBuffRemoved(unit, tBuff, nCout)
@@ -814,7 +815,7 @@ function ForgeUI_ResourceBars:OnEsperBuffRemoved(unit, tBuff, nCout)
 
 	if tBuff.splEffect:GetId() == 77116 then
 		self.nMentalOverflowStacks = tBuff.nCount
-	end	
+	end
 end
 
 -----------------------------------------------------------------------------------------------
