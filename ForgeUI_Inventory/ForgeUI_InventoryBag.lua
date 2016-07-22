@@ -42,14 +42,15 @@ local knPaddingTop = 20
 
 local karCurrency =  	-- Alt currency table; re-indexing the enums so they don't have to be in sequence code-side (and removing cash)
 {						-- To add a new currency just add an entry to the table; the UI will do the rest. Idx == 1 will be the default one shown
-	{eType = Money.CodeEnumCurrencyType.Renown, 			strTitle = Apollo.GetString("CRB_Renown"), 			strDescription = Apollo.GetString("CRB_Renown_Desc")},
-	{eType = Money.CodeEnumCurrencyType.ElderGems, 			strTitle = Apollo.GetString("CRB_Elder_Gems"), 			strDescription = Apollo.GetString("CRB_Elder_Gems_Desc")},
-	{eType = Money.CodeEnumCurrencyType.Glory, 			strTitle = Apollo.GetString("CRB_Glory"), 			strDescription = Apollo.GetString("CRB_Glory_Desc")},
-	{eType = Money.CodeEnumCurrencyType.Prestige, 			strTitle = Apollo.GetString("CRB_Prestige"), 			strDescription = Apollo.GetString("CRB_Prestige_Desc")},
-	{eType = Money.CodeEnumCurrencyType.CraftingVouchers, 		strTitle = Apollo.GetString("CRB_Crafting_Vouchers"), 		strDescription = Apollo.GetString("CRB_Crafting_Voucher_Desc")},
-	{eType = AccountItemLib.CodeEnumAccountCurrency.Omnibits,       strTitle = Apollo.GetString("CRB_OmniBits"),              	strDescription = Apollo.GetString("CRB_OmniBits_Desc"), bAccountItem = true},
+	{eType = Money.CodeEnumCurrencyType.Renown, 					strTitle = Apollo.GetString("CRB_Renown"), 						strDescription = Apollo.GetString("CRB_Renown_Desc")},
+	{eType = Money.CodeEnumCurrencyType.ElderGems, 					strTitle = Apollo.GetString("CRB_Elder_Gems"), 					strDescription = Apollo.GetString("CRB_Elder_Gems_Desc")},
+	{eType = Money.CodeEnumCurrencyType.Glory, 						strTitle = Apollo.GetString("CRB_Glory"), 						strDescription = Apollo.GetString("CRB_Glory_Desc")},
+	{eType = Money.CodeEnumCurrencyType.Prestige, 					strTitle = Apollo.GetString("CRB_Prestige"), 					strDescription = Apollo.GetString("CRB_Prestige_Desc")},
+	{eType = Money.CodeEnumCurrencyType.CraftingVouchers, 			strTitle = Apollo.GetString("CRB_Crafting_Vouchers"), 			strDescription = Apollo.GetString("CRB_Crafting_Voucher_Desc")},
+	{eType = AccountItemLib.CodeEnumAccountCurrency.PromissoryNote, strTitle = Apollo.GetString("CRB_Protostar_Promissory_Note"),	strDescription = Apollo.GetString("CRB_Protostar_Promissory_Note_Desc"), bAccountItem = true},
+	{eType = AccountItemLib.CodeEnumAccountCurrency.Omnibits,       strTitle = Apollo.GetString("CRB_OmniBits"),              		strDescription = Apollo.GetString("CRB_OmniBits_Desc"), bAccountItem = true},
 	{eType = AccountItemLib.CodeEnumAccountCurrency.ServiceToken,   strTitle = Apollo.GetString("AccountInventory_ServiceToken"),   strDescription = Apollo.GetString("AccountInventory_ServiceToken_Desc"), bAccountItem = true},
-	{eType = AccountItemLib.CodeEnumAccountCurrency.MysticShiny,    strTitle = Apollo.GetString("CRB_FortuneCoin"),           	strDescription = Apollo.GetString("CRB_FortuneCoin_Desc"), bAccountItem = true}
+	{eType = AccountItemLib.CodeEnumAccountCurrency.MysticShiny,    strTitle = Apollo.GetString("CRB_FortuneCoin"),           		strDescription = Apollo.GetString("CRB_FortuneCoin_Desc"), bAccountItem = true}
 }
 
 local fnSortItemsByName = function(itemLeft, itemRight)
@@ -224,11 +225,11 @@ function ForgeUI_Inventory:ForgeAPI_Init()
 	end
 
 	self.wndMainBagWindow = self.wndMain:FindChild("MainBagWindow")
-	
+
 	self.wndMainBagWindow:SetNewItemOverlaySprite("Anim_Inventory_New:sprInventory_NewItem")
 	self.wndMainBagWindow:SetCannotUseSprite("ClientSprites:LootCloseBox_Holo")
 	--self.wndMainBagWindow:SetOpacity(0.05)
-	
+
 	self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self._DB.global.nSortItemType])
 	self.wndMainBagWindow:SetSort(self._DB.global.bShouldSortItems)
 	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortOff"):SetCheck(not self._DB.global.bShouldSortItems)
@@ -372,7 +373,7 @@ function ForgeUI_Inventory:UpdateBagSlotItems() -- update our bag display
 	for idx = 1, knMaxBags do
 		local itemBag = self.wndMainBagWindow:GetBagItem(idx)
 		local wndCtrl = self.wndMain:FindChild("BagBtn"..idx)
-		
+
 		if itemBag ~= wndCtrl:GetData() then
 			wndCtrl:SetData(itemBag)
 			if itemBag then
@@ -719,7 +720,7 @@ function ForgeUI_Inventory:OnUpdateInventory()
 
 	local tParams = {false, nil, self.wndMainBagWindow:GetTotalEmptyBagSlots()}
 	Event_FireGenericEvent("InterfaceMenuList_AlertAddOn", Apollo.GetString("InterfaceMenu_Inventory"), tParams)
-	
+
 	self:HelperSetSalvageEnable()
 end
 
@@ -849,10 +850,10 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ForgeUI_Inventory:OnGenericEvent_SplitItemStack(item)
-	if not item then 
-		return 
+	if not item then
+		return
 	end
-	
+
 	local nStackCount = item:GetStackCount()
 	if nStackCount < 2 then
 		self.wndSplit:Show(false)

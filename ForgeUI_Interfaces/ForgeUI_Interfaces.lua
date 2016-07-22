@@ -24,16 +24,20 @@ local ForgeUI_Interfaces = {
 
   tSettings = {
     global = {
-      tPinnedAddons = {
-        Apollo.GetString("InterfaceMenu_AccountInventory"),
-        Apollo.GetString("CRB_Achievements"),
-        Apollo.GetString("MarketplaceCredd_Title"),
-        Apollo.GetString("CRB_Contracts"),
-        Apollo.GetString("InterfaceMenu_GroupFinder"),
-        Apollo.GetString("InterfaceMenu_Social"),
-        Apollo.GetString("InterfaceMenu_Inventory"),
-        Apollo.GetString("InterfaceMenu_Mail"),
-      }
+		bShowMain = true,
+		bShowStore = true,
+		bShowFortunes = true,
+
+		tPinnedAddons = {
+			Apollo.GetString("InterfaceMenu_AccountInventory"),
+			Apollo.GetString("CRB_Achievements"),
+			Apollo.GetString("MarketplaceCredd_Title"),
+			Apollo.GetString("CRB_Contracts"),
+			Apollo.GetString("InterfaceMenu_GroupFinder"),
+			Apollo.GetString("InterfaceMenu_Social"),
+			Apollo.GetString("InterfaceMenu_Inventory"),
+			Apollo.GetString("InterfaceMenu_Mail"),
+		}
     }
   }
 }
@@ -41,6 +45,8 @@ local ForgeUI_Interfaces = {
 function ForgeUI_Interfaces:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_Interfaces//ForgeUI_Interfaces.xml")
 	self.xmlDoc:RegisterCallback("OnDocumentReady", self)
+
+	local wndParent = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 end
 
 function ForgeUI_Interfaces:OnDocumentReady()
@@ -50,18 +56,18 @@ function ForgeUI_Interfaces:OnDocumentReady()
 
 	Apollo.RegisterEventHandler("InterfaceMenuList_NewAddOn", 			"OnNewAddonListed", self)
 	Apollo.RegisterEventHandler("InterfaceMenuList_AlertAddOn", 		"OnDrawAlert", self)
-	Apollo.RegisterEventHandler("CharacterCreated", 					      "OnCharacterCreated", self)
-	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 			  "OnTutorial_RequestUIAnchor", self)
-	Apollo.RegisterTimerHandler("TimeUpdateTimer", 						      "OnUpdateTimer", self)
-	Apollo.RegisterTimerHandler("QueueRedrawTimer", 					      "OnQueuedRedraw", self)
+	Apollo.RegisterEventHandler("CharacterCreated", 					"OnCharacterCreated", self)
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 			"OnTutorial_RequestUIAnchor", self)
+	Apollo.RegisterTimerHandler("TimeUpdateTimer", 						"OnUpdateTimer", self)
+	Apollo.RegisterTimerHandler("QueueRedrawTimer", 					"OnQueuedRedraw", self)
 	Apollo.RegisterEventHandler("ApplicationWindowSizeChanged", 		"ButtonListRedraw", self)
 	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences", 		"OnUpdateTimer", self)
-	
+
 	Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop", 			"OnToggleShop", self)
 	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes", 		"OnToggleFortunes", self)
 
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop",         "OnToggleShop", self)
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes",     "OnToggleFortunes", self)
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop",         	"OnToggleShop", self)
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes",     	"OnToggleFortunes", self)
 
 	self.wndMain = Apollo.LoadForm(self.xmlDoc , "ForgeUI_InterfacesForm", "FixedHudStratumHigh", self)
 	self.wndList = Apollo.LoadForm(self.xmlDoc , "FullListFrame", nil, self)
@@ -69,10 +75,12 @@ function ForgeUI_Interfaces:OnDocumentReady()
 	self.wndMain:FindChild("OpenFullListBtn"):AttachWindow(self.wndList)
 	self.wndMain:FindChild("OpenFullListBtn"):Enable(false)
 
+	self:ForgeAPI_LoadSettings()
+
 	Apollo.CreateTimer("QueueRedrawTimer", 0.3, false)
 
 	self.tMenuData = {
-		[Apollo.GetString("InterfaceMenu_SystemMenu")] = { "", "Escape", "Icon_Windows32_UI_CRB_InterfaceMenu_EscMenu" }, --
+		[Apollo.GetString("InterfaceMenu_SystemMenu")] = { "", "Escape", "Icon_Windows32_UI_CRB_InterfaceMenu_EscMenu" },
 	}
 
 	self.tMenuTooltips = {}
@@ -83,9 +91,6 @@ function ForgeUI_Interfaces:OnDocumentReady()
 	if GameLib.GetPlayerUnit() then
 		self:OnCharacterCreated()
 	end
-
-	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Store"), {"InterfaceMenu_ToggleShop", "Store", ""})
-	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenuList_Fortunes"), {"InterfaceMenu_ToggleFortunes", "", ""})
 end
 
 function ForgeUI_Interfaces:OnListShow()
@@ -100,6 +105,18 @@ function ForgeUI_Interfaces:OnUpdateTimer()
 	if not self.bHasLoaded then
 		Event_FireGenericEvent("InterfaceMenuListHasLoaded")
 		self.wndMain:FindChild("OpenFullListBtn"):Enable(true)
+
+		Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Store"), {"InterfaceMenu_ToggleShop", "Store", ""})
+		Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenuList_Fortunes"), {"InterfaceMenu_ToggleFortunes", "", ""})
+
+		-- This is workaround for Carbine's bug that was introduced in 1.5.1 Game Update - 04 May 2016. Can be removed if they fix this one day.
+		-- https://forums.wildstar-online.com/forums/index.php?/topic/151344-151-game-update-notes-04-may-2016/
+
+		-- LAS button
+		Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_AbilityBuilder"), {"ToggleAbilitiesWindow", "LimitedActionSetBuilder", "Icon_Windows32_UI_CRB_InterfaceMenu_Abilities"})
+		-- Lore button
+		Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Lore"), {"InterfaceMenu_ToggleLoreWindow", "Lore", "Icon_Windows32_UI_CRB_InterfaceMenu_Lore"})
+
 		self.bHasLoaded = true
 	end
 end
@@ -411,6 +428,61 @@ function ForgeUI_Interfaces:OnMouseButtonDown( wndHandler, wndControl, eMouseBut
 	elseif wndControl:GetName() == "FortunesBtn" then
 		GameLib.OpenFortunes()
 	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- Loading setting
+-----------------------------------------------------------------------------------------------
+function ForgeUI_Interfaces:ForgeAPI_LoadSettings()
+	if not self.wndMain then return end
+
+	local wndStore = self.wndMain:FindChild("StoreContainer")
+	local wndFortunes = self.wndMain:FindChild("FortunesContainer")
+	local wndButtonList = self.wndMain:FindChild("ButtonList")
+	local tOpenFullListBtnOffsets = { self.wndMain:FindChild("OpenFullListBtn"):GetOriginalLocation():GetOffsets() }
+	local tStoreBtnOffsets = { wndStore:GetOriginalLocation():GetOffsets() }
+
+	self.wndMain:Show(self._DB.global.bShowMain) -- show bar
+
+	if not self._DB.global.bShowStore and not self._DB.global.bShowFortunes then -- no Store and Fortunes
+		wndStore:Show(false)
+		wndFortunes:Show(false)
+		wndButtonList:SetAnchorPoints(0, 0, 1, 1)
+		wndButtonList:SetAnchorOffsets(tOpenFullListBtnOffsets[3], 0, 0, 0)
+	elseif self._DB.global.bShowStore and not self._DB.global.bShowFortunes then -- Store only
+		wndStore:Show(true)
+		wndFortunes:Show(false)
+		wndButtonList:SetAnchorPoints(0, 0, 1, 1)
+		wndButtonList:SetAnchorOffsets(tStoreBtnOffsets[3], 0, 0, 0)
+	elseif not self._DB.global.bShowStore and self._DB.global.bShowFortunes then -- Fortunes only
+		wndStore:Show(false)
+		wndFortunes:Show(true)
+		wndFortunes:SetAnchorPoints(0, 1, 0, 1)
+		wndFortunes:SetAnchorOffsets(tOpenFullListBtnOffsets[3], -25, tOpenFullListBtnOffsets[3] + 25, 0)
+		wndButtonList:SetAnchorPoints(0, 0, 1, 1)
+		wndButtonList:SetAnchorOffsets(tOpenFullListBtnOffsets[3] + 25, 0, 0, 0)
+	elseif self._DB.global.bShowStore and self._DB.global.bShowFortunes then -- Store and Fortunes
+		wndStore:Show(true)
+		wndFortunes:Show(true)
+		wndStore:SetAnchorPoints(wndStore:GetOriginalLocation():GetPoints())
+		wndStore:SetAnchorOffsets(wndStore:GetOriginalLocation():GetOffsets())
+		wndFortunes:SetAnchorPoints(wndFortunes:GetOriginalLocation():GetPoints())
+		wndFortunes:SetAnchorOffsets(wndFortunes:GetOriginalLocation():GetOffsets())
+		wndButtonList:SetAnchorPoints(wndButtonList:GetOriginalLocation():GetPoints())
+		wndButtonList:SetAnchorOffsets(wndButtonList:GetOriginalLocation():GetOffsets())
+	end
+end
+
+-----------------------------------------------------------------------------------------------
+-- Populating opions
+-----------------------------------------------------------------------------------------------
+function ForgeUI_Interfaces:ForgeAPI_PopulateOptions()
+	-- general settings
+	local wndGeneral = self.tOptionHolders["General"]
+
+	G:API_AddCheckBox(self, wndGeneral, "Show interface menu bar", self._DB.global, "bShowMain", { tMove = {0, 0}, fnCallback = self.ForgeAPI_LoadSettings })
+	G:API_AddCheckBox(self, wndGeneral, "Show store", self._DB.global, "bShowStore", { tMove = {0, 30}, fnCallback = self.ForgeAPI_LoadSettings })
+	G:API_AddCheckBox(self, wndGeneral, "Show fortunes", self._DB.global, "bShowFortunes", { tMove = {0, 60}, fnCallback = self.ForgeAPI_LoadSettings })
 end
 
 -----------------------------------------------------------------------------------------------
