@@ -10,7 +10,7 @@ ForgeUI is WildStar UI overhaul. It's completely modular, so you don't have to u
 ## Instalation
 * curse.com
  * Download zip-file from here: http://mods.curse.com/ws-addons/wildstar/227047-forgeui
- * Unpack zip-file here: %appdata%\Roaming\NCSOFT\WildStar\addons
+ * Unpack zip-file here: %appdata%\NCSOFT\WildStar\addons
 * git
  * Use this PowerShell command:
 
@@ -19,3 +19,8 @@ ForgeUI is WildStar UI overhaul. It's completely modular, so you don't have to u
     mkdir -Force ~\AppData\Roaming\NCSOFT\WildStar\addons\
     cp -Recurse -Force ForgeUI\* ~\AppData\Roaming\NCSOFT\WildStar\addons\
     ````
+
+## Additional addons
+* ActionBarsExt
+ * Addon for creating new and 100% customizable ActionBars & ActionButtons
+ * https://github.com/ForgeUI/ForgeUI_ActionBarsExt
