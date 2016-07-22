@@ -37,6 +37,7 @@ local ForgeUI_CastBars = {
 					crCastBar = "FF272727",
 					crDuration = "FFFFCC00",
 					crText = "FFFFFFFF",
+					strFullSprite = "ForgeUI_Smooth",
 				},
 				Target = {
 					bShowCastIcons = true,
@@ -47,6 +48,7 @@ local ForgeUI_CastBars = {
 					crCastBarInf = "FFFF0000",
 					crMooBar = "FFBC00BB",
 					crText = "FFFFFFFF",
+					strFullSprite = "ForgeUI_Smooth",
 				},
 				Focus = {
 					bShowCastIcons = true,
@@ -57,6 +59,7 @@ local ForgeUI_CastBars = {
 					crCastBarInf = "FFFF0000",
 					crMooBar = "FFBC00BB",
 					crText = "FFFFFFFF",
+					strFullSprite = "ForgeUI_Smooth",
 				}
 			}
 		}
@@ -331,6 +334,11 @@ function ForgeUI_CastBars:ForgeAPI_LoadSettings()
 			self["wnd" .. k .. "CastBar"]:FindChild("CastTime"):SetAnchorOffsets(0, -10, -10, 15)
 			self["wnd" .. k .. "CastBar"]:FindChild("CastTime"):SetAnchorPoints(0, 0, 1, 0)
 		end
+
+		if v.strFullSprite ~= nil then
+			self["wnd" .. k .. "CastBar"]:FindChild("TickBar"):SetFullSprite(v.strFullSprite)
+			self["wnd" .. k .. "CastBar"]:FindChild("CastBar"):SetFullSprite(v.strFullSprite)
+		end
 	end
 end
 
@@ -396,9 +404,19 @@ function ForgeUI_CastBars:ForgeAPI_PopulateOptions()
 		end
 
 		if v.bCenterText ~= nil then
-			G:API_AddCheckBox(self, self.tOptionHolders[k], "Center text", v, "bCenterText", { tMove = {0, 120},
+			G:API_AddCheckBox(self, self.tOptionHolders[k], "Center text", v, "bCenterText", { tMove = {200, 120},
 				fnCallback = self.ForgeAPI_LoadSettings
 			})
+		end
+
+		if v.strFullSprite ~= nil then
+			local wndCombo = G:API_AddComboBox(self, self.tOptionHolders[k], "Texture", v, "strFullSprite", { tMove = {0, 120}, tWidths = { 150, 50 },
+				fnCallback = self.ForgeAPI_LoadSettings
+			})
+			G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Smooth","ForgeUI_Smooth", {})
+			G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Flat", "ForgeUI_Flat", {})
+			G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Minimalist", "ForgeUI_Minimalist", {})
+			G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Edge", "ForgeUI_Edge", {})
 		end
 	end
 end
