@@ -264,6 +264,25 @@ function Addon:SortItemsByPriority()
 	end
 end
 
+function Addon:CollapseAllMenuItems()
+	for _, v in pairs(self.wndMenuHolder:GetChildren()) do
+		local wndContainer = v:FindChild("Holder")
+		local nChildren = #wndContainer:GetChildren()
+		if nChildren == 0 then
+			v:FindChild("Sign"):SetText("")
+		else
+			v:FindChild("Sign"):SetText("+")
+		end
+
+		wndContainer:Show(false, true)
+
+		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
+		v:SetAnchorOffsets(nLeft, nTop, nRight, nTop + 20)
+	end
+
+	self:SortItemsByPriority()
+end
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI public api
 -----------------------------------------------------------------------------------------------
@@ -330,7 +349,27 @@ function ForgeUI:API_AddMenuToMenuItem(tModule, wndParent, strText, strWindow)
 
 	wndParent:FindChild("Holder"):ArrangeChildrenVert()
 
+	Inst:SortItemsByPriority()
+
 	return wndItem
+end
+
+function ForgeUI:API_RemoveMenuItem(wnd)
+	local tData = wnd:GetData()
+	if not tData then return end
+
+	if tData.strPriority then -- Main menu item
+		for _, v in pairs(wnd:FindChild("Holder"):GetChildren()) do
+			self:API_RemoveMenuItem(v)
+		end
+		tData.wndOptions:Destroy()
+		wnd:Destroy()
+	else -- Submenu item
+		tData.wndOptions:Destroy()
+		wnd:Destroy()
+	end
+
+	Inst:SortItemsByPriority()
 end
 
 function ForgeUI:API_ShowMainWindow(bShow) Inst.wndMain:Show(bShow, true) end

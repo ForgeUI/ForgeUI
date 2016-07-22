@@ -137,7 +137,19 @@ local function RegisterMover(luaCaller, wnd, strKey, strName, strScope, tOptions
 end
 
 local function ResetMover(luaCaller, strKey)
-	Movers._DB.profile[luaCaller._NAME][strKey] = nil
+	if Movers._DB.profile[luaCaller._NAME] then
+		Movers._DB.profile[luaCaller._NAME][strKey] = nil
+	end
+end
+
+local function DestroyMover(luaCaller, strKey)
+	ResetMover(luaCaller, strKey)
+	if tScopes["all"][strKey] then
+		tScopes["all"][strKey]:Destroy()
+		for k in pairs(tScopes) do
+			tScopes[k][strKey] = nil
+		end
+	end
 end
 
 local function UpdateMoverPosition(wndMover)
@@ -208,6 +220,13 @@ end
 function Movers:ForgeAPI_LoadSettings()
 	for _, v in pairs(tScopes["all"]) do
 		local tData = v:GetData()
+
+		if not Movers._DB.profile[tData.strParent] or not Movers._DB.profile[tData.strParent][tData.strKey] then
+			Print(tData.strKey)
+			v:Destroy()
+			break
+		end
+
 
 		v:SetAnchorOffsets(unpack(Movers._DB.profile[tData.strParent][tData.strKey]))
 		tData.wndParent:SetAnchorOffsets(unpack(Movers._DB.profile[tData.strParent][tData.strKey]))
@@ -400,6 +419,7 @@ function F:UnlockMovers() Movers:UnlockMovers() end
 -----------------------------------------------------------------------------------------------
 function F:API_RegisterMover(...) return RegisterMover(...) end
 function F:API_ResetMover(...) return ResetMover(...) end
+function F:API_DestroyMover(...) return DestroyMover(...) end
 function F:API_UpdateMover(strKey) UpdateMoverPosition(tScopes["all"][strKey]) end
 
 Movers = F:API_NewModule(Movers)

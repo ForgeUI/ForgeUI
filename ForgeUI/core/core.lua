@@ -11,6 +11,8 @@ local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeUI GUI library
 local M = _G["ForgeLibs"]["ForgeModule"] -- ForgeUI module prototype
 local A = _G["ForgeLibs"]["ForgeAddon"] -- ForgeUI addon prototype
 
+local ForgeUI = Apollo.GetAddon("ForgeUI")
+
 -- libraries
 local GeminiHook = Apollo.GetPackage("Gemini:Hook-1.0").tPackage
 local GeminiEvent = Apollo.GetPackage("Gemini:Event-1.0").tPackage
@@ -64,8 +66,6 @@ local bResetSettings = false
 -- ForgeUI module functions
 -----------------------------------------------------------------------------------------------
 function Core:ForgeAPI_PreInit()
-	local ForgeUI = Apollo.GetAddon("ForgeUI")
-
 	self.db = GeminiDB:New(ForgeUI)
 
 	-- db callbacks
@@ -99,6 +99,8 @@ function Core:OnDatabaseUpdate()
 	for _, v in pairs(tAddons) do
 		v.tAddon:RefreshConfig()
 	end
+
+	ForgeUI:CollapseAllMenuItems()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -134,11 +136,14 @@ function F:API_NewAddon(tAddon, tParams)
 		}
 	end
 
-	Apollo.RegisterAddon(addon)
+	local arDependencies = Core:TableConcat({ "ForgeUI" }, tParams and tParams.arDependencies or {})
+
+	Apollo.RegisterAddon(addon, false, "", arDependencies)
 
 	tAddons[tAddon._NAME] = {
         ["tAddon"] = addon,
         ["tParams"] = tParams,
+		["arDependencies"] = arDependencies,
     }
 
 	if bInit and addon.ForgeAPI_Init then
@@ -364,7 +369,7 @@ function F:Save() RequestReloadUI() end
 function F:Reset() Core.db:ResetDB() F:Save() end
 
 -- helpers
-function Core.copyTable(src, dest)
+function Core:CopyTable(src, dest)
 	if type(dest) ~= "table" then dest = {} end
 	if type(src) == "table" then
 		for k,v in pairs(src) do
@@ -378,7 +383,7 @@ function Core.copyTable(src, dest)
 	return dest
 end
 
-function Core.TableConcat(t1, t2)
+function Core:TableConcat(t1, t2)
     for i = 1, #t2 do
         t1[#t1 + 1] = t2[i]
     end

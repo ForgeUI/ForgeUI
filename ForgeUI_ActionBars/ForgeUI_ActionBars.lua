@@ -1111,6 +1111,10 @@ function ForgeUI_ActionBars:API_GetTBars()
 	return tBars
 end
 
+function ForgeUI_ActionBars:API_GetTBar(strKey)
+	return tBars[strKey]
+end
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI addon registration
 -----------------------------------------------------------------------------------------------
