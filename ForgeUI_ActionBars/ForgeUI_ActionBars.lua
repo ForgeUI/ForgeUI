@@ -435,7 +435,13 @@ function ForgeUI_ActionBars:EditButtons(tBar)
 			end
 		end
 
-		if not tBar.tSpecialButtons then
+		if tBar.tSpecialButtons then
+			tActionButton.ContentId = tSpecialButtons[tBar.tSpecialButtons[k]].nContentId
+			tActionButton.ContentType = tSpecialButtons[tBar.tSpecialButtons[k]].strContent
+		elseif tBar.tButtons and tBar.tButtons[k] then
+			tActionButton.ContentId = tBar.tButtons[k][1]
+			tActionButton.ContentType = tBar.tButtons[k][2]
+		else
 			-- TODO : Come with better idea
 			-- Vehicle bar dismound button workaround
 			if tBar.strKey == "ForgeUI_VehicleBar" and i == 7 then
@@ -445,9 +451,6 @@ function ForgeUI_ActionBars:EditButtons(tBar)
 				tActionButton.ContentId = tBar.nMinId + i
 				tActionButton.ContentType = tBar.strContentType
 			end
-		else
-			tActionButton.ContentId = tSpecialButtons[tBar.tSpecialButtons[k]].nContentId
-			tActionButton.ContentType = tSpecialButtons[tBar.tSpecialButtons[k]].strContent
 		end
 
 		tActionButton.DrawHotkey = tBar.bDrawHotkey

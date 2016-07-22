@@ -349,6 +349,7 @@ function ForgeUI:API_AddMenuToMenuItem(tModule, wndParent, strText, strWindow)
 
 	wndParent:FindChild("Holder"):ArrangeChildrenVert()
 
+	Inst:CollapseAllMenuItems()
 	Inst:SortItemsByPriority()
 
 	return wndItem
