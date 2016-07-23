@@ -579,6 +579,14 @@ end
 
 function ForgeUI_Nameplates:CreateUnitsFromPreload()
 	self.unitPlayer = GameLib.GetPlayerUnit()
+	
+	-- Disable tapCast for spellslingers
+	-- TODO: remove this when fixed.
+	if self.unitPlayer:GetClassId() == GameLib.CodeEnumClass.Spellslinger then
+		Apollo.RemoveEventHandler("StartSpellThreshold", self)
+		Apollo.RemoveEventHandler("ClearSpellThreshold", self)
+		Apollo.RemoveEventHandler("UpdateSpellThreshold", self)
+	end	
 
 	-- Process units created while form was loading
 	self.timerPreloadUnitCreateDelay = ApolloTimer.Create(0.5, true, "OnPreloadUnitCreateTimer", self)
@@ -716,7 +724,9 @@ function ForgeUI_Nameplates:HelperGetName(tNameplate)
 	if tNameSwaps[unitOwner:GetName()] then
 		strNewName = tNameSwaps[unitOwner:GetName()]
 	elseif self._DB.profile.bShortNames then
-		strNewName = strNewName:gsub(" "..strNameSecond, "")
+		if unitOwner:GetType() == "Player" then
+			strNewName = strNewName:gsub(" "..strNameSecond, "")
+		end
 	end
 
 	return strNewName
