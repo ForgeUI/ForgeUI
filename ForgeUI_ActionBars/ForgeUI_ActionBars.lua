@@ -758,12 +758,12 @@ function ForgeUI_ActionBars:FillPath(wnd)
 	local nCount = 0
 	local nListHeight = 0
 	for _, tAbility in pairs(tAbilities) do
-		if tAbility.bIsActive then
-			nCount = nCount + 1
-			local spellObject = tAbility.tTiers[tAbility.nCurrentTier].splObject
+		local splObject = self:GetPathSkillForDisplay(tAbility);
+		if splObject then
+			nCount = nCount + 1			
 			local wndCurr = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
 			wndCurr:SetData({sType = "path"})
-			wndCurr:FindChild("Icon"):SetSprite(spellObject:GetIcon())
+			wndCurr:FindChild("Icon"):SetSprite(splObject:GetIcon())
 			wndCurr:FindChild("Button"):SetData(tAbility.nId)
 
 			wndCurr:SetAnchorOffsets(0, 0, nSize, nSize)
@@ -790,6 +790,20 @@ function ForgeUI_ActionBars:FillPath(wnd)
 	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize + 1), nRight, nBottom)
 
 	wndList:ArrangeChildrenVert(0)
+end
+
+-- Returns spellObject from tAbility only if said path ability is availible to the player
+function ForgeUI_ActionBars:GetPathSkillForDisplay(tAbility)
+	local pathLevel = PlayerPathLib.GetPathLevel();
+	local splObject = nil;
+	
+	for _, tier in ipairs(tAbility.tTiers) do
+		if tier.nLevelReq <= pathLevel then
+		    splObject = tier.splObject;
+		end
+	end
+	
+	return splObject;
 end
  
 -----------------------------------------------------------------------------------------------
