@@ -1338,7 +1338,7 @@ function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 		bShowNameplate = true
 	end
 
-	if self._DB.profile.nMaxNameplates ~= 0 and self._DB.profile.nMaxNameplates <= nVisibleNameplates then
+	if self._DB.profile.nMaxNameplates ~= 0 and self._DB.profile.nMaxNameplates < nVisibleNameplates then
 		return false
 	end
 
