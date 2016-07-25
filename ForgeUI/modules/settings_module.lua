@@ -35,7 +35,7 @@ local Settings = {
 -- ForgeAPI
 -----------------------------------------------------------------------------------------------
 function Settings:ForgeAPI_Init()
-    F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
+    F:API_AddMenuItem(self, self.DISPLAY_NAME, "General", { strPriority = "high" })
 
     self.wndBottomPanel = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_Panel", F:API_GetStratum("HudLow"), self)
 end
