@@ -31,17 +31,17 @@ local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 -- ForgeUI Addon Definition
 -----------------------------------------------------------------------------------------------
 local ForgeUI_MiniMap = {
-    _NAME = "ForgeUI_MiniMap",
-    _API_VERSION = 3,
-    _VERSION = "1.0",
-    _DB = {},
-    DISPLAY_NAME = "Sample addon",
+	_NAME = "ForgeUI_MiniMap",
+	_API_VERSION = 3,
+	_VERSION = "1.0",
+	_DB = {},
+	DISPLAY_NAME = "Sample addon",
 
-    tSettings = {
-        profile = {
-            fZoom = 1.0,
-        },
-    },
+	tSettings = {
+		profile = {
+			fZoom = 1.0,
+		},
+	},
 
 	tQueuedUnits = {},
 }

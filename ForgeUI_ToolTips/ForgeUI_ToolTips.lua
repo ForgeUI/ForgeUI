@@ -15,12 +15,12 @@ local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 -- ForgeUI Addon Definition
 -----------------------------------------------------------------------------------------------
 local ForgeUI_ToolTips = {
-    _NAME = "ForgeUI_ToolTips",
+	_NAME = "ForgeUI_ToolTips",
 	_API_VERSION = 3,
 	VERSION = "2.0",
 
-    settings_version = 2,
-    tSettings = {
+	settings_version = 2,
+	tSettings = {
 		profile = {
 			strTooltipPosition = "TPT_NavText", -- TPT_NavText TPT_OnCursor
 			bShowInCombat = false,

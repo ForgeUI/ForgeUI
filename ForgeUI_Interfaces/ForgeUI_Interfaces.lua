@@ -17,29 +17,29 @@ local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 -- ForgeUI Addon Definition
 -----------------------------------------------------------------------------------------------
 local ForgeUI_Interfaces = {
-  _NAME = "ForgeUI_Interfaces",
-  _API_VERSION = 3,
-  _VERSION = "2.0",
-  DISPLAY_NAME = "Interfaces",
+	_NAME = "ForgeUI_Interfaces",
+	_API_VERSION = 3,
+	_VERSION = "2.0",
+	DISPLAY_NAME = "Interfaces",
 
-  tSettings = {
-    global = {
-		bShowMain = true,
-		bShowStore = true,
-		bShowFortunes = true,
+	tSettings = {
+		global = {
+			bShowMain = true,
+			bShowStore = true,
+			bShowFortunes = true,
 
-		tPinnedAddons = {
-			Apollo.GetString("InterfaceMenu_AccountInventory"),
-			Apollo.GetString("CRB_Achievements"),
-			Apollo.GetString("MarketplaceCredd_Title"),
-			Apollo.GetString("CRB_Contracts"),
-			Apollo.GetString("InterfaceMenu_GroupFinder"),
-			Apollo.GetString("InterfaceMenu_Social"),
-			Apollo.GetString("InterfaceMenu_Inventory"),
-			Apollo.GetString("InterfaceMenu_Mail"),
+			tPinnedAddons = {
+				Apollo.GetString("InterfaceMenu_AccountInventory"),
+				Apollo.GetString("CRB_Achievements"),
+				Apollo.GetString("MarketplaceCredd_Title"),
+				Apollo.GetString("CRB_Contracts"),
+				Apollo.GetString("InterfaceMenu_GroupFinder"),
+				Apollo.GetString("InterfaceMenu_Social"),
+				Apollo.GetString("InterfaceMenu_Inventory"),
+				Apollo.GetString("InterfaceMenu_Mail"),
+			}
 		}
-    }
-  }
+	}
 }
 
 function ForgeUI_Interfaces:ForgeAPI_Init()

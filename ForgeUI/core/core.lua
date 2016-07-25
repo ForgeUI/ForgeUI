@@ -120,7 +120,7 @@ local function InitAddon(tAddon, tParams)
 			Print("ERROR: Addon " .. tAddon._NAME .. " requires " .. v .. "!")
 			return false
 		end
-		
+
 		if not pkg.tAddon.bInit then
 			if not InitAddon(pkg.tAddon, pkg.tParams) then return false end
 		end
