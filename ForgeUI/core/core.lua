@@ -58,7 +58,10 @@ local error = error
 -- Local variables
 -----------------------------------------------------------------------------------------------
 local tModules = {}
+local tPreloadModules = {}
 local tAddons = {}
+local tPreloadAddons = {}
+
 local bInit = false
 local bResetSettings = false
 
@@ -108,6 +111,51 @@ end
 --
 -- ForgeUI Addon API
 -----------------------------------------------------------------------------------------------
+local function InitAddon(tAddon, tParams)
+	if tAddon.bInit then return true end
+
+	local arDependencies = tParams and tParams.arDependencies or {}
+
+	for _, v in ipairs(arDependencies) do
+		local pkg = tAddons[v]
+		if not pkg.tAddon.bInit then
+			if not InitAddon(pkg.tAddon, pkg.tParams) then return false end
+		end
+	end
+
+	if tAddon.tSettings then
+		local db = Core.db:RegisterNamespace(tAddon._NAME)
+		db:RegisterDefaults(tAddon.tSettings)
+
+		tAddon._DB = {
+			profile = db.profile,
+			global = db.global,
+			char = db.char,
+		}
+	end
+
+	if tAddon.OnDocLoaded then
+		GeminiHook:PostHook(tAddon, "OnDocLoaded", function()
+			tAddon:ForgeAPI_LoadSettings()
+			tAddon:ForgeAPI_PopulateOptions()
+
+			tAddon.bLoaded = true
+		end)
+
+		tAddon:ForgeAPI_Init()
+	else
+		tAddon:ForgeAPI_Init()
+		tAddon:ForgeAPI_LoadSettings()
+		tAddon:ForgeAPI_PopulateOptions()
+
+		tAddon.bLoaded = true
+	end
+
+	tAddon.bInit = true
+
+	return true
+end
+
 function F:API_NewAddon(tAddon, tParams)
 	if not tAddon._NAME or tAddons[tAddon._NAME] then
 		error("ForgeUI - Wrong addon name or nonexistent!")
@@ -125,53 +173,26 @@ function F:API_NewAddon(tAddon, tParams)
 	-- new instance
 	local addon = A:NewAddon(tAddon)
 
-	if bInit and addon.tSettings then
-		local db = Core.db:RegisterNamespace(addon._NAME)
-		db:RegisterDefaults(addon.tSettings)
-
-		addon._DB = {
-			profile = db.profile,
-			global = db.global,
-			char = db.char,
-		}
-	end
-
-	local arDependencies = Core:TableConcat({ "ForgeUI" }, tParams and tParams.arDependencies or {})
-
 	Apollo.RegisterAddon(addon, false, "", arDependencies)
 
-	tAddons[tAddon._NAME] = {
-        ["tAddon"] = addon,
-        ["tParams"] = tParams,
+	tAddons[addon._NAME] = {
+		["tAddon"] = addon,
+		["tParams"] = tParams,
 		["arDependencies"] = arDependencies,
-    }
+	}
 
-	if bInit and addon.ForgeAPI_Init then
-		addon:ForgeAPI_Init()
-		addon.bInit = true
-	end
-
-	if addon.OnDocLoaded then
-		GeminiHook:PostHook(addon, "OnDocLoaded", function()
-			addon:ForgeAPI_LoadSettings()
-			addon:ForgeAPI_PopulateOptions()
-
-			addon.bLoaded = true
-		end)
-		tAddons[tAddon._NAME].bHooked = true
-	elseif bInit then
-		addon:ForgeAPI_LoadSettings()
-		addon:ForgeAPI_PopulateOptions()
-
-		addon.bLoaded = true
+	if bInit then
+		InitAddon(addon, tParams)
+	else
+		table.insert(tPreloadAddons, tAddons[addon._NAME])
 	end
 
 	return addon
 end
 
 function F:API_GetAddon(strName)
-    if tAddons[strName] then
-        return tAddons[strName].tAddon
+	if tAddons[strName] then
+		return tAddons[strName].tAddon
 	end
 end
 
@@ -337,31 +358,8 @@ function F:Init()
 		end
 	end
 
-	for k, v in pairs(tAddons) do
-		if not v.tAddon.ForgeAPI_Init then
-			Print("ERR: " .. k .. " addon cannot be loaded!")
-		else
-			if v.tAddon.tSettings then
-				local db = Core.db:RegisterNamespace(v.tAddon._NAME)
-				db:RegisterDefaults(v.tAddon.tSettings)
-
-				v.tAddon._DB = {
-					profile = db.profile,
-					global = db.global,
-					char = db.char,
-				}
-			end
-
-			v.tAddon:ForgeAPI_Init(v.tAddon)
-			v.tAddon.bInit = true
-
-			if not v.bHooked then
-				v.tAddon:ForgeAPI_LoadSettings()
-				v.tAddon:ForgeAPI_PopulateOptions()
-
-				v.tAddon.bLoaded = true
-			end
-		end
+	for _, pkg in pairs(tPreloadAddons) do
+		InitAddon(pkg.tAddon, pkg.tParams)
 	end
 end
 
