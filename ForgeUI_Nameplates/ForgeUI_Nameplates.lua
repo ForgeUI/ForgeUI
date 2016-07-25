@@ -17,21 +17,21 @@ require "Window"
 -- Constants
 -----------------------------------------------------------------------------------------------
 krtClassEnums = {
-	[GameLib.CodeEnumClass.Warrior]      	= "Warrior",
-	[GameLib.CodeEnumClass.Engineer]     	= "Engineer",
-	[GameLib.CodeEnumClass.Esper]        	= "Esper",
-	[GameLib.CodeEnumClass.Medic]        	= "Medic",
-	[GameLib.CodeEnumClass.Stalker]      	= "Stalker",
-	[GameLib.CodeEnumClass.Spellslinger]	= "Spellslinger"
+	[GameLib.CodeEnumClass.Warrior]         = "Warrior",
+	[GameLib.CodeEnumClass.Engineer]        = "Engineer",
+	[GameLib.CodeEnumClass.Esper]           = "Esper",
+	[GameLib.CodeEnumClass.Medic]           = "Medic",
+	[GameLib.CodeEnumClass.Stalker]         = "Stalker",
+	[GameLib.CodeEnumClass.Spellslinger]    = "Spellslinger"
 }
 
 krtNpcRankEnums = {
-	[Unit.CodeEnumRank.Elite] 		= "elite",
-	[Unit.CodeEnumRank.Superior] 	= "superior",
-	[Unit.CodeEnumRank.Champion] 	= "champion",
-	[Unit.CodeEnumRank.Standard] 	= "standard",
-	[Unit.CodeEnumRank.Minion] 		= "minion",
-	[Unit.CodeEnumRank.Fodder] 		= "fodder",
+	[Unit.CodeEnumRank.Elite]       = "elite",
+	[Unit.CodeEnumRank.Superior]    = "superior",
+	[Unit.CodeEnumRank.Champion]    = "champion",
+	[Unit.CodeEnumRank.Standard]    = "standard",
+	[Unit.CodeEnumRank.Minion]      = "minion",
+	[Unit.CodeEnumRank.Fodder]      = "fodder",
 }
 
 krtIAStyles = {
@@ -110,7 +110,6 @@ local ForgeUI_Nameplates = {
 				nCastHeight = 11,
 				nCastOffsetY = 2,
 				nCastTextOffsetY = 26,
-				bCastTextCenter = true,
 				strFullSprite = "ForgeUI_Edge",
 				strIASprite = "ForgeUI_Carbine"
 			},
@@ -1272,24 +1271,24 @@ function ForgeUI_Nameplates:UpdateInfo(tNameplate)
 end
 
 function ForgeUI_Nameplates:RepositionNameplate(tNameplate)
-    if tNameplate.tSettings.bReposition then
-        local wndNameplate = tNameplate.wndNameplate
+	if tNameplate.tSettings.bReposition then
+		local wndNameplate = tNameplate.wndNameplate
 
-        local tOverhead = tNameplate.unitOwner:GetOverheadAnchor()
-        if tOverhead == nil then return end
+		local tOverhead = tNameplate.unitOwner:GetOverheadAnchor()
+		if tOverhead == nil then return end
 
-        if tOverhead.y < 25 and not tNameplate.bRepositioned then
+		if tOverhead.y < 25 and not tNameplate.bRepositioned then
 
-            tNameplate.bRepositioned = true
-            wndNameplate:SetUnit(tNameplate.unitOwner, 0)
+			tNameplate.bRepositioned = true
+			wndNameplate:SetUnit(tNameplate.unitOwner, 0)
 
-        elseif tOverhead.y > 25 and tNameplate.bRepositioned then
+		elseif tOverhead.y > 25 and tNameplate.bRepositioned then
 
-            tNameplate.bRepositioned = false
-            wndNameplate:SetUnit(tNameplate.unitOwner, 1)
+			tNameplate.bRepositioned = false
+			wndNameplate:SetUnit(tNameplate.unitOwner, 1)
 
-        end
-    end
+		end
+	end
 end
 
 function ForgeUI_Nameplates:SetBarValue(wndBar, fMin, fValue, fMax)
@@ -1307,7 +1306,7 @@ function ForgeUI_Nameplates:CheckDrawDistance(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 
 	if not unitOwner or not unitPlayer then
-	    return false
+		return false
 	end
 
 	local tPosTarget = unitOwner:GetPosition()
@@ -1669,8 +1668,6 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 
 	wndNameplate:FindChild("Container:CastBar:Label"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 
-	wndNameplate:FindChild("Container:CastBar:Label"):SetTextFlags("dt_center", self._DB.profile.tStyle.bCastTextCenter)
-
 	-- hp & shield values
 	if tStyle.nStyle == 0 then
 		wndNameplate:FindChild("ShieldValue"):SetAnchorPoints(1, 1, 1, 1)
@@ -1913,8 +1910,7 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	G:API_AddNumberBox(self, wndStyle, "Absorb height", self._DB.profile.tStyle, "nAbsorbHeight", { tMove = { 300, 60 }, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddNumberBox(self, wndStyle, "Castbar height", self._DB.profile.tStyle, "nCastHeight", { tMove = { 0, 180 }, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddNumberBox(self, wndStyle, "Castbar vertical offset", self._DB.profile.tStyle, "nCastOffsetY", { tOffsets = { 5, 215, 300, 240 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddNumberBox(self, wndStyle, "Cast text vertical offset", self._DB.profile.tStyle, "nCastTextOffsetY", { tOffsets = { 205, 185, 500, 210 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddCheckBox(self, wndStyle, "Center cast text", self._DB.profile.tStyle, "bCastTextCenter", { tMove = {200, 210}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Castbar text vertical offset", self._DB.profile.tStyle, "nCastTextOffsetY", { tOffsets = { 205, 185, 500, 210 }, fnCallback = self.LoadStyle_Nameplates })
 
 	local wndComboStyle = G:API_AddComboBox(self, wndStyle, "Style", self._DB.profile.tStyle, "nStyle", { fnCallback = self.OnStyleChanged })
 	G:API_AddOptionToComboBox(self, wndComboStyle , "Modern", 0, {})
