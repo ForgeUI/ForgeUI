@@ -114,9 +114,7 @@ end
 local function InitAddon(tAddon, tParams)
 	if tAddon.bInit then return true end
 
-	local arDependencies = tParams and tParams.arDependencies or {}
-
-	for _, v in ipairs(arDependencies) do
+	for _, v in ipairs(tParams.arDependencies or {}) do
 		local pkg = tAddons[v]
 		if not pkg.tAddon.bInit then
 			if not InitAddon(pkg.tAddon, pkg.tParams) then return false end
@@ -173,11 +171,13 @@ function F:API_NewAddon(tAddon, tParams)
 	-- new instance
 	local addon = A:NewAddon(tAddon)
 
-	Apollo.RegisterAddon(addon, false, "", arDependencies)
+	local arDependencies = tParams and tParams.arDependencies or {}
+
+	Apollo.RegisterAddon(tAddon, false, "", arDependencies)
 
 	tAddons[addon._NAME] = {
 		["tAddon"] = addon,
-		["tParams"] = tParams,
+		["tParams"] = tParams or {},
 		["arDependencies"] = arDependencies,
 	}
 
@@ -205,6 +205,42 @@ end
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module API
 -----------------------------------------------------------------------------------------------
+local function InitModule(tModule, tParams)
+	if tModule.bInit then return true end
+
+	if tModule.tSettings then
+		local db = Core.db:RegisterNamespace(tModule._NAME)
+		db:RegisterDefaults(tModule.tSettings)
+
+		tModule._DB = {
+			profile = db.profile,
+			global = db.global,
+			char = db.char,
+		}
+	end
+
+	if tModule.OnDocLoaded then
+		GeminiHook:PostHook(tModule, "OnDocLoaded", function()
+			tModule:ForgeAPI_LoadSettings()
+			tModule:ForgeAPI_PopulateOptions()
+
+			tModule.bLoaded = true
+		end)
+
+		tModule:ForgeAPI_Init()
+	else
+		tModule:ForgeAPI_Init()
+		tModule:ForgeAPI_LoadSettings()
+		tModule:ForgeAPI_PopulateOptions()
+
+		tModule.bLoaded = true
+	end
+
+	tModule.bInit = true
+
+	return true
+end
+
 function F:API_NewModule(tModule, tParams)
 	if not tModule._NAME or tModules[tModule._NAME] then
 		error("ForgeUI - Wrong module name or nonexistent!")
@@ -222,43 +258,22 @@ function F:API_NewModule(tModule, tParams)
 	-- new instance
 	local module = M:NewModule(tModule)
 
-	if bInit and module.tSettings then
-		local db = Core.db:RegisterNamespace(module._NAME)
-		db:RegisterDefaults(module.tSettings)
-
-		module._DB = {
-			profile = db.profile,
-			global = db.global,
-			char = db.char,
-		}
-	end
-
 	tModules[tModule._NAME] = {
-        ["tModule"] = module,
-        ["tParams"] = tParams or {},
-    }
+		["tModule"] = module,
+		["tParams"] = tParams or {},
+	}
 
-	if bInit and module.ForgeAPI_Init then
-		module:ForgeAPI_Init()
-		module.bInit = true
-	end
-
-	if module.OnDocLoaded then
-		GeminiHook:PostHook(module, "OnDocLoaded", function()
-			module:ForgeAPI_LoadSettings()
-			module:ForgeAPI_PopulateOptions()
-		end)
-		tModules[tModule._NAME].bHooked = true
-	elseif bInit then
-		module:ForgeAPI_LoadSettings()
-		module:ForgeAPI_PopulateOptions()
+	if bInit then
+		InitModule(tModule, tParams)
+	else
+		table.insert(tPreloadModules, tModules[tModule._NAME])
 	end
 
 	return module
 end
 
 function F:API_GetModule(strName)
-    return tModules[strName].tModule
+	return tModules[strName].tModule
 end
 
 function F:API_ListModules()
@@ -333,34 +348,15 @@ function F:Init()
 	if bInit then return end
 	bInit = true
 
-	for k, v in pairs(tModules) do
-		if not v.tModule.ForgeAPI_Init then
-			Print("ERR: " .. k .. " module cannot be loaded!")
-		else
-			if v.tModule.tSettings then
-				local db = Core.db:RegisterNamespace(v.tModule._NAME)
-				db:RegisterDefaults(v.tModule.tSettings)
-
-				v.tModule._DB = {
-					profile = db.profile,
-					global = db.global,
-					char = db.char,
-				}
-			end
-
-			v.tModule:ForgeAPI_Init()
-			v.tModule.bInit = true
-
-			if not v.bHooked then
-				v.tModule:ForgeAPI_LoadSettings()
-				v.tModule:ForgeAPI_PopulateOptions()
-			end
-		end
+	for _, pkg in ipairs(tPreloadModules) do
+		InitModule(pkg.tModule, pkg.tParams)
 	end
+	tPreloadModules = {}
 
-	for _, pkg in pairs(tPreloadAddons) do
+	for _, pkg in ipairs(tPreloadAddons) do
 		InitAddon(pkg.tAddon, pkg.tParams)
 	end
+	tPreloadAddons = {}
 end
 
 function F:Save() RequestReloadUI() end
@@ -382,10 +378,10 @@ function Core:CopyTable(src, dest)
 end
 
 function Core:TableConcat(t1, t2)
-    for i = 1, #t2 do
-        t1[#t1 + 1] = t2[i]
-    end
-    return t1
+	for i = 1, #t2 do
+		t1[#t1 + 1] = t2[i]
+	end
+	return t1
 end
 
 Core = F:API_NewModule(Core)
