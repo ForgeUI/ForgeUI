@@ -342,6 +342,10 @@ function ForgeUI_Nameplates:NameplatesInit()
 	Apollo.RegisterEventHandler("UnitMemberOfGuildChange", 		"OnUnitMemberOfGuildChange", self)
 	Apollo.RegisterEventHandler("GuildChange", 					"OnGuildChange", self)
 	Apollo.RegisterEventHandler("UnitGibbed",					"OnUnitGibbed", self)
+	Apollo.RegisterEventHandler("Group_Join", 					"OnGroupUpdate", self)
+	Apollo.RegisterEventHandler("Group_Left",					"OnGroupUpdate", self)
+	Apollo.RegisterEventHandler("Group_Add", 					"OnGroupUpdate", self)
+	Apollo.RegisterEventHandler("Group_Remove",					"OnGroupUpdate", self)
 
 	Apollo.RegisterEventHandler("StartSpellThreshold", 	"OnStartSpellThreshold", self)
 	Apollo.RegisterEventHandler("ClearSpellThreshold", 	"OnClearSpellThreshold", self)
@@ -1087,6 +1091,16 @@ function ForgeUI_Nameplates:IsTapCasting(tNameplate)
 	return false
 end
 
+function ForgeUI_Nameplates:GetTapCastByName(tNameplate, strSpellName)
+	if tNameplate.tTapCast == nil then return nil end
+
+	for k, v in pairs(tNameplate.tTapCast) do
+		if v.strSpellName == strSpellName then return v end
+	end
+
+	return nil
+end
+
 function ForgeUI_Nameplates:GetActiveTapCast(tNameplate)
 	if tNameplate.tTapCast == nil then return nil end
 
@@ -1108,7 +1122,7 @@ function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
 	end
 
 	-- Casting; has some onDraw parameters we need to check
-	tNameplate.bIsCasting = unitOwner:IsCasting()
+	tNameplate.bIsCasting = unitOwner:IsCasting() and unitOwner:ShouldShowCastBar()
 	tNameplate.bIsTapCasting = self:IsTapCasting(tNameplate)
 
 	local bShow = (tNameplate.bIsCasting or tNameplate.bIsTapCasting) and self:GetBooleanOption("nShowCast", tNameplate)
@@ -1126,11 +1140,11 @@ function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
 	if bShow then
 		tNameplate.wnd.castBarCastFill:SetBarColor(self._DB.profile.crCastbarNormal)
 
-		local tTapCastInfo = tNameplate.bIsTapCasting and self:GetActiveTapCast(tNameplate) or nil
-
 		local strCastName = unitOwner:GetCastName()
 		local nCastDuration = unitOwner:GetCastDuration()
 		local nCastElapsed = unitOwner:GetCastElapsed()
+
+		local tTapCastInfo = self:GetTapCastByName(tNameplate, strCastName) or self:GetActiveTapCast(tNameplate) or nil
 
 		if tTapCastInfo and (tTapCastInfo.strSpellName == strCastName or strCastName == "") then
 			strCastName = ("%s (%s/%s)"):format(tTapCastInfo.strSpellName, tTapCastInfo.nThreshold, tTapCastInfo.nMaxThreshold)
@@ -1413,6 +1427,32 @@ function ForgeUI_Nameplates:GetUnitType(unit)
 			return "FriendlyNPC"
 		elseif eDisposition == 3 then
 			return "UnknownNPC"
+		end
+	end
+end
+
+function ForgeUI_Nameplates:UpdateUnitType(bGlobalUpdate, strType, unitToUpdate)
+	local bType = strType and strType ~= ""
+
+	if bGlobalUpdate then
+		for idx, tNameplate in pairs(self.arUnit2Nameplate) do
+			if bType then
+				if tNameplate.unitOwner:GetType() == strType then
+					tNameplate.strUnitType = self:GetUnitType(tNameplate.unitOwner)
+					tNameplate.tSettings = self._DB.profile.tUnits[tNameplate.strUnitType]
+				end
+			else
+				tNameplate.strUnitType = self:GetUnitType(tNameplate.unitOwner)
+				tNameplate.tSettings = self._DB.profile.tUnits[tNameplate.strUnitType]
+			end
+		end
+	else
+		if unitToUpdate == nil or not unitToUpdate:IsValid() then return end
+
+		local tNameplate = self.arUnit2Nameplate[unitToUpdate:GetId()]
+		if tNameplate ~= nil then
+			tNameplate.strUnitType = self:GetUnitType(unitToUpdate)
+			tNameplate.tSettings = self._DB.profile.tUnits[tNameplate.strUnitType]
 		end
 	end
 end
@@ -1704,7 +1744,7 @@ end
 
 function ForgeUI_Nameplates:OnEnteredCombat(unitChecked, bInCombat)
 	if unitChecked == self.unitPlayer then
-		self.bPlayerInCombat = bInCombat
+		self.bPlayerInCombat = bInCombat -- not used anywhere
 	end
 
 	local tNameplate = self.arUnit2Nameplate[unitChecked:GetId()]
@@ -1719,6 +1759,19 @@ function ForgeUI_Nameplates:OnUnitGibbed(unitUpdated)
 		tNameplate.bGibbed = true
 		fnUpdateNameplateVisibility(self, tNameplate)
 	end
+end
+
+function ForgeUI_Nameplates:OnGroupUpdate()
+	-- when Group_Join event fired unit:IsInYourGroup() still returns false, need a short delay timer
+	if not self.timerGroupUpdate then
+		self.timerGroupUpdate = ApolloTimer.Create(0.1, false, "OnGroupUpdateTimer", self)
+	end
+end
+
+function ForgeUI_Nameplates:OnGroupUpdateTimer()
+	self:UpdateUnitType(true, "Player")
+	self.timerGroupUpdate:Stop()
+	self.timerGroupUpdate = nil
 end
 
 function ForgeUI_Nameplates:OnUnitNameChanged(unitUpdated, strNewName)
