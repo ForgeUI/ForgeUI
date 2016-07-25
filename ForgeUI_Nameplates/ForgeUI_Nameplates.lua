@@ -154,6 +154,7 @@ local ForgeUI_Nameplates = {
 					nHpCutoff = 0,
 					crHpCutoff = "FFCCCCCC",
 					crName = "FFFFFFFF",
+					crGuildMember = "FF20B2A9",
 					crHealth = "FF75CC26",
 					bClassColors = true,
 					bShowHpValue = false,
@@ -681,6 +682,13 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 
 	if tNameplate.strUnitType == "HostilePlayer" and not unitOwner:IsPvpFlagged() then
 		crNameColors = tSettings.crNameNoPvP
+	end
+
+	if self.unitPlayer ~= unitOwner and tNameplate.strUnitType == "FriendlyPlayer" then
+		local strPlayerGuildName = self.unitPlayer:GetGuildName()
+		if strPlayerGuildName and strPlayerGuildName == unitOwner:GetGuildName() then
+			crNameColors = tSettings.crGuildMember
+		end
 	end
 
 	if unitOwner:IsDead() then
@@ -1889,6 +1897,10 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 
 			if v.crName then
 				G:API_AddColorBox(self, wnd, "Name color", v, "crName", { tMove = {0, 150} })
+			end
+
+			if v.crGuildMember then
+				G:API_AddColorBox(self, wnd, "Name color (Guild member)", v, "crGuildMember", { tMove = {200, 150} })
 			end
 
 			if v.crNameNoPvP then
