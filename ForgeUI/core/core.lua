@@ -116,6 +116,11 @@ local function InitAddon(tAddon, tParams)
 
 	for _, v in ipairs(tParams.arDependencies or {}) do
 		local pkg = tAddons[v]
+		if not pkg then
+			Print("ERROR: Addon " .. tAddon._NAME .. " requires " .. v .. "!")
+			return false
+		end
+		
 		if not pkg.tAddon.bInit then
 			if not InitAddon(pkg.tAddon, pkg.tParams) then return false end
 		end
