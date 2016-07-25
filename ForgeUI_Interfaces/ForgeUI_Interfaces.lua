@@ -54,20 +54,20 @@ function ForgeUI_Interfaces:OnDocumentReady()
 		return
 	end
 
-	Apollo.RegisterEventHandler("InterfaceMenuList_NewAddOn", 			"OnNewAddonListed", self)
-	Apollo.RegisterEventHandler("InterfaceMenuList_AlertAddOn", 		"OnDrawAlert", self)
-	Apollo.RegisterEventHandler("CharacterCreated", 					"OnCharacterCreated", self)
-	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 			"OnTutorial_RequestUIAnchor", self)
-	Apollo.RegisterTimerHandler("TimeUpdateTimer", 						"OnUpdateTimer", self)
-	Apollo.RegisterTimerHandler("QueueRedrawTimer", 					"OnQueuedRedraw", self)
-	Apollo.RegisterEventHandler("ApplicationWindowSizeChanged", 		"ButtonListRedraw", self)
-	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences", 		"OnUpdateTimer", self)
+	Apollo.RegisterEventHandler("InterfaceMenuList_NewAddOn",       "OnNewAddonListed", self)
+	Apollo.RegisterEventHandler("InterfaceMenuList_AlertAddOn",     "OnDrawAlert", self)
+	Apollo.RegisterEventHandler("CharacterCreated",                 "OnCharacterCreated", self)
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor",         "OnTutorial_RequestUIAnchor", self)
+	Apollo.RegisterTimerHandler("TimeUpdateTimer",                  "OnUpdateTimer", self)
+	Apollo.RegisterTimerHandler("QueueRedrawTimer",                 "OnQueuedRedraw", self)
+	Apollo.RegisterEventHandler("ApplicationWindowSizeChanged",     "ButtonListRedraw", self)
+	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences",    "OnUpdateTimer", self)
 
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop", 			"OnToggleShop", self)
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes", 		"OnToggleFortunes", self)
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop",         "OnToggleShop", self)
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes",     "OnToggleFortunes", self)
 
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop",         	"OnToggleShop", self)
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes",     	"OnToggleFortunes", self)
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop",         "OnToggleShop", self)
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes",     "OnToggleFortunes", self)
 
 	self.wndMain = Apollo.LoadForm(self.xmlDoc , "ForgeUI_InterfacesForm", "FixedHudStratumHigh", self)
 	self.wndList = Apollo.LoadForm(self.xmlDoc , "FullListFrame", nil, self)

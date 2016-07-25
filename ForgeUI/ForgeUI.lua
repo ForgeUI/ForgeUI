@@ -56,10 +56,10 @@ local Addon = {}
 Addon.__index = Addon
 
 function Addon:new(o)
-  o = o or {}
-  setmetatable(o, Addon)
+	o = o or {}
+	setmetatable(o, Addon)
 
-  return o
+	return o
 end
 
 local Inst = Addon:new()

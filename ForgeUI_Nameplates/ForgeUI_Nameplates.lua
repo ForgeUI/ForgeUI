@@ -17,21 +17,21 @@ require "Window"
 -- Constants
 -----------------------------------------------------------------------------------------------
 krtClassEnums = {
-	[GameLib.CodeEnumClass.Warrior]      	= "Warrior",
-	[GameLib.CodeEnumClass.Engineer]     	= "Engineer",
-	[GameLib.CodeEnumClass.Esper]        	= "Esper",
-	[GameLib.CodeEnumClass.Medic]        	= "Medic",
-	[GameLib.CodeEnumClass.Stalker]      	= "Stalker",
-	[GameLib.CodeEnumClass.Spellslinger]	= "Spellslinger"
+	[GameLib.CodeEnumClass.Warrior]         = "Warrior",
+	[GameLib.CodeEnumClass.Engineer]        = "Engineer",
+	[GameLib.CodeEnumClass.Esper]           = "Esper",
+	[GameLib.CodeEnumClass.Medic]           = "Medic",
+	[GameLib.CodeEnumClass.Stalker]         = "Stalker",
+	[GameLib.CodeEnumClass.Spellslinger]    = "Spellslinger"
 }
 
 krtNpcRankEnums = {
-	[Unit.CodeEnumRank.Elite] 		= "elite",
-	[Unit.CodeEnumRank.Superior] 	= "superior",
-	[Unit.CodeEnumRank.Champion] 	= "champion",
-	[Unit.CodeEnumRank.Standard] 	= "standard",
-	[Unit.CodeEnumRank.Minion] 		= "minion",
-	[Unit.CodeEnumRank.Fodder] 		= "fodder",
+	[Unit.CodeEnumRank.Elite]       = "elite",
+	[Unit.CodeEnumRank.Superior]    = "superior",
+	[Unit.CodeEnumRank.Champion]    = "champion",
+	[Unit.CodeEnumRank.Standard]    = "standard",
+	[Unit.CodeEnumRank.Minion]      = "minion",
+	[Unit.CodeEnumRank.Fodder]      = "fodder",
 }
 
 tNameSwaps = {

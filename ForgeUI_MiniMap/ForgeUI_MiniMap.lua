@@ -355,7 +355,7 @@ function ForgeUI_MiniMap:ForgeAPI_Init()
 	self.tGroupMemberObjects 		= {}
 
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_MiniMap//ForgeUI_MiniMap.xml")
-  	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
+	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 end
 
 function ForgeUI_MiniMap:ForgeAPI_LoadSettings()
@@ -661,7 +661,7 @@ function ForgeUI_MiniMap:OnRestore(eType, tSavedData)
 	if tSavedData.tSavedHiddenUnits then
 		for idx, idUnit in pairs(tSavedData.tSavedHiddenUnits) do
 			local unitHidden = GameLib.GetUnitById(idUnit)
-			if unitHidden and  unitHidden:IsValid()then
+			if unitHidden and unitHidden:IsValid()then
 				self.tQueuedUnits[#self.tQueuedUnits + 1] = unitHidden
 			end
 		end
@@ -699,7 +699,7 @@ function ForgeUI_MiniMap:OnChangeZoneName(oVar, strNewZone)
 	self:ReloadPublicEvents()
 
 	-- update all already shown units
-  	if self.tUnitsShown then
+	if self.tUnitsShown then
 		for idx, tCurr in pairs(self.tUnitsShown) do
 			if tCurr.unitObject then
 				self.wndMiniMap:RemoveUnit(tCurr.unitObject)
@@ -710,7 +710,7 @@ function ForgeUI_MiniMap:OnChangeZoneName(oVar, strNewZone)
 	end
 
 	-- check for any units that are now back in the subzone
-  	if self.tUnitsHidden then
+	if self.tUnitsHidden then
 		for idx, tCurr in pairs(self.tUnitsHidden) do
 			if tCurr.unitObject then
 				self.tUnitsHidden[tCurr.unitObject:GetId()] = nil
