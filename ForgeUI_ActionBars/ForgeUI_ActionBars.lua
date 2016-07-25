@@ -8,6 +8,8 @@
 
 require "Window"
 require "HousingLib"
+require "AbilityBook"
+require "ActionSetLib"
 
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
@@ -242,6 +244,26 @@ end
 function ForgeUI_ActionBars:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_ActionBars//ForgeUI_ActionBars.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
+
+	-- Pre-hook into ActionSetLib.RequestActionSetChanges, to validate & eventually fix broken path skill
+	local fnRequestActionSetChanges = ActionSetLib.RequestActionSetChanges
+	ActionSetLib.RequestActionSetChanges = (function(tAbilities)
+		local tPathAbilities = AbilityBook.GetAbilitiesList(Spell.CodeEnumSpellTag.Path)
+		local bFound = false;
+
+		for _, pathAbility in ipairs(tPathAbilities) do
+			if pathAbility.nId == tAbilities[10] then
+				bFound = true
+				break
+			end
+		end
+
+		if bFound == false then
+			tAbilities[10] = 0
+		end
+
+		return fnRequestActionSetChanges(tAbilities)
+	end)
 
 	F:API_RegisterEvent(self, "PlayerEnteredCombat", "OnPlayerEnteredCombat")
 
@@ -755,6 +777,8 @@ function ForgeUI_ActionBars:FillPath(wnd)
 
 	wndList:DestroyChildren()
 
+	self:ValidateSelectedPath()
+
 	local nCount = 0
 	local nListHeight = 0
 	for _, tAbility in pairs(tAbilities) do
@@ -794,44 +818,61 @@ end
 
 -- Returns spellObject from tAbility only if said path ability is availible to the player
 function ForgeUI_ActionBars:GetPathSkillForDisplay(tAbility)
-	local pathLevel = PlayerPathLib.GetPathLevel();
-	local splObject = nil;
+	local pathLevel = PlayerPathLib.GetPathLevel()
+	local splObject = nil
 	
 	for _, tier in ipairs(tAbility.tTiers) do
 		if tier.nLevelReq <= pathLevel then
-		    splObject = tier.splObject;
+			splObject = tier.splObject
 		end
 	end
-	
-	return splObject;
+
+	return splObject
+end
+
+-- Validates if selected path skill is valid and usable by the player
+-- Prevents locking of LAS
+function ForgeUI_ActionBars:ValidateSelectedPath()
+	if self._DB.char.nSelectedPath then
+		local tAbilities = AbilityBook.GetAbilitiesList(Spell.CodeEnumSpellTag.Path)
+		local bIsValidPathId = false
+
+		for idx, tAbility in pairs(tAbilities) do
+			if tAbility.bIsActive then
+				bIsValidPathId = bIsValidPathId or tAbility.nId == self._DB.char.nSelectedPath
+			end
+		end
+
+		self._DB.char.nSelectedPath = bIsValidPathId and self._DB.char.nSelectedPath or nil
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
 -- LASBar Functions
 ---------------------------------------------------------------------------------------------------
 function ForgeUI_ActionBars:OnGenerateTooltip(wndControl, wndHandler, eType, arg1, arg2)
-        local xml = nil
-        if eType == Tooltip.TooltipGenerateType_ItemInstance then -- Doesn't need to compare to item equipped
-                Tooltip.GetItemTooltipForm(self, wndControl, arg1, {})
-        elseif eType == Tooltip.TooltipGenerateType_ItemData then -- Doesn't need to compare to item equipped
-                Tooltip.GetItemTooltipForm(self, wndControl, arg1, {})
-        elseif eType == Tooltip.TooltipGenerateType_GameCommand then
-                xml = XmlDoc.new()
-                xml:AddLine(arg2)
-                wndControl:SetTooltipDoc(xml)
-        elseif eType == Tooltip.TooltipGenerateType_Macro then
-                xml = XmlDoc.new()
-                xml:AddLine(arg1)
-                wndControl:SetTooltipDoc(xml)
-        elseif eType == Tooltip.TooltipGenerateType_Spell then
-                if Tooltip ~= nil and Tooltip.GetSpellTooltipForm ~= nil then
-                        Tooltip.GetSpellTooltipForm(self, wndControl, arg1)
-                end
-        elseif eType == Tooltip.TooltipGenerateType_PetCommand then
-                xml = XmlDoc.new()
-                xml:AddLine(arg2)
-                wndControl:SetTooltipDoc(xml)
-        end
+	local xml = nil
+	if eType == Tooltip.TooltipGenerateType_ItemInstance then -- Doesn't need to compare to item equipped
+		Tooltip.GetItemTooltipForm(self, wndControl, arg1, {})
+	elseif eType == Tooltip.TooltipGenerateType_ItemData then -- Doesn't need to compare to item equipped
+		Tooltip.GetItemTooltipForm(self, wndControl, arg1, {})
+	elseif eType == Tooltip.TooltipGenerateType_GameCommand then
+		xml = XmlDoc.new()
+		xml:AddLine(arg2)
+		wndControl:SetTooltipDoc(xml)
+	elseif eType == Tooltip.TooltipGenerateType_Macro then
+		xml = XmlDoc.new()
+		xml:AddLine(arg1)
+		wndControl:SetTooltipDoc(xml)
+	elseif eType == Tooltip.TooltipGenerateType_Spell then
+		if Tooltip ~= nil and Tooltip.GetSpellTooltipForm ~= nil then
+			Tooltip.GetSpellTooltipForm(self, wndControl, arg1)
+		end
+	elseif eType == Tooltip.TooltipGenerateType_PetCommand then
+		xml = XmlDoc.new()
+		xml:AddLine(arg2)
+		wndControl:SetTooltipDoc(xml)
+	end
 end
 
 function ForgeUI_ActionBars:OnSpellBtn( wndHandler, wndControl, eMouseButton )
