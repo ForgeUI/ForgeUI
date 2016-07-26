@@ -312,6 +312,11 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 end
 
 function ForgeUI_FloatText:OnCombatLogCCState(tEventArgs)
+	
+	if not self:ShouldDisplayCCStateFloater( tEventArgs ) then
+		return
+	end
+
 	if tEventArgs.eResult == nil then return false end -- totally invalid
 
 	if GameLib.IsControlledUnit( tEventArgs.unitTarget ) then
