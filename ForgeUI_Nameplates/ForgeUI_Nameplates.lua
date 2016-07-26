@@ -17,21 +17,21 @@ require "Window"
 -- Constants
 -----------------------------------------------------------------------------------------------
 krtClassEnums = {
-	[GameLib.CodeEnumClass.Warrior]      	= "Warrior",
-	[GameLib.CodeEnumClass.Engineer]     	= "Engineer",
-	[GameLib.CodeEnumClass.Esper]        	= "Esper",
-	[GameLib.CodeEnumClass.Medic]        	= "Medic",
-	[GameLib.CodeEnumClass.Stalker]      	= "Stalker",
-	[GameLib.CodeEnumClass.Spellslinger]	= "Spellslinger"
+	[GameLib.CodeEnumClass.Warrior]         = "Warrior",
+	[GameLib.CodeEnumClass.Engineer]        = "Engineer",
+	[GameLib.CodeEnumClass.Esper]           = "Esper",
+	[GameLib.CodeEnumClass.Medic]           = "Medic",
+	[GameLib.CodeEnumClass.Stalker]         = "Stalker",
+	[GameLib.CodeEnumClass.Spellslinger]    = "Spellslinger"
 }
 
 krtNpcRankEnums = {
-	[Unit.CodeEnumRank.Elite] 		= "elite",
-	[Unit.CodeEnumRank.Superior] 	= "superior",
-	[Unit.CodeEnumRank.Champion] 	= "champion",
-	[Unit.CodeEnumRank.Standard] 	= "standard",
-	[Unit.CodeEnumRank.Minion] 		= "minion",
-	[Unit.CodeEnumRank.Fodder] 		= "fodder",
+	[Unit.CodeEnumRank.Elite]       = "elite",
+	[Unit.CodeEnumRank.Superior]    = "superior",
+	[Unit.CodeEnumRank.Champion]    = "champion",
+	[Unit.CodeEnumRank.Standard]    = "standard",
+	[Unit.CodeEnumRank.Minion]      = "minion",
+	[Unit.CodeEnumRank.Fodder]      = "fodder",
 }
 
 tNameSwaps = {
@@ -1231,24 +1231,24 @@ function ForgeUI_Nameplates:UpdateInfo(tNameplate)
 end
 
 function ForgeUI_Nameplates:RepositionNameplate(tNameplate)
-    if tNameplate.tSettings.bReposition then
-        local wndNameplate = tNameplate.wndNameplate
+	if tNameplate.tSettings.bReposition then
+		local wndNameplate = tNameplate.wndNameplate
 
-        local tOverhead = tNameplate.unitOwner:GetOverheadAnchor()
-        if tOverhead == nil then return end
+		local tOverhead = tNameplate.unitOwner:GetOverheadAnchor()
+		if tOverhead == nil then return end
 
-        if tOverhead.y < 25 and not tNameplate.bRepositioned then
+		if tOverhead.y < 25 and not tNameplate.bRepositioned then
 
-            tNameplate.bRepositioned = true
-            wndNameplate:SetUnit(tNameplate.unitOwner, 0)
+			tNameplate.bRepositioned = true
+			wndNameplate:SetUnit(tNameplate.unitOwner, 0)
 
-        elseif tOverhead.y > 25 and tNameplate.bRepositioned then
+		elseif tOverhead.y > 25 and tNameplate.bRepositioned then
 
-            tNameplate.bRepositioned = false
-            wndNameplate:SetUnit(tNameplate.unitOwner, 1)
+			tNameplate.bRepositioned = false
+			wndNameplate:SetUnit(tNameplate.unitOwner, 1)
 
-        end
-    end
+		end
+	end
 end
 
 function ForgeUI_Nameplates:SetBarValue(wndBar, fMin, fValue, fMax)
@@ -1266,7 +1266,7 @@ function ForgeUI_Nameplates:CheckDrawDistance(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 
 	if not unitOwner or not unitPlayer then
-	    return false
+	return false
 	end
 
 	local tPosTarget = unitOwner:GetPosition()

@@ -20,10 +20,10 @@ local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 -----------------------------------------------------------------------------------------------
 local ForgeUI_Inventory = {
 	_NAME = "ForgeUI_Inventory",
-    _API_VERSION = 3,
-    _VERSION = "1.0",
-    _DB = {},
-    DISPLAY_NAME = "Inventory",
+	_API_VERSION = 3,
+	_VERSION = "1.0",
+	_DB = {},
+	DISPLAY_NAME = "Inventory",
 
 	tSettings = {
 		global = {

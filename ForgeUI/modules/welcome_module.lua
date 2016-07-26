@@ -26,7 +26,7 @@ local CreditsModule = {
 -- Module functions
 -----------------------------------------------------------------------------------------------
 function CreditsModule:ForgeAPI_Init()
-	F:API_AddMenuItem(self, "Home", "Home", { strPriority = "high", bDefault = true })
+	F:API_AddMenuItem(self, "Home", "Home", { strPriority = "shigh", bDefault = true })
 
 	self.tTmpSettings = {
 		crColor = "FFFF9900"
