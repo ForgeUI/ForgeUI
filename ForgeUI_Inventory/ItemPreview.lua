@@ -23,14 +23,14 @@ local ktValidItemPreviewSlots =
 local knSaveVersion = nil
 
 function ItemPreview:new(o)
-    o = o or {}
-    setmetatable(o, self)
-    self.__index = self
-    return o
+	o = o or {}
+	setmetatable(o, self)
+	self.__index = self
+	return o
 end
 
 function ItemPreview:Init()
-    Apollo.RegisterAddon(self)
+	Apollo.RegisterAddon(self)
 end
 
 function ItemPreview:OnSave(eType)

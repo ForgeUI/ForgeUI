@@ -24,8 +24,8 @@ local API_VERSION = 3
 -- version
 local MAJOR_VERSION = 0
 local MINOR_VERSION = 5
-local PATCH_VERSION = 3
-local PATCH_SUFFIX = 1
+local PATCH_VERSION = 4
+local PATCH_SUFFIX = 0
 local PATCH_SUFFIXES = {
 	[-2] = "alpha", [-1] = "beta", [0] = "",
 	[1] = "a", [2] = "b", [3] = "c",
@@ -56,10 +56,10 @@ local Addon = {}
 Addon.__index = Addon
 
 function Addon:new(o)
-  o = o or {}
-  setmetatable(o, Addon)
+	o = o or {}
+	setmetatable(o, Addon)
 
-  return o
+	return o
 end
 
 local Inst = Addon:new()
@@ -212,11 +212,43 @@ function Addon:ItemListSignPressed(wndHandler, wndControl, eMouseButton)
 	Inst:SortItemsByPriority()
 end
 
+-- Iterates over table in order (alphabetically, ...)
+local function pairsByKeys(t, f)
+	local a = {}
+
+	for n in pairs(t) do
+		table.insert(a, n)
+	end
+
+	table.sort(a, f)
+
+	local i = 0
+	local iter = (function ()
+		i = i + 1
+		if a[i] == nil then
+			return nil
+		else
+			return a[i], t[a[i]]
+		end
+	end)
+
+	return iter
+end
+
 function Addon:SortItemsByPriority()
 	local wndHolder = self.wndMenuHolder
 	wndHolder:ArrangeChildrenVert() -- hack to allow scrolling
 
 	local tAll = {
+		shigh = {},
+		high = {},
+		normal = {},
+		low = {},
+		slow = {},
+	}
+
+	local tTmp = {
+		shigh = {},
 		high = {},
 		normal = {},
 		low = {},
@@ -227,11 +259,17 @@ function Addon:SortItemsByPriority()
 		local tData = v:GetData()
 
 		if not tData.strPriotiy then tData.strPriotiy = "normal" end
-		table.insert(tAll[tData.strPriotiy], v)
+		tTmp[tData.strPriotiy][tData.strText] = v
+	end
+
+	for k, v in pairs(tTmp) do
+		for _, val in pairsByKeys(v) do
+			table.insert(tAll[k], val)
+		end
 	end
 
 	local nPos = 0
-	for k, v in pairs(tAll.high) do
+		for k, v in ipairs(tAll.shigh) do
 		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
 		nTop = nPos
 		nPos = nPos + v:GetHeight()
@@ -239,7 +277,7 @@ function Addon:SortItemsByPriority()
 		v:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 	end
 
-	for k, v in pairs(tAll.normal) do
+	for k, v in ipairs(tAll.high) do
 		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
 		nTop = nPos
 		nPos = nPos + v:GetHeight()
@@ -247,7 +285,7 @@ function Addon:SortItemsByPriority()
 		v:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 	end
 
-	for k, v in pairs(tAll.low) do
+	for k, v in ipairs(tAll.normal) do
 		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
 		nTop = nPos
 		nPos = nPos + v:GetHeight()
@@ -255,7 +293,15 @@ function Addon:SortItemsByPriority()
 		v:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 	end
 
-	for k, v in pairs(tAll.slow) do
+	for k, v in ipairs(tAll.low) do
+		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
+		nTop = nPos
+		nPos = nPos + v:GetHeight()
+		nBottom = nPos
+		v:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+	end
+
+	for k, v in ipairs(tAll.slow) do
 		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
 		nTop = nPos
 		nPos = nPos + v:GetHeight()
@@ -296,7 +342,8 @@ function ForgeUI:API_AddMenuItem(tModule, strText, strWindow, tOptions)
 	wndItem:FindChild("Sign"):AddEventHandler("ButtonUncheck", "ItemListSignPressed", Inst)
 
 	local tData = {
-		strPriority = "normal"
+		strText = strText,
+		strPriority = "normal",
 	}
 
 	if strWindow then

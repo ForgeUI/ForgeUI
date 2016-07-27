@@ -461,9 +461,9 @@ function ForgeUI_ActionBars:EditButtons(tBar)
 		wndBarButton:FindChild("Hotkey"):Show(false)
 
 		if tBar.strSnapTo == "bottom" or tBar.strSnapTo == "top" then
-			tActionButton.DrawShortcutBottom = tBar.bDrawShortcutBottom
+			tActionButton.DrawShortcutBottom = tBar.bDrawHotkey and tBar.bDrawShortcutBottom
 
-			wndBarButton:FindChild("Holder"):SetAnchorOffsets(1, 1, -1, tBar.bDrawShortcutBottom and 12 or -1)
+			wndBarButton:FindChild("Holder"):SetAnchorOffsets(1, 1, -1, tActionButton.DrawShortcutBottom and 12 or -1)
 			wndBarButton:FindChild("Hotkey"):Show(tBar.bDrawShortcutBottom)
 		end
 
@@ -805,30 +805,7 @@ function ForgeUI_ActionBars:GetPathSkillForDisplay(tAbility)
 	
 	return splObject;
 end
- 
------------------------------------------------------------------------------------------------
--- ForgeUI_ActionBars Styles
------------------------------------------------------------------------------------------------
-function ForgeUI_ActionBars:LoadStyle_ActionBar(wnd, tOptions)
-	for strName, wndBarButton in pairs(wnd:GetChildren()) do
-		wndBarButton:SetBGColor(tOptions.crBorder)
-		wndBarButton:FindChild(tOptions.strContent):SetStyleEx("DrawHotkey", self._DB.profile.bShowHotkeys)
-		wndBarButton:FindChild(tOptions.strContent):SetStyle("NoClip", tOptions.bShowHotkey)
 
-		wndBarButton:FindChild("Popup"):SetBGColor(tOptions.crBorder)
-	end
-end
- 
-function ForgeUI_ActionBars:LoadStyle_ActionButton(wnd, tOptions)
-	local wndBarButton = wnd:FindChild("ForgeUI_BarButton")
-
-	wndBarButton:SetBGColor(tOptions.crBorder)
-	wndBarButton:FindChild(tOptions.strContent):SetStyleEx("DrawHotkey", self._DB.profile.bShowHotkeys)
-	wndBarButton:FindChild(tOptions.strContent):SetStyle("NoClip", tOptions.bShowHotkey)
-
-	wndBarButton:FindChild("Popup"):SetBGColor(tOptions.crBorder)
-end
- 
 ---------------------------------------------------------------------------------------------------
 -- LASBar Functions
 ---------------------------------------------------------------------------------------------------

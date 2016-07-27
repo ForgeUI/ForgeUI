@@ -92,7 +92,7 @@ end
 function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageType, nDamage, nShieldDamaged, nAbsorptionAmount, bCritical )
 	if unitTarget == nil or not Apollo.GetConsoleVariable("ui.showCombatFloater") or nDamage == nil then
 		return
-	end	    
+	end
 	
 	if GameLib.IsControlledUnit(unitTarget) or unitTarget == GameLib.GetPlayerMountUnit() or GameLib.IsControlledUnit(unitTarget:GetUnitOwner()) then
 		self:OnPlayerDamageOrHealing( unitTarget, eDamageType, nDamage, nShieldDamaged, nAbsorptionAmount, bCritical )
@@ -312,6 +312,11 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 end
 
 function ForgeUI_FloatText:OnCombatLogCCState(tEventArgs)
+	
+	if not self:ShouldDisplayCCStateFloater( tEventArgs ) then
+		return
+	end
+
 	if tEventArgs.eResult == nil then return false end -- totally invalid
 
 	if GameLib.IsControlledUnit( tEventArgs.unitTarget ) then

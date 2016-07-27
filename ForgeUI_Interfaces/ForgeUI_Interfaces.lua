@@ -17,29 +17,29 @@ local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 -- ForgeUI Addon Definition
 -----------------------------------------------------------------------------------------------
 local ForgeUI_Interfaces = {
-  _NAME = "ForgeUI_Interfaces",
-  _API_VERSION = 3,
-  _VERSION = "2.0",
-  DISPLAY_NAME = "Interfaces",
+	_NAME = "ForgeUI_Interfaces",
+	_API_VERSION = 3,
+	_VERSION = "2.0",
+	DISPLAY_NAME = "Interfaces",
 
-  tSettings = {
-    global = {
-		bShowMain = true,
-		bShowStore = true,
-		bShowFortunes = true,
+	tSettings = {
+		global = {
+			bShowMain = true,
+			bShowStore = true,
+			bShowFortunes = true,
 
-		tPinnedAddons = {
-			Apollo.GetString("InterfaceMenu_AccountInventory"),
-			Apollo.GetString("CRB_Achievements"),
-			Apollo.GetString("MarketplaceCredd_Title"),
-			Apollo.GetString("CRB_Contracts"),
-			Apollo.GetString("InterfaceMenu_GroupFinder"),
-			Apollo.GetString("InterfaceMenu_Social"),
-			Apollo.GetString("InterfaceMenu_Inventory"),
-			Apollo.GetString("InterfaceMenu_Mail"),
+			tPinnedAddons = {
+				Apollo.GetString("InterfaceMenu_AccountInventory"),
+				Apollo.GetString("CRB_Achievements"),
+				Apollo.GetString("MarketplaceCredd_Title"),
+				Apollo.GetString("CRB_Contracts"),
+				Apollo.GetString("InterfaceMenu_GroupFinder"),
+				Apollo.GetString("InterfaceMenu_Social"),
+				Apollo.GetString("InterfaceMenu_Inventory"),
+				Apollo.GetString("InterfaceMenu_Mail"),
+			}
 		}
-    }
-  }
+	}
 }
 
 function ForgeUI_Interfaces:ForgeAPI_Init()
@@ -54,20 +54,20 @@ function ForgeUI_Interfaces:OnDocumentReady()
 		return
 	end
 
-	Apollo.RegisterEventHandler("InterfaceMenuList_NewAddOn", 			"OnNewAddonListed", self)
-	Apollo.RegisterEventHandler("InterfaceMenuList_AlertAddOn", 		"OnDrawAlert", self)
-	Apollo.RegisterEventHandler("CharacterCreated", 					"OnCharacterCreated", self)
-	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor", 			"OnTutorial_RequestUIAnchor", self)
-	Apollo.RegisterTimerHandler("TimeUpdateTimer", 						"OnUpdateTimer", self)
-	Apollo.RegisterTimerHandler("QueueRedrawTimer", 					"OnQueuedRedraw", self)
-	Apollo.RegisterEventHandler("ApplicationWindowSizeChanged", 		"ButtonListRedraw", self)
-	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences", 		"OnUpdateTimer", self)
+	Apollo.RegisterEventHandler("InterfaceMenuList_NewAddOn",       "OnNewAddonListed", self)
+	Apollo.RegisterEventHandler("InterfaceMenuList_AlertAddOn",     "OnDrawAlert", self)
+	Apollo.RegisterEventHandler("CharacterCreated",                 "OnCharacterCreated", self)
+	Apollo.RegisterEventHandler("Tutorial_RequestUIAnchor",         "OnTutorial_RequestUIAnchor", self)
+	Apollo.RegisterTimerHandler("TimeUpdateTimer",                  "OnUpdateTimer", self)
+	Apollo.RegisterTimerHandler("QueueRedrawTimer",                 "OnQueuedRedraw", self)
+	Apollo.RegisterEventHandler("ApplicationWindowSizeChanged",     "ButtonListRedraw", self)
+	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences",    "OnUpdateTimer", self)
 
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop", 			"OnToggleShop", self)
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes", 		"OnToggleFortunes", self)
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop",         "OnToggleShop", self)
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes",     "OnToggleFortunes", self)
 
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop",         	"OnToggleShop", self)
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes",     	"OnToggleFortunes", self)
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop",         "OnToggleShop", self)
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes",     "OnToggleFortunes", self)
 
 	self.wndMain = Apollo.LoadForm(self.xmlDoc , "ForgeUI_InterfacesForm", "FixedHudStratumHigh", self)
 	self.wndList = Apollo.LoadForm(self.xmlDoc , "FullListFrame", nil, self)
