@@ -1756,7 +1756,7 @@ function ForgeUI_Nameplates:OnUnitTypeStyleGlobal()
 	self:RefreshConfig()
 end
 
-function ForgeUI_Nameplates:OnClick()
+function ForgeUI_Nameplates:OnUnitTypeStyleReset()
 	self._DB.profile.tStyle = GetDefaultNameplateStyle(true)
 
 	for k, v in pairs(self._DB.profile.tUnits) do
@@ -1993,7 +1993,7 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 
 	-- TODO: reset all types to default button
 	G:API_AddCheckBox(self, wndStyle, "Use global style", self._DB.profile.tStyle, "bGlobalStyle", { tMove = {300, 0}, fnCallback = self.OnUnitTypeStyleGlobal })
-	G:API_AddButton(self, wndStyle, "Reset style settings", { tOffsets = {455, 5, 605, 30}, fnCallback = self.OnClick })
+	G:API_AddButton(self, wndStyle, "Reset style settings", { tOffsets = {455, 5, 605, 30}, fnCallback = self.OnUnitTypeStyleReset })
 
 	G:API_AddNumberBox(self, wndStyle, "Nameplate width", map, "nBarWidth", { tMove = { 0, 60 }, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddNumberBox(self, wndStyle, "Nameplate height", map, "nBarHeight", { tMove = { 0, 90 }, fnCallback = self.LoadStyle_Nameplates })
