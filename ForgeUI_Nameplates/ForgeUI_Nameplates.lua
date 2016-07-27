@@ -523,7 +523,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	end
 
 	if wnd == nil or not wnd:IsValid() then
-		wnd = Apollo.LoadForm(self.xmlNameplate, "Nameplate", "InWorldHudStratum", self)
+		wnd = Apollo.LoadForm(self.xmlNameplate, "Nameplate", "FixedHudStratumLow", self)
 		wndReferences = nil
 	end
 
@@ -1938,6 +1938,8 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 
 	if GameLib.GetTargetUnit() == unitOwner then
 		tNameplate.bIsTarget = true
+
+		tNameplate.wndNameplate:ToFront()
 
 		fnDrawHealth(self, tNameplate)
 		fnDrawName(self, tNameplate)
