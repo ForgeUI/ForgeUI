@@ -34,6 +34,12 @@ krtNpcRankEnums = {
 	[Unit.CodeEnumRank.Fodder]      = "fodder",
 }
 
+krtIAStyles = {
+	["ForgeUI_shield"] = { bDynamicSprite = false, crInf = "FF2D2D2D", crValue = "FF795548" },
+	["ForgeUI_Border"] = { bDynamicSprite = false, crInf = "FF2D2D2D", crValue = "FF795548" },
+	["ForgeUI_Carbine"] = { bDynamicSprite = true, strSpriteInf = "ForgeUI_ia_inf_set1", strSpriteValue = "ForgeUI_ia_set1", crInf = "ffffffff", crValue = "ffffffff" },
+}
+
 tNameSwaps = {
 	["Briex Sper"] = "Pink Cheese",
 }
@@ -97,16 +103,15 @@ local ForgeUI_Nameplates = {
 			tStyle = {
 				nStyle = 0,
 				nBarWidth = 120,
-				nBarHeight = 20,
-				nBarOffset = 80,
+				nBarHeight = 22,
+				nBarOffset = 70,
 				nShieldHeight = 8,
 				nAbsorbHeight = 8,
-				nCastHeight = 7,
-				nCastOffsetY = 7,
-				nCastTextOffsetY = 7,
-				bCastTextCenter = false,
-				strFullSprite = "ForgeUI_Smooth",
-				strIASprite = "ForgeUI_shield"
+				nCastHeight = 11,
+				nCastOffsetY = 2,
+				nCastTextOffsetY = 26,
+				strFullSprite = "ForgeUI_Edge",
+				strIASprite = "ForgeUI_Carbine"
 			},
 			tUnits = {
 				Target = {
@@ -122,8 +127,8 @@ local ForgeUI_Nameplates = {
 					bHideOnHealth = false,
 					bHideOnShield = false,
 					nShowName = 0,
-					nShowBars = 0,
-					nShowCast = 0,
+					nShowBars = 2,
+					nShowCast = 2,
 					nShowGuild = 0,
 					nShowInfo = 0,
 					nHpCutoff = 0,
@@ -148,6 +153,7 @@ local ForgeUI_Nameplates = {
 					nHpCutoff = 0,
 					crHpCutoff = "FFCCCCCC",
 					crName = "FFFFFFFF",
+					crGuildMember = "FF20B2A9",
 					crHealth = "FF75CC26",
 					bClassColors = true,
 					bShowHpValue = false,
@@ -335,6 +341,10 @@ function ForgeUI_Nameplates:NameplatesInit()
 	Apollo.RegisterEventHandler("UnitMemberOfGuildChange", 		"OnUnitMemberOfGuildChange", self)
 	Apollo.RegisterEventHandler("GuildChange", 					"OnGuildChange", self)
 	Apollo.RegisterEventHandler("UnitGibbed",					"OnUnitGibbed", self)
+	Apollo.RegisterEventHandler("Group_Join", 					"OnGroupUpdate", self)
+	Apollo.RegisterEventHandler("Group_Left",					"OnGroupUpdate", self)
+	Apollo.RegisterEventHandler("Group_Add", 					"OnGroupUpdate", self)
+	Apollo.RegisterEventHandler("Group_Remove",					"OnGroupUpdate", self)
 
 	Apollo.RegisterEventHandler("StartSpellThreshold", 	"OnStartSpellThreshold", self)
 	Apollo.RegisterEventHandler("ClearSpellThreshold", 	"OnClearSpellThreshold", self)
@@ -579,14 +589,6 @@ end
 
 function ForgeUI_Nameplates:CreateUnitsFromPreload()
 	self.unitPlayer = GameLib.GetPlayerUnit()
-	
-	-- Disable tapCast for spellslingers
-	-- TODO: remove this when fixed.
-	if self.unitPlayer:GetClassId() == GameLib.CodeEnumClass.Spellslinger then
-		Apollo.RemoveEventHandler("StartSpellThreshold", self)
-		Apollo.RemoveEventHandler("ClearSpellThreshold", self)
-		Apollo.RemoveEventHandler("UpdateSpellThreshold", self)
-	end	
 
 	-- Process units created while form was loading
 	self.timerPreloadUnitCreateDelay = ApolloTimer.Create(0.5, true, "OnPreloadUnitCreateTimer", self)
@@ -683,6 +685,13 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 
 	if tNameplate.strUnitType == "HostilePlayer" and not unitOwner:IsPvpFlagged() then
 		crNameColors = tSettings.crNameNoPvP
+	end
+
+	if self.unitPlayer ~= unitOwner and tNameplate.strUnitType == "FriendlyPlayer" then
+		local strPlayerGuildName = self.unitPlayer:GetGuildName()
+		if strPlayerGuildName and strPlayerGuildName == unitOwner:GetGuildName() then
+			crNameColors = tSettings.crGuildMember
+		end
 	end
 
 	if unitOwner:IsDead() then
@@ -851,11 +860,22 @@ function ForgeUI_Nameplates:DrawIA(tNameplate)
 
 	else
 		bShow = true
+
+		-- style must exist in krtIAStyles else nothing will be shown
+		local tIAStyle = krtIAStyles[self._DB.profile.tStyle.strIASprite]
+		if not tIAStyle then return end
+
 		if nMax == -1 then
-			ia:SetBGColor("FF2D2D2D")
-			ia:SetText("-")
+			if tIAStyle.bDynamicSprite then
+				ia:SetSprite(tIAStyle.strSpriteInf)
+			end
+			ia:SetBGColor(tIAStyle.crInf or "UI_WindowBGDefault")
+			ia:SetText(tIAStyle.bDynamicSprite and "" or "-")
 		elseif nMax > 0 then
-			ia:SetBGColor("FF795548")
+			if tIAStyle.bDynamicSprite then
+				ia:SetSprite(tIAStyle.strSpriteValue)
+			end
+			ia:SetBGColor(tIAStyle.crValue or "UI_WindowBGDefault")
 			ia:SetText(nValue)
 		end
 	end
@@ -941,46 +961,30 @@ function ForgeUI_Nameplates:OnStartSpellThreshold(idSpell, nMaxThresholds, eCast
 
 	local tNameplate = self.arUnit2Nameplate[unitPlayer:GetId()]
 
-	local splObject = GameLib.GetSpell(idSpell)
-
 	if tNameplate ~= nil then
 
-		tNameplate.tTapCast = {
-			idSpell = idSpell,
-			strSpellName = splObject:GetName(),
+		tNameplate.tTapCast = tNameplate.tTapCast or {}
+
+		local _strSpellName = GameLib.GetSpell(idSpell):GetName()
+
+		for k, v in pairs(tNameplate.tTapCast) do
+			if k ~= _strSpellName and v.bActive then
+				v.bActive = false
+			end
+		end
+
+		if eCastMethod == Spell.CodeEnumCastMethod.ChargeRelease then
+			if tNameplate.tTapCast[_strSpellName] then return end
+		end
+
+		tNameplate.tTapCast[_strSpellName] = {
+			nIdSpell = idSpell,
+			nCastMethod = eCastMethod,
+			strSpellName = _strSpellName,
 			nThreshold = 1,
 			nMaxThreshold = nMaxThresholds,
 			bActive = true,
 		}
-
-		local bShow = self:GetBooleanOption("nShowCast", tNameplate)
-
-		local wndCastBar = tNameplate.wnd.castBar
-		if bShow ~= wndCastBar:IsShown() then
-			wndCastBar:Show(bShow)
-		end
-
-		if bShow then
-			tNameplate.wnd.castBarCastFill:SetBarColor(self._DB.profile.crCastbarNormal)
-
-			local strCastName = tNameplate.tTapCast.strSpellName
-			tNameplate.wnd.castBarLabel:SetText(string.format("%s (%s/%s)", strCastName, "1", nMaxThresholds))
-			tNameplate.strCastName = strCastName
-
-			local nCastDuration = nMaxThresholds
-			if nCastDuration ~= tNameplate.nCastDuration then
-				tNameplate.wnd.castBarCastFill:SetMax(nCastDuration)
-				tNameplate.nCastDuration = nCastDuration
-			end
-
-			local nCastElapsed = tNameplate.tTapCast.nThreshold
-			if nCastElapsed ~= tNameplate.nCastElapsed then
-				tNameplate.wnd.castBarCastFill:SetProgress(nCastElapsed)
-				tNameplate.nCastElapsed = nCastElapsed
-			end
-
-		end
-
 	end
 end
 
@@ -992,43 +996,52 @@ function ForgeUI_Nameplates:OnUpdateSpellThreshold(idSpell, nNewThreshold) -- Ev
 
 	if tNameplate ~= nil then
 
-		local bShow = self:GetBooleanOption("nShowCast", tNameplate)
+		tNameplate.tTapCast = tNameplate.tTapCast or {}
 
-		local wndCastBar = tNameplate.wnd.castBar
-		if bShow ~= wndCastBar:IsShown() then
-			wndCastBar:Show(bShow)
+		local _strSpellName = GameLib.GetSpell(idSpell):GetName()
+
+		for k, v in pairs(tNameplate.tTapCast) do
+			if k ~= _strSpellName and v.bActive then
+				v.bActive = false
+			end
 		end
 
-		local strCastName = tNameplate.tTapCast.strSpellName
-		local nMaxThresholds = tNameplate.tTapCast.nMaxThreshold
-		tNameplate.wnd.castBarLabel:SetText(string.format("%s (%s/%s)", strCastName, nNewThreshold, nMaxThresholds))
-		tNameplate.strCastName = strCastName
-
-		local nCastDuration = tNameplate.tTapCast.nMaxThreshold
-		if nCastDuration ~= tNameplate.nCastDuration then
-			tNameplate.wnd.castBarCastFill:SetMax(nCastDuration)
-			tNameplate.nCastDuration = nCastDuration
+		if tNameplate.tTapCast[_strSpellName] then
+			tNameplate.tTapCast[_strSpellName].nThreshold = nNewThreshold
+			tNameplate.tTapCast[_strSpellName].bActive = true
 		end
-
-		local nCastElapsed = nNewThreshold
-		if nCastElapsed ~= tNameplate.nCastElapsed then
-			tNameplate.wnd.castBarCastFill:SetProgress(nCastElapsed)
-			tNameplate.nCastElapsed = nCastElapsed
-			tNameplate.tTapCast.nThreshold = nNewThreshold
-		end
-
 	end
 end
 
 function ForgeUI_Nameplates:OnClearSpellThreshold(idSpell) -- Event
 	local unitPlayer = GameLib.GetPlayerUnit()
+	if unitPlayer == nil or not unitPlayer:IsValid() then return end
+
 	local tNameplate = self.arUnit2Nameplate[unitPlayer:GetId()]
-	if unitPlayer == nil or not unitPlayer:IsValid() or tNameplate == nil then return end
 
-	tNameplate.wnd.castBar:Show(false)
-	tNameplate.wnd.castBarCastFill:SetProgress(0)
+	if tNameplate ~= nil then
 
-	tNameplate.tTapCast = nil
+		tNameplate.tTapCast = tNameplate.tTapCast or {}
+
+		local _strSpellName = GameLib.GetSpell(idSpell):GetName()
+
+		tNameplate.tTapCast[_strSpellName] = nil
+
+		-- when tapCast ends we look for any other tapCast with lowest time remaining
+		local tDummyCast = { strSpellName = "", nThresholdTimePrcntDone = 0 }
+		for k, v in pairs(tNameplate.tTapCast) do
+			local n = GameLib.GetSpellThresholdTimePrcntDone(v.nIdSpell)
+			if tDummyCast.nThresholdTimePrcntDone == 0 or tDummyCast.nThresholdTimePrcntDone > n then
+				tDummyCast.strSpellName = k
+				tDummyCast.nThresholdTimePrcntDone = n
+			end
+		end
+
+		-- if found, make that tapCast active
+		if tNameplate.tTapCast[tDummyCast.strSpellName] then
+			tNameplate.tTapCast[tDummyCast.strSpellName].bActive = true
+		end
+	end
 end
 
 function ForgeUI_Nameplates:DrawMOOBar(tNameplate)
@@ -1067,20 +1080,37 @@ function ForgeUI_Nameplates:DrawMOOBar(tNameplate)
 	end
 end
 
-function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
-	-- TapCast check (only for unitPlayer)
-	if tNameplate.tTapCast ~= nil and tNameplate.tTapCast.bActive and tNameplate.unitOwner:ShouldShowCastBar() then
-		-- new cast started that interrupted TapCast
-		tNameplate.tTapCast.bActive = false
-	elseif tNameplate.tTapCast ~= nil and not tNameplate.tTapCast.bActive and not tNameplate.unitOwner:ShouldShowCastBar() then
-		-- cast ended while inactive TapCast still running. updating castbar
-		tNameplate.tTapCast.bActive = true
-		return self:OnUpdateSpellThreshold(tNameplate.tTapCast.idSpell, tNameplate.tTapCast.nThreshold)
-	elseif tNameplate.tTapCast ~= nil and not tNameplate.unitOwner:ShouldShowCastBar() then
-		-- do not update cast bar if TapCast active (unless new cast started)
-		return
+function ForgeUI_Nameplates:IsTapCasting(tNameplate)
+	if tNameplate.tTapCast == nil then return false end
+
+	for k, v in pairs(tNameplate.tTapCast) do
+		if v.bActive then return true end
 	end
 
+	return false
+end
+
+function ForgeUI_Nameplates:GetTapCastByName(tNameplate, strSpellName)
+	if tNameplate.tTapCast == nil then return nil end
+
+	for k, v in pairs(tNameplate.tTapCast) do
+		if v.strSpellName == strSpellName then return v end
+	end
+
+	return nil
+end
+
+function ForgeUI_Nameplates:GetActiveTapCast(tNameplate)
+	if tNameplate.tTapCast == nil then return nil end
+
+	for k, v in pairs(tNameplate.tTapCast) do
+		if v.bActive then return v end
+	end
+
+	return nil
+end
+
+function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
 	local wndNameplate = tNameplate.wndNameplate
 	local unitOwner = tNameplate.unitOwner
 
@@ -1091,9 +1121,10 @@ function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
 	end
 
 	-- Casting; has some onDraw parameters we need to check
-	tNameplate.bIsCasting = unitOwner:ShouldShowCastBar()
+	tNameplate.bIsCasting = unitOwner:IsCasting() and unitOwner:ShouldShowCastBar()
+	tNameplate.bIsTapCasting = self:IsTapCasting(tNameplate)
 
-	local bShow = tNameplate.bIsCasting and self:GetBooleanOption("nShowCast", tNameplate)
+	local bShow = (tNameplate.bIsCasting or tNameplate.bIsTapCasting) and self:GetBooleanOption("nShowCast", tNameplate)
 
 	-- hide cast bar for non flagged hostile players
 	if tNameplate.tSettings.bHideCastNoPvP and tNameplate.strUnitType == "HostilePlayer" and not unitOwner:IsPvpFlagged() and not tNameplate.bIsTarget then
@@ -1109,18 +1140,27 @@ function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
 		tNameplate.wnd.castBarCastFill:SetBarColor(self._DB.profile.crCastbarNormal)
 
 		local strCastName = unitOwner:GetCastName()
+		local nCastDuration = unitOwner:GetCastDuration()
+		local nCastElapsed = unitOwner:GetCastElapsed()
+
+		local tTapCastInfo = self:GetTapCastByName(tNameplate, strCastName) or self:GetActiveTapCast(tNameplate) or nil
+
+		if tTapCastInfo and (tTapCastInfo.strSpellName == strCastName or strCastName == "") then
+			strCastName = ("%s (%s/%s)"):format(tTapCastInfo.strSpellName, tTapCastInfo.nThreshold, tTapCastInfo.nMaxThreshold)
+			nCastDuration = tTapCastInfo.nMaxThreshold
+			nCastElapsed = tTapCastInfo.nThreshold
+		end
+
 		if strCastName ~= tNameplate.strCastName then
 			tNameplate.wnd.castBarLabel:SetText(strCastName)
 			tNameplate.strCastName = strCastName
 		end
 
-		local nCastDuration = unitOwner:GetCastDuration()
 		if nCastDuration ~= tNameplate.nCastDuration then
 			tNameplate.wnd.castBarCastFill:SetMax(nCastDuration)
 			tNameplate.nCastDuration = nCastDuration
 		end
 
-		local nCastElapsed = unitOwner:GetCastElapsed()
 		if nCastElapsed ~= tNameplate.nCastElapsed then
 			tNameplate.wnd.castBarCastFill:SetProgress(nCastElapsed)
 			tNameplate.nCastElapsed = nCastElapsed
@@ -1221,7 +1261,7 @@ function ForgeUI_Nameplates:UpdateInfo(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 	local wnd = tNameplate.wnd
 
-	wnd.info_level:SetText(tostring(unitOwner:GetLevel()))
+	wnd.info_level:SetText(unitOwner:GetLevel() ~= nil and tostring(unitOwner:GetLevel()) or "")
 	if unitOwner:GetType() == "Player" then
 		wnd.info_class:SetBGColor(F:API_GetClassColor(tNameplate.unitOwner))
 		wnd.info_class:SetSprite("ForgeUI_" .. krtClassEnums[tNameplate.unitClassID] .. "_t")
@@ -1266,7 +1306,7 @@ function ForgeUI_Nameplates:CheckDrawDistance(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 
 	if not unitOwner or not unitPlayer then
-	return false
+		return false
 	end
 
 	local tPosTarget = unitOwner:GetPosition()
@@ -1390,6 +1430,32 @@ function ForgeUI_Nameplates:GetUnitType(unit)
 	end
 end
 
+function ForgeUI_Nameplates:UpdateUnitType(bGlobalUpdate, strType, unitToUpdate)
+	local bType = strType and strType ~= ""
+
+	if bGlobalUpdate then
+		for idx, tNameplate in pairs(self.arUnit2Nameplate) do
+			if bType then
+				if tNameplate.unitOwner:GetType() == strType then
+					tNameplate.strUnitType = self:GetUnitType(tNameplate.unitOwner)
+					tNameplate.tSettings = self._DB.profile.tUnits[tNameplate.strUnitType]
+				end
+			else
+				tNameplate.strUnitType = self:GetUnitType(tNameplate.unitOwner)
+				tNameplate.tSettings = self._DB.profile.tUnits[tNameplate.strUnitType]
+			end
+		end
+	else
+		if unitToUpdate == nil or not unitToUpdate:IsValid() then return end
+
+		local tNameplate = self.arUnit2Nameplate[unitToUpdate:GetId()]
+		if tNameplate ~= nil then
+			tNameplate.strUnitType = self:GetUnitType(unitToUpdate)
+			tNameplate.tSettings = self._DB.profile.tUnits[tNameplate.strUnitType]
+		end
+	end
+end
+
 function ForgeUI_Nameplates:GetBooleanOption(strOption, tNameplate)
 	local nOption = -1
 
@@ -1503,7 +1569,11 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	local wndNameplate = tNameplate.wndNameplate
 
 	wnd.targetMarker:SetBGColor(self._DB.profile.tUnits["Target"].crTargetMarker)
-	wnd.ia:SetSprite(self._DB.profile.tStyle.strIASprite)
+
+	-- set static sprite here, we update dynamic sprites in DrawIA method
+	if not krtIAStyles[self._DB.profile.tStyle.strIASprite] or not krtIAStyles[self._DB.profile.tStyle.strIASprite].bDynamicSprite then
+		wnd.ia:SetSprite(self._DB.profile.tStyle.strIASprite)
+	end
 
 	wnd.healthShieldFill:SetBarColor(self._DB.profile.crShield)
 	wnd.healthAbsorbFill:SetBarColor(self._DB.profile.crAbsorb)
@@ -1598,8 +1668,6 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 
 	wndNameplate:FindChild("Container:CastBar:Label"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 
-	wndNameplate:FindChild("Container:CastBar:Label"):SetTextFlags("dt_center", self._DB.profile.tStyle.bCastTextCenter)
-
 	-- hp & shield values
 	if tStyle.nStyle == 0 then
 		wndNameplate:FindChild("ShieldValue"):SetAnchorPoints(1, 1, 1, 1)
@@ -1673,7 +1741,7 @@ end
 
 function ForgeUI_Nameplates:OnEnteredCombat(unitChecked, bInCombat)
 	if unitChecked == self.unitPlayer then
-		self.bPlayerInCombat = bInCombat
+		self.bPlayerInCombat = bInCombat -- not used anywhere
 	end
 
 	local tNameplate = self.arUnit2Nameplate[unitChecked:GetId()]
@@ -1688,6 +1756,19 @@ function ForgeUI_Nameplates:OnUnitGibbed(unitUpdated)
 		tNameplate.bGibbed = true
 		fnUpdateNameplateVisibility(self, tNameplate)
 	end
+end
+
+function ForgeUI_Nameplates:OnGroupUpdate()
+	-- when Group_Join event fired unit:IsInYourGroup() still returns false, need a short delay timer
+	if not self.timerGroupUpdate then
+		self.timerGroupUpdate = ApolloTimer.Create(0.1, false, "OnGroupUpdateTimer", self)
+	end
+end
+
+function ForgeUI_Nameplates:OnGroupUpdateTimer()
+	self:UpdateUnitType(true, "Player")
+	self.timerGroupUpdate:Stop()
+	self.timerGroupUpdate = nil
 end
 
 function ForgeUI_Nameplates:OnUnitNameChanged(unitUpdated, strNewName)
@@ -1829,8 +1910,7 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	G:API_AddNumberBox(self, wndStyle, "Absorb height", self._DB.profile.tStyle, "nAbsorbHeight", { tMove = { 300, 60 }, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddNumberBox(self, wndStyle, "Castbar height", self._DB.profile.tStyle, "nCastHeight", { tMove = { 0, 180 }, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddNumberBox(self, wndStyle, "Castbar vertical offset", self._DB.profile.tStyle, "nCastOffsetY", { tOffsets = { 5, 215, 300, 240 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddNumberBox(self, wndStyle, "Cast text vertical offset", self._DB.profile.tStyle, "nCastTextOffsetY", { tOffsets = { 205, 185, 500, 210 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddCheckBox(self, wndStyle, "Center cast text", self._DB.profile.tStyle, "bCastTextCenter", { tMove = {200, 210}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Castbar text vertical offset", self._DB.profile.tStyle, "nCastTextOffsetY", { tOffsets = { 205, 185, 500, 210 }, fnCallback = self.LoadStyle_Nameplates })
 
 	local wndComboStyle = G:API_AddComboBox(self, wndStyle, "Style", self._DB.profile.tStyle, "nStyle", { fnCallback = self.OnStyleChanged })
 	G:API_AddOptionToComboBox(self, wndComboStyle , "Modern", 0, {})
@@ -1847,8 +1927,10 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	local wndComboIA = G:API_AddComboBox(self, wndStyle, "IA icon", self._DB.profile.tStyle, "strIASprite", { tMove = {300, 120}, tWidths = { 150, 50 },
 		fnCallback = self.LoadStyle_Nameplates
 	})
+	-- if new IA style added it must be included in krtIAStyles table
 	G:API_AddOptionToComboBox(self, wndComboIA, "Shield","ForgeUI_shield", {})
 	G:API_AddOptionToComboBox(self, wndComboIA, "Square", "ForgeUI_Border", {})
+	G:API_AddOptionToComboBox(self, wndComboIA, "Carbine", "ForgeUI_Carbine", {})
 
 	-- specific options
 	for k, v in pairs(self._DB.profile.tUnits) do
@@ -1864,6 +1946,10 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 
 			if v.crName then
 				G:API_AddColorBox(self, wnd, "Name color", v, "crName", { tMove = {0, 150} })
+			end
+
+			if v.crGuildMember then
+				G:API_AddColorBox(self, wnd, "Name color (Guild member)", v, "crGuildMember", { tMove = {200, 150} })
 			end
 
 			if v.crNameNoPvP then
