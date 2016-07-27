@@ -35,6 +35,7 @@ local ForgeUI_CastBars = {
 					crBorder = "FF000000",
 					crBackground = "FF101010",
 					crCastBar = "FF272727",
+					crCastBarEx = "FF1591DB",
 					crDuration = "FFFFCC00",
 					crText = "FFFFFFFF",
 					strFullSprite = "ForgeUI_Smooth",
@@ -141,79 +142,163 @@ function ForgeUI_CastBars:OnNextFrame()
 			self.wndFocusCastBar:Show(false, true)
 		end
 	end
-
-	-- duration bar for tap skills
-	if self.cast ~= nil then
-		local fTimeLeft = 1-GameLib.GetSpellThresholdTimePrcntDone(self.cast.id)
-		self.wndPlayerCastBar:FindChild("DurationBar"):SetProgress(fTimeLeft)
-	else
-		self.wndPlayerCastBar:FindChild("DurationBar"):SetProgress(0)
-	end
 end
 
-function ForgeUI_CastBars:OnStartSpellThreshold(idSpell, nMaxThresholds, eCastMethod)
+function ForgeUI_CastBars:OnStartSpellThreshold(idSpell, nMaxThresholds, eCastMethod) -- Event
 	if not self._DB.profile.bShowPlayer then return end
 
 	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
-	local splObject = GameLib.GetSpell(idSpell)
+	self.tTapCast = self.tTapCast or {}
 
-	if self.cast == nil then
-		self.cast = {}
-		self.cast.id = idSpell
-		self.cast.strSpellName = splObject:GetName()
-		self.cast.nThreshold = 1
-		self.cast.nMaxThreshold = nMaxThresholds
+	local _strSpellName = GameLib.GetSpell(idSpell):GetName()
 
-		self.wndPlayerCastBar:FindChild("SpellName"):SetText(self.cast.strSpellName)
-		self.wndPlayerCastBar:FindChild("TickBar"):SetMax(nMaxThresholds)
-		self.wndPlayerCastBar:FindChild("TickBar"):SetProgress(self.cast.nMaxThreshold - self.cast.nThreshold)
-		self.wndPlayerCastBar:FindChild("CastTime"):SetText(self.cast.nThreshold)
-
-		self.wndPlayerCastBar:Show(true, true)
+	for k, v in pairs(self.tTapCast) do
+		if k ~= _strSpellName and v.bActive then
+			v.bActive = false
+		end
 	end
+
+	if eCastMethod == Spell.CodeEnumCastMethod.ChargeRelease then
+		if self.tTapCast[_strSpellName] then return end
+	end
+
+	self.tTapCast[_strSpellName] = {
+		nIdSpell = idSpell,
+		nCastMethod = eCastMethod,
+		strSpellName = _strSpellName,
+		nThreshold = 1,
+		nMaxThreshold = nMaxThresholds,
+		bActive = true,
+	}
 end
 
-function ForgeUI_CastBars:OnUpdateSpellThreshold(idSpell, nNewThreshold)
+function ForgeUI_CastBars:OnUpdateSpellThreshold(idSpell, nNewThreshold) -- Event
 	if not self._DB.profile.bShowPlayer then return end
 
 	local unitPlayer = GetPlayerUnit()
-	if unitPlayer == nil or not unitPlayer:IsValid() or self.cast == nil then return end
+	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
-	local splObject = GameLib.GetSpell(idSpell)
-	local strSpellName = splObject:GetName()
+	self.tTapCast = self.tTapCast or {}
 
-	self.cast.nThreshold = nNewThreshold
+	local _strSpellName = GameLib.GetSpell(idSpell):GetName()
 
-	self.wndPlayerCastBar:FindChild("SpellName"):SetText(strSpellName)
-	self.wndPlayerCastBar:FindChild("TickBar"):SetProgress(self.cast.nMaxThreshold - nNewThreshold)
+	for k, v in pairs(self.tTapCast) do
+		if k ~= _strSpellName and v.bActive then
+			v.bActive = false
+		end
+	end
 
-	self.wndPlayerCastBar:FindChild("TickBar"):SetProgress(self.cast.nMaxThreshold - nNewThreshold)
-
-	self.wndPlayerCastBar:FindChild("CastTime"):SetText(nNewThreshold)
+	if self.tTapCast[_strSpellName] then
+		self.tTapCast[_strSpellName].nThreshold = nNewThreshold
+		self.tTapCast[_strSpellName].bActive = true
+	end
 end
 
-function ForgeUI_CastBars:OnClearSpellThreshold(idSpell)
+function ForgeUI_CastBars:OnClearSpellThreshold(idSpell) -- Event
+	if not self._DB.profile.bShowPlayer then return end
+
 	local unitPlayer = GetPlayerUnit()
-	if unitPlayer == nil or not unitPlayer:IsValid() or self.cast == nil then return end
+	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
-	self.wndPlayerCastBar:Show(false, true)
-	self.wndPlayerCastBar:FindChild("TickBar"):SetProgress(0)
+	self.tTapCast = self.tTapCast or {}
 
-	self.cast = nil
+	local _strSpellName = GameLib.GetSpell(idSpell):GetName()
+
+	self.tTapCast[_strSpellName] = nil
+
+	-- when tapCast ends we look for any other tapCast with lowest time remaining
+	local tDummyCast = { strSpellName = "", nThresholdTimePrcntDone = 0 }
+	for k, v in pairs(self.tTapCast) do
+		local n = GameLib.GetSpellThresholdTimePrcntDone(v.nIdSpell)
+		if tDummyCast.nThresholdTimePrcntDone == 0 or tDummyCast.nThresholdTimePrcntDone > n then
+			tDummyCast.strSpellName = k
+			tDummyCast.nThresholdTimePrcntDone = n
+		end
+	end
+
+	-- if found, make that tapCast active
+	if self.tTapCast[tDummyCast.strSpellName] then
+		self.tTapCast[tDummyCast.strSpellName].bActive = true
+	end
 end
 
-function ForgeUI_CastBars:UpdateCastBar(unit, wnd)
+function ForgeUI_CastBars:IsTapCasting()
+	if self.tTapCast == nil then return false end
+
+	for k, v in pairs(self.tTapCast) do
+		if v.bActive then return true end
+	end
+
+	return false
+end
+
+function ForgeUI_CastBars:GetTapCastByName(strCastName)
+	if self.tTapCast == nil then return nil end
+
+	for k, v in pairs(self.tTapCast) do
+		if v.strSpellName == strCastName then return v end
+	end
+
+	return nil
+end
+
+function ForgeUI_CastBars:GetActiveTapCast()
+	if self.tTapCast == nil then return nil end
+
+	for k, v in pairs(self.tTapCast) do
+		if v.bActive then return v end
+	end
+
+	return nil
+end
+
+function ForgeUI_CastBars:UpdateCastBar(unit, wnd, strType)
 	if unit == nil or wnd == nil or unit:IsDead() then return end
 
 	local fDuration
 	local fElapsed
 	local strSpellName
 	local bShowCast = false
-	local bShowTick = false
+	local bShowCastEx = false
+	local bShowDuration = false
 
-	if unit:ShouldShowCastBar() then
+	if strType == "Player" then
+		local bIsCasting = unit:IsCasting() and unit:ShouldShowCastBar()
+		local bIsTapCasting = self:IsTapCasting()
+
+		fDuration = unit:GetCastDuration()
+		fElapsed = unit:GetCastElapsed()
+		strSpellName = unit:GetCastName()
+
+		local tTapCastByName = self:GetTapCastByName(strSpellName)
+		local tTapCastActive = self:GetActiveTapCast()
+
+		bShowCast = bIsCasting or bIsTapCasting
+		bShowCastEx = tTapCastByName and bIsCasting
+		bShowDuration = (tTapCastByName and bIsCasting) or (tTapCastActive and not bIsCasting)
+
+		if bShowDuration then
+			local tTapCast = tTapCastByName or tTapCastActive
+			wnd:FindChild("SpellName"):SetText(tTapCast.strSpellName)
+			wnd:FindChild("CastTime"):SetText(tTapCast.nThreshold)
+			wnd:FindChild("CastBar"):SetMax(tTapCast.nMaxThreshold)
+			wnd:FindChild("CastBar"):SetProgress(tTapCast.nThreshold)
+			wnd:FindChild("DurationBar"):SetProgress(1-GameLib.GetSpellThresholdTimePrcntDone(tTapCast.nIdSpell))
+		else
+			wnd:FindChild("SpellName"):SetText(strSpellName)
+			wnd:FindChild("CastTime"):SetText(string.format("%00.01f", (fDuration - fElapsed)/1000) .. "s")
+			wnd:FindChild("CastBar"):SetMax(fDuration)
+			wnd:FindChild("CastBar"):SetProgress(fElapsed)
+		end
+
+		if bShowCastEx then
+			wnd:FindChild("CastBarEx"):SetMax(fDuration)
+			wnd:FindChild("CastBarEx"):SetProgress(fElapsed)
+		end
+
+	elseif unit:ShouldShowCastBar() then
 		bShowCast = true
 
 		fDuration = unit:GetCastDuration()
@@ -235,71 +320,71 @@ function ForgeUI_CastBars:UpdateCastBar(unit, wnd)
 		-- end
 
 		wnd:FindChild("CastTime"):SetText(string.format("%00.01f", (fDuration - fElapsed)/1000) .. "s")
-	elseif wnd:GetName() ==  "PlayerCastBar" and self.cast ~= nil then
-		wnd:FindChild("SpellName"):SetText(self.cast.strSpellName)
-		wnd:FindChild("CastTime"):SetText(self.cast.nThreshold)
-
-		local fTimeLeft = 1-GameLib.GetSpellThresholdTimePrcntDone(self.cast.id)
-		self.wndPlayerCastBar:FindChild("DurationBar"):SetProgress(fTimeLeft)
-
-		bShowTick = true
 	end
 
-	if bShowCast or bShowTick  ~= wnd:IsShown() then
-		wnd:Show(bShowCast or bShowTick, true)
+	if bShowCast ~= wnd:IsShown() then
+		wnd:Show(bShowCast, true)
 	end
 
-	if bShowCast ~= wnd:FindChild("Cast"):IsShown() then
-		wnd:FindChild("Cast"):Show(bShowCast, true)
+	local wndCastBar = wnd:FindChild("Cast")
+	local wndCastBarEx = wnd:FindChild("CastBarEx")
+	local wndDuration = wnd:FindChild("DurationBar")
+
+	if bShowCast ~= wndCastBar:IsShown() then
+		wndCastBar:Show(bShowCast, true)
 	end
 
-	if bShowTick ~= wnd:FindChild("Tick"):IsShown() then
-		wnd:FindChild("Tick"):Show(bShowTick, true)
+	if wndCastBarEx and bShowCastEx ~= wndCastBarEx:IsShown() then
+		wndCastBarEx:Show(bShowCastEx, true)
 	end
+
+	if wndDuration and bShowDuration ~= wndDuration:IsShown() then
+		wndDuration:Show(bShowDuration, true)
+	end
+
 end
 
-local maxTime = 0
-function ForgeUI_CastBars:UpdateMoOBar(unit, wnd)
+function ForgeUI_CastBars:UpdateMoOBar(unit, wnd, strType)
 	if unit == nil or wnd == nil or unit:IsDead() then return end
 
-	local maxTime = unit:GetCCStateTotalTime(Unit.CodeEnumCCState.Vulnerability)
-	local time = unit:GetCCStateTimeRemaining(Unit.CodeEnumCCState.Vulnerability)
-	local pl = GetPlayerUnit()
+	if unit:IsInCCState(Unit.CodeEnumCCState.Vulnerability) then
 
-	if time > 0 then
-		--maxTime = time > maxTime and time or maxTime
+		local maxTime = unit:GetCCStateTotalTime(Unit.CodeEnumCCState.Vulnerability)
+		local time = unit:GetCCStateTimeRemaining(Unit.CodeEnumCCState.Vulnerability)
 
-		wnd:FindChild("MoOBar"):SetMax(maxTime)
-		wnd:FindChild("MoOBar"):SetProgress(time)
+		if time > 0 then
 
-		wnd:FindChild("SpellName"):SetText("MoO")
-		wnd:FindChild("CastTime"):SetText(Util:Round(time, 1))
+			wnd:FindChild("MoOBar"):SetMax(maxTime)
+			wnd:FindChild("MoOBar"):SetProgress(time)
 
-		if not wnd:IsShown() then
-			wnd:Show(true, true)
+			wnd:FindChild("SpellName"):SetText("MoO")
+			wnd:FindChild("CastTime"):SetText(Util:Round(time, 1))
+
+			if not wnd:IsShown() then
+				wnd:Show(true, true)
+			end
+		else
+			wnd:FindChild("MoOBar"):SetProgress(0)
 		end
-	else
-		wnd:FindChild("MoOBar"):SetProgress(0)
-		maxTime = 0
 	end
 end
 
-function ForgeUI_CastBars:UpdateInterruptArmor(unit, wnd, type)
+function ForgeUI_CastBars:UpdateInterruptArmor(unit, wnd, strType)
 	local bShow = false
 	nValue = unit:GetInterruptArmorValue()
 	nMax = unit:GetInterruptArmorMax()
 	if nMax == 0 or nValue == nil or unit:IsDead() then
-		wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.tFrames[type].crCastBar)
+		wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.tFrames[strType].crCastBar)
 	else
 		bShow = true
 		if nMax == -1 then
 			wnd:FindChild("InterruptArmor"):SetSprite("HUD_TargetFrame:spr_TargetFrame_InterruptArmor_Infinite")
 			wnd:FindChild("InterruptArmor_Value"):SetText("")
-			wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.tFrames[type].crCastBarInf)
+			wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.tFrames[strType].crCastBarInf)
 		elseif nMax > 0 then
 			wnd:FindChild("InterruptArmor"):SetSprite("HUD_TargetFrame:spr_TargetFrame_InterruptArmor_Value")
 			wnd:FindChild("InterruptArmor_Value"):SetText(nValue)
-			wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.tFrames[type].crCastBar)
+			wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.tFrames[strType].crCastBar)
 		end
 	end
 
@@ -336,7 +421,6 @@ function ForgeUI_CastBars:ForgeAPI_LoadSettings()
 		end
 
 		if v.strFullSprite ~= nil then
-			self["wnd" .. k .. "CastBar"]:FindChild("TickBar"):SetFullSprite(v.strFullSprite)
 			self["wnd" .. k .. "CastBar"]:FindChild("CastBar"):SetFullSprite(v.strFullSprite)
 		end
 	end
@@ -369,10 +453,10 @@ function ForgeUI_CastBars:ForgeAPI_PopulateOptions()
 			G:API_AddColorBox(self, self.tOptionHolders[k], "Cast bar color", v, "crCastBar", { tMove = {0, 30},
 				fnCallback = function(...)
 					self["wnd" .. k .. "CastBar"]:FindChild("CastBar"):SetBarColor(arg[2])
-					self["wnd" .. k .. "CastBar"]:FindChild("TickBar"):SetBarColor(arg[2])
 				end
 			})
 		end
+
 
 		if v.crCastBarInf then
 			G:API_AddColorBox(self, self.tOptionHolders[k], "Cast bar color - infinite IA", v, "crCastBarInf", { tMove = {200, 30},
@@ -388,8 +472,16 @@ function ForgeUI_CastBars:ForgeAPI_PopulateOptions()
 			})
 		end
 
+		if v.crCastBarEx then
+			G:API_AddColorBox(self, self.tOptionHolders[k], "Extra cast bar color ", v, "crCastBarEx", { tMove = {400, 30},
+				fnCallback = function(...)
+					self["wnd" .. k .. "CastBar"]:FindChild("CastBarEx"):SetBarColor(arg[2])
+				end
+			})
+		end
+
 		if v.crDuration then
-			G:API_AddColorBox(self, self.tOptionHolders[k], "Duration bar color", v, "crDuration", { tMove = {400, 30},
+			G:API_AddColorBox(self, self.tOptionHolders[k], "Duration bar color", v, "crDuration", { tMove = {400, 60},
 				fnCallback = function(...) self["wnd" .. k .. "CastBar"]:FindChild("DurationBar"):SetBarColor(arg[2]) end
 			})
 		end
