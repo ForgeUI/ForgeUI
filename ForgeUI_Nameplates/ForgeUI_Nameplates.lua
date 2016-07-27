@@ -1821,6 +1821,7 @@ function ForgeUI_Nameplates:OnEnteredCombat(unitChecked, bInCombat)
 
 	local tNameplate = self.arUnit2Nameplate[unitChecked:GetId()]
 	if tNameplate ~= nil then
+		self:UpdateUnitType(false, nil, unitChecked)
 		fnDrawName(self, tNameplate)
 	end
 end
