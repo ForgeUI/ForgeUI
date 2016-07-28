@@ -363,9 +363,9 @@ function ForgeUI_CastBars:UpdateMoOBar(unit, wnd, strType)
 			if not wnd:IsShown() then
 				wnd:Show(true, true)
 			end
-		else
-			wnd:FindChild("MoOBar"):SetProgress(0)
 		end
+	else
+		wnd:FindChild("MoOBar"):SetProgress(0)
 	end
 end
 
