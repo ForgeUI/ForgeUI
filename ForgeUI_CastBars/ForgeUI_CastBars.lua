@@ -268,34 +268,36 @@ function ForgeUI_CastBars:UpdateCastBar(unit, wnd, strType)
 		local bIsCasting = unit:IsCasting() and unit:ShouldShowCastBar()
 		local bIsTapCasting = self:IsTapCasting()
 
-		fDuration = unit:GetCastDuration()
-		fElapsed = unit:GetCastElapsed()
-		strSpellName = unit:GetCastName()
+		if bIsCasting or bIsTapCasting then
+			fDuration = unit:GetCastDuration()
+			fElapsed = unit:GetCastElapsed()
+			strSpellName = unit:GetCastName()
 
-		local tTapCastByName = self:GetTapCastByName(strSpellName)
-		local tTapCastActive = self:GetActiveTapCast()
+			local tTapCastByName = self:GetTapCastByName(strSpellName)
+			local tTapCastActive = self:GetActiveTapCast()
 
-		bShowCast = bIsCasting or bIsTapCasting
-		bShowCastEx = tTapCastByName and bIsCasting
-		bShowDuration = (tTapCastByName and bIsCasting) or (tTapCastActive and not bIsCasting)
+			bShowCast = bIsCasting or bIsTapCasting
+			bShowCastEx = tTapCastByName and bIsCasting
+			bShowDuration = (tTapCastByName and bIsCasting) or (tTapCastActive and not bIsCasting)
 
-		if bShowDuration then
-			local tTapCast = tTapCastByName or tTapCastActive
-			wnd:FindChild("SpellName"):SetText(tTapCast.strSpellName)
-			wnd:FindChild("CastTime"):SetText(tTapCast.nThreshold)
-			wnd:FindChild("CastBar"):SetMax(tTapCast.nMaxThreshold)
-			wnd:FindChild("CastBar"):SetProgress(tTapCast.nThreshold)
-			wnd:FindChild("DurationBar"):SetProgress(1-GameLib.GetSpellThresholdTimePrcntDone(tTapCast.nIdSpell))
-		else
-			wnd:FindChild("SpellName"):SetText(strSpellName)
-			wnd:FindChild("CastTime"):SetText(string.format("%00.01f", (fDuration - fElapsed)/1000) .. "s")
-			wnd:FindChild("CastBar"):SetMax(fDuration)
-			wnd:FindChild("CastBar"):SetProgress(fElapsed)
-		end
+			if bShowDuration then
+				local tTapCast = tTapCastByName or tTapCastActive
+				wnd:FindChild("SpellName"):SetText(tTapCast.strSpellName)
+				wnd:FindChild("CastTime"):SetText(tTapCast.nThreshold)
+				wnd:FindChild("CastBar"):SetMax(tTapCast.nMaxThreshold)
+				wnd:FindChild("CastBar"):SetProgress(tTapCast.nThreshold)
+				wnd:FindChild("DurationBar"):SetProgress(1-GameLib.GetSpellThresholdTimePrcntDone(tTapCast.nIdSpell))
+			else
+				wnd:FindChild("SpellName"):SetText(strSpellName)
+				wnd:FindChild("CastTime"):SetText(string.format("%00.01f", (fDuration - fElapsed)/1000) .. "s")
+				wnd:FindChild("CastBar"):SetMax(fDuration)
+				wnd:FindChild("CastBar"):SetProgress(fElapsed)
+			end
 
-		if bShowCastEx then
-			wnd:FindChild("CastBarEx"):SetMax(fDuration)
-			wnd:FindChild("CastBarEx"):SetProgress(fElapsed)
+			if bShowCastEx then
+				wnd:FindChild("CastBarEx"):SetMax(fDuration)
+				wnd:FindChild("CastBarEx"):SetProgress(fElapsed)
+			end
 		end
 
 	elseif unit:ShouldShowCastBar() then
