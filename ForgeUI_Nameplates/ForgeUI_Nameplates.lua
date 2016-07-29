@@ -391,6 +391,7 @@ function ForgeUI_Nameplates:NameplatesInit()
 	self.arWnd2Nameplate = {}
 
 	self:CreateUnitsFromPreload()
+	self:GetGuild()
 end
 
 function ForgeUI_Nameplates:ForgeAPI_LoadSettings()
@@ -667,6 +668,16 @@ function ForgeUI_Nameplates:OnUnitDestroyed(unitOwner)
 	self.arUnit2Nameplate[idUnit] = nil
 end
 
+function ForgeUI_Nameplates:GetGuild()
+	if self.unitPlayer then
+		for idx, tGuild in ipairs(GuildLib.GetGuilds()) do
+			if tGuild:GetType() == GuildLib.GuildType_Guild then
+				self.tGuild = tGuild
+			end
+		end
+	end
+end
+
 -----------------------------------------------------------------------------------------------
 -- Drawing functions
 -----------------------------------------------------------------------------------------------
@@ -709,8 +720,7 @@ function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 	end
 
 	if self.unitPlayer ~= unitOwner and tNameplate.strUnitType == "FriendlyPlayer" then
-		local strPlayerGuildName = self.unitPlayer:GetGuildName()
-		if strPlayerGuildName and strPlayerGuildName == unitOwner:GetGuildName() then
+		if self.tGuild and self.tGuild:IsUnitMember(unitOwner) then
 			crNameColors = tSettings.crGuildMember
 		end
 	end
@@ -2192,4 +2202,3 @@ fnRepositionNameplate = ForgeUI_Nameplates.RepositionNameplate
 -- ForgeUI_Nameplates Instance
 -----------------------------------------------------------------------------------------------
 ForgeUI_Nameplates = F:API_NewAddon(ForgeUI_Nameplates)
-
