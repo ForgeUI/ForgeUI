@@ -47,25 +47,6 @@ tNameSwaps = {
 -----------------------------------------------------------------------------------------------
 -- Initialization
 -----------------------------------------------------------------------------------------------
-local fnUpdateNameplate
-local fnUpdateNameplateVisibility
-
-local fnDrawName
-local fnDrawGuild
-local fnDrawHealth
-local fnDrawIA
-local fnDrawShield
-local fnDrawAbsorb
-
-local fnDrawRewards
-local fnDrawCastBar
-local fnDrawIndicators
-local fnDrawInfo
-
-local fnColorNameplate
-
-local fnRepositionNameplate
-
 local ForgeUI_Nameplates = {
 	_NAME = "ForgeUI_Nameplates",
 	_API_VERSION = 3,
@@ -81,6 +62,7 @@ local ForgeUI_Nameplates = {
 	tSettings = {
 		profile = {
 			nMaxRange = 75,
+			nMaxNameplates = 0,
 			bUseOcclusion = true,
 			bShowTitles = false,
 			bOnlyImportantNPC = true,
@@ -305,6 +287,31 @@ local ForgeUI_Nameplates = {
 }
 
 -----------------------------------------------------------------------------------------------
+-- Local variables
+-----------------------------------------------------------------------------------------------
+local fnUpdateNameplate
+local fnUpdateNameplateVisibility
+
+local fnDrawName
+local fnDrawGuild
+local fnDrawHealth
+local fnDrawIA
+local fnDrawShield
+local fnDrawAbsorb
+
+local fnDrawRewards
+local fnDrawCastBar
+local fnDrawIndicators
+local fnDrawInfo
+
+local fnColorNameplate
+
+local fnRepositionNameplate
+
+local nVisibleNameplates = 0
+local tDistanceSortedNameplates = {}
+
+-----------------------------------------------------------------------------------------------
 -- ForgeUI_Nameplates OnLoad
 -----------------------------------------------------------------------------------------------
 function ForgeUI_Nameplates:ForgeAPI_PreInit()
@@ -406,6 +413,23 @@ end
 
 function ForgeUI_Nameplates:OnHalfSecTimer()
 	self:UpdateAllNameplateVisibility()
+
+	if self._DB.profile.nMaxNameplates == 0 then return end
+
+	local i = 0
+	for k, v in pairs(tDistanceSortedNameplates) do
+		if i < self._DB.profile.nMaxNameplates then
+			if v.bShow then
+				i = i + 1
+			end
+		else
+			v.wndNameplate:Show(false, false)
+			v.bShow = false
+		end
+
+	end
+
+	tDistanceSortedNameplates = {}
 end
 
 function ForgeUI_Nameplates:RequestUpdateAllNameplateRewards()
@@ -1322,6 +1346,8 @@ function ForgeUI_Nameplates:CheckDrawDistance(tNameplate)
 
 	local nDistance = (nDeltaX * nDeltaX) + (nDeltaY * nDeltaY) + (nDeltaZ * nDeltaZ)
 
+	tDistanceSortedNameplates[nDistance] = tNameplate
+
 	if tNameplate.bIsTarget then
 		bInRange = nDistance < self._DB.profile.knTargetRange
 		return bInRange
@@ -1350,6 +1376,10 @@ function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 		bShowNameplate = not tNameplate.bOccluded or tNameplate.bIsTarget
 	else
 		bShowNameplate = true
+	end
+
+	if self._DB.profile.nMaxNameplates ~= 0 and self._DB.profile.nMaxNameplates < nVisibleNameplates then
+		return false
 	end
 
 	--if self._DB.profile.bShowMainObjectiveOnly and not bShowNameplate then
@@ -1899,6 +1929,8 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	G:API_AddColorBox(self, wndGeneral, "MOO bar", self._DB.profile, "crHealthbarMOO", { tMove = {400, 240}, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddColorBox(self, wndGeneral, "MOO duration bar", self._DB.profile, "crCastbarMOO", { tMove = {400, 270}, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddColorBox(self, wndGeneral, "Dead unit name", self._DB.profile, "crDead", { tMove = {400, 120}, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndGeneral, "Max number of nameplates", self._DB.profile, "nMaxNameplates", { tMove = {0, 330}, tWidths = {50, 300},
+		fnCallback = self.UpdateAllNameplateVisibility })
 
 	-- style options
 	local wndStyle = self.tOptionHolders["Style"]
