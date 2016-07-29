@@ -86,7 +86,7 @@ function Gui:API_AddText(tModule, wnd, strText, tOptions)
 	local strFont = self.tDefaults.strFont
 	local strText = strText
 
-	-- load wnnd
+	-- load wnd
 	local wndText = Apollo.LoadForm(xmlDoc, "ForgeUI_Text", wnd, self)
 
 	-- options
@@ -133,7 +133,7 @@ function Gui:API_AddButton(tModule, wnd, strText, tOptions)
 
 	local strFont = self.tDefaults.strFont
 
-	-- load wnnd
+	-- load wnd
 	local wndButton = Apollo.LoadForm(xmlDoc, "ForgeUI_Button", wnd, self)
 
 	-- options
@@ -174,7 +174,7 @@ function Gui:OnButtonSignal(wndControl)
 	if tData == nil then return end
 
 	if tData.fnCallback ~= nil then
-		tData.fnCallback()
+		tData.fnCallback(tData.tModule)
 	end
 end
 
@@ -197,7 +197,7 @@ function Gui:API_AddColorBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 	local strFont = self.tDefaults.strFont
 	local strText = strText
 
-	-- load wnnd
+	-- load wnd
 	local wndColorBox = Apollo.LoadForm(xmlDoc, "ForgeUI_ColorBox", wnd, self)
 
 	-- event handlers
@@ -271,7 +271,7 @@ function Gui:API_AddCheckBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 		strKey = strKey,
 		eType = EnumWindowType.CheckBox,
 	}
-	
+
 	if tSettings ~= nil then
 		tData.bCheck = tSettings[strKey]
 	end
@@ -279,7 +279,7 @@ function Gui:API_AddCheckBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 	local strFont = self.tDefaults.strFont
 	local strText = strText
 
-	-- load wnnd
+	-- load wnd
 	local wndCheckBox = Apollo.LoadForm(xmlDoc, "ForgeUI_CheckBox", wnd, self)
 
 	-- event handlers
@@ -364,7 +364,7 @@ function Gui:API_AddComboBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 	local strFont = self.tDefaults.strFont
 	local strText = strText
 
-	-- load wnnd
+	-- load wnd
 	local wndComboBox = Apollo.LoadForm(xmlDoc, "ForgeUI_ComboBox", wnd, self)
 
 	-- event handlers
@@ -398,6 +398,10 @@ function Gui:API_AddComboBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 
 		if tOptions.fnCallback then
 			tData.fnCallback = tOptions.fnCallback
+		end
+
+		if tOptions.strTooltip then
+			wndComboBox:SetTooltip(tOptions.strTooltip)
 		end
 	end
 
@@ -439,7 +443,7 @@ function Gui:API_AddOptionToComboBox(tModule, wnd, strText, vValue, tOptions)
 	local strFont = self.tDefaults.strFont
 	local strText = strText
 
-	-- load wnnd
+	-- load wnd
 	local wndItem = Apollo.LoadForm(xmlDoc, "ForgeUI_ComboBoxItem", wnd:FindChild("Menu"), self)
 
 	-- event handlers
@@ -496,7 +500,7 @@ function Gui:API_EditBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 	local strFont = self.tDefaults.strFont
 	local strText = strText
 
-	-- load wnnd
+	-- load wnd
 	local wndEditBox = Apollo.LoadForm(xmlDoc, "ForgeUI_EditBox", wnd, self)
 
 	-- event handlers
@@ -589,7 +593,7 @@ function Gui:API_AddNumberBox(tModule, wnd, strText, tSettings, strKey, tOptions
 	local strFont = self.tDefaults.strFont
 	local strText = strText
 
-	-- load wnnd
+	-- load wnd
 	local wndNumberBox = Apollo.LoadForm(xmlDoc, "ForgeUI_NumberBox", wnd, self)
 
 	-- event handlers

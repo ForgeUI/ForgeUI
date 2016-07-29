@@ -66,6 +66,28 @@ local fnColorNameplate
 
 local fnRepositionNameplate
 
+local GetDefaultNameplateStyle = function(bGlobalStyle)
+	local tStyle = {
+		nStyle = 0,
+		nBarWidth = 120,
+		nBarHeight = 22,
+		nBarOffset = 70,
+		nShieldHeight = 8,
+		nAbsorbHeight = 8,
+		nCastHeight = 11,
+		nCastOffsetY = 2,
+		nCastTextOffsetY = 26,
+		strFullSprite = "ForgeUI_Edge",
+		strIASprite = "ForgeUI_Carbine",
+	}
+	if bGlobalStyle then
+		tStyle.bGlobalStyle = true
+		tStyle.strUnitType = "Global"
+	end
+
+	return tStyle
+end
+
 local ForgeUI_Nameplates = {
 	_NAME = "ForgeUI_Nameplates",
 	_API_VERSION = 3,
@@ -100,19 +122,9 @@ local ForgeUI_Nameplates = {
 			crHealthbarMOO = "FF7E00FF",
 			crCastbarNormal = "FFFEB308",
 			crCastbarMOO = "FFBC00BB",
-			tStyle = {
-				nStyle = 0,
-				nBarWidth = 120,
-				nBarHeight = 22,
-				nBarOffset = 70,
-				nShieldHeight = 8,
-				nAbsorbHeight = 8,
-				nCastHeight = 11,
-				nCastOffsetY = 2,
-				nCastTextOffsetY = 26,
-				strFullSprite = "ForgeUI_Edge",
-				strIASprite = "ForgeUI_Carbine"
-			},
+
+			tStyle = GetDefaultNameplateStyle(true),
+
 			tUnits = {
 				Target = {
 					bShowMarker = true,
@@ -121,6 +133,7 @@ local ForgeUI_Nameplates = {
 					nShowBars = 3,
 					nShowCast = 3,
 					nShowInfo = 0,
+					tStyle = GetDefaultNameplateStyle(false),
 				},
 				Player = {
 					bEnabled = true,
@@ -138,6 +151,7 @@ local ForgeUI_Nameplates = {
 					bClassColors = false,
 					bShowHpValue = false,
 					bShowShieldValue = false,
+					tStyle = GetDefaultNameplateStyle(false),
 				},
 				FriendlyPlayer = {
 					bEnabled = true,
@@ -158,6 +172,7 @@ local ForgeUI_Nameplates = {
 					bClassColors = true,
 					bShowHpValue = false,
 					bShowShieldValue = false,
+					tStyle = GetDefaultNameplateStyle(false),
 				},
 				PartyPlayer = {
 					bEnabled = true,
@@ -177,6 +192,7 @@ local ForgeUI_Nameplates = {
 					bClassColors = true,
 					bShowHpValue = false,
 					bShowShieldValue = false,
+					tStyle = GetDefaultNameplateStyle(false),
 				},
 				HostilePlayer = {
 					bEnabled = true,
@@ -195,6 +211,7 @@ local ForgeUI_Nameplates = {
 					bClassColors = true,
 					bShowHpValue = false,
 					bShowShieldValue = false,
+					tStyle = GetDefaultNameplateStyle(false),
 				},
 				FriendlyNPC = {
 					bEnabled = true,
@@ -207,6 +224,7 @@ local ForgeUI_Nameplates = {
 					crHealth = "FF75CC26",
 					bShowHpValue = false,
 					bShowShieldValue = false,
+					tStyle = GetDefaultNameplateStyle(false),
 				},
 				NeutralNPC = {
 					bEnabled = true,
@@ -219,6 +237,7 @@ local ForgeUI_Nameplates = {
 					crHealth = "FFF3D829",
 					bShowHpValue = false,
 					bShowShieldValue = false,
+					tStyle = GetDefaultNameplateStyle(false),
 				},
 				HostileNPC = {
 					bEnabled = true,
@@ -236,6 +255,7 @@ local ForgeUI_Nameplates = {
 					crHealth = "FFE50000",
 					bShowHpValue = false,
 					bShowShieldValue = false,
+					tStyle = GetDefaultNameplateStyle(false),
 				},
 				UnknownNPC = {
 					bEnabled = true,
@@ -503,7 +523,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	end
 
 	if wnd == nil or not wnd:IsValid() then
-		wnd = Apollo.LoadForm(self.xmlNameplate, "Nameplate", "InWorldHudStratum", self)
+		wnd = Apollo.LoadForm(self.xmlNameplate, "Nameplate", "FixedHudStratumLow", self)
 		wndReferences = nil
 	end
 
@@ -862,17 +882,17 @@ function ForgeUI_Nameplates:DrawIA(tNameplate)
 		bShow = true
 
 		-- style must exist in krtIAStyles else nothing will be shown
-		local tIAStyle = krtIAStyles[self._DB.profile.tStyle.strIASprite]
+		local tIAStyle = krtIAStyles[self:GetStyle_Nameplate(tNameplate).strIASprite]
 		if not tIAStyle then return end
 
 		if nMax == -1 then
-			if tIAStyle.bDynamicSprite then
+			if tIAStyle.bDynamicSprite and ia:GetSprite() ~= tIAStyle.strSpriteInf then
 				ia:SetSprite(tIAStyle.strSpriteInf)
 			end
 			ia:SetBGColor(tIAStyle.crInf or "UI_WindowBGDefault")
 			ia:SetText(tIAStyle.bDynamicSprite and "" or "-")
 		elseif nMax > 0 then
-			if tIAStyle.bDynamicSprite then
+			if tIAStyle.bDynamicSprite and ia:GetSprite() ~= tIAStyle.strSpriteValue then
 				ia:SetSprite(tIAStyle.strSpriteValue)
 			end
 			ia:SetBGColor(tIAStyle.crValue or "UI_WindowBGDefault")
@@ -911,9 +931,10 @@ function ForgeUI_Nameplates:DrawShield(tNameplate)
 		tNameplate.wnd.healthMaxShield:Show(bShow, true)
 		tNameplate.bShowShield = bShow
 
-		if self._DB.profile.tStyle.nStyle == 1 then
-			tNameplate.wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, bShow and 7 + self._DB.profile.tStyle.nShieldHeight or 7)
-			tNameplate.wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, bShow and 7 + self._DB.profile.tStyle.nShieldHeight or 7)
+		local tNameplateStyle = self:GetStyle_Nameplate(tNameplate)
+		if tNameplateStyle.nStyle == 1 then
+			tNameplate.wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, bShow and 7 + tNameplateStyle.nShieldHeight or 7)
+			tNameplate.wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, bShow and 7 + tNameplateStyle.nShieldHeight or 7)
 		end
 	end
 end
@@ -929,10 +950,12 @@ function ForgeUI_Nameplates:DrawAbsorb(tNameplate)
 
 		bShow = nAbsorb ~= nil and not unitOwner:IsDead() and nAbsorb > 0
 
+		local tNameplateStyle = self:GetStyle_Nameplate(tNameplate)
+
 		if bShow then
-			if self._DB.profile.tStyle.nStyle == 0 then
+			if tNameplateStyle.nStyle == 0 then
 				self:SetBarValue(tNameplate.wnd.healthAbsorbFill, 0, nAbsorb, nAbsorbMax)
-			elseif self._DB.profile.tStyle.nStyle == 1 then
+			elseif tNameplateStyle.nStyle == 1 then
 				local nMaxHealth = unitOwner:GetMaxHealth()
 
 				if nMaxHealth > nAbsorbMax then
@@ -948,9 +971,11 @@ function ForgeUI_Nameplates:DrawAbsorb(tNameplate)
 		tNameplate.wnd.healthMaxAbsorb:Show(bShow, true)
 		tNameplate.bShowAbsorb = bShow
 
-		if self._DB.profile.tStyle.nStyle == 1 then
-			tNameplate.wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, bShow and -7 - self._DB.profile.tStyle.nAbsorbHeight or -7, 7, 7)
-			tNameplate.wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, bShow and -7 - self._DB.profile.tStyle.nAbsorbHeight or -7, 7, 7)
+		local tNameplateStyle = self:GetStyle_Nameplate(tNameplate)
+
+		if tNameplateStyle.nStyle == 1 then
+			tNameplate.wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, bShow and -7 - tNameplateStyle.nAbsorbHeight or -7, 7, 7)
+			tNameplate.wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, bShow and -7 - tNameplateStyle.nAbsorbHeight or -7, 7, 7)
 		end
 	end
 end
@@ -1439,10 +1464,12 @@ function ForgeUI_Nameplates:UpdateUnitType(bGlobalUpdate, strType, unitToUpdate)
 				if tNameplate.unitOwner:GetType() == strType then
 					tNameplate.strUnitType = self:GetUnitType(tNameplate.unitOwner)
 					tNameplate.tSettings = self._DB.profile.tUnits[tNameplate.strUnitType]
+					self:LoadStyle_Nameplate(tNameplate)
 				end
 			else
 				tNameplate.strUnitType = self:GetUnitType(tNameplate.unitOwner)
 				tNameplate.tSettings = self._DB.profile.tUnits[tNameplate.strUnitType]
+				self:LoadStyle_Nameplate(tNameplate)
 			end
 		end
 	else
@@ -1452,6 +1479,7 @@ function ForgeUI_Nameplates:UpdateUnitType(bGlobalUpdate, strType, unitToUpdate)
 		if tNameplate ~= nil then
 			tNameplate.strUnitType = self:GetUnitType(unitToUpdate)
 			tNameplate.tSettings = self._DB.profile.tUnits[tNameplate.strUnitType]
+			self:LoadStyle_Nameplate(tNameplate)
 		end
 	end
 end
@@ -1554,6 +1582,21 @@ end
 -----------------------------------------------------------------------------------------------
 -- Stylers
 -----------------------------------------------------------------------------------------------
+function ForgeUI_Nameplates:GetStyle_Nameplate(tNameplate)
+	if not tNameplate then return self._DB.profile.tStyle end
+
+	local strUnitType = tNameplate.strUnitType
+
+	if self._DB.profile.tStyle.bGlobalStyle or self._DB.profile.tUnits[strUnitType].tStyle == nil then
+		return self._DB.profile.tStyle
+	else
+		if tNameplate.bIsTarget then
+			return self._DB.profile.tUnits["Target"].tStyle
+		elseif self._DB.profile.tUnits[strUnitType].tStyle ~= nil then
+			return self._DB.profile.tUnits[strUnitType].tStyle
+		end
+	end
+end
 
 function ForgeUI_Nameplates:LoadStyle_Nameplates()
 	for idx, tNameplate in pairs(self.arUnit2Nameplate) do
@@ -1570,17 +1613,20 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 
 	wnd.targetMarker:SetBGColor(self._DB.profile.tUnits["Target"].crTargetMarker)
 
+	-- style
+	local tNameplateStyle = self:GetStyle_Nameplate(tNameplate)
+
 	-- set static sprite here, we update dynamic sprites in DrawIA method
-	if not krtIAStyles[self._DB.profile.tStyle.strIASprite] or not krtIAStyles[self._DB.profile.tStyle.strIASprite].bDynamicSprite then
-		wnd.ia:SetSprite(self._DB.profile.tStyle.strIASprite)
+	if not krtIAStyles[tNameplateStyle.strIASprite] or not krtIAStyles[tNameplateStyle.strIASprite].bDynamicSprite then
+		wnd.ia:SetSprite(tNameplateStyle.strIASprite)
 	end
 
 	wnd.healthShieldFill:SetBarColor(self._DB.profile.crShield)
 	wnd.healthAbsorbFill:SetBarColor(self._DB.profile.crAbsorb)
-	wnd.healthHealthFill:SetFullSprite(self._DB.profile.tStyle.strFullSprite)
-	wnd.castBarCastFill:SetFullSprite(self._DB.profile.tStyle.strFullSprite)
-	wnd.healthShieldFill:SetFullSprite(self._DB.profile.tStyle.strFullSprite)
-	wnd.healthAbsorbFill:SetFullSprite(self._DB.profile.tStyle.strFullSprite)
+	wnd.healthHealthFill:SetFullSprite(tNameplateStyle.strFullSprite)
+	wnd.castBarCastFill:SetFullSprite(tNameplateStyle.strFullSprite)
+	wnd.healthShieldFill:SetFullSprite(tNameplateStyle.strFullSprite)
+	wnd.healthAbsorbFill:SetFullSprite(tNameplateStyle.strFullSprite)
 
 	if tNameplate.strUnitType == "HostileNPC" then
 		wnd.indicator:SetBGColor(self._DB.profile.tUnits["HostileNPC"].crThreatIndicator)
@@ -1590,107 +1636,136 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 		wnd.indicator:SetBGColor(self._DB.profile.tUnits["PartyPlayer"].crCleanseIndicator)
 	end
 
-	--style
-	local tStyle = self._DB.profile.tStyle
-
 	-- nameplate vertical offset
 	local nLeft, nTop, nRight, nBottom = wndNameplate:GetAnchorOffsets()
 
-	nTop = -150 + tStyle.nBarOffset
+	nTop = -150 + tNameplateStyle.nBarOffset
 	nBottom = nTop + 80
 
 	wndNameplate:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 
 	-- indicators
-	if tStyle.nStyle == 0 then
+	if tNameplateStyle.nStyle == 0 then
 		wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, 7)
 		wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, 7)
-	elseif self._DB.profile.tStyle.nStyle == 1 then
-		wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, 7 + tStyle.nShieldHeight)
-		wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, 7 + tStyle.nShieldHeight)
+	elseif tNameplateStyle.nStyle == 1 then
+		wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, 7 + tNameplateStyle.nShieldHeight)
+		wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, 7 + tNameplateStyle.nShieldHeight)
 	end
 
 	-- bar
 	nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("Container"):GetAnchorOffsets()
 
-	nLeft = -(tStyle.nBarWidth / 2)
-	nRight = (tStyle.nBarWidth / 2)
+	nLeft = -(tNameplateStyle.nBarWidth / 2)
+	nRight = (tNameplateStyle.nBarWidth / 2)
 
-	nBottom = nTop + tStyle.nBarHeight
+	nBottom = nTop + tNameplateStyle.nBarHeight
 
 	wndNameplate:FindChild("Container"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 
 	-- shield
-	if tStyle.nStyle == 0 then
+	if tNameplateStyle.nStyle == 0 then
 		wndNameplate:FindChild("MaxShield"):SetAnchorPoints(0.5, 1, 1, 1)
 		wndNameplate:FindChild("MaxShield"):SetAnchorOffsets(10, -4, -5, 4)
 
 		nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("MaxShield"):GetAnchorOffsets()
 
-		nTop = -(tStyle.nShieldHeight / 2)
-		nBottom = (tStyle.nShieldHeight / 2)
+		nTop = -(tNameplateStyle.nShieldHeight / 2)
+		nBottom = (tNameplateStyle.nShieldHeight / 2)
 
 		wndNameplate:FindChild("MaxShield"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
-	elseif tStyle.nStyle == 1 then
+	elseif tNameplateStyle.nStyle == 1 then
 		wndNameplate:FindChild("MaxShield"):SetAnchorPoints(0, 1, 1, 1)
-		wndNameplate:FindChild("MaxShield"):SetAnchorOffsets(0, -1, 0, tStyle.nShieldHeight)
+		wndNameplate:FindChild("MaxShield"):SetAnchorOffsets(0, -1, 0, tNameplateStyle.nShieldHeight)
 	end
 
 	-- absorb
-	if tStyle.nStyle == 0 then
+	if tNameplateStyle.nStyle == 0 then
 		wndNameplate:FindChild("MaxAbsorb"):SetAnchorPoints(0, 1, 0.5, 1)
 		wndNameplate:FindChild("MaxAbsorb"):SetAnchorOffsets(5, -4, -10, 4)
 
 		nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("MaxAbsorb"):GetAnchorOffsets()
 
-		nTop = -(tStyle.nAbsorbHeight/ 2)
-		nBottom = (tStyle.nAbsorbHeight/ 2)
+		nTop = -(tNameplateStyle.nAbsorbHeight/ 2)
+		nBottom = (tNameplateStyle.nAbsorbHeight/ 2)
 
 		wndNameplate:FindChild("MaxAbsorb"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
-	elseif tStyle.nStyle == 1 then
+	elseif tNameplateStyle.nStyle == 1 then
 		wndNameplate:FindChild("MaxAbsorb"):SetAnchorPoints(0, 0, 1, 0)
-		wndNameplate:FindChild("MaxAbsorb"):SetAnchorOffsets(0, - tStyle.nAbsorbHeight, 0, 1)
+		wndNameplate:FindChild("MaxAbsorb"):SetAnchorOffsets(0, - tNameplateStyle.nAbsorbHeight, 0, 1)
 	end
 
 	-- castbar
 	nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("CastBar"):GetAnchorOffsets()
 
-	nTop = -4 + tStyle.nCastOffsetY
-	nBottom = nTop + tStyle.nCastHeight
+	nTop = -4 + tNameplateStyle.nCastOffsetY
+	nBottom = nTop + tNameplateStyle.nCastHeight
 
 	wndNameplate:FindChild("CastBar"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 
 	-- cast text
 	nLeft, nTop, nRight, nBottom = wndNameplate:FindChild("Container:CastBar:Label"):GetAnchorOffsets()
 
-	nTop = -16 + tStyle.nCastTextOffsetY
+	nTop = -16 + tNameplateStyle.nCastTextOffsetY
 	nBottom = nTop + 16
 
 	wndNameplate:FindChild("Container:CastBar:Label"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 
 	-- hp & shield values
-	if tStyle.nStyle == 0 then
+	if tNameplateStyle.nStyle == 0 then
 		wndNameplate:FindChild("ShieldValue"):SetAnchorPoints(1, 1, 1, 1)
 		wndNameplate:FindChild("ShieldValue"):SetAnchorOffsets(-57, -20, -7, 15)
-	elseif tStyle.nStyle == 1 then
+	elseif tNameplateStyle.nStyle == 1 then
 		wndNameplate:FindChild("ShieldValue"):SetAnchorPoints(0, 0, 0, 1)
 		wndNameplate:FindChild("ShieldValue"):SetAnchorOffsets(-52, -3, -2, 23)
 	end
 end
 
 function ForgeUI_Nameplates:OnStyleChanged()
-	if self._DB.profile.tStyle.nStyle == 0 then
-		self._DB.profile.tStyle.nAbsorbHeight = 8
-		self._DB.profile.tStyle.nShieldHeight = 8
+	local tNameplateStyle
+	if self._DB.profile.tStyle.bGlobalStyle then
+		tNameplateStyle = self._DB.profile.tStyle
+	else
+		local strUnitType = self._DB.profile.tStyle.strUnitType
+		tNameplateStyle = self._DB.profile.tUnits[strUnitType].tStyle
+	end
+
+	if tNameplateStyle.nStyle == 0 then
+		tNameplateStyle.nAbsorbHeight = 8
+		tNameplateStyle.nShieldHeight = 8
 		--self._DB.profile.crShield = "FF0699F3"
-	elseif self._DB.profile.tStyle.nStyle == 1 then
-		self._DB.profile.tStyle.nAbsorbHeight = 4
-		self._DB.profile.tStyle.nShieldHeight = 4
+	elseif tNameplateStyle.nStyle == 1 then
+		tNameplateStyle.nAbsorbHeight = 4
+		tNameplateStyle.nShieldHeight = 4
 		--self._DB.profile.crShield = "FFFFFFFF"
 	end
 
 	self:RefreshConfig()
-	self:LoadStyle_Nameplates()
+end
+
+function ForgeUI_Nameplates:OnUnitTypeStyleChanged()
+	self:RefreshConfig()
+end
+
+function ForgeUI_Nameplates:OnUnitTypeStyleGlobal()
+	if self._DB.profile.tStyle.bGlobalStyle then
+		self._DB.profile.tStyle.strUnitType = "Global"
+	else
+		self._DB.profile.tStyle.strUnitType = "Target"
+	end
+	self:RefreshConfig()
+end
+
+function ForgeUI_Nameplates:OnUnitTypeStyleReset()
+	self._DB.profile.tStyle = GetDefaultNameplateStyle(true)
+
+	for k, v in pairs(self._DB.profile.tUnits) do
+		if v.tStyle ~= nil then
+			v.tStyle = GetDefaultNameplateStyle(false)
+		end
+	end
+
+	self:RefreshConfig()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -1746,6 +1821,9 @@ function ForgeUI_Nameplates:OnEnteredCombat(unitChecked, bInCombat)
 
 	local tNameplate = self.arUnit2Nameplate[unitChecked:GetId()]
 	if tNameplate ~= nil then
+		if not self._DB.profile.tStyle.bGlobalStyle then
+			self:UpdateUnitType(false, nil, unitChecked)
+		end
 		fnDrawName(self, tNameplate)
 	end
 end
@@ -1843,6 +1921,8 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 
 			self:UpdateNameplateRewardInfo(tNameplateOther)
 
+			self:LoadStyle_Nameplate(tNameplateOther)
+
 			fnUpdateNameplateVisibility(self, tNameplateOther)
 		end
 	end
@@ -1859,12 +1939,16 @@ function ForgeUI_Nameplates:OnTargetUnitChanged(unitOwner) -- build targeted opt
 	if GameLib.GetTargetUnit() == unitOwner then
 		tNameplate.bIsTarget = true
 
+		tNameplate.wndNameplate:ToFront()
+
 		fnDrawHealth(self, tNameplate)
 		fnDrawName(self, tNameplate)
 		fnDrawGuild(self, tNameplate)
 		fnDrawInfo(self, tNameplate)
 
 		self:UpdateNameplateRewardInfo(tNameplate)
+
+		self:LoadStyle_Nameplate(tNameplate)
 
 		fnUpdateNameplateVisibility(self, tNameplate)
 	end
@@ -1903,20 +1987,44 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	-- style options
 	local wndStyle = self.tOptionHolders["Style"]
 
-	G:API_AddNumberBox(self, wndStyle, "Nameplate width", self._DB.profile.tStyle, "nBarWidth", { tMove = { 0, 30 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddNumberBox(self, wndStyle, "Nameplate height", self._DB.profile.tStyle, "nBarHeight", { tMove = { 0, 60 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddNumberBox(self, wndStyle, "Nameplate vertical offset", self._DB.profile.tStyle, "nBarOffset", { tOffsets = { 5, 95, 300, 120 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddNumberBox(self, wndStyle, "Shield height", self._DB.profile.tStyle, "nShieldHeight", { tMove = { 300, 30 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddNumberBox(self, wndStyle, "Absorb height", self._DB.profile.tStyle, "nAbsorbHeight", { tMove = { 300, 60 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddNumberBox(self, wndStyle, "Castbar height", self._DB.profile.tStyle, "nCastHeight", { tMove = { 0, 180 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddNumberBox(self, wndStyle, "Castbar vertical offset", self._DB.profile.tStyle, "nCastOffsetY", { tOffsets = { 5, 215, 300, 240 }, fnCallback = self.LoadStyle_Nameplates })
-	G:API_AddNumberBox(self, wndStyle, "Castbar text vertical offset", self._DB.profile.tStyle, "nCastTextOffsetY", { tOffsets = { 205, 185, 500, 210 }, fnCallback = self.LoadStyle_Nameplates })
+	local bIsGlobalStyle = self._DB.profile.tStyle.bGlobalStyle
+	local strUnitType = self._DB.profile.tStyle.strUnitType
+	local map = (not bIsGlobalStyle and self._DB.profile.tUnits[strUnitType].tStyle) or self._DB.profile.tStyle
 
-	local wndComboStyle = G:API_AddComboBox(self, wndStyle, "Style", self._DB.profile.tStyle, "nStyle", { fnCallback = self.OnStyleChanged })
+	-- TODO: reset all types to default button
+	G:API_AddCheckBox(self, wndStyle, "Use global style", self._DB.profile.tStyle, "bGlobalStyle", { tMove = {300, 0}, fnCallback = self.OnUnitTypeStyleGlobal })
+	G:API_AddButton(self, wndStyle, "Reset style settings", { tOffsets = {455, 5, 605, 30}, fnCallback = self.OnUnitTypeStyleReset })
+
+	G:API_AddNumberBox(self, wndStyle, "Nameplate width", map, "nBarWidth", { tMove = { 0, 60 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Nameplate height", map, "nBarHeight", { tMove = { 0, 90 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Nameplate vertical offset", map, "nBarOffset", { tOffsets = { 5, 125, 300, 150 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Shield height", map, "nShieldHeight", { tMove = { 300, 90 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Absorb height", map, "nAbsorbHeight", { tMove = { 300, 120 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Castbar height", map, "nCastHeight", { tMove = { 0, 180 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Castbar vertical offset", map, "nCastOffsetY", { tOffsets = { 5, 215, 300, 240 }, fnCallback = self.LoadStyle_Nameplates })
+	G:API_AddNumberBox(self, wndStyle, "Castbar text vertical offset", map, "nCastTextOffsetY", { tOffsets = { 305, 185, 600, 210 }, fnCallback = self.LoadStyle_Nameplates })
+
+	local wndUnitType = G:API_AddComboBox(self, wndStyle, "Unit", self._DB.profile.tStyle, "strUnitType", { tMove = {0, 0}, tWidths = {150, 50}, fnCallback = self.OnUnitTypeStyleChanged,
+		strTooltip = bIsGlobalStyle and "Uncheck 'Use global style' option to enable additional styling options." or "" })
+	wndUnitType:Enable(not bIsGlobalStyle)
+	if bIsGlobalStyle then
+		G:API_AddOptionToComboBox(self, wndUnitType , "Global", "Global", {})
+	else
+		G:API_AddOptionToComboBox(self, wndUnitType , "Target", "Target", {})
+		G:API_AddOptionToComboBox(self, wndUnitType , "Player", "Player", {})
+		G:API_AddOptionToComboBox(self, wndUnitType , "Party player", "PartyPlayer", {})
+		G:API_AddOptionToComboBox(self, wndUnitType , "Friendly player", "FriendlyPlayer", {})
+		G:API_AddOptionToComboBox(self, wndUnitType , "Hostile player", "HostilePlayer", {})
+		G:API_AddOptionToComboBox(self, wndUnitType , "Friendly NPC", "FriendlyNPC", {})
+		G:API_AddOptionToComboBox(self, wndUnitType , "Neutral NPC", "NeutralNPC", {})
+		G:API_AddOptionToComboBox(self, wndUnitType , "Hostile NPC", "HostileNPC", {})
+	end
+
+	local wndComboStyle = G:API_AddComboBox(self, wndStyle, "Style", map, "nStyle", { tMove = {300, 60}, fnCallback = self.OnStyleChanged })
 	G:API_AddOptionToComboBox(self, wndComboStyle , "Modern", 0, {})
 	G:API_AddOptionToComboBox(self, wndComboStyle , "Classic", 1, {})
 
-	local wndCombo = G:API_AddComboBox(self, wndStyle, "Texture", self._DB.profile.tStyle, "strFullSprite", { tMove = {0, 120}, tWidths = { 150, 50 },
+	local wndCombo = G:API_AddComboBox(self, wndStyle, "Texture", map, "strFullSprite", { tMove = {0, 270}, tWidths = { 150, 50 },
 		fnCallback = self.LoadStyle_Nameplates
 	})
 	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Smooth","ForgeUI_Smooth", {})
@@ -1924,7 +2032,7 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Minimalist", "ForgeUI_Minimalist", {})
 	G:API_AddOptionToComboBox(self, wndCombo, "ForgeUI_Edge", "ForgeUI_Edge", {})
 
-	local wndComboIA = G:API_AddComboBox(self, wndStyle, "IA icon", self._DB.profile.tStyle, "strIASprite", { tMove = {300, 120}, tWidths = { 150, 50 },
+	local wndComboIA = G:API_AddComboBox(self, wndStyle, "IA icon", map, "strIASprite", { tMove = {300, 270}, tWidths = { 150, 50 },
 		fnCallback = self.LoadStyle_Nameplates
 	})
 	-- if new IA style added it must be included in krtIAStyles table
