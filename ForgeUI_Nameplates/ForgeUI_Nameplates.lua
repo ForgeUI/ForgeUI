@@ -123,6 +123,7 @@ local ForgeUI_Nameplates = {
 			crCastbarNormal = "FFFEB308",
 			crCastbarMOO = "FFBC00BB",
 
+			bTargetStyleOverrides = true,
 			tStyle = GetDefaultNameplateStyle(true),
 
 			tUnits = {
@@ -1590,7 +1591,7 @@ function ForgeUI_Nameplates:GetStyle_Nameplate(tNameplate)
 	if self._DB.profile.tStyle.bGlobalStyle or self._DB.profile.tUnits[strUnitType].tStyle == nil then
 		return self._DB.profile.tStyle
 	else
-		if tNameplate.bIsTarget then
+		if tNameplate.bIsTarget and self._DB.profile.bTargetStyleOverrides then
 			return self._DB.profile.tUnits["Target"].tStyle
 		elseif self._DB.profile.tUnits[strUnitType].tStyle ~= nil then
 			return self._DB.profile.tUnits[strUnitType].tStyle
@@ -1993,6 +1994,7 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 
 	-- TODO: reset all types to default button
 	G:API_AddCheckBox(self, wndStyle, "Use global style", self._DB.profile.tStyle, "bGlobalStyle", { tMove = {300, 0}, fnCallback = self.OnUnitTypeStyleGlobal })
+	G:API_AddCheckBox(self, wndStyle, "Target style overrides others", self._DB.profile, "bTargetStyleOverrides", { tMove = {300, 30}, fnCallback = self.LoadStyle_Nameplates })
 	G:API_AddButton(self, wndStyle, "Reset style settings", { tOffsets = {455, 5, 605, 30}, fnCallback = self.OnUnitTypeStyleReset })
 
 	G:API_AddNumberBox(self, wndStyle, "Nameplate width", map, "nBarWidth", { tMove = { 0, 60 }, fnCallback = self.LoadStyle_Nameplates })
