@@ -65,5 +65,6 @@ function Prototype:ForgeAPI_PreInit() end
 function Prototype:ForgeAPI_Init() end
 function Prototype:ForgeAPI_LoadSettings() end
 function Prototype:ForgeAPI_PopulateOptions() end
+function Prototype:ForgeAPI_ProfileChanged() end
 
 _G["ForgeLibs"]["ForgeAddon"] = new(Addon)

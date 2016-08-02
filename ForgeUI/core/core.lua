@@ -103,6 +103,10 @@ function Core:OnDatabaseUpdate()
 		v.tAddon:RefreshConfig()
 	end
 
+	for _, v in pairs(tAddons) do
+		v.tAddon:ForgeAPI_ProfileChanged()
+	end
+
 	ForgeUI:CollapseAllMenuItems()
 end
 
