@@ -27,6 +27,7 @@ local ForgeUI_ResourceBars = {
 			bSmoothBars = false,
 			bPermaShow = false,
 			bPermaShowFocus = false,
+			bShowFocusText = true,
 			crBorder = "FF000000",
 			crBackground = "FF101010",
 			crFocus = "FFFFFFFF",
@@ -721,7 +722,11 @@ function ForgeUI_ResourceBars:RefreshStyle_Focus(unitPlayer, nMana, nMaxMana)
 	self.wndFocus:FindChild("ProgressBar"):SetMax(nMaxMana)
 	self.wndFocus:FindChild("ProgressBar"):SetProgress(nMana)
 	self.wndFocus:FindChild("ProgressBar"):SetBarColor(self._DB.profile.crFocus)
-	self.wndFocus:FindChild("Value"):SetText(Util:Round(nMana, 0) .. " ( " .. Util:Round((nMana / nMaxMana) * 100, 1) .. "% )")
+	if self._DB.profile.bShowFocusText then
+		self.wndFocus:FindChild("Value"):SetText(Util:Round(nMana, 0) .. " ( " .. Util:Round((nMana / nMaxMana) * 100, 1) .. "% )")
+	else
+		self.wndFocus:FindChild("Value"):SetText("")
+	end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -792,6 +797,7 @@ function ForgeUI_ResourceBars:PopulateOptions_Focus()
 
 	G:API_AddColorBox(self, wndFocus, "Focus color", self._DB.profile, "crFocus", { tMove = {0, 0} })
 	G:API_AddCheckBox(self, wndFocus, "Always show focus bar", self._DB.profile, "bPermaShowFocus", { tMove = {0, 30} })
+	G:API_AddCheckBox(self, wndFocus, "Show focus text", self._DB.profile, "bShowFocusText", { tMove = {0, 60} })
 end
 
 function ForgeUI_ResourceBars:OnEsperBuffAdded(unit, tBuff, nCout)
