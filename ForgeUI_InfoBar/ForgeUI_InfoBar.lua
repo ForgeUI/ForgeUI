@@ -88,6 +88,10 @@ function ForgeUI_InfoBar:SetupInfos()
 	for k, v in pairs(self._DB.char.tInfos) do
 		tWndInfos[v] = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Info", wnd, self)
 		tWndInfos[v]:SetAnchorOffsets(0, 0, tInfos[v].nWidth, 0)
+		if v == "XP" then
+			tWndInfos[v]:AddEventHandler("GenerateTooltip", "OnGenerateTooltip", self)
+			tWndInfos[v]:AddEventHandler("MouseEnter", 		"OnGenerateTooltip", self)
+		end
 	end
 
 	wnd:ArrangeChildrenHorz()
@@ -118,10 +122,9 @@ tInfos.XP.fnDraw = function()
 	local stats = GameLib.GetPlayerUnit():GetBasicStats()
 	if stats == nil then return end
 
-	local restedXP = GetRestXp()
 	local currentXP
 	local neededXP
-	if stats.nLevel == 50 then
+	if stats.nLevel == GameLib.GetLevelCap() then
 		currentXP = GetPeriodicElderPoints()
 		neededXP = GameLib.ElderPointsDailyMax
 	else
@@ -130,6 +133,37 @@ tInfos.XP.fnDraw = function()
 	end
 
 	return Util:Round(currentXP / neededXP * 100, 1) .. "% XP"
+end
+
+function ForgeUI_InfoBar:OnGenerateTooltip(wndHandler, wndControl, eToolTipType, posX, posY)
+	if wndControl ~= wndHandler then return end
+
+	local stats = GameLib.GetPlayerUnit():GetBasicStats()
+	if stats == nil then return end
+
+	local restedXP = GetRestXp()
+	local currentXP
+	local neededXP
+
+	local xml = XmlDoc.new()
+	xml:StartTooltip(1000)
+
+	if stats.nLevel == GameLib.GetLevelCap() then
+		currentXP = GetPeriodicElderPoints()
+		xml:AddLine("EG: " .. math.floor(currentXP / 75000)) -- TODO replace with variable
+	else
+		currentXP = GetXp() - GetXpToCurrentLevel()
+		neededXP = GetXpToNextLevel()
+		xml:AddLine("XP: " .. Util:ShortNum(currentXP) .. "/" .. Util:ShortNum(neededXP) .. " - rested: " .. Util:ShortNum(restedXP) , crWhite, "CRB_InterfaceMedium")
+	end
+
+	local nCurrentPathLevel = PlayerPathLib.GetPathLevel()
+	local nCurrentPathXP =  PlayerPathLib.GetPathXPForLevel()
+	local nNeededPathXP = PlayerPathLib.GetPathXPForNextLevel()
+	if nCurrentPathLevel ~= PlayerPathLib.GetPathLevelCap() and nNeededPathXP ~= 0 then
+		xml:AddLine("Path XP: " .. nCurrentPathXP .. "/" .. nNeededPathXP .. " (" .. Util:Round(nCurrentPathXP / nNeededPathXP, 1) .. "%) - " .. nCurrentPathLevel .. "lvl", crWhite, "CRB_InterfaceMedium")
+	end
+	wndControl:SetTooltipDoc(xml)
 end
 
 -----------------------------------------------------------------------------------------------
