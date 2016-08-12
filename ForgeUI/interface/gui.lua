@@ -302,7 +302,7 @@ function Gui:API_AddCheckBox(tModule, wnd, strText, tSettings, strKey, tOptions)
 		end
 
 		if tOptions.nAddWidth then
-			nLeft, nTop, nRight, nBottom = wndCheckBox:GetAnchorOffsets()
+			local nLeft, nTop, nRight, nBottom = wndCheckBox:GetAnchorOffsets()
 			wndCheckBox:SetAnchorOffsets(nLeft, nTop, nRight + tOptions.nAddWidth, nBottom)
 		end
 
