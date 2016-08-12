@@ -376,8 +376,8 @@ end
 
 -- interrupt armor
 function ForgeUI_UnitFrames:UpdateInterruptArmor(unit, wnd)
-	nValue = unit:GetInterruptArmorValue()
-	nMax = unit:GetInterruptArmorMax()
+	local nValue = unit:GetInterruptArmorValue()
+	local nMax = unit:GetInterruptArmorMax()
 	if nMax == 0 or nValue == nil or unit:IsDead() then
 		wnd:FindChild("InterruptArmor"):Show(false, true)
 	else

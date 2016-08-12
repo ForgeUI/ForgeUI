@@ -885,8 +885,8 @@ function ForgeUI_Nameplates:DrawIA(tNameplate)
 
 	local bShow = false
 
-	nValue = unitOwner:GetInterruptArmorValue()
-	nMax = unitOwner:GetInterruptArmorMax()
+	local nValue = unitOwner:GetInterruptArmorValue()
+	local nMax = unitOwner:GetInterruptArmorMax()
 	if nMax == 0 or nValue == nil or unitOwner:IsDead() then
 
 	else
