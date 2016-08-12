@@ -25,7 +25,7 @@ local ForgeUI_PetFrames = {
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
-tEngineerStances = {
+local tEngineerStances = {
 	[0] = "",
 	[1] = Apollo.GetString("EngineerResource_Aggro"),
 	[2] = Apollo.GetString("EngineerResource_Defend"),

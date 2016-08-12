@@ -71,7 +71,7 @@ local ForgeUI_ResourceBars = {
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
-tPowerLinkId = {
+local tPowerLinkId = {
 	[79798] = true,
 	[79797] = true,
 	[79796] = true,
@@ -83,7 +83,7 @@ tPowerLinkId = {
 	[79787] = true,
 }
 
-tAugBladeBuffId = {
+local tAugBladeBuffId = {
 	[49311] = true,
 	[49310] = true,
 	[49309] = true,
@@ -95,7 +95,7 @@ tAugBladeBuffId = {
 	[46935] = true,
 }
 
-tAugBladeDrainId = {
+local tAugBladeDrainId = {
 	[79757] = true,
 }
 

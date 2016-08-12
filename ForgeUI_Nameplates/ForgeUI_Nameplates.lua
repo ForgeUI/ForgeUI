@@ -16,7 +16,7 @@ require "Window"
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
-krtClassEnums = {
+local krtClassEnums = {
 	[GameLib.CodeEnumClass.Warrior]         = "Warrior",
 	[GameLib.CodeEnumClass.Engineer]        = "Engineer",
 	[GameLib.CodeEnumClass.Esper]           = "Esper",
@@ -25,7 +25,7 @@ krtClassEnums = {
 	[GameLib.CodeEnumClass.Spellslinger]    = "Spellslinger"
 }
 
-krtNpcRankEnums = {
+local krtNpcRankEnums = {
 	[Unit.CodeEnumRank.Elite]       = "elite",
 	[Unit.CodeEnumRank.Superior]    = "superior",
 	[Unit.CodeEnumRank.Champion]    = "champion",
@@ -34,13 +34,13 @@ krtNpcRankEnums = {
 	[Unit.CodeEnumRank.Fodder]      = "fodder",
 }
 
-krtIAStyles = {
+local krtIAStyles = {
 	["ForgeUI_shield"] = { bDynamicSprite = false, crInf = "FF2D2D2D", crValue = "FF795548" },
 	["ForgeUI_Border"] = { bDynamicSprite = false, crInf = "FF2D2D2D", crValue = "FF795548" },
 	["ForgeUI_Carbine"] = { bDynamicSprite = true, strSpriteInf = "ForgeUI_ia_inf_set1", strSpriteValue = "ForgeUI_ia_set1", crInf = "ffffffff", crValue = "ffffffff" },
 }
 
-tNameSwaps = {
+local tNameSwaps = {
 	["Briex Sper"] = "Pink Cheese",
 }
 
