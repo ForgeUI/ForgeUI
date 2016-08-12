@@ -1357,14 +1357,13 @@ function ForgeUI_Nameplates:CheckDrawDistance(tNameplate)
 	local nDeltaZ = tPosTarget.z - tPosPlayer.z
 
 	local nDistance = (nDeltaX * nDeltaX) + (nDeltaY * nDeltaY) + (nDeltaZ * nDeltaZ)
-
+	local bInRange
 	if tNameplate.bIsTarget then
 		bInRange = nDistance < self._DB.profile.knTargetRange
-		return bInRange
 	else
 		bInRange = nDistance < self._DB.profile.nMaxRange * self._DB.profile.nMaxRange
-		return bInRange
 	end
+	return bInRange
 end
 
 function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
