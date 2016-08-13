@@ -61,6 +61,8 @@ local fnDrawRewards
 local fnDrawCastBar
 local fnDrawIndicators
 local fnDrawInfo
+local fnDrawNameplate
+local fnDrawMOOBar
 
 local fnColorNameplate
 
