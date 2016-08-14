@@ -16,7 +16,7 @@ require "Window"
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
-krtClassEnums = {
+local krtClassEnums = {
 	[GameLib.CodeEnumClass.Warrior]         = "Warrior",
 	[GameLib.CodeEnumClass.Engineer]        = "Engineer",
 	[GameLib.CodeEnumClass.Esper]           = "Esper",
@@ -25,7 +25,7 @@ krtClassEnums = {
 	[GameLib.CodeEnumClass.Spellslinger]    = "Spellslinger"
 }
 
-krtNpcRankEnums = {
+local krtNpcRankEnums = {
 	[Unit.CodeEnumRank.Elite]       = "elite",
 	[Unit.CodeEnumRank.Superior]    = "superior",
 	[Unit.CodeEnumRank.Champion]    = "champion",
@@ -34,13 +34,13 @@ krtNpcRankEnums = {
 	[Unit.CodeEnumRank.Fodder]      = "fodder",
 }
 
-krtIAStyles = {
+local krtIAStyles = {
 	["ForgeUI_shield"] = { bDynamicSprite = false, crInf = "FF2D2D2D", crValue = "FF795548" },
 	["ForgeUI_Border"] = { bDynamicSprite = false, crInf = "FF2D2D2D", crValue = "FF795548" },
 	["ForgeUI_Carbine"] = { bDynamicSprite = true, strSpriteInf = "ForgeUI_ia_inf_set1", strSpriteValue = "ForgeUI_ia_set1", crInf = "ffffffff", crValue = "ffffffff" },
 }
 
-tNameSwaps = {
+local tNameSwaps = {
 	["Briex Sper"] = "Pink Cheese",
 }
 
@@ -61,6 +61,8 @@ local fnDrawRewards
 local fnDrawCastBar
 local fnDrawIndicators
 local fnDrawInfo
+local fnDrawNameplate
+local fnDrawMOOBar
 
 local fnColorNameplate
 
@@ -885,8 +887,8 @@ function ForgeUI_Nameplates:DrawIA(tNameplate)
 
 	local bShow = false
 
-	nValue = unitOwner:GetInterruptArmorValue()
-	nMax = unitOwner:GetInterruptArmorMax()
+	local nValue = unitOwner:GetInterruptArmorValue()
+	local nMax = unitOwner:GetInterruptArmorMax()
 	if nMax == 0 or nValue == nil or unitOwner:IsDead() then
 
 	else
@@ -1357,14 +1359,13 @@ function ForgeUI_Nameplates:CheckDrawDistance(tNameplate)
 	local nDeltaZ = tPosTarget.z - tPosPlayer.z
 
 	local nDistance = (nDeltaX * nDeltaX) + (nDeltaY * nDeltaY) + (nDeltaZ * nDeltaZ)
-
+	local bInRange
 	if tNameplate.bIsTarget then
 		bInRange = nDistance < self._DB.profile.knTargetRange
-		return bInRange
 	else
 		bInRange = nDistance < self._DB.profile.nMaxRange * self._DB.profile.nMaxRange
-		return bInRange
 	end
+	return bInRange
 end
 
 function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)

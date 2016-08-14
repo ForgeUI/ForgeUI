@@ -373,8 +373,8 @@ end
 
 function ForgeUI_CastBars:UpdateInterruptArmor(unit, wnd, strType)
 	local bShow = false
-	nValue = unit:GetInterruptArmorValue()
-	nMax = unit:GetInterruptArmorMax()
+	local nValue = unit:GetInterruptArmorValue()
+	local nMax = unit:GetInterruptArmorMax()
 	if nMax == 0 or nValue == nil or unit:IsDead() then
 		wnd:FindChild("CastBar"):SetBarColor(self._DB.profile.tFrames[strType].crCastBar)
 	else

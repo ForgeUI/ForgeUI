@@ -182,7 +182,7 @@ end
 -- On next frame
 -----------------------------------------------------------------------------------------------
 function ForgeUI_UnitFrames:OnNextFrame()
-	unitPlayer = GetPlayerUnit()
+	local unitPlayer = GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer then return end
 
 	self:UpdatePlayerFrame(unitPlayer)
@@ -376,8 +376,8 @@ end
 
 -- interrupt armor
 function ForgeUI_UnitFrames:UpdateInterruptArmor(unit, wnd)
-	nValue = unit:GetInterruptArmorValue()
-	nMax = unit:GetInterruptArmorMax()
+	local nValue = unit:GetInterruptArmorValue()
+	local nMax = unit:GetInterruptArmorMax()
 	if nMax == 0 or nValue == nil or unit:IsDead() then
 		wnd:FindChild("InterruptArmor"):Show(false, true)
 	else
@@ -499,7 +499,7 @@ function ForgeUI_UnitFrames:RefreshStyle(unit, name, hpBar, strType)
 end
 
 function ForgeUI_UnitFrames:UpdateStyle_PlayerFrame()
-	unit = GetPlayerUnit()
+	local unit = GetPlayerUnit()
 	if not unit or not self.wndPlayerFrame then return end
 
 	local strName = unit:GetName()

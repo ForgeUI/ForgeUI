@@ -71,6 +71,7 @@ end
 
 function Util:ShortNum(num)
 	local tmp = tostring(num)
+	local ret
     if not num then
         return 0
     elseif num >= 1000000 then
