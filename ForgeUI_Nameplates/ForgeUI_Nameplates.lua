@@ -53,6 +53,7 @@ local fnUpdateNameplateVisibility
 local fnDrawName
 local fnDrawGuild
 local fnDrawHealth
+local fnDrawHealAbsorb
 local fnDrawIA
 local fnDrawShield
 local fnDrawAbsorb
@@ -142,6 +143,7 @@ local ForgeUI_Nameplates = {
 					bEnabled = true,
 					bHideOnHealth = false,
 					bHideOnShield = false,
+					bShowHealAbsorb = true,
 					nShowName = 0,
 					nShowBars = 2,
 					nShowCast = 2,
@@ -151,6 +153,7 @@ local ForgeUI_Nameplates = {
 					crHpCutoff = "FFCCCCCC",
 					crName = "FFFFFFFF",
 					crHealth = "FF75CC26",
+					crHealAbsorb = "FFB52E86",
 					bClassColors = false,
 					bShowHpValue = false,
 					bShowShieldValue = false,
@@ -160,6 +163,7 @@ local ForgeUI_Nameplates = {
 					bEnabled = true,
 					bHideOnHealth = false,
 					bHideOnShield = false,
+					bShowHealAbsorb = false,
 					bCleanseIndicator = false,
 					crCleanseIndicator = "FFA100FE",
 					nShowName = 3,
@@ -172,6 +176,7 @@ local ForgeUI_Nameplates = {
 					crName = "FFFFFFFF",
 					crGuildMember = "FF20B2A9",
 					crHealth = "FF75CC26",
+					crHealAbsorb = "FFB52E86",
 					bClassColors = true,
 					bShowHpValue = false,
 					bShowShieldValue = false,
@@ -181,6 +186,7 @@ local ForgeUI_Nameplates = {
 					bEnabled = true,
 					bHideOnHealth = false,
 					bHideOnShield = false,
+					bShowHealAbsorb = true,
 					bCleanseIndicator = false,
 					crCleanseIndicator = "FFA100FE",
 					nShowName = 3,
@@ -192,6 +198,7 @@ local ForgeUI_Nameplates = {
 					crHpCutoff = "FFCCCCCC",
 					crName = "FF43C8F3",
 					crHealth = "FF75CC26",
+					crHealAbsorb = "FFB52E86",
 					bClassColors = true,
 					bShowHpValue = false,
 					bShowShieldValue = false,
@@ -574,6 +581,8 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 			healthMaxHealth = wnd:FindChild("Container:Health:HealthBars:MaxHealth"),
 			healthHealthFill = wnd:FindChild("Container:Health:HealthBars:MaxHealth:HealthFill"),
 			healthHealthLabel = wnd:FindChild("Container:Health:HealthLabel"),
+			healthMaxHealAbsorb = wnd:FindChild("Container:Health:HealthBars:MaxHealAbsorb"),
+			healthHealAbsorbFill = wnd:FindChild("Container:Health:HealthBars:MaxHealAbsorb:HealAbsorbFill"),
 			ia = wnd:FindChild("Container:Health:IA"),
 			hpText = wnd:FindChild("HpValue"),
 			shieldText = wnd:FindChild("ShieldValue"),
@@ -869,10 +878,9 @@ function ForgeUI_Nameplates:DrawHealth(tNameplate)
 		fnDrawIndicators(self, tNameplate)
 
 		fnDrawIA(self, tNameplate)
+		fnDrawHealAbsorb(self, tNameplate)
 		fnDrawShield(self, tNameplate)
 		fnDrawAbsorb(self, tNameplate)
-
-		bShow = true
 	end
 
 	if bShow ~= tNameplate.wnd.health:IsShown() then
@@ -915,6 +923,32 @@ function ForgeUI_Nameplates:DrawIA(tNameplate)
 
 	if bShow ~= ia:IsShown() then
 		ia:Show(bShow, true)
+	end
+end
+
+function ForgeUI_Nameplates:DrawHealAbsorb(tNameplate)
+	local bShow = false
+
+	if tNameplate.tSettings.bShowHealAbsorb then
+
+		local unitOwner = tNameplate.unitOwner
+		local nHealAbsorb = unitOwner:GetHealingAbsorptionValue()
+
+		if nHealAbsorb > 0 then
+			local nMaxHealth = unitOwner:GetMaxHealth()
+			self:SetBarValue(tNameplate.wnd.healthHealAbsorbFill, 0, nHealAbsorb, nMaxHealth)
+
+			bShow = true
+		end
+
+		tNameplate.healAbsorbValue = nHealAbsorb
+
+	elseif tNameplate.healAbsorbValue and tNameplate.healAbsorbValue > 0 then
+		tNameplate.healAbsorbValue = 0
+	end
+
+	if bShow ~= tNameplate.wnd.healthMaxHealAbsorb:IsShown() then
+		tNameplate.wnd.healthMaxHealAbsorb:Show(bShow, true)
 	end
 end
 
@@ -1636,6 +1670,7 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	wnd.healthShieldFill:SetBarColor(self._DB.profile.crShield)
 	wnd.healthAbsorbFill:SetBarColor(self._DB.profile.crAbsorb)
 	wnd.healthHealthFill:SetFullSprite(tNameplateStyle.strFullSprite)
+	wnd.healthHealAbsorbFill:SetFullSprite(tNameplateStyle.strFullSprite)
 	wnd.castBarCastFill:SetFullSprite(tNameplateStyle.strFullSprite)
 	wnd.healthShieldFill:SetFullSprite(tNameplateStyle.strFullSprite)
 	wnd.healthAbsorbFill:SetFullSprite(tNameplateStyle.strFullSprite)
@@ -1674,6 +1709,11 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	nBottom = nTop + tNameplateStyle.nBarHeight
 
 	wndNameplate:FindChild("Container"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
+
+	-- heal absorb
+	if tNameplate.tSettings.crHealAbsorb ~= nil then
+		wnd.healthHealAbsorbFill:SetBarColor(tNameplate.tSettings.crHealAbsorb)
+	end
 
 	-- shield
 	if tNameplateStyle.nStyle == 0 then
@@ -2089,6 +2129,10 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 				G:API_AddColorBox(self, wnd, "Health color", v, "crHealth", { tMove = {0, 180} })
 			end
 
+			if v.crHealAbsorb then
+				G:API_AddColorBox(self, wnd, "Healing absorb color", v, "crHealAbsorb", { tMove = {0, 210}, fnCallback = self.LoadStyle_Nameplates })
+			end
+
 			if v.bClassColors ~= nil then
 				G:API_AddCheckBox(self, wnd, "Use class color", v, "bClassColors", { tMove = {200, 180} })
 			end
@@ -2097,16 +2141,17 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 				G:API_AddCheckBox(self, wnd, "Show cleanse indicator", v, "bCleanseIndicator", { tMove = {400, 90} })
 			end
 
-
 			if v.bHideOnHealth ~= nil then
 				G:API_AddCheckBox(self, wnd, "Hide on full hp", v, "bHideOnHealth", { tMove = {400, 180} } )
 			end
-
 
 			if v.bHideOnShield ~= nil then
 				G:API_AddCheckBox(self, wnd, "Hide on full shield", v, "bHideOnShield", { tMove = { 400, 210 } } )
 			end
 
+			if v.bShowHealAbsorb ~= nil then
+				G:API_AddCheckBox(self, wnd, "Show healing absorption", v, "bShowHealAbsorb", { tMove = {200, 210} } )
+			end
 
 			if v.crCleanseIndicator then
 				G:API_AddColorBox(self, wnd, "Cleanse indicator", v, "crCleanseIndicator", { tMove = {400, 120}, fnCallback = self.LoadStyle_Nameplates })
@@ -2186,6 +2231,7 @@ fnDrawNameplate = ForgeUI_Nameplates.DrawNameplate
 fnDrawName = ForgeUI_Nameplates.DrawName
 fnDrawGuild = ForgeUI_Nameplates.DrawGuild
 fnDrawHealth = ForgeUI_Nameplates.DrawHealth
+fnDrawHealAbsorb = ForgeUI_Nameplates.DrawHealAbsorb
 fnDrawIA = ForgeUI_Nameplates.DrawIA
 fnDrawShield = ForgeUI_Nameplates.DrawShield
 fnDrawAbsorb = ForgeUI_Nameplates.DrawAbsorb
