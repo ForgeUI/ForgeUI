@@ -70,7 +70,7 @@
         <Frame Texture="ForgeUI\media\icons\shield.png" x0="0" x1="0" x2="0" x3="0" x4="128" x5="128" y0="0" y1="0" y2="0" y3="0" y4="128" y5="128" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="ForgeUI_crossed_swords" Cycle="1">
-        <Frame Texture="ForgeUI\media\icons\crossed_swords.png" x0="0" x1="0" x2="0" x3="0" x4="100" x5="100" y0="0" y1="0" y2="0" y3="0" y4="100" y5="100" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
+        <Frame Texture="ForgeUI\media\icons\crossed_swords.png" x0="0" x1="0" x2="0" x3="0" x4="16" x5="16" y0="0" y1="0" y2="0" y3="0" y4="16" y5="16" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
     </Sprite>
     <Sprite Name="ForgeUI_ia_set1" Cycle="1">
         <Frame Texture="ForgeUI\media\icons\ia_set1.png" x0="0" x1="0" x2="0" x3="0" x4="109" x5="109" y0="0" y1="0" y2="0" y3="0" y4="140" y5="140" Stretchy="1" HotspotX="0" HotspotY="0" Duration="1.000" StartColor="white" EndColor="white"/>
