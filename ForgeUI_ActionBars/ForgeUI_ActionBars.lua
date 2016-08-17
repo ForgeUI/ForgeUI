@@ -14,6 +14,8 @@ require "ActionSetLib"
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 
+local Util = F:API_GetModule("util")
+
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Addon Definition
 -----------------------------------------------------------------------------------------------
@@ -223,6 +225,13 @@ local tSnapToOffsets = {
 	["left"] = { 5, 0, 5, 0 },
 }
 
+local tPathTypeData = {
+	[PlayerPathLib.PlayerPathType_Explorer] = { strText = "Explorer", strSprite = "BK3:UI_Icon_CharacterCreate_Path_Explorer" },
+	[PlayerPathLib.PlayerPathType_Scientist] = { strText = "Scientist", strSprite = "BK3:UI_Icon_CharacterCreate_Path_Scientist" },
+	[PlayerPathLib.PlayerPathType_Settler] = { strText = "Settler", strSprite = "BK3:UI_Icon_CharacterCreate_Path_Settler" },
+	[PlayerPathLib.PlayerPathType_Soldier] = { strText = "Soldier", strSprite = "BK3:UI_Icon_CharacterCreate_Path_Soldier" },
+}
+
 local tSpecialButtons
 
 -----------------------------------------------------------------------------------------------
@@ -266,6 +275,7 @@ function ForgeUI_ActionBars:ForgeAPI_Init()
 	end)
 
 	F:API_RegisterEvent(self, "PlayerEnteredCombat", "OnPlayerEnteredCombat")
+	Apollo.RegisterEventHandler("PathChangeResult", "OnPathChangeResult", self)
 
 	wndMenuItem = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 end
@@ -498,7 +508,7 @@ function ForgeUI_ActionBars:EditButtons(tBar)
 		end
 	end
 end
- 
+
 -- filling methods
 -- stances
 function ForgeUI_ActionBars:FillStances(wnd)
@@ -531,7 +541,7 @@ function ForgeUI_ActionBars:FillStances(wnd)
 
 	wndList:ArrangeChildrenVert()
 end
- 
+
 -- mounts
 function ForgeUI_ActionBars:FillMounts(wnd)
 	local wndPopup = wnd:FindChild("Popup")
@@ -584,7 +594,7 @@ function ForgeUI_ActionBars:FillMounts(wnd)
 
 	wndList:ArrangeChildrenVert()
 end
- 
+
 -- recalls
 function ForgeUI_ActionBars:FillRecalls(wnd)
 	local wndPopup = wnd:FindChild("Popup")
@@ -711,7 +721,7 @@ local guildCurr = nil
 
 	wndList:ArrangeChildrenVert()
 end
- 
+
 -- potions
 function ForgeUI_ActionBars:FillPotions(wnd)
 	local unitPlayer = GameLib.GetPlayerUnit()
@@ -759,7 +769,7 @@ function ForgeUI_ActionBars:FillPotions(wnd)
 
 	wndList:ArrangeChildrenVert()
 end
- 
+
 -- path
 function ForgeUI_ActionBars:FillPath(wnd)
 	local unitPlayer = GameLib.GetPlayerUnit()
@@ -780,11 +790,33 @@ function ForgeUI_ActionBars:FillPath(wnd)
 	self:ValidateSelectedPath()
 
 	local nCount = 0
-	local nListHeight = 0
+
+	for ePathType, tPathInfo in ipairs(PlayerPathLib:GetPathStatuses().tPaths) do
+		if tPathInfo and (tPathInfo.bUnlocked and not tPathInfo.bActive) then
+			nCount = nCount + 1
+			local wndCurr = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
+			local wndIcon = wndCurr:FindChild("Icon")
+			wndCurr:SetData({sType = "path_switch"})
+			wndCurr:SetTooltip(tPathTypeData[ePathType].strText)
+			wndIcon:SetSprite(tPathTypeData[ePathType].strSprite)
+			local nCooldown = PlayerPathLib:GetPathChangeCooldown() or 0
+			if nCooldown > 0 then
+				wndIcon:SetBGColor("UI_BtnTextGrayDisabled")
+				wndIcon:SetTextFlags("DT_CENTER", true)
+				wndIcon:SetTextFlags("DT_VCENTER", true)
+				wndIcon:SetText(Util:FormatDuration(nCooldown))
+				wndIcon:SetFont("CRB_Header14")
+			end
+			wndCurr:FindChild("Button"):SetData(ePathType)
+
+			wndCurr:SetAnchorOffsets(0, 0, nSize, nSize)
+		end
+	end
+
 	for _, tAbility in pairs(tAbilities) do
 		local splObject = self:GetPathSkillForDisplay(tAbility);
 		if splObject then
-			nCount = nCount + 1			
+			nCount = nCount + 1
 			local wndCurr = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
 			wndCurr:SetData({sType = "path"})
 			wndCurr:FindChild("Icon"):SetSprite(splObject:GetIcon())
@@ -820,7 +852,7 @@ end
 function ForgeUI_ActionBars:GetPathSkillForDisplay(tAbility)
 	local pathLevel = PlayerPathLib.GetPathLevel()
 	local splObject = nil
-	
+
 	for _, tier in ipairs(tAbility.tTiers) do
 		if tier.nLevelReq <= pathLevel then
 			splObject = tier.splObject
@@ -844,6 +876,21 @@ function ForgeUI_ActionBars:ValidateSelectedPath()
 		end
 
 		self._DB.char.nSelectedPath = bIsValidPathId and self._DB.char.nSelectedPath or nil
+	end
+end
+
+function ForgeUI_ActionBars:OnPathChangeResult(nResult)
+	if nResult == GameLib.CodeEnumGenericError.Ok then
+		local tPathAbilitiy = AbilityBook.GetAbilitiesList(Spell.CodeEnumSpellTag.Path)[1]
+		if tPathAbilitiy ~= nil then
+			local tActionSet = ActionSetLib.GetCurrentActionSet()
+
+			self._DB.char.nSelectedPath = tPathAbilitiy.nId
+
+			Event_FireGenericEvent("PathAbilityUpdated", self._DB.char.nSelectedPath)
+			tActionSet[10] = self._DB.char.nSelectedPath
+			ActionSetLib.RequestActionSetChanges(tActionSet)
+		end
 	end
 end
 
@@ -896,6 +943,28 @@ function ForgeUI_ActionBars:OnSpellBtn( wndHandler, wndControl, eMouseButton )
 		Event_FireGenericEvent("PathAbilityUpdated", self._DB.char.nSelectedPath)
 		tActionSet[10] = self._DB.char.nSelectedPath
 		ActionSetLib.RequestActionSetChanges(tActionSet)
+
+		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
+	elseif sType == "path_switch" then
+		local crb_pathlog = Apollo.GetAddon("PlayerPath")
+
+		if crb_pathlog then
+			if crb_pathlog.PathLogTypeSelectionChanged == nil or crb_pathlog.OnSelectPath == nil then
+				return
+			end
+			Event_FireGenericEvent("PlayerPathShow_NoHide")
+			if not crb_pathlog.wndMissionLog then
+				crb_pathlog:Initialize()
+			end
+			local wndBtn = crb_pathlog.tPathTypeBtns[wndControl:GetData()]
+			for _, wndPathTypeBtn in pairs(crb_pathlog.tPathTypeBtns) do
+				wndPathTypeBtn:SetCheck(wndPathTypeBtn == wndBtn)
+			end
+			crb_pathlog:PathLogTypeSelectionChanged(wndBtn, wndBtn, 0)
+			crb_pathlog:OnSelectPath(wndBtn, wndBtn, 0)
+		end
+
+		crb_pathlog = nil
 
 		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
 	end
