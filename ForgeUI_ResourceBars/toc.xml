@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Addon Author="WintyBadass" APIVersion="12" Name="ForgeUI_ResourceBars" Description="">
+<Addon Author="WintyBadass" APIVersion="13" Name="ForgeUI_ResourceBars" Description="">
     <Script Name="ForgeUI_ResourceBars.lua"/>
     <Form Name="ForgeUI_ResourceBars.xml"/>
     <ReplaceAddon Name="ClassResources"/>
