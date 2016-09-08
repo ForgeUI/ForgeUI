@@ -43,6 +43,7 @@ local knPaddingTop = 20
 local karCurrency =  	-- Alt currency table; re-indexing the enums so they don't have to be in sequence code-side (and removing cash)
 {						-- To add a new currency just add an entry to the table; the UI will do the rest. Idx == 1 will be the default one shown
 	{eType = Money.CodeEnumCurrencyType.Renown, 					strTitle = Apollo.GetString("CRB_Renown"), 						strDescription = Apollo.GetString("CRB_Renown_Desc")},
+	{eType = Money.CodeEnumCurrencyType.Triploons, 					strTitle = Apollo.GetString("CRB_Triploons"), 					strDescription = Apollo.GetString("CRB_Triploons_Desc")},
 	{eType = Money.CodeEnumCurrencyType.ElderGems, 					strTitle = Apollo.GetString("CRB_Elder_Gems"), 					strDescription = Apollo.GetString("CRB_Elder_Gems_Desc")},
 	{eType = Money.CodeEnumCurrencyType.Glory, 						strTitle = Apollo.GetString("CRB_Glory"), 						strDescription = Apollo.GetString("CRB_Glory_Desc")},
 	{eType = Money.CodeEnumCurrencyType.Prestige, 					strTitle = Apollo.GetString("CRB_Prestige"), 					strDescription = Apollo.GetString("CRB_Prestige_Desc")},
@@ -50,7 +51,7 @@ local karCurrency =  	-- Alt currency table; re-indexing the enums so they don't
 	{eType = AccountItemLib.CodeEnumAccountCurrency.PromissoryNote, strTitle = Apollo.GetString("CRB_Protostar_Promissory_Note"),	strDescription = Apollo.GetString("CRB_Protostar_Promissory_Note_Desc"), bAccountItem = true},
 	{eType = AccountItemLib.CodeEnumAccountCurrency.Omnibits,       strTitle = Apollo.GetString("CRB_OmniBits"),              		strDescription = Apollo.GetString("CRB_OmniBits_Desc"), bAccountItem = true},
 	{eType = AccountItemLib.CodeEnumAccountCurrency.ServiceToken,   strTitle = Apollo.GetString("AccountInventory_ServiceToken"),   strDescription = Apollo.GetString("AccountInventory_ServiceToken_Desc"), bAccountItem = true},
-	{eType = AccountItemLib.CodeEnumAccountCurrency.MysticShiny,    strTitle = Apollo.GetString("CRB_FortuneCoin"),           		strDescription = Apollo.GetString("CRB_FortuneCoin_Desc"), bAccountItem = true}
+	{eType = AccountItemLib.CodeEnumAccountCurrency.MysticShiny,    strTitle = Apollo.GetString("CRB_FortuneCoin"),           		strDescription = Apollo.GetString("CRB_FortuneCoin_Desc"), bAccountItem = true},
 }
 
 local fnSortItemsByName = function(itemLeft, itemRight)
