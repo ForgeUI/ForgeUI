@@ -282,13 +282,25 @@ function ForgeUI_CastBars:UpdateCastBar(unit, wnd, strType)
 			bShowCastEx = tTapCastByName and bIsCasting
 			bShowDuration = (tTapCastByName and bIsCasting) or (tTapCastActive and not bIsCasting)
 
+			local bChargeRelease = false
+
 			if bShowDuration then
 				local tTapCast = tTapCastByName or tTapCastActive
 				wnd:FindChild("SpellName"):SetText(tTapCast.strSpellName)
 				wnd:FindChild("CastTime"):SetText(tTapCast.nThreshold)
 				wnd:FindChild("CastBar"):SetMax(tTapCast.nMaxThreshold)
 				wnd:FindChild("CastBar"):SetProgress(tTapCast.nThreshold)
-				wnd:FindChild("DurationBar"):SetProgress(1-GameLib.GetSpellThresholdTimePrcntDone(tTapCast.nIdSpell))
+
+				-- for ChargeRelease cast type ThresholdTimePrcntDone is actually CastDuration
+				if tTapCast.nCastMethod == Spell.CodeEnumCastMethod.ChargeRelease then
+					wnd:FindChild("CastBarEx"):SetMax(1)
+					wnd:FindChild("CastBarEx"):SetProgress(GameLib.GetSpellThresholdTimePrcntDone(tTapCast.nIdSpell))
+					bChargeRelease = true
+					bShowCastEx = true
+					bShowDuration = false
+				else
+					wnd:FindChild("DurationBar"):SetProgress(1-GameLib.GetSpellThresholdTimePrcntDone(tTapCast.nIdSpell))
+				end
 			else
 				wnd:FindChild("SpellName"):SetText(strSpellName)
 				wnd:FindChild("CastTime"):SetText(string.format("%00.01f", (fDuration - fElapsed)/1000) .. "s")
@@ -296,7 +308,7 @@ function ForgeUI_CastBars:UpdateCastBar(unit, wnd, strType)
 				wnd:FindChild("CastBar"):SetProgress(fElapsed)
 			end
 
-			if bShowCastEx then
+			if bShowCastEx and not bChargeRelease then
 				wnd:FindChild("CastBarEx"):SetMax(fDuration)
 				wnd:FindChild("CastBarEx"):SetProgress(fElapsed)
 			end
