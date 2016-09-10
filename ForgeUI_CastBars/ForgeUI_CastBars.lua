@@ -282,7 +282,7 @@ function ForgeUI_CastBars:UpdateCastBar(unit, wnd, strType)
 			bShowCastEx = tTapCastByName and bIsCasting
 			bShowDuration = (tTapCastByName and bIsCasting) or (tTapCastActive and not bIsCasting)
 
-			bChargeRelease = false
+			local bChargeRelease = false
 
 			if bShowDuration then
 				local tTapCast = tTapCastByName or tTapCastActive
