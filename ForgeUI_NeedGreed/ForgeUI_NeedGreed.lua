@@ -42,9 +42,9 @@ function ForgeUI_NeedGreed:ForgeAPI_Init()
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_NeedGreed//ForgeUI_NeedGreed.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
-	Apollo.CreateTimer("WinnerCheckTimer", 1.0, false)
-	Apollo.StopTimer("WinnerCheckTimer")
-	Apollo.CreateTimer("PlayerNameCheckTimer", 2.0, false)
+	self.tmrLootUpdate = ApolloTimer.Create(1.0, false, "OnOneSecTimer", self)
+	self.tmrLootUpdate:Stop()
+	self.tmrNameCheck = ApolloTimer.Create(2.0, false, "OnNameCheckTimer", self)
 
 	self.bTimerRunning = false
 	self.tKnownLoot = {}
@@ -54,7 +54,8 @@ function ForgeUI_NeedGreed:ForgeAPI_Init()
 
 	self.strMyPlayerName = nil
 
-	if GameLib.GetLootRolls() then
+	local tLootRolls = GameLib.GetLootRolls()
+	if tLootRolls and #tLootRolls > 0 then
 		self:OnGroupLoot()
 	end
 end
@@ -64,10 +65,8 @@ function ForgeUI_NeedGreed:OnDocLoaded()
 	F:API_RegisterMover(self, self.wndContainer, "NeedGreed", "NeedGreed", "general", {})
 
 	Apollo.RegisterEventHandler("LootRollUpdate",		"OnGroupLoot", self)
-	Apollo.RegisterTimerHandler("WinnerCheckTimer", 	"OnOneSecTimer", self)
 	Apollo.RegisterEventHandler("LootRollWon", 			"OnLootRollWonEvent", self)
 	Apollo.RegisterEventHandler("LootRollAllPassed", 	"OnLootRollAllPassedEvent", self)
-	Apollo.RegisterTimerHandler("PlayerNameCheckTimer",	"OnNameCheckTimer", self)
 
 	Apollo.RegisterEventHandler("LootRollSelected", 	"OnLootRollSelectedEvent", self)
 	Apollo.RegisterEventHandler("LootRollPassed", 		"OnLootRollPassedEvent", self)
@@ -79,7 +78,7 @@ end
 -----------------------------------------------------------------------------------------------
 function ForgeUI_NeedGreed:OnGroupLoot()
 	if not self.bTimerRunning then
-		Apollo.StartTimer("WinnerCheckTimer")
+		self.tmrLootUpdate:Start()
 		self.bTimerRunning = true
 	end
 end
@@ -111,7 +110,7 @@ function ForgeUI_NeedGreed:OnOneSecTimer()
 	end
 
 	if self.tLootRolls and #self.tLootRolls > 0 then
-		Apollo.StartTimer("WinnerCheckTimer")
+		self.tmrLootUpdate:Start()
 	else
 		self.bTimerRunning = false
 	end
@@ -120,8 +119,10 @@ end
 function ForgeUI_NeedGreed:OnNameCheckTimer()
 	if GameLib.GetPlayerUnit() then
 		self.strMyPlayerName = GameLib.GetPlayerUnit():GetName()
+		self.tmrNameCheck:Stop()
+		self.tmrNameCheck = nil
 	else
-		Apollo.StartTimer("PlayerNameCheckTimer")
+		self.tmrNameCheck:Start()
 	end
 end
 
