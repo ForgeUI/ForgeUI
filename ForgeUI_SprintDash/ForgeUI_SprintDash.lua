@@ -80,7 +80,7 @@ function ForgeUI_SprintDash:OnDocLoaded()
 	F:API_RegisterMover(self, self.wndSprintMeter, "SprintDash_Sprint", "Sprint", "general", { bNameAsTooltip = true})
 	F:API_RegisterMover(self, self.wndDashMeter, "SprintDash_Dash", "Dash", "general", { bNameAsTooltip = true})
 
-	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnNextFrame", self)
+	F:API_RegisterEvent(self, "LazyUpdate", "OnNextFrame")
 
 	self:RefreshStyle_SprintBar()
 end

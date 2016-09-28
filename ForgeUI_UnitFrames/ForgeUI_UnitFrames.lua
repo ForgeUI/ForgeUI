@@ -434,7 +434,7 @@ function ForgeUI_UnitFrames:OnCharacterCreated()
 		return
 	end
 
-	Apollo.RegisterEventHandler("VarChange_FrameCount", 	"OnNextFrame", self)
+	F:API_RegisterEvent(self, "LazyUpdate", "OnNextFrame")
 end
 
 -----------------------------------------------------------------------------------------------

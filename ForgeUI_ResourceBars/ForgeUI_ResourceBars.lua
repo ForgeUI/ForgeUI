@@ -186,7 +186,7 @@ function ForgeUI_ResourceBars:OnEngineerCreated(unitPlayer)
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnEngineerUpdate", self)
 	else
-		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnEngineerUpdate", self)
+		F:API_RegisterEvent(self, "LazyUpdate", "OnEngineerUpdate")
 	end
 end
 
@@ -238,7 +238,7 @@ function ForgeUI_ResourceBars:OnEsperCreated(unitPlayer)
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnEsperUpdate", self)
 	else
-		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnEsperUpdate", self)
+		F:API_RegisterEvent(self, "LazyUpdate", "OnEsperUpdate")
 	end
 end
 
@@ -288,7 +288,7 @@ function ForgeUI_ResourceBars:OnMedicCreated(unitPlayer)
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnMedicUpdate", self)
 	else
-		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnMedicUpdate", self)
+		F:API_RegisterEvent(self, "LazyUpdate", "OnMedicUpdate")
 	end
 end
 
@@ -333,7 +333,7 @@ function ForgeUI_ResourceBars:OnSlingerCreated(unitPlayer)
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnSlingerUpdate", self)
 	else
-		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnSlingerUpdate", self)
+		F:API_RegisterEvent(self, "LazyUpdate", "OnSlingerUpdate")
 	end
 end
 
@@ -374,7 +374,7 @@ function ForgeUI_ResourceBars:OnStalkerCreated(unitPlayer)
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnStalkerUpdate", self)
 	else
-		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnStalkerUpdate", self)
+		F:API_RegisterEvent(self, "LazyUpdate", "OnStalkerUpdate")
 	end
 end
 
@@ -419,7 +419,7 @@ function ForgeUI_ResourceBars:OnWarriorCreated(unitPlayer)
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", "OnWarriorUpdate", self)
 	else
-		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnWarriorUpdate", self)
+		F:API_RegisterEvent(self, "LazyUpdate", "OnWarriorUpdate")
 	end
 end
 

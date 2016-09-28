@@ -31,6 +31,7 @@ local Core = {
 		profile = {
 			nColorPreset = 0,
 			b24Hour = true,
+			nSkipFrame = 2, -- number of frames to skip in LazyUpdate event
 			tClassColors = {
 				[GameLib.CodeEnumClass.Engineer] = "FFEFAB48",
 				[GameLib.CodeEnumClass.Esper] = "FF1591DB",
@@ -64,6 +65,7 @@ local tPreloadAddons = {}
 
 local bInit = false
 local bResetSettings = false
+local nLazyCntr = 0
 
 -----------------------------------------------------------------------------------------------
 -- ForgeUI module functions
@@ -84,12 +86,24 @@ function Core:ForgeAPI_Init()
 	GeminiHook:Embed(F)
 
 	Apollo.RegisterEventHandler("UnitEnteredCombat", "OnUnitEnteredCombat", self)
+	Apollo.RegisterEventHandler("NextFrame", "OnNextFrame", self)
 end
 
 function Core:OnUnitEnteredCombat(unit, bInCombat)
 	if not unit:IsThePlayer() then return end
 
 	F:API_SendEvent("PlayerEnteredCombat", bInCombat)
+end
+
+function Core:OnNextFrame()
+	-- Replacement for VarChange_FrameCount event. RIP
+	if nLazyCntr <= 0 then
+		F:API_SendEvent("LazyUpdate")
+		nLazyCntr = self._DB.profile.nSkipFrame
+
+		--Event_FireGenericEvent("VarChange_FrameCount")
+	end
+	nLazyCntr = nLazyCntr - 1
 end
 
 function Core:OnDatabaseUpdate()
@@ -108,6 +122,10 @@ function Core:OnDatabaseUpdate()
 	end
 
 	ForgeUI:CollapseAllMenuItems()
+end
+
+function Core:ForgeAPI_ProfileChanged()
+	nLazyCntr = self._DB.profile.nSkipFrame
 end
 
 -----------------------------------------------------------------------------------------------

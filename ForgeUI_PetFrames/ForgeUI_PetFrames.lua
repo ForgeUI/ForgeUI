@@ -79,8 +79,9 @@ function ForgeUI_PetFrames:AfterOnCharacterCreated()
 	Apollo.RegisterEventHandler("PetStanceChanged", "OnPetStanceChanged", self)
 	Apollo.RegisterEventHandler("PetSpawned", "OnPetSpawned", self)
 	Apollo.RegisterEventHandler("PetDespawned", "OnPetDespawned", self)
-	Apollo.RegisterEventHandler("VarChange_FrameCount", "OnNextFrame", self)
 	Apollo.RegisterEventHandler("Mount", "OnMount", self)
+	
+	F:API_RegisterEvent(self, "LazyUpdate", "OnNextFrame")
 end
 
 function ForgeUI_PetFrames:OnFrameClick( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )

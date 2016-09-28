@@ -56,6 +56,11 @@ function Settings:ForgeAPI_PopulateOptions()
         fnCallback = self.ForgeAPI_LoadSettings
     })
 
+    G:API_AddNumberBox(self, wnd, "Frame skip", F:API_GetCoreDB(), "nSkipFrame", { tMove = {0, 210},
+        fnCallback = self.ForgeAPI_LoadSettings,
+        strTooltip = "Skip X amount of frames between rendering of ForgeUI.\nHigher number improves performance, but makes UI less responsive."
+    })
+
     G:API_AddCheckBox(self, wnd, "24h mode", F:API_GetCoreDB(), "b24Hour", { tMove = {400, 0},
         fnCallback = self.ForgeAPI_LoadSettings
     })

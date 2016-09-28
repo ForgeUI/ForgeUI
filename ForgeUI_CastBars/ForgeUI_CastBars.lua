@@ -415,9 +415,9 @@ end
 function ForgeUI_CastBars:ForgeAPI_LoadSettings()
 	if self._DB.profile.bSmoothBars then
 		Apollo.RegisterEventHandler("NextFrame", 	"OnNextFrame", self)
-		Apollo.RemoveEventHandler("VarChange_FrameCount", self)
+		F:API_UnregisterEvent(self, "LazyUpdate")
 	else
-		Apollo.RegisterEventHandler("VarChange_FrameCount", "OnNextFrame", self)
+		F:API_RegisterEvent(self, "LazyUpdate", "OnNextFrame")
 		Apollo.RemoveEventHandler("NextFrame", self)
 	end
 

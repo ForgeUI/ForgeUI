@@ -360,7 +360,7 @@ function ForgeUI_Nameplates:ForgeAPI_Init()
 end
 
 function ForgeUI_Nameplates:NameplatesInit()
-	Apollo.RegisterEventHandler("VarChange_FrameCount", 		"OnFrame", self)
+	F:API_RegisterEvent(self, "LazyUpdate", "OnFrame")
 
 	Apollo.RegisterEventHandler("TargetUnitChanged", 			"OnTargetUnitChanged", self)
 	Apollo.RegisterEventHandler("UnitEnteredCombat", 			"OnEnteredCombat", self)
