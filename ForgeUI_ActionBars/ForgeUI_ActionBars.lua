@@ -49,6 +49,7 @@ local ForgeUI_ActionBars = {
 					bDrawShortcutBottom = false,
 					bShow = true,
 					bHideOOC = false,
+					bShowShadow = false,
 				},
 				[2] = {
 					strKey = "ForgeUI_UtilBarOne",
@@ -314,6 +315,10 @@ function ForgeUI_ActionBars:OnDocLoaded()
 		self:ShowShortcutBar(k, v.bIsVisible, v.nShortcuts)
 	end
 	self.tQueuedBars = {}
+
+	self.wndShadow = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Shadow", "InWorldHudStratum", self)
+	self.wndShadow:SetOpacity(0.5)
+	self.wndShadow:Show(self._DB.profile.tFrames[1].bShowShadow,true)
 end
 
 function ForgeUI_ActionBars:OnPlayerEnteredCombat(_, bInCombat)
@@ -1022,6 +1027,10 @@ function ForgeUI_ActionBars:ShowShortcutBar(nBar, bIsVisible, nShortcuts)
 	end
 end
 
+function ForgeUI_ActionBars:ToggleShadow(tBar)
+	self.wndShadow:Show(tBar.bShowShadow,true)
+end
+
 -----------------------------------------------------------------------------------------------
 -- Helpers
 -----------------------------------------------------------------------------------------------
@@ -1100,6 +1109,11 @@ function ForgeUI_ActionBars:ForgeAPI_PopulateOptions()
 		if v.bDrawShortcutBottom ~= nil then
 			G:API_AddCheckBox(self, wnd, "Use bottom-styled hotkey", v, "bDrawShortcutBottom", { tMove = {10, 60},
 				fnCallback = function(...) self:EditButtons(v) end })
+		end
+
+		if v.strName == "Action bar" then
+			G:API_AddCheckBox(self, wnd, "Show bottom shadow", v, "bShowShadow", { tMove = {0, 90},
+				fnCallback = function(...) self:ToggleShadow(v) end })
 		end
 
 		if v.nButtons ~= nil then
