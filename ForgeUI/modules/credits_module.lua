@@ -36,7 +36,7 @@ local tGroups = {
 		},
 	},
 	[3] = {
-		sName = "Externists",
+		sName = "Contributors",
 		tPpl = {
 			["Vim Exe"] = "code reviews",
 			["Chaarp Shooter"] = "debugging & help with code",
@@ -44,6 +44,7 @@ local tGroups = {
 			["Miss Sistray"] = "class & mob icons",
 			["Akira Kurosawa"] = "design decisions",
 			["Gordma Galeic"] = "design decisions",
+			["LaserLoui"] = "feature development",
 		},
 	},
 	[4] = {
