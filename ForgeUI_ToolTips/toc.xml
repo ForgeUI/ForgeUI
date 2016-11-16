@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Addon Author="WintyBadass" APIVersion="13" Name="ForgeUI_ToolTips" Description="">
+<Addon Author="WintyBadass" APIVersion="14" Name="ForgeUI_ToolTips" Description="">
     <Script Name="ForgeUI_ToolTips.lua"/>
     <Form Name="ForgeUI_ToolTips.xml"/>
 </Addon>

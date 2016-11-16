@@ -20,7 +20,7 @@ local ForgeUI_FloatText = {
 	_API_VERSION = 3,
 	_VERSION = "2.0",
 	DISPLAY_NAME = "Float Text",
-	
+
 	tSettings = {
 		profile = {
 			strFont = "Subtitle",
@@ -29,6 +29,10 @@ local ForgeUI_FloatText = {
 			bAdjustForTallUnits = false,
 			nTallUnitOffset = 100,
 			bDontShowImmunity = false,
+			bShowDeflect = true,
+			bShowCCState = true,
+			bShowCombatMomentum = true,
+			bShowExperienceGained = true,
 			nDamageIncomingThreshold = 0, 	--tDamageHealing.nDamageThreshold
 			nHealingIncomingThreshold = 0, 	--tDamageHealing.nHealThreshold
 			nDamageOutgoingThreshold = 0, 	--tPlayerDamageHealing.nDamageThreshold
@@ -44,7 +48,7 @@ function ForgeUI_FloatText:ForgeAPI_Init()
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
 	F:API_AddMenuItem(self, "Float Text", "General")
-	
+
 	FloatText.OnDamageOrHealing = self.OnDamageOrHealing
 	FloatText.OnPlayerDamageOrHealing = self.OnPlayerDamageOrHealing
 	FloatText.OnMiss = self.OnMiss
@@ -53,7 +57,7 @@ function ForgeUI_FloatText:ForgeAPI_Init()
 end
 
 function ForgeUI_FloatText:OnDocLoaded()
-	if self.xmlDoc == nil and not self.xmlDoc:IsLoaded() then return end	
+	if self.xmlDoc == nil and not self.xmlDoc:IsLoaded() then return end
 end
 
 
@@ -93,24 +97,24 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 	if unitTarget == nil or not Apollo.GetConsoleVariable("ui.showCombatFloater") or nDamage == nil then
 		return
 	end
-	
+
 	if GameLib.IsControlledUnit(unitTarget) or unitTarget == GameLib.GetPlayerMountUnit() or GameLib.IsControlledUnit(unitTarget:GetUnitOwner()) then
 		self:OnPlayerDamageOrHealing( unitTarget, eDamageType, nDamage, nShieldDamaged, nAbsorptionAmount, bCritical )
 		return
 	end
-	
+
 	-- NOTE: This needs to be changed if we're ever planning to display shield and normal damage in different formats.
 	-- NOTE: Right now, we're just telling the player the amount of damage they did and not the specific type to keep things neat
 	local nTotalDamage = nDamage
 	if type(nShieldDamaged) == "number" and nShieldDamaged > 0 then
 		nTotalDamage = nTotalDamage + nShieldDamaged
 	end
-	
+
 	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then
 		nTotalDamage = nTotalDamage + nAbsorptionAmount
 	end
-	
-	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields	
+
+	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields
 	if bHeal and nTotalDamage <= ForgeUI_FloatText._DB.profile.nHealingOutgoingThreshold then return end
 	if not bHeal and nTotalDamage <= ForgeUI_FloatText._DB.profile.nDamageOutgoingThreshold then return end
 
@@ -134,7 +138,7 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 			[5] = {					fTime = 0.9,	fAlpha = 0.0,},
 		}
 	end
-	
+
 	local nBaseColor = 0x00ffff
 	local fMaxSize = 0.8
 	local nOffsetDirection = 95
@@ -143,7 +147,7 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 	tTextOption.strFontFace = ForgeUI_FloatText._DB.profile.strFont
 	tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.IgnoreCollision
 	tTextOption.eLocation = ForgeUI_FloatText:GetFloatTextLocation(bHeal, unitTarget)
-	
+
 	if not bHeal and bCritical == true then -- Crit not vuln
 		nBaseColor = 0xffea00
 		fMaxSize = 1.0
@@ -167,16 +171,16 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 	local nOffset = math.random(0, 360)
 	if nOffset <= (self.fLastOffset + 25) and nOffset >= (self.fLastOffset - 25) then
 		nOffset = math.random(0, 360)
-	end	
+	end
 	self.fLastOffset = nOffset
-	
+
 	-- set offset
 	tTextOption.fOffsetDirection = nOffset
 	tTextOption.fOffset = math.random(10, 80)/100
 
-	-- scale and movement	
+	-- scale and movement
 	tTextOption.arFrames = ForgeUI_FloatText:GetOutgoingDamageAnimation(true, fMaxSize, nBaseColor, fMaxDuration)
-	
+
 	if not bHeal then
 		self.fLastDamageTime = GameLib.GetGameTime()
 	end
@@ -204,12 +208,12 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 
 	-- If there is no damage, don't show a floater
 	if nDamage == nil then return end
-	
+
 	local bHeal = eDamageType == GameLib.CodeEnumDamageType.Heal or eDamageType == GameLib.CodeEnumDamageType.HealShields
-	
+
 	if bHeal and nDamage <= ForgeUI_FloatText._DB.profile.nHealingIncomingThreshold then return end
 	if not bHeal and nDamage <= ForgeUI_FloatText._DB.profile.nDamageIncomingThreshold then return end
-	
+
 	local bShowFloater = true
 	local tTextOption = ForgeUI_FloatText:GetDefaultTextOption()
 	local tTextOptionAbsorb = ForgeUI_FloatText:GetDefaultTextOption()
@@ -239,11 +243,11 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 	if type(nShieldDamaged) == "number" and nShieldDamaged > 0 then
 		nDamage = nDamage + nShieldDamaged
 	end
-	
+
 	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then
 		nDamage = nDamage + nAbsorptionAmount
 	end
-	
+
 	local nBaseColor = 0xff6d6d
 	local nHighlightColor = 0xff6d6d
 	local fMaxSize = 0.8
@@ -312,7 +316,8 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 end
 
 function ForgeUI_FloatText:OnCombatLogCCState(tEventArgs)
-	
+	if not ForgeUI_FloatText._DB.profile.bShowCCState then return end
+
 	if not self:ShouldDisplayCCStateFloater( tEventArgs ) then
 		return
 	end
@@ -324,7 +329,7 @@ function ForgeUI_FloatText:OnCombatLogCCState(tEventArgs)
 		self:OnCombatLogCCStatePlayer(tEventArgs)
 		return
 	end
-	
+
 	local nOffsetState = tEventArgs.eState
 
 	-- Removing an entry from this table means no floater is shown for that state.
@@ -402,6 +407,7 @@ end
 
 
 function ForgeUI_FloatText:OnCombatMomentum( eMomentumType, nCount, strText )
+	if not ForgeUI_FloatText._DB.profile.bShowCombatMomentum then return end
 	-- Passes: type enum, player's total count for that bonus type, string combines these things (ie. "3 Evade")
 	local arMomentumStrings = {
 		[CombatFloater.CodeEnumCombatMomentum.Impulse] 				= "FloatText_Impulse",
@@ -456,13 +462,14 @@ function ForgeUI_FloatText:OnCombatMomentum( eMomentumType, nCount, strText )
 end
 
 function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
+	if not ForgeUI_FloatText._DB.profile.bShowDeflect then return end
 	if unitTarget == nil or not Apollo.GetConsoleVariable("ui.showCombatFloater") then return end
 
 	-- modify the text to be shown
 	local tTextOption = FloatText:GetDefaultTextOption()
-	
+
 	tTextOption.strFontFace = ForgeUI_FloatText._DB.profile.strFont
-	
+
 	if GameLib.IsControlledUnit( unitTarget ) or unitTarget:GetType() == "Mount" then -- if the target unit is player's char
 		tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Horizontal --Vertical--Horizontal  --IgnoreCollision
 		tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Chest
@@ -497,6 +504,7 @@ function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
 end
 
 function ForgeUI_FloatText:OnExperienceGained(eReason, unitTarget, strText, fDelay, nAmount)
+	if not ForgeUI_FloatText._DB.profile.bShowExperienceGained then return end
 	if not Apollo.GetConsoleVariable("ui.showCombatFloater") or nAmount < 0 then return end
 
 	local strFormatted = ""
@@ -645,15 +653,15 @@ function ForgeUI_FloatText:OnUnitEvaded(unitSource, unitTarget, eReason, strMess
 	CombatFloater.ShowTextFloater( unitSource, strMessage, 0, tTextOption )
 end
 
-function ForgeUI_FloatText:GetOutgoingDamageAnimation(bCritical, fMaxSize, nBaseColor, fMaxDuration)	
+function ForgeUI_FloatText:GetOutgoingDamageAnimation(bCritical, fMaxSize, nBaseColor, fMaxDuration)
 	if bCritical then
 		return self:GetCriticalOutgoingDamageAnimation(fMaxSize, nBaseColor, fMaxDuration)
 	end
-	
+
 	local frame1Direction
 	local frame2Direction
 	local frame3Direction
-		
+
 	if self.lastDirection == nil or self.lastDirection == "left" then
 		self.lastDirection = "right"
 		frame1Direction = 45
@@ -666,7 +674,7 @@ function ForgeUI_FloatText:GetOutgoingDamageAnimation(bCritical, fMaxSize, nBase
 		frame3Direction = 275
 
 	end
-	
+
 	return {
 		[1] = {fScale = (fMaxSize) * 1.75,	fTime = 0,			  fVelocityDirection=frame1Direction , fVelocityMagnitude = 5.0	,					nColor = 0xffffff, },
 		[2] = {fScale = fMaxSize,			fTime = .15,		  fAlpha = 1.0, 		  fVelocityDirection=frame2Direction , fVelocityMagnitude = 3.5,},
@@ -674,7 +682,7 @@ function ForgeUI_FloatText:GetOutgoingDamageAnimation(bCritical, fMaxSize, nBase
 		[4] = {fScale = fMaxSize,			fTime = .5,			  fAlpha = 1.0,},
 		[5] = {								fTime = fMaxDuration, fAlpha = 0.0,},
 	}
-	
+
 end
 
 function ForgeUI_FloatText:GetCriticalOutgoingDamageAnimation(fMaxSize, nBaseColor, fMaxDuration)
@@ -690,13 +698,13 @@ end
 
 function ForgeUI_FloatText:GetFloatTextLocation(bHeal, targetUnit)
 	if bHeal == false and self._DB.profile.bAdjustForTallUnits == true then
-	
-		local overheadAnchor = targetUnit:GetOverheadAnchor()		
-		if overheadAnchor ~= nil and overheadAnchor.y < self._DB.profile.nTallUnitOffset then			
+
+		local overheadAnchor = targetUnit:GetOverheadAnchor()
+		if overheadAnchor ~= nil and overheadAnchor.y < self._DB.profile.nTallUnitOffset then
 			return CombatFloater.CodeEnumFloaterLocation.Bottom
 		end
-	end	
-	
+	end
+
 	return CombatFloater.CodeEnumFloaterLocation[self._DB.profile.strLocation]
 end
 
@@ -704,28 +712,39 @@ function ForgeUI_FloatText:ForgeAPI_PopulateOptions()
 	local wndGeneral = self.tOptionHolders["General"]
 
 	G:API_AddNumberBox(self, wndGeneral, "Incoming damage threshold", self._DB.profile, "nDamageIncomingThreshold", {
-		tOffsets = { 5, 5, 300, 30 }, 
+		tOffsets = { 5, 5, 300, 30 },
 		strHint = "Damage below this value will not be shown"
 	})
 	G:API_AddNumberBox(self, wndGeneral, "Incoming heals threshold", self._DB.profile, "nHealingIncomingThreshold", {
-		tOffsets = { 5, 35, 300, 60 },						 
+		tOffsets = { 5, 35, 300, 60 },
 		strHint = "Heals below this value will not be shown"
 	})
 	G:API_AddNumberBox(self, wndGeneral, "Outgoing damage threshold", self._DB.profile, "nDamageOutgoingThreshold", {
-		tOffsets ={ 275, 5, 475, 30 }, 
+		tOffsets ={ 275, 5, 475, 30 },
 		strHint = "Damage below this value will not be shown"
 	})
 	G:API_AddNumberBox(self, wndGeneral, "Outgoing heals threshold", self._DB.profile, "nHealingOutgoingThreshold", {
-		tOffsets = { 275, 35, 475, 60 }, 
+		tOffsets = { 275, 35, 475, 60 },
 		strHint = "Heals below this value will not be shown"
 	})
-						
+
 	G:API_AddCheckBox(self,wndGeneral, "Adjust for tall units", self._DB.profile, "bAdjustForTallUnits", {
 		tMove = { 0, 70 }
 	})
-	G:API_AddCheckBox(self,wndGeneral, "Don't show immunity/inf armor floaters'", self._DB.profile, "bDontShowImmunity", {
+	G:API_AddCheckBox(self,wndGeneral, "Don't show immunity/inf armor floaters", self._DB.profile, "bDontShowImmunity", {
 		tMove = { 0, 100 },
-		nAddWidth = 150,
+	})
+	G:API_AddCheckBox(self,wndGeneral, "Show Deflects", self._DB.profile, "bShowDeflect", {
+		tMove = { 0, 130 },
+	})
+	G:API_AddCheckBox(self,wndGeneral, "Show CC's", self._DB.profile, "bShowCCState", {
+		tMove = { 0, 160 },
+	})
+	G:API_AddCheckBox(self,wndGeneral, "Show Combat Momentum", self._DB.profile, "bShowCombatMomentum", {
+		tMove = { 0, 190 },
+	})
+	G:API_AddCheckBox(self,wndGeneral, "Show Experience Gained", self._DB.profile, "bShowExperienceGained", {
+		tMove = { 0, 220 },
 	})
 end
 
