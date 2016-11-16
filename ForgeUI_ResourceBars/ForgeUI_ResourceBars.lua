@@ -585,8 +585,9 @@ function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Esper(unitPlayer, nResour
 	end
 
 	if self._DB.profile.esper.bShowMentalOverflow == true then
+		local nResource = unitPlayer:GetResource(1)
 		for i = 1, self.nMaxMentalOverflow do
-		 	if i <= self.nMentalOverflowStacks then
+		 	if i <= self.nMentalOverflowStacks and nResource == 5 then
 				self.wndMentalOverflow:FindChild("MO" .. i):FindChild("ProgressBar"):SetProgress(1)
 			else
 				self.wndMentalOverflow:FindChild("MO" .. i):FindChild("ProgressBar"):SetProgress(0)
