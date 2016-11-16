@@ -990,20 +990,20 @@ function ForgeUI_ActionBars:OnGenerateTooltip(wndControl, wndHandler, eType, arg
 end
 
 function ForgeUI_ActionBars:OnSpellBtn( wndHandler, wndControl, eMouseButton )
-	local sType = wndControl:GetParent():GetData().sType
+	local sType = wndControl:GetParent():GetParent():GetData().sType
 	if sType == "stance" then
-		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
+		wndControl:GetParent():GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
 		GameLib.SetCurrentClassInnateAbilityIndex(wndHandler:GetData())
 	elseif sType == "mount" then
-		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
+		wndControl:GetParent():GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
 		self._DB.char.nSelectedMount = wndControl:GetData():GetId()
 		GameLib.SetShortcutMount(self._DB.char.nSelectedMount)
 	elseif sType == "pet" then
-		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
+		wndControl:GetParent():GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
 		self._DB.char.nSelectedPet = wndControl:GetData().nId
-		self:LoadPet(wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Holder"))
+		self:LoadPet(wndControl:GetParent():GetParent():GetParent():GetParent():GetParent():FindChild("Holder"))
 	elseif sType == "potion" then
-		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
+		wndControl:GetParent():GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
 		self._DB.char.nSelectedPotion = wndControl:GetData():GetItemId()
 		GameLib.SetShortcutPotion(wndControl:GetData():GetItemId())
 	elseif sType == "path" then
@@ -1015,7 +1015,7 @@ function ForgeUI_ActionBars:OnSpellBtn( wndHandler, wndControl, eMouseButton )
 		tActionSet[10] = self._DB.char.nSelectedPath
 		ActionSetLib.RequestActionSetChanges(tActionSet)
 
-		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
+		wndControl:GetParent():GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
 	elseif sType == "path_switch" then
 		local crb_pathlog = Apollo.GetAddon("PlayerPath")
 
@@ -1037,7 +1037,7 @@ function ForgeUI_ActionBars:OnSpellBtn( wndHandler, wndControl, eMouseButton )
 
 		crb_pathlog = nil
 
-		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
+		wndControl:GetParent():GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
 	end
 end
 
@@ -1060,10 +1060,10 @@ function ForgeUI_ActionBars:BarButton_OnMouseDown( wndHandler, wndControl, eMous
 end
 
 function ForgeUI_ActionBars:RecallBtn_OnButtonDown( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
-	local wnd = wndControl:GetParent():GetParent():GetParent()
+	local wnd = wndControl:GetParent():GetParent():GetParent():GetParent():GetParent()
 	if wndControl:GetName() == "ForgeUI_ActionButton" and eMouseButton == 1 then
 		GameLib.SetDefaultRecallCommand(wndControl:GetData())
-		wnd:FindChild("ForgeUI_ActionButton"):SetContentId(wndControl:GetData())
+		wnd:FindChild("Holder"):FindChild("ForgeUI_ActionButton"):SetContentId(wndControl:GetData())
 	end
 end
 
