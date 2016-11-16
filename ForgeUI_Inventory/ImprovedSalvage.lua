@@ -5,11 +5,7 @@ require "GameLib"
 require "Item"
 
 local ImprovedSalvage = {}
-
-local kidBackpack = 0
-
-local karEvalColors =
-{
+local karEvalColors = {
 	[Item.CodeEnumItemQuality.Inferior] 		= "ItemQuality_Inferior",
 	[Item.CodeEnumItemQuality.Average] 			= "ItemQuality_Average",
 	[Item.CodeEnumItemQuality.Good] 			= "ItemQuality_Good",
@@ -55,23 +51,23 @@ end
 
 function ImprovedSalvage:OnLoad()
 	self.xmlDoc = XmlDoc.CreateFromFile("ImprovedSalvage.xml")
-	self.xmlDoc:RegisterCallback("OnDocumentReady", self) 
+	self.xmlDoc:RegisterCallback("OnDocumentReady", self)
 end
 
 function ImprovedSalvage:OnDocumentReady()
 	if self.xmlDoc == nil then
 		return
 	end
-	
+
 	Apollo.RegisterEventHandler("RequestSalvageAll", "OnSalvageAll", self) -- using this for bag changes
 	Apollo.RegisterSlashCommand("salvageall", "OnSalvageAll", self)
 
 	self.wndMain = Apollo.LoadForm(self.xmlDoc, "ImprovedSalvageForm", nil, self)
-	
+
 	if self.locSavedWindowLoc then
 		self.wndMain:MoveToLocation(self.locSavedWindowLoc)
 	end
-	
+
 	self.tContents = self.wndMain:FindChild("HiddenBagWindow")
 	self.arItemList = nil
 	self.tSelection = { nIndex = nil, nBagPos = nil}
@@ -91,7 +87,7 @@ end
 function ImprovedSalvage:OnSalvageAll()
 	self.arItemList = {}
 	self.tSelection = { nIndex = self.nStartIndex, nBagPos = self.nStartIndex}
-	
+
 	local tInvItems = GameLib.GetPlayerUnit():GetInventoryItems()
 	for idx, tItem in ipairs(tInvItems) do
 		if tItem and tItem.itemInBag and tItem.itemInBag:CanSalvage() and not tItem.itemInBag:CanAutoSalvage() then
@@ -146,37 +142,37 @@ function ImprovedSalvage:RedrawAll()
 		local wndParent = self.wndMain:FindChild("MainScroll")
 		local nScrollPos = wndParent:GetVScrollPos()
 		wndParent:DestroyChildren()
-		
+
 		for idx, tItem in ipairs(self.arItemList) do
 			local wndCurr = Apollo.LoadForm(self.xmlDoc, "SalvageListItem", wndParent, self)
 			wndCurr:FindChild("SalvageListItemBtn"):SetData({nIdx = nil, tItem = tItem, nBagPos = idx})
-			
+
 			wndCurr:FindChild("SalvageListItemTitle"):SetTextColor(karEvalColors[tItem:GetItemQuality()])
 			wndCurr:FindChild("SalvageListItemTitle"):SetText(tItem:GetName())
-			
+
 			local bTextColorRed = self:HelperPrereqFailed(tItem)
 			wndCurr:FindChild("SalvageListItemType"):SetTextColor(bTextColorRed and "Reddish" or "UI_TextHoloBodyCyan")
 			wndCurr:FindChild("SalvageListItemType"):SetText(tItem:GetItemTypeName())
-			
+
 			wndCurr:FindChild("SalvageListItemCantUse"):Show(bTextColorRed)
 			wndCurr:FindChild("SalvageListItemIcon"):GetWindowSubclass():SetItem(tItem)
 		end
-		
+
 		self:SortItems()
 		wndParent:SetVScrollPos(nScrollPos)
-	
+
 		self.wndMain:Show(true)
 		self.wndMain:ToFront()
 	else
 		self.wndMain:Show(false)
 	end
-	
+
 end
 
 function ImprovedSalvage:SortItems()
 	local wndParent = self.wndMain:FindChild("MainScroll")
-	local fnSort = nil
-	
+	local fnSort
+
 	if self.bSortByQuality then
 		fnSort = function(wndCon1, wndCon2)
 			local wndItem1 = wndCon1:FindChild("SalvageListItemBtn")
@@ -192,9 +188,9 @@ function ImprovedSalvage:SortItems()
 			return wndCon1:FindChild("SalvageListItemBtn"):GetData().nBagPos < wndCon2:FindChild("SalvageListItemBtn"):GetData().nBagPos
 		end
 	end
-	
+
 	wndParent:ArrangeChildrenVert(Window.CodeEnumArrangeOrigin.LeftOrTop, fnSort)
-	
+
 	local bNotFound = true
 	for idx, wndCurr in ipairs(wndParent:GetChildren()) do
 		local wndCurrBtn = wndCurr:FindChild("SalvageListItemBtn")
@@ -216,7 +212,7 @@ function ImprovedSalvage:SortItems()
 			self.bSalvaged = false
 		end
 	end
-	
+
 	local itemCurr = self.arItemList[self.tSelection.nBagPos]
 	if itemCurr then
 		self.wndMain:SetData(itemCurr)
@@ -230,7 +226,7 @@ end
 
 function ImprovedSalvage:OnSalvageCurr()
 	Event_ShowTutorial(GameLib.CodeEnumTutorial.CharacterWindow)
-	if self.tSelection.nIndex == #self.arItemList then 
+	if self.tSelection.nIndex == #self.arItemList then
 		table.remove(self.arItemList, self.tSelection.nBagPos )
 		self.tSelection.nIndex = self.tSelection.nIndex - 1
 	else

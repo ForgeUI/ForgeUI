@@ -8,19 +8,8 @@ require "GameLib"
 require "Item"
 
 local ItemPreview = {}
-
-local ktValidItemPreviewSlots =
-{
-	2,
-	3,
-	0,
-	5,
-	1,
-	4,
-	16
-}
-
 local knSaveVersion = nil
+-- local ktValidItemPreviewSlots = {2,3,0,5,1,4,16} // unused
 
 function ItemPreview:new(o)
 	o = o or {}
@@ -81,7 +70,7 @@ function ItemPreview:OnGenericEvent_LoadItemPreview(item)
 	if not self.wndMain or not self.wndMain:IsValid() then
 		self.wndMain = Apollo.LoadForm(self.xmlDoc, "ItemPreviewForm", "TooltipStratum", self)
 		self.wndMain:FindChild("PreviewWindow"):SetCostume(GameLib.GetPlayerUnit())
-	
+
 		local nWndLeft, nWndTop, nWndRight, nWndBottom = self.wndMain:GetRect()
 		local nWndWidth = nWndRight - nWndLeft
 		local nWndHeight = nWndBottom - nWndTop

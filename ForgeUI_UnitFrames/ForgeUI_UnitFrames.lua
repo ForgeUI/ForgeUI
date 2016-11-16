@@ -449,7 +449,7 @@ function ForgeUI_UnitFrames:UpdateStyles()
 end
 
 function ForgeUI_UnitFrames:RefreshStyle(unit, name, hpBar, strType)
-	local crHpBar = "FFFFFFFF"
+	local crHpBar
 
 	local strName = unit:GetName()
 	local nNameWidth = Apollo.GetTextWidth("Nameplates", strName .. "  ") + 2
@@ -503,7 +503,6 @@ function ForgeUI_UnitFrames:UpdateStyle_PlayerFrame()
 	if not unit or not self.wndPlayerFrame then return end
 
 	local strName = unit:GetName()
-	local nNameWidth = Apollo.GetTextWidth("Nameplates", strName .. "  ")
 
 	self.wndPlayerFrame:FindChild("Name"):SetText(strName)
 	if self._DB.profile.tFrames.Player.bNameClassColor then

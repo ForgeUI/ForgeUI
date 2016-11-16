@@ -154,14 +154,14 @@ function ForgeUI_InfoBar:OnGenerateTooltip(wndHandler, wndControl, eToolTipType,
 	else
 		currentXP = GetXp() - GetXpToCurrentLevel()
 		neededXP = GetXpToNextLevel()
-		xml:AddLine("XP: " .. Util:ShortNum(currentXP) .. "/" .. Util:ShortNum(neededXP) .. " - rested: " .. Util:ShortNum(restedXP) , crWhite, "CRB_InterfaceMedium")
+		xml:AddLine("XP: " .. Util:ShortNum(currentXP) .. "/" .. Util:ShortNum(neededXP) .. " - rested: " .. Util:ShortNum(restedXP) , "ffffffff", "CRB_InterfaceMedium")
 	end
 
 	local nCurrentPathLevel = PlayerPathLib.GetPathLevel()
 	local nCurrentPathXP =  PlayerPathLib.GetPathXPForLevel()
 	local nNeededPathXP = PlayerPathLib.GetPathXPForNextLevel()
 	if nCurrentPathLevel ~= PlayerPathLib.GetPathLevelCap() and nNeededPathXP ~= 0 then
-		xml:AddLine("Path XP: " .. nCurrentPathXP .. "/" .. nNeededPathXP .. " (" .. Util:Round(nCurrentPathXP / nNeededPathXP, 1) .. "%) - " .. nCurrentPathLevel .. "lvl", crWhite, "CRB_InterfaceMedium")
+		xml:AddLine("Path XP: " .. nCurrentPathXP .. "/" .. nNeededPathXP .. " (" .. Util:Round(nCurrentPathXP / nNeededPathXP, 1) .. "%) - " .. nCurrentPathLevel .. "lvl", "ffffffff", "CRB_InterfaceMedium")
 	end
 	wndControl:SetTooltipDoc(xml)
 end

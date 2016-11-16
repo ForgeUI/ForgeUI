@@ -64,16 +64,12 @@ local fnSortItemsByName = function(itemLeft, itemRight)
 	if itemLeft == nil and itemRight then
 		return 1
 	end
-
-	local strLeftName = itemLeft:GetName()
-	local strRightName = itemRight:GetName()
-	if strLeftName < strRightName then
+	if itemLeft:GetName() < itemRight:GetName() then
 		return -1
 	end
-	if strLeftName > strRightName then
+	if itemLeft:GetName() > itemRight:GetName() then
 		return 1
 	end
-
 	return 0
 end
 
@@ -87,25 +83,18 @@ local fnSortItemsByCategory = function(itemLeft, itemRight)
 	if itemLeft == nil and itemRight then
 		return 1
 	end
-
-	local strLeftName = itemLeft:GetItemCategoryName()
-	local strRightName = itemRight:GetItemCategoryName()
-	if strLeftName < strRightName then
+	if itemLeft:GetItemCategoryName() < itemRight:GetItemCategoryName() then
 		return -1
 	end
-	if strLeftName > strRightName then
+	if itemLeft:GetItemCategoryName() > itemRight:GetItemCategoryName() then
 		return 1
 	end
-
-	local strLeftName = itemLeft:GetName()
-	local strRightName = itemRight:GetName()
-	if strLeftName < strRightName then
+	if itemLeft:GetName() < itemRight:GetName() then
 		return -1
 	end
-	if strLeftName > strRightName then
+	if itemLeft:GetName() > itemRight:GetName() then
 		return 1
 	end
-
 	return 0
 end
 
@@ -119,25 +108,18 @@ local fnSortItemsByQuality = function(itemLeft, itemRight)
 	if itemLeft == nil and itemRight then
 		return 1
 	end
-
-	local eLeftQuality = itemLeft:GetItemQuality()
-	local eRightQuality = itemRight:GetItemQuality()
-	if eLeftQuality > eRightQuality then
+	if itemLeft:GetItemQuality() > itemRight:GetItemQuality() then
 		return -1
 	end
-	if eLeftQuality < eRightQuality then
+	if itemLeft:GetItemQuality() < itemRight:GetItemQuality() then
 		return 1
 	end
-
-	local strLeftName = itemLeft:GetName()
-	local strRightName = itemRight:GetName()
-	if strLeftName < strRightName then
+	if itemLeft:GetName() < itemRight:GetName() then
 		return -1
 	end
-	if strLeftName > strRightName then
+	if itemLeft:GetName() > itemRight:GetName() then
 		return 1
 	end
-
 	return 0
 end
 
@@ -202,12 +184,12 @@ function ForgeUI_Inventory:ForgeAPI_Init()
 	self.nLastWndMainWidth = self.wndMain:GetWidth()
 	self.bSupplySatchelOpen = false
 
-	local nLeft, nTop, nRight, nBottom = self.wndMain:GetAnchorOffsets()
+	local nLeft, _, nRight, _ = self.wndMain:GetAnchorOffsets()
 	self.nFirstEverWidth = nRight - nLeft
 	self.wndMain:SetSizingMinimum(245, 285)
 	--self.wndMain:SetSizingMaximum(1200, 700)
 
-	nLeft, nTop, nRight, nBottom = self.wndMain:FindChild("MainGridContainer"):GetAnchorOffsets()
+	local _, nTop, _, nBottom = self.wndMain:FindChild("MainGridContainer"):GetAnchorOffsets()
 	self.nFirstEverMainGridHeight = nBottom - nTop
 
 	self.tBagSlots = {}
@@ -367,8 +349,7 @@ function ForgeUI_Inventory:OnPlayerCurrencyChanged()
 end
 
 function ForgeUI_Inventory:UpdateBagSlotItems() -- update our bag display
-	local nOldBagCount = self.nEquippedBagCount -- record the old count
-
+	-- local nOldBagCount = self.nEquippedBagCount -- record the old count // unused
 	self.nEquippedBagCount = 0	-- reset
 
 	for idx = 1, knMaxBags do
@@ -436,8 +417,8 @@ function ForgeUI_Inventory:OnOptionsMenuToggle(wndHandler, wndControl) -- Option
 		self.wndMain:FindChild("BagBtn" .. idx):FindChild("RemoveBagIcon"):Show(false)
 	end
 
-	self.wndMain:FindChild("IconBtnLarge"):SetCheck(self.nBoxSize == kLargeIconOption)
-	self.wndMain:FindChild("IconBtnSmall"):SetCheck(self.nBoxSize == kSmallIconOption)
+	self.wndMain:FindChild("IconBtnLarge"):SetCheck(self.nBoxSize == kLargeIconOption) -- kLargeIconOption undefined!
+	self.wndMain:FindChild("IconBtnSmall"):SetCheck(self.nBoxSize == kSmallIconOption) -- kSmallIconOption undefined!
 
 	for key, wndCurr in pairs(self.wndMain:FindChild("OptionsConfigureCurrencyList"):GetChildren()) do
 		self:UpdateAltCash(wndCurr)
@@ -514,7 +495,7 @@ end
 
 
 function ForgeUI_Inventory:HelperGetCurrencyAmmount(tData)
-	local monAmount = 0
+	local monAmount
 	if tData.bAccountItem then
 		monAmount = AccountItemLib.GetAccountCurrency(tData.eType)
 	else
@@ -540,7 +521,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ForgeUI_Inventory:OnSalvageAllBtn(wndHandler, wndControl)
-	Event_FireGenericEvent("RequestSalvageAll", tAnchors)
+	Event_FireGenericEvent("RequestSalvageAll", tAnchors) -- tAnchors Undefined
 end
 
 function ForgeUI_Inventory:OnDragDropSalvage(wndHandler, wndControl, nX, nY, wndSource, strType, iData)
@@ -558,13 +539,13 @@ function ForgeUI_Inventory:OnQueryDragDropSalvage(wndHandler, wndControl, nX, nY
 end
 
 function ForgeUI_Inventory:OnDragDropNotifySalvage(wndHandler, wndControl, bMe) -- TODO: We can probably replace this with a button mouse over state
-	if bMe and self.wndMain:FindChild("SalvageIcon"):GetData() then
+	-- if bMe and self.wndMain:FindChild("SalvageIcon"):GetData() then
 		--self.wndMain:FindChild("SalvageIcon"):SetSprite("CRB_Inventory:InvBtn_SalvageToggleFlyby")
 		--self.wndMain:FindChild("TextActionPrompt_Salvage"):Show(true)
-	elseif self.wndMain:FindChild("SalvageIcon"):GetData() then
+	-- elseif self.wndMain:FindChild("SalvageIcon"):GetData() then
 		--self.wndMain:FindChild("SalvageIcon"):SetSprite("CRB_Inventory:InvBtn_SalvageTogglePressed")
 		--self.wndMain:FindChild("TextActionPrompt_Salvage"):Show(false)
-	end
+	-- end
 end
 
 -----------------------------------------------------------------------------------------------
@@ -613,16 +594,16 @@ function ForgeUI_Inventory:UpdateVirtualItemInventory()
 	-- Adjust heights
 	local bShowQuestItems = self.wndMain:FindChild("VirtualInvToggleBtn"):IsChecked()
 	if not self.nVirtualButtonHeight then
-		local nLeft, nTop, nRight, nBottom = self.wndMain:FindChild("VirtualInvToggleBtn"):GetAnchorOffsets()
+		local _, nTop, _, nBottom = self.wndMain:FindChild("VirtualInvToggleBtn"):GetAnchorOffsets()
 		self.nVirtualButtonHeight = nBottom - nTop
 	end
 	if not self.nQuestItemContainerHeight then
-		local nLeft, nTop, nRight, nBottom = self.wndMain:FindChild("VirtualInvContainer"):GetAnchorOffsets()
+		local _, nTop, _, nBottom = self.wndMain:FindChild("VirtualInvContainer"):GetAnchorOffsets()
 		self.nQuestItemContainerHeight = nBottom - nTop
 	end
 
-	local nLeft, nTop, nRight, nBottom = self.wndMain:FindChild("BGVirtual"):GetAnchorOffsets()
-	nTop = nBottom
+	local nLeft, _, nRight, nBottom = self.wndMain:FindChild("BGVirtual"):GetAnchorOffsets()
+	local nTop = nBottom
 	if bThereAreItems then
 		nTop = nBottom - self.nVirtualButtonHeight
 		if bShowQuestItems then
@@ -631,7 +612,7 @@ function ForgeUI_Inventory:UpdateVirtualItemInventory()
 	end
 	self.wndMain:FindChild("BGVirtual"):SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 
-	local nBagLeft, nBagTop, nBagRight, nBagBottom = self.wndMain:FindChild("GridContainer"):GetAnchorOffsets()
+	local nBagLeft, nBagTop, nBagRight, _ = self.wndMain:FindChild("GridContainer"):GetAnchorOffsets()
 	self.wndMain:FindChild("GridContainer"):SetAnchorOffsets(nBagLeft, nBagTop, nBagRight, nTop)
 end
 

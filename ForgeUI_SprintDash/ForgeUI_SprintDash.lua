@@ -90,7 +90,7 @@ end
 -------------------------------------------------------------------------------
 function ForgeUI_SprintDash:OnNextFrame()
 	local unitPlayer = GameLib.GetPlayerUnit()
-  if unitPlayer == nil then return end
+  	if unitPlayer == nil then return end
 
 	-- sprint meter
 	local nSprintCurr = unitPlayer:GetResource(sprintResource)

@@ -139,10 +139,11 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 		}
 	end
 
-	local nBaseColor = 0x00ffff
+	--local nBaseColor = 0x00ffff
 	local fMaxSize = 0.8
-	local nOffsetDirection = 95
+	--local nOffsetDirection = 95
 	local fMaxDuration = 0.7
+	local nBaseColor
 
 	tTextOption.strFontFace = ForgeUI_FloatText._DB.profile.strFont
 	tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.IgnoreCollision
@@ -151,7 +152,7 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 	if not bHeal and bCritical == true then -- Crit not vuln
 		nBaseColor = 0xffea00
 		fMaxSize = 1.0
-	elseif not bHeal and (unitTarget:IsInCCState( Unit.CodeEnumCCState.Vulnerability ) or eDamageType == knTestingVulnerable ) then -- vuln not crit
+	elseif not bHeal and (unitTarget:IsInCCState( Unit.CodeEnumCCState.Vulnerability ) or eDamageType == knTestingVulnerable ) then -- vuln not crit -- knTestingVulnerable undefined!
 		nBaseColor = 0xf5a2ff
 	else -- normal damage
 		if eDamageType == GameLib.CodeEnumDamageType.Heal then -- healing params
@@ -214,7 +215,6 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 	if bHeal and nDamage <= ForgeUI_FloatText._DB.profile.nHealingIncomingThreshold then return end
 	if not bHeal and nDamage <= ForgeUI_FloatText._DB.profile.nDamageIncomingThreshold then return end
 
-	local bShowFloater = true
 	local tTextOption = ForgeUI_FloatText:GetDefaultTextOption()
 	local tTextOptionAbsorb = ForgeUI_FloatText:GetDefaultTextOption()
 
@@ -251,9 +251,9 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 	local nBaseColor = 0xff6d6d
 	local nHighlightColor = 0xff6d6d
 	local fMaxSize = 0.8
-	local nOffsetDirection = 0
-	local fOffsetAmount = -0.6
-	local fMaxDuration = .55
+	--local nOffsetDirection = 0
+	local fOffsetAmount
+	--local fMaxDuration = .55
 	local eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Horizontal
 
 	if eDamageType == GameLib.CodeEnumDamageType.Heal then -- healing params
@@ -265,9 +265,8 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 			fMaxSize = 1.2
 			nBaseColor = 0xc6ff94
 			nHighlightColor = 0xc6ff94
-			fMaxDuration = .75
+			--fMaxDuration = .75
 		end
-
 	elseif eDamageType == GameLib.CodeEnumDamageType.HealShields then -- healing shields params
 		nBaseColor = 0x6afff3
 		fOffsetAmount = -0.5
@@ -277,9 +276,8 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 			fMaxSize = 1.2
 			nBaseColor = 0xa6fff8
 			nHighlightColor = 0xFFFFFF
-			fMaxDuration = .75
+			--fMaxDuration = .75
 		end
-
 	else -- regular old damage (player)
 		fOffsetAmount = -0.5
 
@@ -287,7 +285,7 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 			fMaxSize = 1.2
 			nBaseColor = 0xffab3d
 			nHighlightColor = 0xFFFFFF
-			fMaxDuration = .75
+			--fMaxDuration = .75
 		end
 	end
 
@@ -360,8 +358,7 @@ function ForgeUI_FloatText:OnCombatLogCCState(tEventArgs)
 	}
 
 	local tTextOption = self:GetDefaultCCStateTextOption()
-	local strMessage = ""
-
+	local strMessage
 	local bUseCCFormat = false -- use CC formatting vs. message formatting
 
 	if tEventArgs.eResult == CombatFloater.CodeEnumCCStateApplyRulesResult.Ok then -- CC applied
@@ -507,7 +504,7 @@ function ForgeUI_FloatText:OnExperienceGained(eReason, unitTarget, strText, fDel
 	if not ForgeUI_FloatText._DB.profile.bShowExperienceGained then return end
 	if not Apollo.GetConsoleVariable("ui.showCombatFloater") or nAmount < 0 then return end
 
-	local strFormatted = ""
+	local strFormatted
 	local eMessageType = LuaEnumMessageType.XPAwarded
 	local unitToAttachTo = GameLib.GetControlledUnit() -- unitTarget potentially nil
 
@@ -590,7 +587,6 @@ function ForgeUI_FloatText:OnPathExperienceGained( nAmount, strText )
 	if not Apollo.GetConsoleVariable("ui.showCombatFloater") then return end
 
 	local eMessageType = LuaEnumMessageType.PathXp
-	local unitToAttachTo = GameLib.GetControlledUnit()
 	local strFormatted = String_GetWeaselString(Apollo.GetString("FloatText_PathXP"), nAmount)
 
 	local tContent = {

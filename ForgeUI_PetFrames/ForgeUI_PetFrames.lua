@@ -3,7 +3,6 @@ require "Window"
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 local G = _G["ForgeLibs"]["ForgeGUI"] -- ForgeGUI
 
-
 local ForgeUI_PetFrames = {
 	_NAME = "ForgeUI_PetFrames",
 	_API_VERSION = 3,
@@ -80,7 +79,7 @@ function ForgeUI_PetFrames:AfterOnCharacterCreated()
 	Apollo.RegisterEventHandler("PetSpawned", "OnPetSpawned", self)
 	Apollo.RegisterEventHandler("PetDespawned", "OnPetDespawned", self)
 	Apollo.RegisterEventHandler("Mount", "OnMount", self)
-	
+
 	F:API_RegisterEvent(self, "LazyUpdate", "OnNextFrame")
 end
 
@@ -90,10 +89,8 @@ end
 
 
 function ForgeUI_PetFrames:UpdatePetFrames()
-	tPets = GameLib.GetPlayerPets()
-
+	local tPets = GameLib.GetPlayerPets()
 	self.wndPetControl:Show(true, true)
-
 
 	if #tPets == 0 then
 		self.wndPetControl:Show(false, true)
@@ -173,7 +170,7 @@ function ForgeUI_PetFrames:OnPetSpawned()
 end
 
 function ForgeUI_PetFrames:OnPetDespawned()
-	despawnPets = GameLib.GetPlayerPets()
+	local despawnPets = GameLib.GetPlayerPets()
 
 	if #despawnPets == 0 then
 		self.wndPetControl:Show(false, true)
@@ -181,11 +178,11 @@ function ForgeUI_PetFrames:OnPetDespawned()
 end
 
 function ForgeUI_PetFrames:OnMount()
-	petTimer = ApolloTimer.Create(0.1, false, "MountPetTimer", self)
+	ApolloTimer.Create(0.1, false, "MountPetTimer", self)
 end
 
 function ForgeUI_PetFrames:MountPetTimer()
-	mountPets = GameLib.GetPlayerPets()
+	local mountPets = GameLib.GetPlayerPets()
 
 	if #mountPets > 0 then
 		self.wndPetControl:Show(true, true)

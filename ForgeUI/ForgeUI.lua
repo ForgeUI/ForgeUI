@@ -13,8 +13,6 @@ require "ApolloTimer"
 -- ForgeUI Module Definition
 -----------------------------------------------------------------------------------------------
 local ForgeUI = {}
-local Addon = {}
-
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
@@ -90,7 +88,7 @@ function Addon:OnDocLoaded()
 
 	TimerButtonDelay = ApolloTimer.Create(0.03, true, "OnTimerButtonDelay", self)
 	TimerButtonDelay:Stop()
-	
+
 	-- create overlays
 	tStrata = {
 		World = Apollo.LoadForm(self.xmlDoc, "ForgeUI_Overlay", "InWorldHudStratum", self),
@@ -108,7 +106,7 @@ function Addon:OnDocLoaded()
 
 	self.wndMain:FindChild("AuthorText"):SetText(AUTHOR)
 	self.wndMain:FindChild("VersionText"):SetText(VERSION)
-	
+
 	self.wndResetButton = self.wndMain:FindChild("DefaultsButton")
 	--self.wndResetButton:Enable(false)
 	self.wndResetButton:SetData({ nVal = 0 })
@@ -199,7 +197,7 @@ function Addon:ItemListSignPressed(wndHandler, wndControl, eMouseButton)
 		wndControl:SetText("+")
 		wndContainer:Show(false, true)
 
-		local nLeft, nTop, nRight, nBottom = wndHolder:GetAnchorOffsets()
+		local nLeft, nTop, nRight, _ = wndHolder:GetAnchorOffsets()
 		wndHolder:SetAnchorOffsets(nLeft, nTop, nRight, nTop + 20)
 	else
 		wndControl:SetText("-")
@@ -269,43 +267,43 @@ function Addon:SortItemsByPriority()
 	end
 
 	local nPos = 0
-		for k, v in ipairs(tAll.shigh) do
-		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
-		nTop = nPos
+	for k, v in ipairs(tAll.shigh) do
+		local nLeft, _, nRight, _ = v:GetAnchorOffsets()
+		local nTop = nPos
 		nPos = nPos + v:GetHeight()
-		nBottom = nPos
+		local nBottom = nPos
 		v:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 	end
 
 	for k, v in ipairs(tAll.high) do
-		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
-		nTop = nPos
+		local nLeft, _, nRight, _ = v:GetAnchorOffsets()
+		local nTop = nPos
 		nPos = nPos + v:GetHeight()
-		nBottom = nPos
+		local nBottom = nPos
 		v:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 	end
 
 	for k, v in ipairs(tAll.normal) do
-		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
-		nTop = nPos
+		local nLeft, _, nRight, _ = v:GetAnchorOffsets()
+		local nTop = nPos
 		nPos = nPos + v:GetHeight()
-		nBottom = nPos
+		local nBottom = nPos
 		v:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 	end
 
 	for k, v in ipairs(tAll.low) do
-		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
-		nTop = nPos
+		local nLeft, _, nRight, _ = v:GetAnchorOffsets()
+		local nTop = nPos
 		nPos = nPos + v:GetHeight()
-		nBottom = nPos
+		local nBottom = nPos
 		v:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 	end
 
 	for k, v in ipairs(tAll.slow) do
-		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
-		nTop = nPos
+		local nLeft, _, nRight, _ = v:GetAnchorOffsets()
+		local nTop = nPos
 		nPos = nPos + v:GetHeight()
-		nBottom = nPos
+		local nBottom = nPos
 		v:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 	end
 end
@@ -322,7 +320,7 @@ function Addon:CollapseAllMenuItems()
 
 		wndContainer:Show(false, true)
 
-		local nLeft, nTop, nRight, nBottom = v:GetAnchorOffsets()
+		local nLeft, nTop, nRight, _ = v:GetAnchorOffsets()
 		v:SetAnchorOffsets(nLeft, nTop, nRight, nTop + 20)
 	end
 

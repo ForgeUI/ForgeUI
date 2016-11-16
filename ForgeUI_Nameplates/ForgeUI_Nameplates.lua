@@ -674,7 +674,6 @@ function ForgeUI_Nameplates:OnUnitDestroyed(unitOwner)
 	else
 		wndNameplate:Destroy()
 		tNameplate.wnd = nil
-		tNameplate = nil
 	end
 	self.arUnit2Nameplate[idUnit] = nil
 end
@@ -720,7 +719,6 @@ end
 
 function ForgeUI_Nameplates:ColorNameplate(tNameplate) -- Every frame
 	local unitOwner = tNameplate.unitOwner
-	local wndNameplate = tNameplate.wndNameplate
 	local tSettings = tNameplate.tSettings
 
 	local crNameColors = tSettings.crName
@@ -762,14 +760,12 @@ end
 function ForgeUI_Nameplates:HelperGetName(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 	local nameIterator = unitOwner:GetName():gmatch("[^ ]+")
-	local strNameFirst = nameIterator() or ""
 	local strNameSecond = nameIterator() or ""
 
-	local strNewName = ""
+	local strNewName = unitOwner:GetName() or ""
+
 	if self._DB.profile.bShowTitles then
 		strNewName = unitOwner:GetTitleOrName()
-	else
-		strNewName = unitOwner:GetName()
 	end
 
 	if tNameSwaps[unitOwner:GetName()] then
@@ -784,8 +780,6 @@ function ForgeUI_Nameplates:HelperGetName(tNameplate)
 end
 
 function ForgeUI_Nameplates:DrawName(tNameplate)
-	local wndNameplate = tNameplate.wndNameplate
-	local unitOwner = tNameplate.unitOwner
 	local wndName = tNameplate.wnd.wndName
 
 	local bShow = self:GetBooleanOption("nShowName", tNameplate)
@@ -802,7 +796,7 @@ function ForgeUI_Nameplates:DrawName(tNameplate)
 			wndName:SetText(strNewName)
 
 			local nNameWidth = Apollo.GetTextWidth("Nameplates", strNewName .. " ")
-			local nLeft, nTop, nRight, nBottom = wndName:GetAnchorOffsets()
+			local _, nTop, _, nBottom = wndName:GetAnchorOffsets()
 			wndName:SetAnchorOffsets(- (nNameWidth / 2), nTop, (nNameWidth / 2), nBottom)
 		end
 	end
@@ -827,7 +821,7 @@ function ForgeUI_Nameplates:DrawGuild(tNameplate)
 			wndGuild:SetTextRaw(strNewGuild)
 
 			local nNameWidth = Apollo.GetTextWidth("Nameplates", strNewGuild .. " ")
-			local nLeft, nTop, nRight, nBottom = wndGuild:GetAnchorOffsets()
+			local _, nTop, _, nBottom = wndGuild:GetAnchorOffsets()
 			wndGuild:SetAnchorOffsets(- (nNameWidth / 2), nTop, (nNameWidth / 2), nBottom)
 		end
 
@@ -897,9 +891,7 @@ function ForgeUI_Nameplates:DrawIA(tNameplate)
 
 	local nValue = unitOwner:GetInterruptArmorValue()
 	local nMax = unitOwner:GetInterruptArmorMax()
-	if nMax == 0 or nValue == nil or unitOwner:IsDead() then
-
-	else
+	if not (nMax == 0 or nValue == nil or unitOwner:IsDead()) then
 		bShow = true
 
 		-- style must exist in krtIAStyles else nothing will be shown
@@ -1127,7 +1119,7 @@ function ForgeUI_Nameplates:DrawMOOBar(tNameplate)
 
 		tNameplate.wnd.castBarCastFill:SetBarColor(self._DB.profile.crCastbarMOO)
 
---		local strCastName = string.format("%s (%s)", "MoO", ForgeUI.Round(time, 1))
+		-- local strCastName = string.format("%s (%s)", "MoO", ForgeUI.Round(time, 1))
 		local strCastName = ""
 		if strCastName ~= tNameplate.strCastName then
 			tNameplate.wnd.castBarLabel:SetText(strCastName)
@@ -1183,7 +1175,6 @@ function ForgeUI_Nameplates:GetActiveTapCast(tNameplate)
 end
 
 function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
-	local wndNameplate = tNameplate.wndNameplate
 	local unitOwner = tNameplate.unitOwner
 
 	if self._DB.profile.bMOODuration then -- MoO duration bar
@@ -1241,16 +1232,11 @@ function ForgeUI_Nameplates:DrawCastBar(tNameplate) -- Every frame
 end
 
 function ForgeUI_Nameplates:DrawRewards(tNameplate)
-	local wndNameplate = tNameplate.wndNameplate
-	local unitOwner = tNameplate.unitOwner
-
 	local bShow = self._DB.profile.bShowObjectives
 
 	if bShow ~= tNameplate.wnd.questRewards:IsShown() then
 		tNameplate.wnd.questRewards:Show(bShow)
 	end
-
-	local tRewardsData = tNameplate.wnd.questRewards:GetData()
 end
 
 function ForgeUI_Nameplates:DrawIndicators(tNameplate)
@@ -1296,18 +1282,10 @@ end
 function ForgeUI_Nameplates:DrawInfo(tNameplate)
 	local wnd = tNameplate.wnd
 
-	local nShowInfo = 0
+	local nShowInfo = tNameplate.tSettings.nShowInfo
 	local bShowInfo = false
 
-	--if tNameplate.bIsTarget then
-	--	nShowInfo = self._DB.profile.tUnits["Target"].nShowInfo
-	--else
-		nShowInfo = tNameplate.tSettings.nShowInfo
-	--end
-
-
-	if nShowInfo == 0 then
-	elseif nShowInfo == 1 then
+	if nShowInfo == 1 then
 		wnd.info_level:SetAnchorOffsets(-60, 0, -2, 0)
 		wnd.info_class:SetAnchorOffsets(0, 0, 0, 0)
 
@@ -1403,7 +1381,6 @@ function ForgeUI_Nameplates:CheckDrawDistance(tNameplate)
 end
 
 function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
-	local unitPlayer = self.unitPlayer
 	local unitOwner = tNameplate.unitOwner
 
 	local bDontShowNameplate = not tNameplate.bOnScreen or tNameplate.bGibbed or not tNameplate.bIsImportant and self._DB.profile.bOnlyImportantNPC
@@ -1413,14 +1390,10 @@ function ForgeUI_Nameplates:HelperVerifyVisibilityOptions(tNameplate)
 		return false
 	end
 
-	local eDisposition = tNameplate.eDisposition
-	local tActivation = tNameplate.tActivation
-
 	local bShowNameplate = true
+
 	if self._DB.profile.bUseOcclusion then
 		bShowNameplate = not tNameplate.bOccluded or tNameplate.bIsTarget
-	else
-		bShowNameplate = true
 	end
 
 	--if self._DB.profile.bShowMainObjectiveOnly and not bShowNameplate then
@@ -1531,7 +1504,7 @@ function ForgeUI_Nameplates:UpdateUnitType(bGlobalUpdate, strType, unitToUpdate)
 end
 
 function ForgeUI_Nameplates:GetBooleanOption(strOption, tNameplate)
-	local nOption = -1
+	local nOption = tNameplate.tSettings[strOption]
 
 	local unit = tNameplate.unitOwner
 	if self._DB.profile.bCombatStatePlayer then -- track player combat state
@@ -1543,8 +1516,6 @@ function ForgeUI_Nameplates:GetBooleanOption(strOption, tNameplate)
 		if nOption == nil then
 			nOption = tNameplate.tSettings[strOption]
 		end
-	else
-		nOption = tNameplate.tSettings[strOption]
 	end
 
 	if nOption == 0 then -- Never
@@ -1621,8 +1592,6 @@ function ForgeUI_Nameplates:IsImportantNPC(unitOwner)
 	else
 		return true
 	end
-
-	return false
 end
 
 -----------------------------------------------------------------------------------------------
@@ -2178,43 +2147,43 @@ function ForgeUI_Nameplates:ForgeAPI_PopulateOptions()
 			end
 
 			if v.nShowGuild then
-				local wndCombo = G:API_AddComboBox(self, wnd, "Guild", v, "nShowGuild", { tMove = {0, 90}, tWidths = { 150, 50 } })
-				G:API_AddOptionToComboBox(self, wndCombo, "Never", 0, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "Out of combat", 1, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "In combat", 2, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "Always", 3, {})
+				local wndComboGuild = G:API_AddComboBox(self, wnd, "Guild", v, "nShowGuild", { tMove = {0, 90}, tWidths = { 150, 50 } })
+				G:API_AddOptionToComboBox(self, wndComboGuild, "Never", 0, {})
+				G:API_AddOptionToComboBox(self, wndComboGuild, "Out of combat", 1, {})
+				G:API_AddOptionToComboBox(self, wndComboGuild, "In combat", 2, {})
+				G:API_AddOptionToComboBox(self, wndComboGuild, "Always", 3, {})
 			end
 
 			if v.nShowCast then
-				local wndCombo = G:API_AddComboBox(self, wnd, "Cast", v, "nShowCast", { tMove = {0, 60}, tWidths = { 150, 50 } })
-				G:API_AddOptionToComboBox(self, wndCombo, "Never", 0, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "Out of combat", 1, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "In combat", 2, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "Always", 3, {})
+				local wndComboCast = G:API_AddComboBox(self, wnd, "Cast", v, "nShowCast", { tMove = {0, 60}, tWidths = { 150, 50 } })
+				G:API_AddOptionToComboBox(self, wndComboCast, "Never", 0, {})
+				G:API_AddOptionToComboBox(self, wndComboCast, "Out of combat", 1, {})
+				G:API_AddOptionToComboBox(self, wndComboCast, "In combat", 2, {})
+				G:API_AddOptionToComboBox(self, wndComboCast, "Always", 3, {})
 			end
 
 			if v.nShowBars then
-				local wndCombo = G:API_AddComboBox(self, wnd, "Bars", v, "nShowBars", { tMove = {0, 30}, tWidths = { 150, 50 } })
-				G:API_AddOptionToComboBox(self, wndCombo, "Never", 0, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "Out of combat", 1, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "In combat", 2, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "Always", 3, {})
+				local wndComboBars = G:API_AddComboBox(self, wnd, "Bars", v, "nShowBars", { tMove = {0, 30}, tWidths = { 150, 50 } })
+				G:API_AddOptionToComboBox(self, wndComboBars, "Never", 0, {})
+				G:API_AddOptionToComboBox(self, wndComboBars, "Out of combat", 1, {})
+				G:API_AddOptionToComboBox(self, wndComboBars, "In combat", 2, {})
+				G:API_AddOptionToComboBox(self, wndComboBars, "Always", 3, {})
 			end
 
 			if v.nShowName then
-				local wndCombo = G:API_AddComboBox(self, wnd, "Name", v, "nShowName", { tMove = {0, 0}, tWidths = { 150, 50 } })
-				G:API_AddOptionToComboBox(self, wndCombo, "Never", 0, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "Out of combat", 1, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "In combat", 2, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "Always", 3, {})
+				local wndComboName = G:API_AddComboBox(self, wnd, "Name", v, "nShowName", { tMove = {0, 0}, tWidths = { 150, 50 } })
+				G:API_AddOptionToComboBox(self, wndComboName, "Never", 0, {})
+				G:API_AddOptionToComboBox(self, wndComboName, "Out of combat", 1, {})
+				G:API_AddOptionToComboBox(self, wndComboName, "In combat", 2, {})
+				G:API_AddOptionToComboBox(self, wndComboName, "Always", 3, {})
 			end
 
 			if v.nShowInfo then
-				local wndCombo = G:API_AddComboBox(self, wnd, "Info", v, "nShowInfo", { tMove = {200, 0}, tWidths = { 150, 50 }, fnCallback = self.UpdateAllNameplates })
-				G:API_AddOptionToComboBox(self, wndCombo, "Nothing", 0, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "Level", 1, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "Class", 2, {})
-				G:API_AddOptionToComboBox(self, wndCombo, "Both", 3, {})
+				local wndComboInfo = G:API_AddComboBox(self, wnd, "Info", v, "nShowInfo", { tMove = {200, 0}, tWidths = { 150, 50 }, fnCallback = self.UpdateAllNameplates })
+				G:API_AddOptionToComboBox(self, wndComboInfo, "Nothing", 0, {})
+				G:API_AddOptionToComboBox(self, wndComboInfo, "Level", 1, {})
+				G:API_AddOptionToComboBox(self, wndComboInfo, "Class", 2, {})
+				G:API_AddOptionToComboBox(self, wndComboInfo, "Both", 3, {})
 			end
 		end
 	end

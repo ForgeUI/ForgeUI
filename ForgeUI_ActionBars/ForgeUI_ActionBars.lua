@@ -429,7 +429,7 @@ function ForgeUI_ActionBars:SetupButtons(tBar)
 
 	wndBar:DestroyChildren()
 	for i = 1, nTotalButtons do
-		local wndBarButton = Apollo.LoadForm(self.xmlDoc, "ForgeUI_BarButton", wndBar, self)
+		Apollo.LoadForm(self.xmlDoc, "ForgeUI_BarButton", wndBar, self)
 	end
 end
 
@@ -483,9 +483,9 @@ function ForgeUI_ActionBars:EditButtons(tBar)
 
 		local tXml = self.xmlDoc:ToTable()
 		local tActionButton
-		for k, v in pairs(tXml) do
+		for _, xml in pairs(tXml) do
 			if v.Name == "ForgeUI_ActionButton" then
-				tActionButton = v
+				tActionButton = xml
 			end
 		end
 
@@ -613,7 +613,6 @@ function ForgeUI_ActionBars:FillPets(wnd, tConfig)
 	wndList:DestroyChildren()
 
 	local tPetList = CollectiblesLib.GetVanityPetList()
-	local tSelectedSpellObj = nil
 
 	local nCount = 0
 	for _, tPet in pairs(tPetList) do
@@ -621,11 +620,6 @@ function ForgeUI_ActionBars:FillPets(wnd, tConfig)
 			nCount = nCount + 1
 
 			local tSpellObject = tPet.splObject
-
-			if tSpellObject:GetId() == self._DB.char.nSelectedPet then
-				tSelectedSpellObj = tSpellObject
-			end
-
 			local wndCurr = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
 			wndCurr:SetData({sType = "pet"})
 			wndCurr:FindChild("Icon"):SetSprite(tSpellObject:GetIcon())
@@ -674,9 +668,7 @@ function ForgeUI_ActionBars:FillRecalls(wnd, tConfig)
 	end
 
 	local nCount = 0
-	local bHasBinds = false
 	local bHasWarplot = false
-	local guildCurr = nil
 
 	-- todo: condense this
 	if GameLib.HasBindPoint() == true then
@@ -696,7 +688,6 @@ function ForgeUI_ActionBars:FillRecalls(wnd, tConfig)
 		wndBindBtn:SetAnchorPoints(0,0,1,1)
 		wndBindBtn:SetAnchorOffsets(1,1,-1,-1)
 
-		bHasBinds = true
 		nCount = nCount + 1
 	end
 
@@ -717,7 +708,6 @@ function ForgeUI_ActionBars:FillRecalls(wnd, tConfig)
 		wndHouseBtn:SetAnchorPoints(0,0,1,1)
 		wndHouseBtn:SetAnchorOffsets(1,1,-1,-1)
 
-		bHasBinds = true
 		nCount = nCount + 1
 	end
 
@@ -746,7 +736,6 @@ function ForgeUI_ActionBars:FillRecalls(wnd, tConfig)
 		wndWarplotBtn:SetAnchorPoints(0,0,1,1)
 		wndWarplotBtn:SetAnchorOffsets(1,1,-1,-1)
 
-		bHasBinds = true
 		nCount = nCount + 1
 	end
 
@@ -779,7 +768,6 @@ function ForgeUI_ActionBars:FillRecalls(wnd, tConfig)
 		wndIlliumBtn:SetAnchorPoints(0,0,1,1)
 		wndIlliumBtn:SetAnchorOffsets(1,1,-1,-1)
 
-		bHasBinds = true
 		nCount = nCount + 1
 	end
 
@@ -800,7 +788,6 @@ function ForgeUI_ActionBars:FillRecalls(wnd, tConfig)
 		wndThaydBtn:SetAnchorPoints(0,0,1,1)
 		wndThaydBtn:SetAnchorOffsets(1,1,-1,-1)
 
-		bHasBinds = true
 		nCount = nCount + 1
 	end
 
@@ -897,7 +884,7 @@ function ForgeUI_ActionBars:FillPath(wnd, tConfig)
 
 			if Tooltip and Tooltip.GetSpellTooltipForm then
 				wndCurr:SetTooltipDoc(nil)
-				Tooltip.GetSpellTooltipForm(self, wndCurr, spellObject)
+				Tooltip.GetSpellTooltipForm(self, wndCurr, splObject)
 			end
 		end
 	end
@@ -965,7 +952,7 @@ end
 -- LASBar Functions
 ---------------------------------------------------------------------------------------------------
 function ForgeUI_ActionBars:OnGenerateTooltip(wndControl, wndHandler, eType, arg1, arg2)
-	local xml = nil
+	local xml
 	if eType == Tooltip.TooltipGenerateType_ItemInstance then -- Doesn't need to compare to item equipped
 		Tooltip.GetItemTooltipForm(self, wndControl, arg1, {})
 	elseif eType == Tooltip.TooltipGenerateType_ItemData then -- Doesn't need to compare to item equipped
@@ -1034,8 +1021,6 @@ function ForgeUI_ActionBars:OnSpellBtn( wndHandler, wndControl, eMouseButton )
 			crb_pathlog:PathLogTypeSelectionChanged(wndBtn, wndBtn, 0)
 			crb_pathlog:OnSelectPath(wndBtn, wndBtn, 0)
 		end
-
-		crb_pathlog = nil
 
 		wndControl:GetParent():GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
 	end
@@ -1255,7 +1240,7 @@ function ForgeUI_ActionBars:ForgeAPI_PopulateOptions()
 
 		if v.nButtons ~= nil then
 			G:API_AddNumberBox(self, wnd, "Number of buttons ", v, "nButtons", {
-  				tMove = {200, 30},
+				tMove = {200, 30},
 				fnCallback = function(...) self:SetupButtons(v); self:EditButtons(v); self:PositionButtons(v, true) end
 			})
 		end

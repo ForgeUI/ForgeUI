@@ -272,11 +272,10 @@ function ForgeUI_NeedGreed:OnLootRollWonEvent(lootInfo)
 end
 
 function ForgeUI_NeedGreed:OnLootRollWon(itemLoot, strWinner, bNeed)
-	local strNeedOrGreed = nil
+	local strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
+
 	if bNeed then
 		strNeedOrGreed = Apollo.GetString("NeedVsGreed_NeedRoll")
-	else
-		strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
 	end
 
 	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_ItemWon"), strWinner, itemLoot:GetChatLinkString(), strNeedOrGreed)
@@ -295,7 +294,7 @@ function ForgeUI_NeedGreed:OnLootRollSelectedEvent(lootInfo)
 end
 
 function ForgeUI_NeedGreed:OnLootRollSelected(itemLoot, strPlayer, bNeed)
-	local strNeedOrGreed = nil
+	local strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
 	local bPlayerIsRoller = false
 
 	if strPlayer == self.strMyPlayerName then
@@ -307,17 +306,16 @@ function ForgeUI_NeedGreed:OnLootRollSelected(itemLoot, strPlayer, bNeed)
 		if not bPlayerIsRoller then
 			for idx, tCurrentElement in pairs(self.tKnownLoot) do
 				if tCurrentElement.itemDrop == itemLoot then
-					bIncrementedCounter = self:UpdateLootRollCounters(tCurrentElement, strPlayer, "Need")
+					local bIncrementedCounter = self:UpdateLootRollCounters(tCurrentElement, strPlayer, "Need")
 					if bIncrementedCounter then break end
 				end
 			end
 		end
 	else
-		strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
 		if not bPlayerIsRoller then
 			for idx, tCurrentElement in pairs(self.tKnownLoot) do
 				if tCurrentElement.itemDrop == itemLoot then
-					bIncrementedCounter = self:UpdateLootRollCounters(tCurrentElement, strPlayer, "Greed")
+					local bIncrementedCounter = self:UpdateLootRollCounters(tCurrentElement, strPlayer, "Greed")
 					if bIncrementedCounter then break end
 				end
 			end
@@ -340,7 +338,7 @@ function ForgeUI_NeedGreed:OnLootRollPassed(itemLoot, strPlayer)
 
 	for idx, tCurrentElement in pairs(self.tKnownLoot) do
 		if tCurrentElement.itemDrop == itemLoot then
-			bIncrementedCounter = self:UpdateLootRollCounters(tCurrentElement, strPlayer, "Pass")
+			local bIncrementedCounter = self:UpdateLootRollCounters(tCurrentElement, strPlayer, "Pass")
 			if bIncrementedCounter then break end
 		end
 	end
@@ -351,11 +349,10 @@ function ForgeUI_NeedGreed:OnLootRollEvent(lootInfo)
 end
 
 function ForgeUI_NeedGreed:OnLootRoll(itemLoot, strPlayer, nRoll, bNeed)
-	local strNeedOrGreed = nil
+	local strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
+
 	if bNeed then
 		strNeedOrGreed = Apollo.GetString("NeedVsGreed_NeedRoll")
-	else
-		strNeedOrGreed = Apollo.GetString("NeedVsGreed_GreedRoll")
 	end
 
 	local strResult = String_GetWeaselString(Apollo.GetString("NeedVsGreed_OnLootRoll"), strPlayer, nRoll, itemLoot:GetChatLinkString(), strNeedOrGreed)
@@ -419,7 +416,7 @@ function ForgeUI_NeedGreed:OnMouseEnterRollCounter(wndHandler, wndControl, x, y)
 		return
 	end
 
-	wndMain = wndHandler:GetParent():GetParent()
+	local wndMain = wndHandler:GetParent():GetParent()
 
 	if wndControl:GetName() == "NeedRolls" then
 		self:WhoRolledHelper(xml, wndMain, "Need")

@@ -262,7 +262,7 @@ function ForgeUI_ResourceBars:OnEsperUpdate()
 	if bShow == true and self._DB.profile.esper.bShowMentalOverflow then
 		self.wndMentalOverflow:Show(true, true);
 	else
-	 	self.wndMentalOverflow:Show(false, true);
+		self.wndMentalOverflow:Show(false, true);
 	end
 
 	self:UpdateFocus(unitPlayer)
@@ -585,9 +585,9 @@ function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Esper(unitPlayer, nResour
 	end
 
 	if self._DB.profile.esper.bShowMentalOverflow == true then
-		local nResource = unitPlayer:GetResource(1)
+		local nResourceCurrent = unitPlayer:GetResource(1)
 		for i = 1, self.nMaxMentalOverflow do
-		 	if i <= self.nMentalOverflowStacks and nResource == 5 then
+			if i <= self.nMentalOverflowStacks and nResourceCurrent == 5 then
 				self.wndMentalOverflow:FindChild("MO" .. i):FindChild("ProgressBar"):SetProgress(1)
 			else
 				self.wndMentalOverflow:FindChild("MO" .. i):FindChild("ProgressBar"):SetProgress(0)

@@ -81,23 +81,23 @@ function ForgeUI_Hazards:CreateHazard(nID, strName, nMin, nMax, crBar, tOptions)
 		return
 	end
 
-	if self.tHazards[nID] ~= nil then 
+	if self.tHazards[nID] ~= nil then
 		self:RemoveHazard(nID)
 	end
-	
+
 	local wndNewHazard = Apollo.LoadForm(self.xmlDoc, "Hazard", self.wndHazardsHolder, self)
-	
+
 	wndNewHazard:FindChild("ProgressBar"):SetFloor(nMin)
 	wndNewHazard:FindChild("ProgressBar"):SetMax(nMax)
 	wndNewHazard:FindChild("ProgressBar"):SetBarColor(crBar)
 	wndNewHazard:FindChild("Text"):SetText(strName)
-	
+
 	if tOptions then
 		if tOptions.strTooltip then
 			wndNewHazard:SetTooltip(tOptions.strTooltip)
 		end
 	end
-	
+
 	local tData = {
 		nID = nID,
 		strName = strName,
@@ -106,11 +106,11 @@ function ForgeUI_Hazards:CreateHazard(nID, strName, nMin, nMax, crBar, tOptions)
 		crBar = crBar,
 		tOptions = tOptions
 	}
-	
+
 	wndNewHazard:SetData(tData)
-	
+
 	self.tHazards[nID] = wndNewHazard
-	
+
 	self.wndHazardsHolder:ArrangeChildrenHorz(1)
 end
 
@@ -118,15 +118,15 @@ function ForgeUI_Hazards:UpdateHazard(nID, tOptions)
 	if not self.wndHazardsHolder then return end
 
 	local wndHazard = self.tHazards[nID]
-	
+
 	if not tOptions then return end
-	
+
 	if tOptions.nValue then
 		wndHazard:FindChild("ProgressBar"):SetProgress(tOptions.nValue)
 		--wndHazard:FindChild("Text"):SetText(wndHazard:GetData().strName .. " - " .. Util.Round((tOptions.nValue / wndHazard:GetData().nMax) * 100, 0))
 		wndHazard:FindChild("Text"):SetText(wndHazard:GetData().strName .. " - " .. Util:Round(tOptions.nValue, 0))
 	end
-	
+
 	if tOptions.strTooltip then
 		wndHazard:SetTooltip(tOptions.strTooltip)
 	end
@@ -137,7 +137,7 @@ function ForgeUI_Hazards:RemoveHazard(nID)
 		self.tHazards[nID]:Destroy()
 	end
 	self.tHazards[nID] = nil
-	
+
 	self.wndHazardsHolder:ArrangeChildrenHorz(1)
 end
 
@@ -148,25 +148,25 @@ function ForgeUI_Hazards:OnBreathChanged(nBreath)
 	local idHazard = -1
 	local eHazardType = HazardsLib.HazardType_Breath
 	local nBreathMax = 100
-	
+
 	if nBreath == nBreathMax then
 		self:RemoveHazard(idHazard)
 		return
 	end
-	
+
 	if self.tHazards[idHazard] == nil then
 		local tHazard = self._DB.profile.tHazards[eHazardType] or self._DB.profile.tHazards["default"]
 
 		self:CreateHazard(idHazard, tHazard.strName, tHazard.nMin, nBreathMax, tHazard.crBar)
 	end
-	
+
 	self:UpdateHazard(idHazard, {nValue = nBreath})
 end
 
 function ForgeUI_Hazards:OnHazardEnable(idHazard, strDisplayTxt)
 	local eHazardType = nil
-	local tData = { wut = lol }
-	
+	local tData = {}
+
 	for idx, tDat in ipairs(HazardsLib.GetHazardActiveList()) do
 		if tDat.nId == idHazard then
 			tData = tDat
@@ -185,10 +185,10 @@ function ForgeUI_Hazards:OnHazardsUpdated()
 	for idx, tData in ipairs(HazardsLib.GetHazardActiveList()) do
 		if not self.tHazards[tData.nId] then
 			local tHazard = self._DB.profile.tHazards[tData.eHazardType] or self._DB.profile.tHazards["default"]
-		
+
 			self:CreateHazard(tData.nId, HazardsLib.GetHazardDisplayString(tData.nId), tHazard.nMin, tData.fMaxValue, tHazard.crBar)
 		end
-		
+
 		self:UpdateHazard(tData.nId, { nValue = tData.fMeterValue, strTooltip = tData.strTooltip })
 	end
 end
