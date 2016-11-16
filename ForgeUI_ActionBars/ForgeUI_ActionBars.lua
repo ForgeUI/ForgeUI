@@ -30,6 +30,7 @@ local ForgeUI_ActionBars = {
 			nSelectedMount = 0,
 			nSelectedPotion = 0,
 			nSelectedPath = 0,
+			nSelectedPet = 0,
 		},
 		profile = {
 			tFrames = {
@@ -67,6 +68,10 @@ local ForgeUI_ActionBars = {
 					bDrawShortcutBottom = false,
 					bShow = true,
 					bHideOOC = false,
+					nFlyoutRows = 10,
+					nFlyoutColumns = 10,
+					strFlyoutDirection = "up",
+					strFlyoutGrowth = "right",
 				},
 				[3] = {
 					strKey = "ForgeUI_UtilBarTwo",
@@ -84,6 +89,10 @@ local ForgeUI_ActionBars = {
 					bDrawShortcutBottom = false,
 					bShow = true,
 					bHideOOC = false,
+					nFlyoutRows = 10,
+					nFlyoutColumns = 10,
+					strFlyoutDirection = "up",
+					strFlyoutGrowth = "right",
 				},
 				[4] = {
 					strKey = "ForgeUI_UtilBarThree",
@@ -101,6 +110,10 @@ local ForgeUI_ActionBars = {
 					bDrawShortcutBottom = false,
 					bShow = true,
 					bHideOOC = false,
+					nFlyoutRows = 10,
+					nFlyoutColumns = 10,
+					strFlyoutDirection = "up",
+					strFlyoutGrowth = "right",
 				},
 				[5] = {
 					strKey = "ForgeUI_UtilBarFour",
@@ -118,6 +131,10 @@ local ForgeUI_ActionBars = {
 					bDrawShortcutBottom = false,
 					bShow = true,
 					bHideOOC = false,
+					nFlyoutRows = 10,
+					nFlyoutColumns = 10,
+					strFlyoutDirection = "up",
+					strFlyoutGrowth = "right",
 				},
 				[6] = {
 					strKey = "ForgeUI_BarOne",
@@ -507,20 +524,23 @@ function ForgeUI_ActionBars:EditButtons(tBar)
 		Apollo.LoadForm(XmlDoc.CreateFromTable(tXml), "ForgeUI_ActionButton", wndBarButton:FindChild("Holder"), self)
 
 		if tBar.tSpecialButtons and tSpecialButtons[tBar.tSpecialButtons[k]].fnFill then
-			tSpecialButtons[tBar.tSpecialButtons[k]].fnFill(self, wndBarButton)
+			tSpecialButtons[tBar.tSpecialButtons[k]].fnFill(self, wndBarButton, tBar)
 			wndBarButton:AddEventHandler("MouseButtonDown", "BarButton_OnMouseDown", self)
-			wndBarButton:SetData(tSpecialButtons[tBar.tSpecialButtons[k]].fnFill)
+			wndBarButton:SetData({fnFill = tSpecialButtons[tBar.tSpecialButtons[k]].fnFill, tConfig = tBar})
+
+			if tSpecialButtons[tBar.tSpecialButtons[k]].strName == "Pet" then
+				wndBarButton:FindChild("Holder"):DestroyChildren()
+				wndBarButton:SetName("ForgeUI_PetButton")
+				self:LoadPet(wndBarButton:FindChild("Holder"))
+			end
 		end
 	end
 end
 
 -- filling methods
 -- stances
-function ForgeUI_ActionBars:FillStances(wnd)
-	local wndPopup = wnd:FindChild("Popup")
+function ForgeUI_ActionBars:FillStances(wnd, tConfig)
 	local wndList = wnd:FindChild("List")
-	local nSize = wndList:GetWidth()
-
 	wndList:DestroyChildren()
 
 	local nCount = 0
@@ -531,8 +551,7 @@ function ForgeUI_ActionBars:FillStances(wnd)
 			wndCurr:SetData({sType = "stance"})
 			wndCurr:FindChild("Icon"):SetSprite(spellObject:GetIcon())
 			wndCurr:FindChild("Button"):SetData(nCount)
-
-			wndCurr:SetAnchorOffsets(0, 0, nSize, nSize)
+			wndCurr:SetAnchorOffsets(0, 0, tConfig.nButtonSize, tConfig.nButtonSize)
 
 			if Tooltip and Tooltip.GetSpellTooltipForm then
 				wndCurr:SetTooltipDoc(nil)
@@ -541,26 +560,19 @@ function ForgeUI_ActionBars:FillStances(wnd)
 		end
 	end
 
-	local nLeft, nTop, nRight, nBottom = wndPopup:GetAnchorOffsets()
-	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize + 1), nRight, nBottom)
-
-	wndList:ArrangeChildrenVert()
+	self:ResizeFlyout(wnd,tConfig,nCount)
 end
 
 -- mounts
-function ForgeUI_ActionBars:FillMounts(wnd)
-	local wndPopup = wnd:FindChild("Popup")
+function ForgeUI_ActionBars:FillMounts(wnd, tConfig)
 	local wndList = wnd:FindChild("List")
-
-	local nSize = wndList:GetWidth()
-
 	wndList:DestroyChildren()
 
 	local tMountList = CollectiblesLib.GetMountList()
 	local tSelectedSpellObj = nil
 
 	local nCount = 0
-	for idx, tMount in pairs(tMountList) do
+	for _, tMount in pairs(tMountList) do
 		if tMount.bIsKnown then
 			nCount = nCount + 1
 
@@ -575,7 +587,7 @@ function ForgeUI_ActionBars:FillMounts(wnd)
 			wndCurr:FindChild("Icon"):SetSprite(tSpellObject:GetIcon())
 			wndCurr:FindChild("Button"):SetData(tSpellObject)
 
-			wndCurr:SetAnchorOffsets(0, 0, nSize, nSize)
+			wndCurr:SetAnchorOffsets(0, 0, tConfig.nButtonSize, tConfig.nButtonSize)
 
 			if Tooltip and Tooltip.GetSpellTooltipForm then
 				wndCurr:SetTooltipDoc(nil)
@@ -592,44 +604,97 @@ function ForgeUI_ActionBars:FillMounts(wnd)
 		GameLib.SetShortcutMount(tSelectedSpellObj:GetId())
 	end
 
-	local nLeft, nTop, nRight, nBottom = wndPopup:GetAnchorOffsets()
+	self:ResizeFlyout(wnd,tConfig,nCount)
+end
 
-	if nCount > 5 then nCount = 5 end
-	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize + 1), nRight, nBottom)
+-- pets
+function ForgeUI_ActionBars:FillPets(wnd, tConfig)
+	local wndList = wnd:FindChild("List")
+	wndList:DestroyChildren()
 
-	wndList:ArrangeChildrenVert()
+	local tPetList = CollectiblesLib.GetVanityPetList()
+	local tSelectedSpellObj = nil
+
+	local nCount = 0
+	for _, tPet in pairs(tPetList) do
+		if tPet.bIsKnown then
+			nCount = nCount + 1
+
+			local tSpellObject = tPet.splObject
+
+			if tSpellObject:GetId() == self._DB.char.nSelectedPet then
+				tSelectedSpellObj = tSpellObject
+			end
+
+			local wndCurr = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
+			wndCurr:SetData({sType = "pet"})
+			wndCurr:FindChild("Icon"):SetSprite(tSpellObject:GetIcon())
+			wndCurr:FindChild("Button"):SetData(tPet)
+
+			wndCurr:SetAnchorOffsets(0, 0, tConfig.nButtonSize, tConfig.nButtonSize)
+
+			if Tooltip and Tooltip.GetSpellTooltipForm then
+				wndCurr:SetTooltipDoc(nil)
+				Tooltip.GetSpellTooltipForm(self, wndCurr, tSpellObject, {})
+			end
+		end
+	end
+
+	self:ResizeFlyout(wnd,tConfig,nCount)
+end
+
+-- load pet
+function ForgeUI_ActionBars:LoadPet(wnd)
+	if not self._DB.char.nSelectedPet then return end
+	local tPetList = CollectiblesLib.GetVanityPetList()
+
+	for idx, tPet in pairs(tPetList) do
+		local tSpellObject = tPet.splObject
+
+		if tPet.nId == self._DB.char.nSelectedPet then
+			wnd:SetSprite(tPet.splObject:GetIcon())
+
+			if Tooltip and Tooltip.GetSpellTooltipForm then
+				wnd:SetTooltipDoc(nil)
+				Tooltip.GetSpellTooltipForm(self, wnd, tSpellObject, {})
+			end
+
+			return
+		end
+	end
 end
 
 -- recalls
-function ForgeUI_ActionBars:FillRecalls(wnd)
-	local wndPopup = wnd:FindChild("Popup")
+function ForgeUI_ActionBars:FillRecalls(wnd, tConfig)
 	local wndList = wnd:FindChild("List")
+	wndList:DestroyChildren()
 
 	if wnd:FindChild("ForgeUI_ActionButton") then
 		wnd:FindChild("ForgeUI_ActionButton"):SetContentId(GameLib.GetDefaultRecallCommand())
 	end
 
-	local nSize = wndList:GetWidth()
-
-	wndList:DestroyChildren()
-
 	local nCount = 0
 	local bHasBinds = false
 	local bHasWarplot = false
-local guildCurr = nil
+	local guildCurr = nil
 
 	-- todo: condense this
 	if GameLib.HasBindPoint() == true then
 		--load recall
-		local wndBind = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ActionButton", wndList, self)
-		wndBind:SetContentId(GameLib.CodeEnumRecallCommand.BindPoint)
-		wndBind:SetData(GameLib.CodeEnumRecallCommand.BindPoint)
-		wndBind:SetStyle("noclip", true)
+		local wndBind = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
+		wndBind:SetAnchorPoints(0,0,0,0)
+		wndBind:SetAnchorOffsets(0,0,tConfig.nButtonSize,tConfig.nButtonSize)
+		wndBind:FindChild("Border"):DestroyChildren()
 
-		wndBind:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)
+		local wndBindBtn = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ActionButton", wndBind:FindChild("Border"), self)
+		wndBindBtn:SetContentId(GameLib.CodeEnumRecallCommand.BindPoint)
+		wndBindBtn:SetData(GameLib.CodeEnumRecallCommand.BindPoint)
+		wndBindBtn:SetStyle("noclip", true)
 
-		wndBind:SetAnchorPoints(0, 0, 0, 0)
-		wndBind:SetAnchorOffsets(0, 0, nSize, nSize)
+		wndBindBtn:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)
+
+		wndBindBtn:SetAnchorPoints(0,0,1,1)
+		wndBindBtn:SetAnchorOffsets(1,1,-1,-1)
 
 		bHasBinds = true
 		nCount = nCount + 1
@@ -637,15 +702,20 @@ local guildCurr = nil
 
 	if HousingLib.IsResidenceOwner() == true then
 		-- load house
-		local wndHouse = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ActionButton", wndList, self)
-		wndHouse:SetContentId(GameLib.CodeEnumRecallCommand.House)
-		wndHouse:SetData(GameLib.CodeEnumRecallCommand.House)
-		wndHouse:SetStyle("noclip", true)
+		local wndHouse = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
+		wndHouse:SetAnchorPoints(0,0,0,0)
+		wndHouse:SetAnchorOffsets(0,0,tConfig.nButtonSize,tConfig.nButtonSize)
+		wndHouse:FindChild("Border"):DestroyChildren()
 
-		wndHouse:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)
+		local wndHouseBtn = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ActionButton", wndHouse:FindChild("Border"), self)
+		wndHouseBtn:SetContentId(GameLib.CodeEnumRecallCommand.House)
+		wndHouseBtn:SetData(GameLib.CodeEnumRecallCommand.House)
+		wndHouseBtn:SetStyle("noclip", true)
 
-		wndHouse:SetAnchorPoints(0, 0, 0, 0)
-		wndHouse:SetAnchorOffsets(0, 0, nSize, nSize)
+		wndHouseBtn:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)
+
+		wndHouseBtn:SetAnchorPoints(0,0,1,1)
+		wndHouseBtn:SetAnchorOffsets(1,1,-1,-1)
 
 		bHasBinds = true
 		nCount = nCount + 1
@@ -661,15 +731,20 @@ local guildCurr = nil
 
 	if bHasWarplot == true then
 		-- load warplot
-		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ActionButton", wndList, self)
-		wndWarplot:SetContentId(GameLib.CodeEnumRecallCommand.Warplot)
-		wndWarplot:SetData(GameLib.CodeEnumRecallCommand.Warplot)
-		wndWarplot:SetStyle("noclip", true)
+		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
+		wndWarplot:SetAnchorPoints(0,0,0,0)
+		wndWarplot:SetAnchorOffsets(0,0,tConfig.nButtonSize,tConfig.nButtonSize)
+		wndWarplot:FindChild("Border"):DestroyChildren()
 
-		wndWarplot:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)
+		local wndWarplotBtn = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ActionButton", wndWarplot:FindChild("Border"), self)
+		wndWarplotBtn:SetContentId(GameLib.CodeEnumRecallCommand.Warplot)
+		wndWarplotBtn:SetData(GameLib.CodeEnumRecallCommand.Warplot)
+		wndWarplotBtn:SetStyle("noclip", true)
 
-		wndWarplot:SetAnchorPoints(0, 0, 0, 0)
-		wndWarplot:SetAnchorOffsets(0, 0, nSize, nSize)
+		wndWarplotBtn:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)
+
+		wndWarplotBtn:SetAnchorPoints(0,0,1,1)
+		wndWarplotBtn:SetAnchorOffsets(1,1,-1,-1)
 
 		bHasBinds = true
 		nCount = nCount + 1
@@ -689,15 +764,20 @@ local guildCurr = nil
 
 	if bIllium then
 		-- load capital
-		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ActionButton", wndList, self)
-		wndWarplot:SetContentId(GameLib.CodeEnumRecallCommand.Illium)
-		wndWarplot:SetData(GameLib.CodeEnumRecallCommand.Illium)
-		wndWarplot:SetStyle("noclip", true)
+		local wndIllium = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
+		wndIllium:SetAnchorPoints(0,0,0,0)
+		wndIllium:SetAnchorOffsets(0,0,tConfig.nButtonSize,tConfig.nButtonSize)
+		wndIllium:FindChild("Border"):DestroyChildren()
 
-		wndWarplot:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)
+		local wndIlliumBtn = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ActionButton", wndIllium:FindChild("Border"), self)
+		wndIlliumBtn:SetContentId(GameLib.CodeEnumRecallCommand.Illium)
+		wndIlliumBtn:SetData(GameLib.CodeEnumRecallCommand.Illium)
+		wndIlliumBtn:SetStyle("noclip", true)
 
-		wndWarplot:SetAnchorPoints(0, 0, 0, 0)
-		wndWarplot:SetAnchorOffsets(0, 0, nSize, nSize)
+		wndIlliumBtn:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)
+
+		wndIlliumBtn:SetAnchorPoints(0,0,1,1)
+		wndIlliumBtn:SetAnchorOffsets(1,1,-1,-1)
 
 		bHasBinds = true
 		nCount = nCount + 1
@@ -705,38 +785,34 @@ local guildCurr = nil
 
 	if bThayd then
 		-- load capital
-		local wndWarplot = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ActionButton", wndList, self)
-		wndWarplot:SetContentId(GameLib.CodeEnumRecallCommand.Thayd)
-		wndWarplot:SetData(GameLib.CodeEnumRecallCommand.Thayd)
-		wndWarplot:SetStyle("noclip", true)
+		local wndThayd = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
+		wndThayd:SetAnchorPoints(0,0,0,0)
+		wndThayd:SetAnchorOffsets(0,0,tConfig.nButtonSize,tConfig.nButtonSize)
+		wndThayd:FindChild("Border"):DestroyChildren()
 
-		wndWarplot:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)
+		local wndThaydBtn = Apollo.LoadForm(self.xmlDoc, "ForgeUI_ActionButton", wndThayd:FindChild("Border"), self)
+		wndThaydBtn:SetContentId(GameLib.CodeEnumRecallCommand.Thayd)
+		wndThaydBtn:SetData(GameLib.CodeEnumRecallCommand.Thayd)
+		wndThaydBtn:SetStyle("noclip", true)
 
-		wndWarplot:SetAnchorPoints(0, 0, 0, 0)
-		wndWarplot:SetAnchorOffsets(0, 0, nSize, nSize)
+		wndThaydBtn:AddEventHandler("MouseButtonDown", "RecallBtn_OnButtonDown", self)
+
+		wndThaydBtn:SetAnchorPoints(0,0,1,1)
+		wndThaydBtn:SetAnchorOffsets(1,1,-1,-1)
 
 		bHasBinds = true
 		nCount = nCount + 1
 	end
 
-	local nLeft, nTop, nRight, nBottom = wndPopup:GetAnchorOffsets()
-
-	if nCount > 5 then nCount = 5 end
-	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize + 1), nRight, nBottom)
-
-	wndList:ArrangeChildrenVert()
+	self:ResizeFlyout(wnd,tConfig,nCount)
 end
 
 -- potions
-function ForgeUI_ActionBars:FillPotions(wnd)
+function ForgeUI_ActionBars:FillPotions(wnd, tConfig)
 	local unitPlayer = GameLib.GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
-	local wndPopup = wnd:FindChild("Popup")
 	local wndList = wnd:FindChild("List")
-
-	local nSize = wndList:GetWidth()
-
 	wndList:DestroyChildren()
 
 	local tItemList = unitPlayer:GetInventoryItems()
@@ -761,22 +837,18 @@ function ForgeUI_ActionBars:FillPotions(wnd)
 		wndCurr:FindChild("Icon"):SetSprite(tData.itemObject:GetIcon())
 		wndCurr:FindChild("Button"):SetData(tData.itemObject)
 
-		wndCurr:SetAnchorOffsets(0, 0, nSize, nSize)
+		wndCurr:SetAnchorOffsets(0,0,tConfig.nButtonSize,tConfig.nButtonSize)
 
 		wndCurr:SetTooltipDoc(nil)
 		Tooltip.GetItemTooltipForm(self, wndCurr, tData.itemObject, {})
 	end
 
 	GameLib.SetShortcutPotion(self._DB.char.nSelectedPotion)
-
-	local nLeft, nTop, nRight, nBottom = wndPopup:GetAnchorOffsets()
-	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize + 1), nRight, nBottom)
-
-	wndList:ArrangeChildrenVert()
+	self:ResizeFlyout(wnd,tConfig,nCount)
 end
 
 -- path
-function ForgeUI_ActionBars:FillPath(wnd)
+function ForgeUI_ActionBars:FillPath(wnd, tConfig)
 	local unitPlayer = GameLib.GetPlayerUnit()
 	if unitPlayer == nil or not unitPlayer:IsValid() then return end
 
@@ -785,18 +857,14 @@ function ForgeUI_ActionBars:FillPath(wnd)
 		return
 	end
 
-	local wndPopup = wnd:FindChild("Popup")
 	local wndList = wnd:FindChild("List")
-
-	local nSize = wndList:GetWidth()
-
 	wndList:DestroyChildren()
 
 	self:ValidateSelectedPath()
 
 	local nCount = 0
 
-	for ePathType, tPathInfo in ipairs(PlayerPathLib:GetPathStatuses().tPaths) do
+	for ePathType, tPathInfo in pairs(PlayerPathLib:GetPathStatuses().tPaths) do
 		if tPathInfo and (tPathInfo.bUnlocked and not tPathInfo.bActive) then
 			nCount = nCount + 1
 			local wndCurr = Apollo.LoadForm(self.xmlDoc, "ForgeUI_SpellBtn", wndList, self)
@@ -813,8 +881,7 @@ function ForgeUI_ActionBars:FillPath(wnd)
 				wndIcon:SetFont("CRB_Header14")
 			end
 			wndCurr:FindChild("Button"):SetData(ePathType)
-
-			wndCurr:SetAnchorOffsets(0, 0, nSize, nSize)
+			wndCurr:SetAnchorOffsets(0,0,tConfig.nButtonSize,tConfig.nButtonSize)
 		end
 	end
 
@@ -826,8 +893,7 @@ function ForgeUI_ActionBars:FillPath(wnd)
 			wndCurr:SetData({sType = "path"})
 			wndCurr:FindChild("Icon"):SetSprite(splObject:GetIcon())
 			wndCurr:FindChild("Button"):SetData(tAbility.nId)
-
-			wndCurr:SetAnchorOffsets(0, 0, nSize, nSize)
+			wndCurr:SetAnchorOffsets(0,0,tConfig.nButtonSize,tConfig.nButtonSize)
 
 			if Tooltip and Tooltip.GetSpellTooltipForm then
 				wndCurr:SetTooltipDoc(nil)
@@ -846,11 +912,7 @@ function ForgeUI_ActionBars:FillPath(wnd)
 	--	self._DB.char.nSelectedPath = tActionSet[10]
 	--end
 	ActionSetLib.RequestActionSetChanges(tActionSet)
-
-	local nLeft, nTop, nRight, nBottom = wndPopup:GetAnchorOffsets()
-	wndPopup:SetAnchorOffsets(nLeft, -(nCount * nSize + 1), nRight, nBottom)
-
-	wndList:ArrangeChildrenVert(0)
+	self:ResizeFlyout(wnd,tConfig,nCount)
 end
 
 -- Returns spellObject from tAbility only if said path ability is availible to the player
@@ -936,6 +998,10 @@ function ForgeUI_ActionBars:OnSpellBtn( wndHandler, wndControl, eMouseButton )
 		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
 		self._DB.char.nSelectedMount = wndControl:GetData():GetId()
 		GameLib.SetShortcutMount(self._DB.char.nSelectedMount)
+	elseif sType == "pet" then
+		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
+		self._DB.char.nSelectedPet = wndControl:GetData().nId
+		self:LoadPet(wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Holder"))
 	elseif sType == "potion" then
 		wndControl:GetParent():GetParent():GetParent():GetParent():FindChild("Popup"):Show(false, true)
 		self._DB.char.nSelectedPotion = wndControl:GetData():GetItemId()
@@ -979,13 +1045,17 @@ end
 -- ForgeUI_BarButton Functions
 ---------------------------------------------------------------------------------------------------
 function ForgeUI_ActionBars:BarButton_OnMouseDown( wndHandler, wndControl, eMouseButton, nLastRelativeMouseX, nLastRelativeMouseY, bDoubleClick, bStopPropagation )
-	if wndControl:GetName() == "ForgeUI_BarButton" and eMouseButton == 1 then
-		local fnFill = wndControl:GetData()
-		if fnFill ~= nil and type(fnFill) == 'function' then
-			fnFill(self, wndControl)
+	if (wndControl:GetName() == "ForgeUI_BarButton" or wndControl:GetName() == "ForgeUI_PetButton") and eMouseButton == 1 then
+		local tData = wndControl:GetData()
+		if tData.fnFill ~= nil and type(tData.fnFill) == 'function' then
+			tData.fnFill(self, wndControl, tData.tConfig)
 		end
 
 		wndControl:FindChild("Popup"):Show(true, true)
+	elseif wndControl:GetName() == "ForgeUI_PetButton" and eMouseButton == 0 then
+		if self._DB.char.nSelectedPet then
+			GameLib.SummonVanityPet(self._DB.char.nSelectedPet)
+		end
 	end
 end
 
@@ -1082,6 +1152,73 @@ function ForgeUI_ActionBars:Helper_BarOffsets(tBar, bReset)
 	return nLeft, nTop, nRight, nBottom
 end
 
+function ForgeUI_ActionBars:ResizeFlyout(wnd,tConfig,nCount)
+	if not wnd or not tConfig or not nCount then
+		return
+	end
+
+	local wndList = wnd:FindChild("List")
+	local wndPopup = wnd:FindChild("Popup")
+	local direction = tConfig.strFlyoutDirection or "up"
+	local growth = tConfig.strFlyoutGrowth or "right"
+	local cols = tConfig.nFlyoutColumns or 8
+	local rows = tConfig.nFlyoutRows or 8
+
+	if nCount <= cols then
+		cols = nCount
+		rows = 1
+	else
+		if (math.ceil(nCount/cols)) < rows then
+			rows = math.ceil(nCount/cols)
+		end
+	end
+
+	local width = (tConfig.nButtonSize * cols) + 3
+	local height = (tConfig.nButtonSize * rows) + 3
+
+	if direction == "left" then
+		wndPopup:SetAnchorPoints(0,0,0,0)
+
+		if growth == "up" then
+			wndPopup:SetAnchorOffsets((width * -1),((height - tConfig.nButtonSize) * -1),-1,tConfig.nButtonSize)
+			wndList:ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.RightOrBottom)
+		else
+			wndPopup:SetAnchorOffsets((width * -1),0,-1,height)
+			wndList:ArrangeChildrenTiles()
+		end
+	elseif direction == "right" then
+		wndPopup:SetAnchorPoints(1,0,1,0)
+
+		if growth == "up" then
+			wndPopup:SetAnchorOffsets(1,((height - tConfig.nButtonSize) * -1),width,tConfig.nButtonSize)
+			wndList:ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.RightOrBottom)
+		else
+			wndPopup:SetAnchorOffsets(1,0,width,height)
+			wndList:ArrangeChildrenTiles()
+		end
+	elseif direction == "up" then
+		wndPopup:SetAnchorPoints(1,0,1,0)
+
+		if growth == "left" then
+			wndPopup:SetAnchorOffsets((width * -1),(height * -1),0,-1)
+			wndList:ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.RightOrBottom)
+		else
+			wndPopup:SetAnchorOffsets((tConfig.nButtonSize * -1),(height * -1),(width - tConfig.nButtonSize),-1)
+			wndList:ArrangeChildrenTiles()
+		end
+	elseif direction == "down" then
+		wndPopup:SetAnchorPoints(0,1,0,1)
+
+		if growth == "left" then
+			wndPopup:SetAnchorOffsets(((width - tConfig.nButtonSize) * -1),1,tConfig.nButtonSize,height)
+			wndList:ArrangeChildrenTiles(Window.CodeEnumArrangeOrigin.RightOrBottom)
+		else
+			wndPopup:SetAnchorOffsets(0,1,width,height)
+			wndList:ArrangeChildrenTiles()
+		end
+	end
+end
+
 function ForgeUI_ActionBars:ForgeAPI_PopulateOptions()
 	for k, v in pairs(self._DB.profile.tFrames) do
 		local wnd = self.tOptionHolders[v.strKey]
@@ -1148,8 +1285,32 @@ function ForgeUI_ActionBars:ForgeAPI_PopulateOptions()
 				fnCallback = function(...) self:PositionButtons(v, true) end })
 		end
 
+		if v.nFlyoutRows ~= nil then
+			G:API_AddNumberBox(self, wnd, "Flyout Rows ", v, "nFlyoutRows", { tMove = {200, 160} })
+		end
+
+		if v.nFlyoutColumns ~= nil then
+			G:API_AddNumberBox(self, wnd, "Flyout Columns ", v, "nFlyoutColumns", { tMove = {200, 190} })
+		end
+
+		if v.strFlyoutGrowth ~= nil then
+			local wndFlyoutDirectionBox = G:API_AddComboBox(self, wnd, "Flyout growth", v, "strFlyoutGrowth", { tMove = {400, 190}, tWidths = {100, 150} })
+			G:API_AddOptionToComboBox(self, wndFlyoutDirectionBox , "Up", "up", {})
+			G:API_AddOptionToComboBox(self, wndFlyoutDirectionBox , "Down", "down", {})
+			G:API_AddOptionToComboBox(self, wndFlyoutDirectionBox , "Left", "left", {})
+			G:API_AddOptionToComboBox(self, wndFlyoutDirectionBox , "Right", "right", {})
+		end
+
+		if v.strFlyoutDirection ~= nil then
+			local wndFlyoutGrowthBox = G:API_AddComboBox(self, wnd, "Flyout direction", v, "strFlyoutDirection", { tMove = {400, 160}, tWidths = {100, 150} })
+			G:API_AddOptionToComboBox(self, wndFlyoutGrowthBox , "Up", "up", {})
+			G:API_AddOptionToComboBox(self, wndFlyoutGrowthBox , "Down", "down", {})
+			G:API_AddOptionToComboBox(self, wndFlyoutGrowthBox , "Left", "left", {})
+			G:API_AddOptionToComboBox(self, wndFlyoutGrowthBox , "Right", "right", {})
+		end
+
 		if v.tSpecialButtons ~= nil then
-			local wndAddCombo = G:API_AddComboBox(self, wnd, "Add button", nil, nil, { tMove = {0, 180},
+			local wndAddCombo = G:API_AddComboBox(self, wnd, "Add button", nil, nil, { tMove = {0, 250},
 				fnCallback = (function(module, value, key)
 					table.insert(v.tSpecialButtons, value)
 					self:ForgeAPI_LoadSettings()
@@ -1160,7 +1321,7 @@ function ForgeUI_ActionBars:ForgeAPI_PopulateOptions()
 				G:API_AddOptionToComboBox(self, wndAddCombo, tSpecialButtons[i].strName, i)
 			end
 
-			local wndRemoveCombo = G:API_AddComboBox(self, wnd, "Remove button", nil, nil, { tMove = {200, 180},
+			local wndRemoveCombo = G:API_AddComboBox(self, wnd, "Remove button", nil, nil, { tMove = {200, 250},
 				fnCallback = (function(module, value, key)
 					for i = 0, #v.tSpecialButtons do
 						if v.tSpecialButtons[i] == value then
@@ -1219,6 +1380,13 @@ tSpecialButtons = {
 		strContent = "LASBar",
 		nContentId = 9,
 		fnFill = ForgeUI_ActionBars.FillPath,
+	},
+	[7] = {
+		strKey = "ForgeUI_PetButton",
+		strName = "Pet",
+		strContent = "GCBar",
+		nContentId = nil,
+		fnFill = ForgeUI_ActionBars.FillPets,
 	},
 }
 
