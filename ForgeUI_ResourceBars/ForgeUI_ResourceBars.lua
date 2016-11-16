@@ -41,7 +41,8 @@ local ForgeUI_ResourceBars = {
 			stalker = {
 				crResource1 = "FFD23EF4",
 				crResource2 = "FF620077",
-				nBreakpoint = 35
+				nBreakpoint1 = 35,
+				nBreakpoint2 = 100,
 			},
 			engineer = {
 				crResource1 = "FF00AEFF",
@@ -683,7 +684,7 @@ function ForgeUI_ResourceBars:RefreshStyle_ResourceBar_Stalker(unitPlayer, nReso
 	self.wndResource:FindChild("ProgressBar"):SetProgress(nResource)
 	self.wndResource:FindChild("Value"):SetText(nResource)
 
-	if nResource < self._DB.profile.stalker.nBreakpoint then
+	if nResource < self._DB.profile.stalker.nBreakpoint1 or nResource > self._DB.profile.stalker.nBreakpoint2 then
 		self.wndResource:FindChild("ProgressBar"):SetBarColor(self._DB.profile.stalker.crResource2)
 	else
 		self.wndResource:FindChild("ProgressBar"):SetBarColor(self._DB.profile.stalker.crResource1)
@@ -767,9 +768,12 @@ end
 function ForgeUI_ResourceBars:PopulateOptions_Stalker()
 	local wndGeneral = self.tOptionHolders["General"]
 
-	G:API_AddColorBox(self, wndGeneral, "Suit power color (low)", self._DB.profile.stalker, "crResource2", { tMove = {0, 90} })
+	G:API_AddColorBox(self, wndGeneral, "Suit power color (threshold)", self._DB.profile.stalker, "crResource2", { tMove = {0, 90} })
 	G:API_AddColorBox(self, wndGeneral, "Suit power color", self._DB.profile.stalker, "crResource1", { tMove = {200, 90} })
-	G:API_AddNumberBox(self, wndGeneral, "Suit power threshold", self._DB.profile.stalker, "nBreakpoint", { tMove = {400, 90} })
+	G:API_AddNumberBox(self, wndGeneral, "Suit power threshold 1", self._DB.profile.stalker, "nBreakpoint1", { tMove = {400, 90},
+		strTooltip = "If suitpower is lesser then this" })
+	G:API_AddNumberBox(self, wndGeneral, "Suit power threshold 2", self._DB.profile.stalker, "nBreakpoint2", { tMove = {400, 120},
+		strTooltip = "If suitpower is greater the this" })
 end
 
 function ForgeUI_ResourceBars:PopulateOptions_Medic()
