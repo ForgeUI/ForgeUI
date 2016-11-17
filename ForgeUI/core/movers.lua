@@ -111,7 +111,7 @@ local function RegisterMover(luaCaller, wnd, strKey, strName, strScope, tOptions
 			nBottom,
 		}
 	elseif Movers._DB.profile[luaCaller._NAME][strKey] then
-		local nLeft, nTop, nRight, nBottom = unpack(Movers._DB.profile[luaCaller._NAME][strKey])
+		nLeft, nTop, nRight, nBottom = unpack(Movers._DB.profile[luaCaller._NAME][strKey])
 		if nLeft and nTop and nRight and nBottom then
 			wndMover:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)
 			wnd:SetAnchorOffsets(nLeft, nTop, nRight, nBottom)

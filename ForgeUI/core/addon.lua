@@ -32,7 +32,7 @@ function Addon:NewAddon(...) return Prototype:new(...) end
 -----------------------------------------------------------------------------------------------
 Prototype.__index = Prototype
 function Prototype:new(o)
-	local o = o or {}
+	o = o or {}
 	setmetatable(o, Prototype)
 
 	o.bInit = false

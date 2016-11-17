@@ -207,7 +207,7 @@ function ForgeUI_Interfaces:OnQueuedRedraw()
 	local nTotalWidth = 0
 
 	for idx, strWindowText in pairs(self._DB.global.tPinnedAddons) do
-		tData = self.tMenuData[strWindowText]
+		local tData = self.tMenuData[strWindowText]
 
 		--Magic number below is allowing the 1 pixel gutter on the right
 		if tData and nTotalWidth + nLastButtonWidth <= nParentWidth + 1 then

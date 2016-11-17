@@ -2,6 +2,7 @@
 
 !.gitattributes
 !.gitignore
+!.luacheckrc
 
 !ForgeUI/
 !ForgeUI/**/**

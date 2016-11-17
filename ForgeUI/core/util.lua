@@ -8,8 +8,6 @@
 
 local F = _G["ForgeLibs"]["ForgeUI"] -- ForgeUI API
 
-local WildShell = WildShell
-
 -----------------------------------------------------------------------------------------------
 -- ForgeUI Module Definition
 -----------------------------------------------------------------------------------------------
@@ -28,23 +26,6 @@ local Util = {
 function Util:ForgeAPI_Init()
 	
 end
-
-function Util:Debug(strKey, strText, crText)
-	if not self.tSettings.bDebug or not WildShell then return end
-	
-	if crText then
-		WildShell:Debug(strKey, strText, crText)
-	else
-		WildShell:Debug(strKey, strText, "FFBBBBBB")
-	end
-end
-
-function Util:Print(strKey, strText)
-	if not WildShell then return end
-	
-	WildShell:Debug(strKey, strText, "FF98C723")
-end
-
 
 function Util:CopyTable(tNew, tOld)
 	if tOld == nil then return end
@@ -103,7 +84,7 @@ end
 function Util:GetTime()
 	local l_time = GameLib.GetLocalTime()
 
-	if ForgeUIInst.tSettings.b24HourFormat then
+	if _G.ForgeUIInst.tSettings.b24HourFormat then
 		return string.format("%02d:%02d", l_time.nHour, l_time.nMinute)	
 	else
 		if l_time.nHour > 12 then
@@ -163,7 +144,7 @@ end
 
 function Util:MakeString(l)
     if l < 1 then return nil end
-    local s = ""
+    local s, n = "", 0
     for i = 1, l do
         n = math.random(97, 122)
         s = s .. string.char(n)
