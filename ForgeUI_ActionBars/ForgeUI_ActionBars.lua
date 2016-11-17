@@ -484,7 +484,7 @@ function ForgeUI_ActionBars:EditButtons(tBar)
 		local tXml = self.xmlDoc:ToTable()
 		local tActionButton
 		for _, xml in pairs(tXml) do
-			if v.Name == "ForgeUI_ActionButton" then
+			if xml.Name == "ForgeUI_ActionButton" then
 				tActionButton = xml
 			end
 		end
