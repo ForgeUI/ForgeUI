@@ -28,11 +28,19 @@ local ForgeUI_FloatText = {
 			strCollision = "IgnoreCollision",
 			bAdjustForTallUnits = false,
 			nTallUnitOffset = 100,
-			bDontShowImmunity = false,
 			bShowDeflect = true,
-			bShowCCState = true,
+			bShowImmunity = true,
+			bShowCCStatePlayer = true,
+			bShowCCStateTarget = true,
+			bShowSpellCastFailed = true,
+			bShowSubZoneChanged = true,
+			bShowReputationGained = true,
+			bShowCurrencyReceived = true,
 			bShowCombatMomentum = true,
 			bShowExperienceGained = true,
+			bShowElderPointsGained = true,
+			bShowPathExperienceGained = true,
+			bShowTradeSkillExperienceGained = true,
 			nDamageIncomingThreshold = 0, 	--tDamageHealing.nDamageThreshold
 			nHealingIncomingThreshold = 0, 	--tDamageHealing.nHealThreshold
 			nDamageOutgoingThreshold = 0, 	--tPlayerDamageHealing.nDamageThreshold
@@ -54,6 +62,46 @@ function ForgeUI_FloatText:ForgeAPI_Init()
 	FloatText.OnMiss = self.OnMiss
 	FloatText.OnCombatLogCCState = self.OnCombatLogCCState
 	FloatText.OnCombatLogImmunity = self.OnCombatLogImmunity
+
+	if not ForgeUI_FloatText._DB.profile.bShowCCStatePlayer then
+		FloatText.OnCombatLogCCStatePlayer = self.OnCombatLogCCStatePlayer
+	end
+
+	if not ForgeUI_FloatText._DB.profile.bShowSpellCastFailed then
+		FloatText.OnSpellCastFailed = self.OnSpellCastFailed
+	end
+
+	if not ForgeUI_FloatText._DB.profile.bShowSubZoneChanged then
+		FloatText.OnSubZoneChanged = self.OnSubZoneChanged
+	end
+
+	if not ForgeUI_FloatText._DB.profile.bShowReputationGained then
+		FloatText.OnFactionFloater = self.OnFactionFloater
+	end
+
+	if not ForgeUI_FloatText._DB.profile.bShowCurrencyReceived then
+		FloatText.OnChannelUpdate_Loot = self.OnChannelUpdate_Loot
+	end
+
+	if not ForgeUI_FloatText._DB.profile.bShowCombatMomentum then
+		FloatText.OnCombatMomentum = self.OnCombatMomentum
+	end
+
+	if not ForgeUI_FloatText._DB.profile.bShowExperienceGained then
+		FloatText.OnExperienceGained = self.OnExperienceGained
+	end
+
+	if not ForgeUI_FloatText._DB.profile.bShowElderPointsGained then
+		FloatText.OnElderPointsGained = self.OnElderPointsGained
+	end
+
+	if not ForgeUI_FloatText._DB.profile.bShowPathExperienceGained then
+		FloatText.OnPathExperienceGained = self.OnPathExperienceGained
+	end
+
+	if not ForgeUI_FloatText._DB.profile.bShowTradeSkillExperienceGained then
+		FloatText.OnTradeSkillFloater = self.OnTradeSkillFloater
+	end
 end
 
 function ForgeUI_FloatText:OnDocLoaded()
@@ -313,9 +361,12 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 	end
 end
 
-function ForgeUI_FloatText:OnCombatLogCCState(tEventArgs)
-	if not ForgeUI_FloatText._DB.profile.bShowCCState then return end
+function ForgeUI_FloatText:OnCombatLogCCStatePlayer(tEventArgs)
+	-- Empty
+end
 
+function ForgeUI_FloatText:OnCombatLogCCState(tEventArgs)
+	if not ForgeUI_FloatText._DB.profile.bShowCCStateTarget then return end
 	if not self:ShouldDisplayCCStateFloater( tEventArgs ) then
 		return
 	end
@@ -369,10 +420,10 @@ function ForgeUI_FloatText:OnCombatLogCCState(tEventArgs)
 			return
 		end
 	elseif tEventArgs.eResult == CombatFloater.CodeEnumCCStateApplyRulesResult.Target_Immune then
-		if ForgeUI_FloatText._DB.profile.bDontShowImmunity then return end
+		if not ForgeUI_FloatText._DB.profile.bShowImmunity then return end
 		strMessage = Apollo.GetString("FloatText_Immune")
 	elseif tEventArgs.eResult == CombatFloater.CodeEnumCCStateApplyRulesResult.Target_InfiniteInterruptArmor then
-		if ForgeUI_FloatText._DB.profile.bDontShowImmunity then return end
+		if not ForgeUI_FloatText._DB.profile.bShowImmunity then return end
 		strMessage = Apollo.GetString("FloatText_InfInterruptArmor")
 	elseif tEventArgs.eResult == CombatFloater.CodeEnumCCStateApplyRulesResult.Target_InterruptArmorReduced then -- use with interruptArmorHit
 		strMessage = String_GetWeaselString(Apollo.GetString("FloatText_InterruptArmor"), tEventArgs.nInterruptArmorHit)
@@ -396,7 +447,7 @@ function ForgeUI_FloatText:OnCombatLogCCState(tEventArgs)
 end
 
 function ForgeUI_FloatText:OnCombatLogImmunity(tEventArgs)
-	if ForgeUI_FloatText._DB.profile.bDontShowImmunity then return end
+	if not ForgeUI_FloatText._DB.profile.bShowImmunity then return end
 	local tTextOption = self:GetDefaultCCStateTextOption()
 	local strMessage = Apollo.GetString("FloatText_Immune")
 	CombatFloater.ShowTextFloater( tEventArgs.unitTarget, strMessage, tTextOption )
@@ -404,7 +455,7 @@ end
 
 
 function ForgeUI_FloatText:OnCombatMomentum( eMomentumType, nCount, strText )
-	if not ForgeUI_FloatText._DB.profile.bShowCombatMomentum then return end
+	--[[
 	-- Passes: type enum, player's total count for that bonus type, string combines these things (ie. "3 Evade")
 	local arMomentumStrings = {
 		[CombatFloater.CodeEnumCombatMomentum.Impulse] 				= "FloatText_Impulse",
@@ -427,7 +478,7 @@ function ForgeUI_FloatText:OnCombatMomentum( eMomentumType, nCount, strText )
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Back
 	tTextOption.fOffset = 2.0
 	tTextOption.fOffsetDirection = 90
-	tTextOption.strFontFace = self._DB.profile.strFont
+	tTextOption.strFontFace = ForgeUI_FloatText._DB.profile.strFont
 	tTextOption.arFrames = {
 		[1] = {fTime = 0,		nColor = 0xFFFFFF,		fAlpha = 0,		fVelocityDirection = 90,	fVelocityMagnitude = 5,		fScale = 0.8},
 		[2] = {fTime = 0.15,							fAlpha = 1.0,	fVelocityDirection = 90,	fVelocityMagnitude = .2,},
@@ -441,21 +492,22 @@ function ForgeUI_FloatText:OnCombatMomentum( eMomentumType, nCount, strText )
 	local strMessage = String_GetWeaselString(Apollo.GetString(arMomentumStrings[eMomentumType]), nCount)
 	if eMomentumType == CombatFloater.CodeEnumCombatMomentum.KillChain and nCount == 2 then
 		strMessage = Apollo.GetString("FloatText_DoubleKill")
-		tTextOption.strFontFace = self._DB.profile.strFont
+		tTextOption.strFontFace = ForgeUI_FloatText._DB.profile.strFont
 	elseif eMomentumType == CombatFloater.CodeEnumCombatMomentum.KillChain and nCount == 3 then
 		strMessage = Apollo.GetString("FloatText_TripleKill")
-		tTextOption.strFontFace = self._DB.profile.strFont
+		tTextOption.strFontFace = ForgeUI_FloatText._DB.profile.strFont
 		tTextOption.fScale = 1.0
 	elseif eMomentumType == CombatFloater.CodeEnumCombatMomentum.KillChain and nCount == 5 then
 		strMessage = Apollo.GetString("FloatText_PentaKill")
-		tTextOption.strFontFace = self._DB.profile.strFont
+		tTextOption.strFontFace = ForgeUI_FloatText._DB.profile.strFont
 		tTextOption.fScale = 1.2
 	elseif eMomentumType == CombatFloater.CodeEnumCombatMomentum.KillChain and nCount > 5 then
-		tTextOption.strFontFace = self._DB.profile.strFont
+		tTextOption.strFontFace = ForgeUI_FloatText._DB.profile.strFont
 		tTextOption.fScale = 1.5
 	end
 
 	CombatFloater.ShowTextFloater(unitToAttachTo, strMessage, 0, tTextOption)
+	]]
 end
 
 function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
@@ -501,7 +553,7 @@ function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
 end
 
 function ForgeUI_FloatText:OnExperienceGained(eReason, unitTarget, strText, fDelay, nAmount)
-	if not ForgeUI_FloatText._DB.profile.bShowExperienceGained then return end
+	--[[
 	if not Apollo.GetConsoleVariable("ui.showCombatFloater") or nAmount < 0 then return end
 
 	local strFormatted
@@ -520,7 +572,7 @@ function ForgeUI_FloatText:OnExperienceGained(eReason, unitTarget, strText, fDel
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Back
 	tTextOption.fOffset = 4.0 -- GOTCHA: Different
 	tTextOption.fOffsetDirection = 90
-	tTextOption.strFontFace = self._DB.profile.strFont
+	tTextOption.strFontFace = ForgeUI_FloatText._DB.profile.strFont
 	tTextOption.arFrames = {
 		[1] = {fTime = 0,			fAlpha = 0,		fVelocityDirection = 90,	fVelocityMagnitude = 5,		fScale = 0.8},
 		[2] = {fTime = 0.15,		fAlpha = 1.0,	fVelocityDirection = 90,	fVelocityMagnitude = .2,},
@@ -544,9 +596,11 @@ function ForgeUI_FloatText:OnExperienceGained(eReason, unitTarget, strText, fDel
 	end
 
 	self:RequestShowTextFloater(eMessageType, unitToAttachTo, strFormatted, tTextOption, fDelay, tContent)
+	]]
 end
 
 function ForgeUI_FloatText:OnElderPointsGained(nAmount, nRested)
+	--[[
 	if not Apollo.GetConsoleVariable("ui.showCombatFloater") or nAmount < 0 then return end
 
 	local tContent = {}
@@ -561,7 +615,7 @@ function ForgeUI_FloatText:OnElderPointsGained(nAmount, nRested)
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Back
 	tTextOption.fOffset = 4.0 -- GOTCHA: Different
 	tTextOption.fOffsetDirection = 90
-	tTextOption.strFontFace = self._DB.profile.strFont
+	tTextOption.strFontFace = ForgeUI_FloatText._DB.profile.strFont
 	tTextOption.arFrames = {
 		[1] = {fTime = 0,			fAlpha = 0,		fVelocityDirection = 90,	fVelocityMagnitude = 5,		fScale = 0.8},
 		[2] = {fTime = 0.15,		fAlpha = 1.0,	fVelocityDirection = 90,	fVelocityMagnitude = .2,},
@@ -581,9 +635,11 @@ function ForgeUI_FloatText:OnElderPointsGained(nAmount, nRested)
 		strFormatted = String_GetWeaselString(Apollo.GetString("FloatText_RestEPGained"), nRested)
 		self:RequestShowTextFloater(eMessageType, unitToAttachTo, strFormatted, tTextOption, 0, tContent)
 	end
+	]]
 end
 
 function ForgeUI_FloatText:OnPathExperienceGained( nAmount, strText )
+	--[[
 	if not Apollo.GetConsoleVariable("ui.showCombatFloater") then return end
 
 	local eMessageType = LuaEnumMessageType.PathXp
@@ -601,7 +657,7 @@ function ForgeUI_FloatText:OnPathExperienceGained( nAmount, strText )
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Back
 	tTextOption.fOffset = 4.0 -- GOTCHA: Different
 	tTextOption.fOffsetDirection = 90
-	tTextOption.strFontFace = self._DB.profile.strFont
+	tTextOption.strFontFace = ForgeUI_FloatText._DB.profile.strFont
 	tTextOption.arFrames = {
 		[1] = {fTime = 0,			fAlpha = 0,		fVelocityDirection = 90,	fVelocityMagnitude = 5,		fScale = 0.8},
 		[2] = {fTime = 0.15,		fAlpha = 1.0,	fVelocityDirection = 90,	fVelocityMagnitude = .2,},
@@ -613,7 +669,30 @@ function ForgeUI_FloatText:OnPathExperienceGained( nAmount, strText )
 
 	local unitToAttachTo = GameLib.GetControlledUnit() -- make unitToAttachTo to controlled unit because with the message system,
 	self:RequestShowTextFloater( eMessageType, unitToAttachTo, strFormatted, tTextOption, 0, tContent )
+	]]
 end
+
+function ForgeUI_FloatText:OnTradeSkillFloater(unitTarget, strMessage)
+	-- Empty
+end
+
+function ForgeUI_FloatText:OnSubZoneChanged(idZone, strZoneName)
+	-- Empty
+end
+
+function ForgeUI_FloatText:OnSpellCastFailed(eMessageType, eCastResult, unitTarget, unitSource, strMessage)
+	-- Empty
+end
+
+function ForgeUI_FloatText:OnFactionFloater(unitTarget, strMessage, nAmount, strFactionName, idFaction)
+	-- Empty
+end
+
+function ForgeUI_FloatText:OnChannelUpdate_Loot(eType, tEventArgs)
+	-- Empty
+end
+
+
 
 function ForgeUI_FloatText:OnGenericFloater(unitTarget, strMessage)
 	-- modify the text to be shown
@@ -622,7 +701,7 @@ function ForgeUI_FloatText:OnGenericFloater(unitTarget, strMessage)
 	tTextOption.bUseScreenPos = true
 	tTextOption.fOffset = 0
 	tTextOption.nColor = 0x00FFFF
-	tTextOption.strFontFace = self._DB.profile.strFont
+	tTextOption.strFontFace = ForgeUI_FloatText._DB.profile.strFont
 	tTextOption.bShowOnTop = true
 
 	CombatFloater.ShowTextFloater( unitTarget, strMessage, 0, tTextOption )
@@ -633,7 +712,7 @@ function ForgeUI_FloatText:OnUnitEvaded(unitSource, unitTarget, eReason, strMess
 	tTextOption.fScale = 1.0
 	tTextOption.fDuration = 2
 	tTextOption.nColor = 0xbaeffb
-	tTextOption.strFontFace = self._DB.profile.strFont
+	tTextOption.strFontFace = ForgeUI_FloatText._DB.profile.strFont
 	tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.IgnoreCollision
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Chest
 	tTextOption.fOffset = -0.8
@@ -723,25 +802,54 @@ function ForgeUI_FloatText:ForgeAPI_PopulateOptions()
 		tOffsets = { 275, 35, 475, 60 },
 		strHint = "Heals below this value will not be shown"
 	})
-
 	G:API_AddCheckBox(self,wndGeneral, "Adjust for tall units", self._DB.profile, "bAdjustForTallUnits", {
 		tMove = { 0, 70 }
 	})
-	G:API_AddCheckBox(self,wndGeneral, "Don't show immunity/inf armor floaters", self._DB.profile, "bDontShowImmunity", {
-		tMove = { 0, 100 },
-	})
+
+
 	G:API_AddCheckBox(self,wndGeneral, "Show Deflects", self._DB.profile, "bShowDeflect", {
-		tMove = { 0, 130 },
+		tMove = { 0, 135 },
 	})
-	G:API_AddCheckBox(self,wndGeneral, "Show CC's", self._DB.profile, "bShowCCState", {
-		tMove = { 0, 160 },
+	G:API_AddCheckBox(self,wndGeneral, "Show Immunities", self._DB.profile, "bShowImmunity", {
+		tMove = { 0, 105 },
+	})
+	G:API_AddCheckBox(self,wndGeneral, "Show CC's (Player)", self._DB.profile, "bShowCCStatePlayer", {
+		tMove = { 0, 165 },
+	})
+	G:API_AddCheckBox(self,wndGeneral, "Show CC's (Target)", self._DB.profile, "bShowCCStateTarget", {
+		tMove = { 0, 195 },
+	})
+	G:API_AddCheckBox(self,wndGeneral, "Show Spell Cast Failed", self._DB.profile, "bShowSpellCastFailed", {
+		tMove = { 0, 225 },
 	})
 	G:API_AddCheckBox(self,wndGeneral, "Show Combat Momentum", self._DB.profile, "bShowCombatMomentum", {
-		tMove = { 0, 190 },
+		tMove = { 0, 255 },
+	})
+	G:API_AddCheckBox(self,wndGeneral, "Show SubZone Changed", self._DB.profile, "bShowSubZoneChanged", {
+		tMove = { 0, 285 },
+	})
+
+
+	G:API_AddCheckBox(self,wndGeneral, "Show Currency Received", self._DB.profile, "bShowCurrencyReceived", {
+		tMove = { 275, 135 },
+	})
+	G:API_AddCheckBox(self,wndGeneral, "Show Reputation Gained", self._DB.profile, "bShowReputationGained", {
+		tMove = { 275, 105 },
 	})
 	G:API_AddCheckBox(self,wndGeneral, "Show Experience Gained", self._DB.profile, "bShowExperienceGained", {
-		tMove = { 0, 220 },
+		tMove = { 275, 165 },
 	})
+	G:API_AddCheckBox(self,wndGeneral, "Show Elder Points Gained", self._DB.profile, "bShowElderPointsGained", {
+		tMove = { 275, 195 },
+	})
+	G:API_AddCheckBox(self,wndGeneral, "Show Path Experience Gained", self._DB.profile, "bShowPathExperienceGained", {
+		tMove = { 275, 225 },
+	})
+	G:API_AddCheckBox(self,wndGeneral, "Show Tradeskill Experience Gained", self._DB.profile, "bShowTradeSkillExperienceGained", {
+		tMove = { 275, 255 },
+	})
+
+	G:API_AddText(self, wndGeneral, " - /reloadui necessary after changing something", { tMove = { 10, 325 } })
 end
 
 ----------------------------------------------------------------------------------------------
