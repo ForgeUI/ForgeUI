@@ -134,6 +134,8 @@ function ForgeUI_UnitFrames:ForgeAPI_Init()
 
 	F:API_RegisterEvent(self, "PlayerEnteredCombat", "OnPlayerEnteredCombat")
 
+	Apollo.RegisterSlashCommand("focus", "OnFocusSlashCommand", self)
+
 	local wndParent = F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 	F:API_AddMenuToMenuItem(self, wndParent, "Player frame", "Player")
 	F:API_AddMenuToMenuItem(self, wndParent, "Target frame", "Target")
@@ -610,6 +612,14 @@ function ForgeUI_UnitFrames:OnGenerateBuffTooltip(wndHandler, wndControl, tType,
 		return
 	end
 	Tooltip.GetBuffTooltipForm(self, wndControl, splBuff, {bFutureSpell = false})
+end
+
+function ForgeUI_UnitFrames:OnFocusSlashCommand()
+	local unitPlayer = GameLib.GetPlayerUnit()
+
+	if unitPlayer and unitPlayer:IsValid() then
+		unitPlayer:SetAlternateTarget(GameLib.GetTargetUnit())
+	end
 end
 
 function ForgeUI_UnitFrames:ForgeAPI_PopulateOptions()
