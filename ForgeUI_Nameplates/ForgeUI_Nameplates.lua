@@ -840,9 +840,11 @@ function ForgeUI_Nameplates:DrawHealth(tNameplate)
 	local nHealth = unitOwner:GetHealth()
 	local nMaxHealth = unitOwner:GetMaxHealth()
 
-	local bShow = nHealth ~= nil and not unitOwner:IsDead() and nMaxHealth > 0 and self:GetBooleanOption("nShowBars", tNameplate)
+	local bShouldShow = self:GetBooleanOption("nShowBars", tNameplate)
 
-	if (tNameplate.tSettings.bHideOnHealth or tNameplate.tSettings.bHideOnShield) and not tNameplate.bIsTarget then
+	local bShow = nHealth ~= nil and not unitOwner:IsDead() and nMaxHealth > 0 and bShouldShow
+
+	if (tNameplate.tSettings.bHideOnHealth or tNameplate.tSettings.bHideOnShield) and bShouldShow and not tNameplate.bIsTarget then
 		local bHealth = nHealth ~= nMaxHealth and tNameplate.tSettings.bHideOnHealth
 
 		local nShield = unitOwner:GetShieldCapacity()
