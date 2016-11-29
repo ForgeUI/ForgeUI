@@ -224,6 +224,11 @@ function ForgeUI_Inventory:ForgeAPI_Init()
 	self.wndIconBtnSortDropDown:AttachWindow(self.wndIconBtnSortDropDown:FindChild("ItemSortPrompt"))
 
 		--Alt Curency Display
+	local wndOptionsContainer = self.wndMain:FindChild("OptionsContainer")
+	local nLeft, nTop, nRight, nBottom = wndOptionsContainer:GetAnchorOffsets()
+	wndOptionsContainer:SetAnchorOffsets(nLeft, nTop, nRight, nBottom + (#karCurrency * 30) + 5)
+
+
 	for idx = 1, #karCurrency do
 		local tData = karCurrency[idx]
 		local wnd = Apollo.LoadForm(self.xmlDoc, "PickerEntry", self.wndMain:FindChild("OptionsConfigureCurrencyList"), self)
@@ -477,7 +482,11 @@ function ForgeUI_Inventory:UpdateAltCash(wndHandler, wndControl) -- Also from Pi
 end
 
 function ForgeUI_Inventory:UpdateAltCashDisplay()
+	if #karCurrency == 0 then return end
+
 	local tData = karCurrency[self._DB.global.nAltCurrencySelected]
+
+	if tData == nil then return end
 
 	self.wndMain:FindChild("AltCashWindow"):SetAmount(self:HelperGetCurrencyAmmount(tData), true)
 	local strDescription = tData.strDescription
