@@ -1668,8 +1668,13 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 		wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, 7)
 		wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, 7)
 	elseif tNameplateStyle.nStyle == 1 then
-		wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, 7 + tNameplateStyle.nShieldHeight)
-		wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, 7 + tNameplateStyle.nShieldHeight)
+		if tNameplate.unitOwner:GetShieldCapacityMax() == 0 then
+			wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, 7)
+			wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, 7)
+		else
+			wndNameplate:FindChild("TargetMarker"):SetAnchorOffsets(-7, -7, 7, 7 + tNameplateStyle.nShieldHeight)
+			wndNameplate:FindChild("Indicator"):SetAnchorOffsets(-7, -7, 7, 7 + tNameplateStyle.nShieldHeight)
+		end
 	end
 
 	-- bar
