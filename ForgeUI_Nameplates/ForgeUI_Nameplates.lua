@@ -760,6 +760,7 @@ end
 function ForgeUI_Nameplates:HelperGetName(tNameplate)
 	local unitOwner = tNameplate.unitOwner
 	local nameIterator = unitOwner:GetName():gmatch("[^ ]+")
+	local strNameFirst = nameIterator() or ""
 	local strNameSecond = nameIterator() or ""
 
 	local strNewName = unitOwner:GetName() or ""
