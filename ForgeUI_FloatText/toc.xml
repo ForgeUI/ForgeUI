@@ -1,5 +1,5 @@
 <?xml version="1.2" encoding="UTF-8"?>
-<Addon Author="WintyBadass" APIVersion="14" Name="ForgeUI_FloatText" Version="1.0" Description="">
+<Addon Author="WintyBadass" APIVersion="15" Name="ForgeUI_FloatText" Version="1.0" Description="">
     <Script Name="ForgeUI_FloatText.lua"/>
     <Form Name="ForgeUI_FloatText.xml"/>
 </Addon>
