@@ -1,4 +1,4 @@
-<Addon Name="ForgeUI_Inventory" Version="" Author="WintyBadass" APIVersion="14" Description="">
+<Addon Name="ForgeUI_Inventory" Version="" Author="WintyBadass" APIVersion="15" Description="">
     <Script Name="ForgeUI_InventoryBag.lua"/>
     <Script Name="ItemPreview.lua"/>
     <Script Name="ImprovedSalvage.lua"/>
