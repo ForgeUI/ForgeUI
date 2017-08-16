@@ -739,10 +739,12 @@ function ForgeUI_MiniMap:UpdateZoneName(strZoneName)
 	if tInstanceSettingsInfo.bWorldForcesLevelScaling == true then
 		strScaled = ktInstanceSettingTypeStrings.Rallied
 	end
-
+	
+	local strPrimeLvl = GameLib.GetWorldPrimeLevel()
+	
 	local strAdjustedZoneName = strZoneName
 	if strDifficulty then
-		strAdjustedZoneName = strZoneName .. " (" .. strDifficulty .. ")"
+		strAdjustedZoneName = strZoneName .. " (" .. strDifficulty .. " " .. strPrimeLvl .. ")"
 	elseif strScaled then
 		strAdjustedZoneName = strZoneName .. " (" .. strScaled .. ")"
 	end
