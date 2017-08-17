@@ -35,11 +35,14 @@ local ForgeUI_MiniMap = {
 	_API_VERSION = 3,
 	_VERSION = "1.0",
 	_DB = {},
-	DISPLAY_NAME = "Sample addon",
+	DISPLAY_NAME = "Minimap",
 
 	tSettings = {
 		profile = {
 			fZoom = 1.0,
+			bShowTime = true,
+			bShowLocation = true,
+			bShowRapid = true,
 		},
 	},
 
@@ -1117,10 +1120,14 @@ function ForgeUI_MiniMap:ForgeAPI_Init()
 
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_MiniMap//ForgeUI_MiniMap.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
+
+	F:API_AddMenuItem(self, self.DISPLAY_NAME, "General")
 end
 
 function ForgeUI_MiniMap:ForgeAPI_LoadSettings()
 	F:API_RegisterMover(self, self.wndMain, "MiniMap", "MiniMap", "general")
+
+	self:UpdateShownExtras()
 end
 
 function ForgeUI_MiniMap:OnDocLoaded()
@@ -1178,12 +1185,13 @@ function ForgeUI_MiniMap:OnDocLoaded()
 	Apollo.RegisterEventHandler("HazardShowMinimapUnit", 				"OnHazardShowMinimapUnit", self)
 	Apollo.RegisterEventHandler("HazardRemoveMinimapUnit", 				"OnHazardRemoveMinimapUnit", self)
 	Apollo.RegisterEventHandler("ZoneMapPing", 							"OnMapPing", self)
-	Apollo.RegisterTimerHandler("TimeUpdateTimer", 						"OnUpdateTimer", self)
 	Apollo.RegisterEventHandler("OptionsUpdated_HUDPreferences", 		"OnUpdateTimer", self)
 
 	Apollo.RegisterEventHandler("PlayerLevelChange",					"UpdateHarvestableNodes", self)
 
 	Apollo.RegisterTimerHandler("ChallengeFlashIconTimer", 				"OnStopChallengeFlashIcon", self)
+
+	self.timerUpdateTime = ApolloTimer.Create(1.0, true, "OnUpdateTimer", self)
 
 	self.timerCreateDelay = ApolloTimer.Create(1.0, true, "OnOneSecTimer", self)
 	self.timerCreateDelay:Start()
@@ -1319,7 +1327,6 @@ end
 
 function ForgeUI_MiniMap:OnCharacterCreated()
 	self:UpdateRapidTransportBtn()
-	Apollo.CreateTimer("TimeUpdateTimer", 1.0, true)
 
 	if not self.unitPlayerDisposition then
 		self.unitPlayerDisposition = GameLib.GetPlayerUnit()
@@ -2507,6 +2514,65 @@ function ForgeUI_MiniMap:UpdateRapidTransportBtn()
 	end
 	local bOnArkship = tZone == nil or GameLib.IsTutorialZone(nZoneId)
 	wndRapidTransport:Show(not bOnArkship or wndRapidTransport:IsShown())
+end
+
+function ForgeUI_MiniMap:UpdateShownExtras()
+	local wndTime = self.wndMain:FindChild("Time")
+	local wndLocation = self.wndMain:FindChild("MapZoneName")
+	local wndRapid = self.wndMain:FindChild("RapidTransportBtnOverlay")
+	local wndShadow = self.wndMain:FindChild("BottomShadow")
+	local bShowShadow = false
+
+	local strText = "bTime: %s; bLocation: %s; bRapid: %s; bShadow: %s"
+
+	--A little bit of reasoning: I spent ~3 hrs trying to figure out, why this does not work with :Show(false) - i gave up.
+
+	if self._DB.profile.bShowTime then
+		bShowShadow = true
+		self.timerUpdateTime:Start()
+		local tLoc = wndTime:GetOriginalLocation()
+		wndTime:SetAnchorOffsets(tLoc:GetOffsets())
+	else
+		self.timerUpdateTime:Stop()
+		wndTime:SetAnchorOffsets(0,0,10,10)
+	end
+
+
+	if self._DB.profile.bShowLocation then
+		bShowShadow = true
+		local tLoc = wndLocation:GetOriginalLocation()
+		wndLocation:SetAnchorOffsets(tLoc:GetOffsets())
+	else
+		wndLocation:SetAnchorOffsets(0,0,10,10)
+	end
+
+	if self._DB.profile.bShowRapid then
+		local tLoc = wndRapid:GetOriginalLocation()
+		wndRapid:SetAnchorOffsets(tLoc:GetOffsets())
+	else
+		wndRapid:SetAnchorOffsets(0,0,10,10)
+	end
+
+	if bShowShadow then
+		local tLoc = wndShadow:GetOriginalLocation()
+		wndShadow:SetAnchorOffsets(tLoc:GetOffsets())
+	else
+		wndShadow:SetAnchorOffsets(0,0,10,10)
+	end
+end
+
+function ForgeUI_MiniMap:ForgeAPI_PopulateOptions()
+	-- general settings
+	local wndGeneral = self.tOptionHolders["General"]
+	G:API_AddCheckBox(self, wndGeneral, "Show Time", self._DB.profile, "bShowTime", { tMove = {0, 0},
+		strTooltip = "If checked, the local time will be shown.",
+		fnCallback = ForgeUI_MiniMap.UpdateShownExtras })
+	G:API_AddCheckBox(self, wndGeneral, "Show Location", self._DB.profile, "bShowLocation", { tMove = {0, 30},
+		strTooltip = "If checked, your location will be shown.",
+		fnCallback = ForgeUI_MiniMap.UpdateShownExtras })
+	G:API_AddCheckBox(self, wndGeneral, "Show Rapid Transport", self._DB.profile, "bShowRapid", { tMove = {0, 60},
+		strTooltip = "If checked, the rapid transport button will be shown.",
+		fnCallback = ForgeUI_MiniMap.UpdateShownExtras })
 end
 
 -----------------------------------------------------------------------------------------------
