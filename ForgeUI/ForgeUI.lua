@@ -69,6 +69,8 @@ function Addon:OnLoad()
 	self.xmlIcons = XmlDoc.CreateFromFile("\\media\\icons\\ForgeUI_Icons.xml")
 
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
+	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", "OnInterfaceMenuListHasLoaded", self)
+	Apollo.RegisterEventHandler("InterfaceMenu_OpenForgeUI", "OnConfigure", self)
 
 	-- init ForgeLibs
 	for _, v in pairs(_G["ForgeLibs"]) do
@@ -118,6 +120,13 @@ function Addon:OnDocLoaded()
 	else
 		Apollo.RegisterEventHandler("CharacterCreated", "OnCharacterCreated", self)
 	end
+end
+
+function Addon:OnInterfaceMenuListHasLoaded()
+	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", "ForgeUI", {
+		"InterfaceMenu_OpenForgeUI", --OnClick-Event
+		"", --Keybind-Descriptor (e.g. "Inventory")
+		""}) --Icon (If not provided: uses first letter from tooltip)
 end
 
 function Addon:OnCharacterCreated() ForgeUI:Init() end
