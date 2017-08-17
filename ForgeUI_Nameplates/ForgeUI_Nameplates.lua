@@ -144,6 +144,8 @@ local ForgeUI_Nameplates = {
 					bHideOnHealth = false,
 					bHideOnShield = false,
 					bShowHealAbsorb = true,
+					bCleanseIndicator = false,
+					crCleanseIndicator = "FFA100FE",
 					nShowName = 0,
 					nShowBars = 2,
 					nShowCast = 2,
@@ -1647,12 +1649,14 @@ function ForgeUI_Nameplates:LoadStyle_Nameplate(tNameplate)
 	wnd.healthShieldFill:SetFullSprite(tNameplateStyle.strFullSprite)
 	wnd.healthAbsorbFill:SetFullSprite(tNameplateStyle.strFullSprite)
 
-	if tNameplate.strUnitType == "HostileNPC" then
-		wnd.indicator:SetBGColor(self._DB.profile.tUnits["HostileNPC"].crThreatIndicator)
-	elseif tNameplate.strUnitType == "FriendlyPlayer" then
-		wnd.indicator:SetBGColor(self._DB.profile.tUnits["FriendlyPlayer"].crCleanseIndicator)
-	elseif tNameplate.strUnitType == "PartyPlayer" then
-		wnd.indicator:SetBGColor(self._DB.profile.tUnits["PartyPlayer"].crCleanseIndicator)
+	if self._DB.profile.tUnits[tNameplate.strUnitType] then
+		local crThreat = self._DB.profile.tUnits[tNameplate.strUnitType].crThreatIndicator
+		local crCleanse = self._DB.profile.tUnits[tNameplate.strUnitType].crCleanseIndicator
+		if crThreat then
+			wnd.indicator:SetBGColor(crThreat)
+		elseif crCleanse then
+			wnd.indicator:SetBGColor(crCleanse)
+		end
 	end
 
 	-- nameplate vertical offset
