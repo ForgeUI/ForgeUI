@@ -194,7 +194,8 @@ function Addon:ItemListPressed(wndHandler, wndControl, eMouseButton)
 		if not wndControl:GetParent():FindChild("Holder"):IsShown() then
 			self:ItemListSignPressed(wndHandler, wndControl:FindChild("Sign"), eMouseButton)
 		end
-		self:ItemListPressed(wndHandler, wndControl:GetParent():FindChild("Holder"):GetChildren()[1]:FindChild("Button"), eMouseButton)
+		self:ItemListPressed(wndHandler, wndControl:GetParent():FindChild("Holder"):GetChildren()[1]:FindChild("Button"),
+				eMouseButton)
 	end
 end
 
