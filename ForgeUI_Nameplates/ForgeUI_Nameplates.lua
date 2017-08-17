@@ -536,7 +536,7 @@ function ForgeUI_Nameplates:OnUnitCreated(unitNew) -- build main options here
 	end
 
 	if wnd == nil or not wnd:IsValid() then
-		wnd = Apollo.LoadForm(self.xmlNameplate, "Nameplate", "FixedHudStratumLow", self)
+		wnd = Apollo.LoadForm(self.xmlNameplate, "Nameplate", "InWorldHudStratum", self)
 		wndReferences = nil
 	end
 
