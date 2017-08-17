@@ -185,155 +185,914 @@ end
 
 
 function ForgeUI_MiniMap:BuildCustomMarkerInfo()
+
+	local kcrMiningNode = _G.kcrMiningNode
+	local kcrRelicNode = _G.kcrRelicNode
+	local kcrFarmingNode = _G.kcrFarmingNode
+	local kcrFishingNode = _G.kcrFishingNode
+	local kcrSurvivalNode = _G.kcrSurvivalNode
+
 	self.tMinimapMarkerInfo =
 	{
-		PvPBlueCarry			= { nOrder = 100,	objectType = self.eObjectPvPMarkers,			strIcon = "IconSprites:Icon_MapNode_Map_PvP_ExileCarry",	bFixedSizeMedium = true	},
-		PvPRedCarry				= { nOrder = 100,	objectType = self.eObjectPvPMarkers,			strIcon = "IconSprites:Icon_MapNode_Map_PvP_DominionCarry",	bFixedSizeMedium = true	},
-		PvPNeutralCarry			= { nOrder = 100,	objectType = self.eObjectPvPMarkers,			strIcon = "IconSprites:Icon_MapNode_Map_PvP_NeutralCarry",	bFixedSizeMedium = true	},
-		PvPBlueCap1			= { nOrder = 100,	objectType = self.eObjectPvPMarkers,			strIcon = "IconSprites:Icon_MapNode_Map_PvP_ExileCap",		bFixedSizeMedium = true	},
-		PvPRedCap1			= { nOrder = 100,	objectType = self.eObjectPvPMarkers,			strIcon = "IconSprites:Icon_MapNode_Map_PvP_DominionCap",	bFixedSizeMedium = true	},
-		PvPNeutralCap1			= { nOrder = 100,	objectType = self.eObjectPvPMarkers,			strIcon = "IconSprites:Icon_MapNode_Map_PvP_NeutralCap",	bFixedSizeMedium = true	},
-		PvPBlueCap2			= { nOrder = 100,	objectType = self.eObjectPvPMarkers,			strIcon = "IconSprites:Icon_MapNode_Map_PvP_ExileCap",		bFixedSizeMedium = true	},
-		PvPRedCap2			= { nOrder = 100,	objectType = self.eObjectPvPMarkers,			strIcon = "IconSprites:Icon_MapNode_Map_PvP_DominionCap",	bFixedSizeMedium = true	},
-		PvPNeutralCap2			= { nOrder = 100,	objectType = self.eObjectPvPMarkers,			strIcon = "IconSprites:Icon_MapNode_Map_PvP_NeutralCap",	bFixedSizeMedium = true	},
-		PvPBattleAlert			= { nOrder = 100,	objectType = self.eObjectPvPMarkers,			strIcon = "IconSprites:Icon_MapNode_Map_PvP_BattleAlert",	bFixedSizeMedium = true	},
-		IronNode				= { nOrder = 100, 	objectType = self.eObjectTypeMiningNode,		strIcon = kstrMiningNodeIcon,	crObject = kcrMiningNode, 	crEdge = kcrMiningNode },
-		TitaniumNode			= { nOrder = 100, 	objectType = self.eObjectTypeMiningNode,		strIcon = kstrMiningNodeIcon,	crObject = kcrMiningNode, 	crEdge = kcrMiningNode },
-		ZephyriteNode			= { nOrder = 100, 	objectType = self.eObjectTypeMiningNode,		strIcon = kstrMiningNodeIcon,	crObject = kcrMiningNode, 	crEdge = kcrMiningNode },
-		PlatinumNode			= { nOrder = 100, 	objectType = self.eObjectTypeMiningNode,		strIcon = kstrMiningNodeIcon,	crObject = kcrMiningNode, 	crEdge = kcrMiningNode },
-		HydrogemNode			= { nOrder = 100, 	objectType = self.eObjectTypeMiningNode,		strIcon = kstrMiningNodeIcon,	crObject = kcrMiningNode, 	crEdge = kcrMiningNode },
-		XenociteNode			= { nOrder = 100, 	objectType = self.eObjectTypeMiningNode,		strIcon = kstrMiningNodeIcon,	crObject = kcrMiningNode, 	crEdge = kcrMiningNode },
-		ShadeslateNode			= { nOrder = 100, 	objectType = self.eObjectTypeMiningNode,		strIcon = kstrMiningNodeIcon,	crObject = kcrMiningNode, 	crEdge = kcrMiningNode },
-		GalactiumNode			= { nOrder = 100, 	objectType = self.eObjectTypeMiningNode,		strIcon = kstrMiningNodeIcon,	crObject = kcrMiningNode, 	crEdge = kcrMiningNode },
-		NovaciteNode			= { nOrder = 100, 	objectType = self.eObjectTypeMiningNode,		strIcon = kstrMiningNodeIcon,	crObject = kcrMiningNode, 	crEdge = kcrMiningNode },
-		StandardRelicNode		= { nOrder = 100, 	objectType = self.eObjectTypeRelicHunterNode,	strIcon = kstrRelicNodeIcon, 	crObject = kcrRelicNode, 	crEdge = kcrRelicNode },
-		AcceleratedRelicNode	= { nOrder = 100, 	objectType = self.eObjectTypeRelicHunterNode,	strIcon = kstrRelicNodeIcon, 	crObject = kcrRelicNode, 	crEdge = kcrRelicNode },
-		AdvancedRelicNode		= { nOrder = 100, 	objectType = self.eObjectTypeRelicHunterNode,	strIcon = kstrRelicNodeIcon, 	crObject = kcrRelicNode, 	crEdge = kcrRelicNode },
-		DynamicRelicNode		= { nOrder = 100, 	objectType = self.eObjectTypeRelicHunterNode,	strIcon = kstrRelicNodeIcon, 	crObject = kcrRelicNode, 	crEdge = kcrRelicNode },
-		KineticRelicNode		= { nOrder = 100, 	objectType = self.eObjectTypeRelicHunterNode,	strIcon = kstrRelicNodeIcon, 	crObject = kcrRelicNode, 	crEdge = kcrRelicNode },
-		SpirovineNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		BladeleafNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		YellowbellNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		PummelgranateNode		= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		SerpentlilyNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		GoldleafNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		HoneywheatNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		CrowncornNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		CoralscaleNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		LogicleafNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		StoutrootNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		GlowmelonNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		FaerybloomNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode,	crEdge = kcrFarmingNode },
-		WitherwoodNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode,	crEdge = kcrFarmingNode },
-		FlamefrondNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		GrimgourdNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		MourningstarNode		= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		BloodbriarNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		OctopodNode				= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		HeartichokeNode			= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		SmlGrowthshroomNode		= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		MedGrowthshroomNode		= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		LrgGrowthshroomNode		= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		SmlHarvestshroomNode	= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		MedHarvestshroomNode	= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		LrgHarvestshroomNode	= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		SmlRenewshroomNode		= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		MedRenewshroomNode		= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		LrgRenewshroomNode		= { nOrder = 100, 	objectType = self.eObjectTypeFarmingNode,		strIcon = kstrFarmingNodeIcon, 	crObject = kcrFarmingNode, 	crEdge = kcrFarmingNode },
-		AlgorocTreeNode			= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		CelestionTreeNode		= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		DeraduneTreeNode		= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		EllevarTreeNode			= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		GalerasTreeNode			= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		AuroriaTreeNode			= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		WhitevaleTreeNode		= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		DreadmoorTreeNode		= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		FarsideTreeNode			= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		CoralusTreeNode			= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		MurkmireTreeNode		= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		WilderrunTreeNode		= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		MalgraveTreeNode		= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		HalonRingTreeNode		= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		GrimvaultTreeNode		= { nOrder = 100, 	objectType = self.eObjectTypeSurvivalistNode,	strIcon = kstrSurvivalNodeIcon,	crObject = kcrSurvivalNode, crEdge = kcrSurvivalNode },
-		SchoolOfFishNode		= { nOrder = 100, 	objectType = self.eObjectTypeFishingNode,		strIcon = kstrFishingNodeIcon,	crObject = kcrFishingNode,	crEdge = kcrFishingNode },
-		Friend					= { nOrder = 2, 	objectType = self.eObjectTypeFriend, 			strIcon = "IconSprites:Icon_Windows_UI_CRB_Friend",	bNeverShowOnEdge = true, bShown, bFixedSizeMedium = true },
-		Rival					= { nOrder = 3, 	objectType = self.eObjectTypeRival, 			strIcon = "IconSprites:Icon_MapNode_Map_Rival", 	bNeverShowOnEdge = true, bShown, bFixedSizeMedium = true },
-		Trainer					= { nOrder = 4, 	objectType = self.eObjectTypeTrainer, 			strIcon = "IconSprites:Icon_MapNode_Map_Trainer", 	bNeverShowOnEdge = true, bFixedSizeMedium = true },
-		QuestKill				= { nOrder = 5, 	objectType = self.eObjectTypeQuestKill, 		strIcon = "sprMM_TargetCreature", 	bNeverShowOnEdge = true, bFixedSizeMedium = true },
-		QuestTarget				= { nOrder = 6,		objectType = self.eObjectTypeQuestTarget, 		strIcon = "sprMM_TargetObjective", 	bNeverShowOnEdge = true, bFixedSizeMedium = true },
-		PublicEventKill			= { nOrder = 7,		objectType = self.eObjectTypePublicEventKill, 	strIcon = "sprMM_TargetCreature", 	bNeverShowOnEdge = true, bFixedSizeMedium = true },
-		PublicEventTarget		= { nOrder = 8,		objectType = self.eObjectTypePublicEvent,		strIcon = "sprMM_TargetObjective", 	bNeverShowOnEdge = true, bFixedSizeMedium = true },
-		QuestReward				= { nOrder = 9,		objectType = self.eObjectTypeQuestReward, 		strIcon = "sprMM_QuestCompleteUntracked", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestRewardSoldier		= { nOrder = 10,	objectType = self.eObjectTypeQuestReward, 		strIcon = "IconSprites:Icon_MapNode_Map_Soldier_Accepted", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestRewardSettler		= { nOrder = 11,	objectType = self.eObjectTypeQuestReward, 		strIcon = "IconSprites:Icon_MapNode_Map_Settler_Accepted", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestRewardScientist	= { nOrder = 12,	objectType = self.eObjectTypeQuestReward, 		strIcon = "IconSprites:Icon_MapNode_Map_Scientist_Accepted", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestRewardExplorer		= { nOrder = 13,	objectType = self.eObjectTypeQuestReward, 		strIcon = "IconSprites:Icon_MapNode_Map_Explorer_Accepted", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNew				= { nOrder = 14,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Quest", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewDaily			= { nOrder = 14,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Quest", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewSoldier			= { nOrder = 15,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Soldier", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewSettler			= { nOrder = 16,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Settler", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewScientist		= { nOrder = 17,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Scientist", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewExplorer		= { nOrder = 18,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Explorer", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewMain			= { nOrder = 19,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Quest", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewMainSoldier		= { nOrder = 20,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Soldier", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewMainSettler		= { nOrder = 21,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Settler", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewMainScientist	= { nOrder = 22,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Scientist", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewMainExplorer	= { nOrder = 23,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Explorer", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewRepeatable		= { nOrder = 24,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Quest", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewRepeatableSoldier	= { nOrder = 25,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Soldier", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewRepeatableSettler	= { nOrder = 26,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Settler", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewRepeatableScientist	= { nOrder = 27,objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Scientist", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewRepeatableExplorer	= { nOrder = 28,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Explorer", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestReceiving			= { nOrder = 29,	objectType = self.eObjectTypeQuestReceiving, 	strIcon = "sprMM_QuestCompleteOngoing", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestReceivingSoldier	= { nOrder = 30,	objectType = self.eObjectTypeQuestReceiving, 	strIcon = "IconSprites:Icon_MapNode_Map_Soldier", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestReceivingSettler	= { nOrder = 31,	objectType = self.eObjectTypeQuestReceiving, 	strIcon = "IconSprites:Icon_MapNode_Map_Settler", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestReceivingScientist	= { nOrder = 32,	objectType = self.eObjectTypeQuestReceiving, 	strIcon = "IconSprites:Icon_MapNode_Map_Scientist", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestReceivingExplorer	= { nOrder = 33,	objectType = self.eObjectTypeQuestReceiving, 	strIcon = "IconSprites:Icon_MapNode_Map_Explorer", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewSoon			= { nOrder = 34,	objectType = self.eObjectTypeQuestNewSoon, 		strIcon = "IconSprites:Icon_MapNode_Map_Quest_Disabled", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewMainSoon		= { nOrder = 35,	objectType = self.eObjectTypeQuestNewSoon, 		strIcon = "IconSprites:Icon_MapNode_Map_Quest_Disabled", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestNewTradeskill		= { nOrder = 36,	objectType = self.eObjectTypeQuestNewSoon, 		strIcon = "IconSprites:Icon_MapNode_Map_Quest_Tradeskill", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestGivingTradeskill	= { nOrder = 36,	objectType = self.eObjectTypeQuestNewSoon, 		strIcon = "IconSprites:Icon_MapNode_Map_Quest_Tradeskill", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		QuestReceivingTradeskill	= { nOrder = 36,	objectType = self.eObjectTypeQuestNewSoon, 	strIcon = "IconSprites:Icon_MapNode_Map_Quest_Tradeskill", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		ConvertItem				= { nOrder = 37,	objectType = self.eObjectTypeConvert, 			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_ResourceConversion", 	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		ConvertRep				= { nOrder = 38,	objectType = self.eObjectTypeConvert, 			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Reputation", 	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		Vendor					= { nOrder = 39,	objectType = self.eObjectTypeVendor, 			strIcon = "IconSprites:Icon_MapNode_Map_Vendor", 	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		Mail					= { nOrder = 40,	objectType = self.eObjectTypeMail, 				strIcon = "IconSprites:Icon_MapNode_Map_Mailbox", 	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		CityDirections			= { nOrder = 41,	objectType = self.eObjectTypeCityDirections, 	strIcon = "IconSprites:Icon_MapNode_Map_CityDirections", 	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		Dye						= { nOrder = 42,	objectType = self.eObjectTypeCostume, 			strIcon = "IconSprites:Icon_MapNode_Map_DyeSpecialist", 	bNeverShowOnEdge = true, bFixedSizeMedium = true },
-		FlightPathSettler		= { nOrder = 43,	objectType = self.eObjectTypeVendorFlight, 		strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Flight", 	bNeverShowOnEdge = true, bFixedSizeMedium = true },
-		FlightPath				= { nOrder = 44,	objectType = self.eObjectTypeFlightPath, 		strIcon = "IconSprites:Icon_MapNode_Map_Taxi", bNeverShowOnEdge = true, bFixedSizeMedium = true },
-		FlightPathNew			= { nOrder = 45,	objectType = self.eObjectTypeFlightPathNew, 	strIcon = "IconSprites:Icon_MapNode_Map_Taxi_Undiscovered", 	bNeverShowOnEdge = true, bFixedSizeMedium = true },
-		TalkTo					= { nOrder = 46,	objectType = self.eObjectTypeQuestTarget, 		strIcon = "IconSprites:Icon_MapNode_Map_Chat", 	bNeverShowOnEdge = true, bFixedSizeMedium = true },
-		InstancePortal			= { nOrder = 47,	objectType = self.eObjectTypeInstancePortal, 	strIcon = "IconSprites:Icon_MapNode_Map_Portal", 	bNeverShowOnEdge = true },
-		BindPoint				= { nOrder = 48,	objectType = self.eObjectTypeBindPointInactive, strIcon = "IconSprites:Icon_MapNode_Map_Gate", 	bNeverShowOnEdge = true },
-		BindPointCurrent		= { nOrder = 48,	objectType = self.eObjectTypeBindPointActive, 	strIcon = "IconSprites:Icon_MapNode_Map_Gate", 	bNeverShowOnEdge = true },
-		TradeskillTrainer		= { nOrder = 50,	objectType = self.eObjectTypeTradeskills, 		strIcon = "IconSprites:Icon_MapNode_Map_Tradeskill", 	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		CraftingStation			= { nOrder = 51,	objectType = self.eObjectTypeTradeskills, 		strIcon = "IconSprites:Icon_MapNode_Map_Tradeskill", 	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		CommodityMarketplace	= { nOrder = 52,	objectType = self.eObjectTypeCommodity, 		strIcon = "IconSprites:Icon_MapNode_Map_CommoditiesExchange", bNeverShowOnEdge = true, bHideIfHostile = true },
-		ItemAuctionhouse		= { nOrder = 53,	objectType = self.eObjectTypeAuctioneer, 		strIcon = "IconSprites:Icon_MapNode_Map_AuctionHouse", 	bNeverShowOnEdge = true, bHideIfHostile = true },
-		SettlerImprovement		= { nOrder = 54,	objectType = GameLib.CodeEnumMapOverlayType.PathObjective, strIcon = "CRB_MinimapSprites:sprMM_SmallIconSettler", bNeverShowOnEdge = true },
-		CREDDExchange			= { nOrder = 55,	objectType = self.eObjectTypeCREDDExchange,		strIcon = "IconSprites:Icon_MapNode_Map_CREED",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		Neutral					= { nOrder = 151,	objectType = self.eObjectTypeNeutral, 			strIcon = "ClientSprites:MiniMapMarkerTiny", 	bNeverShowOnEdge = true, bShown = false, crObject = ApolloColor.new("xkcdBrightYellow") },
-		Hostile					= { nOrder = 150,	objectType = self.eObjectTypeHostile, 			strIcon = "ClientSprites:MiniMapMarkerTiny", 	bNeverShowOnEdge = true, bShown = false, crObject = ApolloColor.new("xkcdBrightRed") },
-		GroupMember				= { nOrder = 1,		objectType = self.eObjectTypeGroupMember, 		strIcon = "IconSprites:Icon_MapNode_Map_GroupMember", bFixedSizeLarge = true, strIconEdge = "CRB_MinimapSprites:sprMM_PartyMemberArrow", crEdge = CColor.new(1, 1, 1, 1), bNeverShowOnEdge = false },
-		Bank					= { nOrder = 55,	objectType = self.eObjectTypeBank, 				strIcon = "IconSprites:Icon_MapNode_Map_Bank", 	bNeverShowOnEdge = true, bFixedSizeLarge = true, bHideIfHostile = true },
-		GuildBank				= { nOrder = 57,	objectType = self.eObjectTypeGuildBank, 		strIcon = "IconSprites:Icon_MapNode_Map_Bank", 	bNeverShowOnEdge = true, bFixedSizeLarge = true, crObject = ApolloColor.new("yellow"), bHideIfHostile = true },
-		GuildRegistrar			= { nOrder = 56,	objectType = self.eObjectTypeGuildRegistrar, 	strIcon = "CRB_MinimapSprites:sprMM_Group", bNeverShowOnEdge = true, bFixedSizeLarge = true, crObject = ApolloColor.new("yellow"), bHideIfHostile = true },
-		VendorGeneral			= { nOrder = 39,	objectType = self.eObjectTypeVendor,			strIcon = "IconSprites:Icon_MapNode_Map_Vendor",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		VendorArmor				= { nOrder = 39,	objectType = self.eObjectTypeVendor, 			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Armor",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		VendorConsumable		= { nOrder = 39,	objectType = self.eObjectTypeVendor, 			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Consumable",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		VendorElderGem			= { nOrder = 39,	objectType = self.eObjectTypeVendor, 			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_ElderGem",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		VendorHousing			= { nOrder = 39,	objectType = self.eObjectTypeVendor, 			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Housing",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		VendorMount				= { nOrder = 39,	objectType = self.eObjectTypeVendor, 			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Mount",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		VendorRenown			= { nOrder = 39,	objectType = self.eObjectTypeVendor, 			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Renown",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		VendorReputation		= { nOrder = 39,	objectType = self.eObjectTypeVendor, 			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Reputation",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		VendorResourceConversion= { nOrder = 39,	objectType = self.eObjectTypeVendor, 			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_ResourceConversion",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		VendorTradeskill		= { nOrder = 39,	objectType = self.eObjectTypeVendor,			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Tradeskill",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		VendorWeapon			= { nOrder = 39,	objectType = self.eObjectTypeVendor,			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Weapon",		bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		VendorPvPArena			= { nOrder = 39,	objectType = self.eObjectTypeVendor,			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Prestige_Arena",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		VendorPvPBattlegrounds	= { nOrder = 39,	objectType = self.eObjectTypeVendor,			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Prestige_Battlegrounds",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		VendorPvPWarplots		= { nOrder = 39,	objectType = self.eObjectTypeVendor,			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Prestige_Warplot",	bNeverShowOnEdge = true, bFixedSizeMedium = true, bHideIfHostile = true },
-		ContractBoard			= { nOrder = 14,	objectType = self.eObjectTypeQuestNew, 			strIcon = "IconSprites:Icon_MapNode_Map_Contracts", 	bNeverShowOnEdge = true, bHideIfHostile = true },
+		PvPBlueCarry			= {
+			nOrder = 100,
+			objectType = self.eObjectPvPMarkers,
+			strIcon = "IconSprites:Icon_MapNode_Map_PvP_ExileCarry",
+			bFixedSizeMedium = true	},
+		PvPRedCarry				= {
+			nOrder = 100,
+			objectType = self.eObjectPvPMarkers,
+			strIcon = "IconSprites:Icon_MapNode_Map_PvP_DominionCarry",
+			bFixedSizeMedium = true	},
+		PvPNeutralCarry			= {
+			nOrder = 100,
+			objectType = self.eObjectPvPMarkers,
+			strIcon = "IconSprites:Icon_MapNode_Map_PvP_NeutralCarry",
+			bFixedSizeMedium = true	},
+		PvPBlueCap1			= {
+			nOrder = 100,
+			objectType = self.eObjectPvPMarkers,
+			strIcon = "IconSprites:Icon_MapNode_Map_PvP_ExileCap",
+			bFixedSizeMedium = true	},
+		PvPRedCap1			= {
+			nOrder = 100,
+			objectType = self.eObjectPvPMarkers,
+			strIcon = "IconSprites:Icon_MapNode_Map_PvP_DominionCap",
+			bFixedSizeMedium = true	},
+		PvPNeutralCap1			= {
+			nOrder = 100,
+			objectType = self.eObjectPvPMarkers,
+			strIcon = "IconSprites:Icon_MapNode_Map_PvP_NeutralCap",
+			bFixedSizeMedium = true	},
+		PvPBlueCap2			= {
+			nOrder = 100,
+			objectType = self.eObjectPvPMarkers,
+			strIcon = "IconSprites:Icon_MapNode_Map_PvP_ExileCap",
+			bFixedSizeMedium = true	},
+		PvPRedCap2			= {
+			nOrder = 100,
+			objectType = self.eObjectPvPMarkers,
+			strIcon = "IconSprites:Icon_MapNode_Map_PvP_DominionCap",
+			bFixedSizeMedium = true	},
+		PvPNeutralCap2			= {
+			nOrder = 100,
+			objectType = self.eObjectPvPMarkers,
+			strIcon = "IconSprites:Icon_MapNode_Map_PvP_NeutralCap",
+			bFixedSizeMedium = true	},
+		PvPBattleAlert			= {
+			nOrder = 100,
+			objectType = self.eObjectPvPMarkers,
+			strIcon = "IconSprites:Icon_MapNode_Map_PvP_BattleAlert",
+			bFixedSizeMedium = true	},
+		IronNode				= {
+			nOrder = 100,
+			objectType = self.eObjectTypeMiningNode,
+			strIcon = kstrMiningNodeIcon,
+			crObject = kcrMiningNode,
+			crEdge = kcrMiningNode },
+		TitaniumNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeMiningNode,
+			strIcon = kstrMiningNodeIcon,
+			crObject = kcrMiningNode,
+			crEdge = kcrMiningNode },
+		ZephyriteNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeMiningNode,
+			strIcon = kstrMiningNodeIcon,
+			crObject = kcrMiningNode,
+			crEdge = kcrMiningNode },
+		PlatinumNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeMiningNode,
+			strIcon = kstrMiningNodeIcon,
+			crObject = kcrMiningNode,
+			crEdge = kcrMiningNode },
+		HydrogemNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeMiningNode,
+			strIcon = kstrMiningNodeIcon,
+			crObject = kcrMiningNode,
+			crEdge = kcrMiningNode },
+		XenociteNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeMiningNode,
+			strIcon = kstrMiningNodeIcon,
+			crObject = kcrMiningNode,
+			crEdge = kcrMiningNode },
+		ShadeslateNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeMiningNode,
+			strIcon = kstrMiningNodeIcon,
+			crObject = kcrMiningNode,
+			crEdge = kcrMiningNode },
+		GalactiumNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeMiningNode,
+			strIcon = kstrMiningNodeIcon,
+			crObject = kcrMiningNode,
+			crEdge = kcrMiningNode },
+		NovaciteNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeMiningNode,
+			strIcon = kstrMiningNodeIcon,
+			crObject = kcrMiningNode,
+			crEdge = kcrMiningNode },
+		StandardRelicNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeRelicHunterNode,
+			strIcon = kstrRelicNodeIcon,
+			crObject = kcrRelicNode,
+			crEdge = kcrRelicNode },
+		AcceleratedRelicNode	= {
+			nOrder = 100,
+			objectType = self.eObjectTypeRelicHunterNode,
+			strIcon = kstrRelicNodeIcon,
+			crObject = kcrRelicNode,
+			crEdge = kcrRelicNode },
+		AdvancedRelicNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeRelicHunterNode,
+			strIcon = kstrRelicNodeIcon,
+			crObject = kcrRelicNode,
+			crEdge = kcrRelicNode },
+		DynamicRelicNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeRelicHunterNode,
+			strIcon = kstrRelicNodeIcon,
+			crObject = kcrRelicNode,
+			crEdge = kcrRelicNode },
+		KineticRelicNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeRelicHunterNode,
+			strIcon = kstrRelicNodeIcon,
+			crObject = kcrRelicNode,
+			crEdge = kcrRelicNode },
+		SpirovineNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		BladeleafNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		YellowbellNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		PummelgranateNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		SerpentlilyNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		GoldleafNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		HoneywheatNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		CrowncornNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		CoralscaleNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		LogicleafNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		StoutrootNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		GlowmelonNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		FaerybloomNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		WitherwoodNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		FlamefrondNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		GrimgourdNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		MourningstarNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		BloodbriarNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		OctopodNode				= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		HeartichokeNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		SmlGrowthshroomNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		MedGrowthshroomNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		LrgGrowthshroomNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		SmlHarvestshroomNode	= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		MedHarvestshroomNode	= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		LrgHarvestshroomNode	= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		SmlRenewshroomNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		MedRenewshroomNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		LrgRenewshroomNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFarmingNode,
+			strIcon = kstrFarmingNodeIcon,
+			crObject = kcrFarmingNode,
+			crEdge = kcrFarmingNode },
+		AlgorocTreeNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		CelestionTreeNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		DeraduneTreeNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		EllevarTreeNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		GalerasTreeNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		AuroriaTreeNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		WhitevaleTreeNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		DreadmoorTreeNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		FarsideTreeNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		CoralusTreeNode			= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		MurkmireTreeNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		WilderrunTreeNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		MalgraveTreeNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		HalonRingTreeNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		GrimvaultTreeNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeSurvivalistNode,
+			strIcon = kstrSurvivalNodeIcon,
+			crObject = kcrSurvivalNode,
+			crEdge = kcrSurvivalNode },
+		SchoolOfFishNode		= {
+			nOrder = 100,
+			objectType = self.eObjectTypeFishingNode,
+			strIcon = kstrFishingNodeIcon,
+			crObject = kcrFishingNode,
+			crEdge = kcrFishingNode },
+		Friend					= {
+			nOrder = 2,
+			objectType = self.eObjectTypeFriend,
+			strIcon = "IconSprites:Icon_Windows_UI_CRB_Friend",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true },
+		Rival					= {
+			nOrder = 3,
+			objectType = self.eObjectTypeRival,
+			strIcon = "IconSprites:Icon_MapNode_Map_Rival",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true },
+		Trainer					= {
+			nOrder = 4,
+			objectType = self.eObjectTypeTrainer,
+			strIcon = "IconSprites:Icon_MapNode_Map_Trainer",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true },
+		QuestKill				= {
+			nOrder = 5,
+			objectType = self.eObjectTypeQuestKill,
+			strIcon = "sprMM_TargetCreature",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true },
+		QuestTarget				= {
+			nOrder = 6,
+			objectType = self.eObjectTypeQuestTarget,
+			strIcon = "sprMM_TargetObjective",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true },
+		PublicEventKill			= {
+			nOrder = 7,
+			objectType = self.eObjectTypePublicEventKill,
+			strIcon = "sprMM_TargetCreature",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true },
+		PublicEventTarget		= {
+			nOrder = 8,
+			objectType = self.eObjectTypePublicEvent,
+			strIcon = "sprMM_TargetObjective",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true },
+		QuestReward				= {
+			nOrder = 9,
+			objectType = self.eObjectTypeQuestReward,
+			strIcon = "sprMM_QuestCompleteUntracked",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestRewardSoldier		= {
+			nOrder = 10,
+			objectType = self.eObjectTypeQuestReward,
+			strIcon = "IconSprites:Icon_MapNode_Map_Soldier_Accepted",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestRewardSettler		= {
+			nOrder = 11,
+			objectType = self.eObjectTypeQuestReward,
+			strIcon = "IconSprites:Icon_MapNode_Map_Settler_Accepted",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestRewardScientist	= {
+			nOrder = 12,
+			objectType = self.eObjectTypeQuestReward,
+			strIcon = "IconSprites:Icon_MapNode_Map_Scientist_Accepted",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestRewardExplorer		= {
+			nOrder = 13,
+			objectType = self.eObjectTypeQuestReward,
+			strIcon = "IconSprites:Icon_MapNode_Map_Explorer_Accepted",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNew				= {
+			nOrder = 14,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Quest",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewDaily			= {
+			nOrder = 14,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Quest",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewSoldier			= {
+			nOrder = 15,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Soldier",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewSettler			= {
+			nOrder = 16,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Settler",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewScientist		= {
+			nOrder = 17,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Scientist",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewExplorer		= {
+			nOrder = 18,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Explorer",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewMain			= {
+			nOrder = 19,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Quest",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewMainSoldier		= {
+			nOrder = 20,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Soldier",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewMainSettler		= {
+			nOrder = 21,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Settler",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewMainScientist	= {
+			nOrder = 22,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Scientist",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewMainExplorer	= {
+			nOrder = 23,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Explorer",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewRepeatable		= {
+			nOrder = 24,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Quest",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewRepeatableSoldier	= {
+			nOrder = 25,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Soldier",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewRepeatableSettler	= {
+			nOrder = 26,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Settler",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewRepeatableScientist	= {
+			nOrder = 27,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Scientist",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewRepeatableExplorer	= {
+			nOrder = 28,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Explorer",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestReceiving			= {
+			nOrder = 29,
+			objectType = self.eObjectTypeQuestReceiving,
+			strIcon = "sprMM_QuestCompleteOngoing",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestReceivingSoldier	= {
+			nOrder = 30,
+			objectType = self.eObjectTypeQuestReceiving,
+			strIcon = "IconSprites:Icon_MapNode_Map_Soldier",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestReceivingSettler	= {
+			nOrder = 31,
+			objectType = self.eObjectTypeQuestReceiving,
+			strIcon = "IconSprites:Icon_MapNode_Map_Settler",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestReceivingScientist	= {
+			nOrder = 32,
+			objectType = self.eObjectTypeQuestReceiving,
+			strIcon = "IconSprites:Icon_MapNode_Map_Scientist",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestReceivingExplorer	= {
+			nOrder = 33,
+			objectType = self.eObjectTypeQuestReceiving,
+			strIcon = "IconSprites:Icon_MapNode_Map_Explorer",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewSoon			= {
+			nOrder = 34,
+			objectType = self.eObjectTypeQuestNewSoon,
+			strIcon = "IconSprites:Icon_MapNode_Map_Quest_Disabled",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewMainSoon		= {
+			nOrder = 35,
+			objectType = self.eObjectTypeQuestNewSoon,
+			strIcon = "IconSprites:Icon_MapNode_Map_Quest_Disabled",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestNewTradeskill		= {
+			nOrder = 36,
+			objectType = self.eObjectTypeQuestNewSoon,
+			strIcon = "IconSprites:Icon_MapNode_Map_Quest_Tradeskill",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestGivingTradeskill	= {
+			nOrder = 36,
+			objectType = self.eObjectTypeQuestNewSoon,
+			strIcon = "IconSprites:Icon_MapNode_Map_Quest_Tradeskill",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		QuestReceivingTradeskill	= {
+			nOrder = 36,
+			objectType = self.eObjectTypeQuestNewSoon,
+			strIcon = "IconSprites:Icon_MapNode_Map_Quest_Tradeskill",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		ConvertItem				= {
+			nOrder = 37,
+			objectType = self.eObjectTypeConvert,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_ResourceConversion",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		ConvertRep				= {
+			nOrder = 38,
+			objectType = self.eObjectTypeConvert,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Reputation",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		Vendor					= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		Mail					= {
+			nOrder = 40,
+			objectType = self.eObjectTypeMail,
+			strIcon = "IconSprites:Icon_MapNode_Map_Mailbox",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		CityDirections			= {
+			nOrder = 41,
+			objectType = self.eObjectTypeCityDirections,
+			strIcon = "IconSprites:Icon_MapNode_Map_CityDirections",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		Dye						= {
+			nOrder = 42,
+			objectType = self.eObjectTypeCostume,
+			strIcon = "IconSprites:Icon_MapNode_Map_DyeSpecialist",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true },
+		FlightPathSettler		= {
+			nOrder = 43,
+			objectType = self.eObjectTypeVendorFlight,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Flight",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true },
+		FlightPath				= {
+			nOrder = 44,
+			objectType = self.eObjectTypeFlightPath,
+			strIcon = "IconSprites:Icon_MapNode_Map_Taxi",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true },
+		FlightPathNew			= {
+			nOrder = 45,
+			objectType = self.eObjectTypeFlightPathNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Taxi_Undiscovered",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true },
+		TalkTo					= {
+			nOrder = 46,
+			objectType = self.eObjectTypeQuestTarget,
+			strIcon = "IconSprites:Icon_MapNode_Map_Chat",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true },
+		InstancePortal			= {
+			nOrder = 47,
+			objectType = self.eObjectTypeInstancePortal,
+			strIcon = "IconSprites:Icon_MapNode_Map_Portal",
+			bNeverShowOnEdge = true },
+		BindPoint				= {
+			nOrder = 48,
+			objectType = self.eObjectTypeBindPointInactive,
+			strIcon = "IconSprites:Icon_MapNode_Map_Gate",
+			bNeverShowOnEdge = true },
+		BindPointCurrent		= {
+			nOrder = 48,
+			objectType = self.eObjectTypeBindPointActive,
+			strIcon = "IconSprites:Icon_MapNode_Map_Gate",
+			bNeverShowOnEdge = true },
+		TradeskillTrainer		= {
+			nOrder = 50,
+			objectType = self.eObjectTypeTradeskills,
+			strIcon = "IconSprites:Icon_MapNode_Map_Tradeskill",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		CraftingStation			= {
+			nOrder = 51,
+			objectType = self.eObjectTypeTradeskills,
+			strIcon = "IconSprites:Icon_MapNode_Map_Tradeskill",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		CommodityMarketplace	= {
+			nOrder = 52,
+			objectType = self.eObjectTypeCommodity,
+			strIcon = "IconSprites:Icon_MapNode_Map_CommoditiesExchange",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		ItemAuctionhouse		= {
+			nOrder = 53,
+			objectType = self.eObjectTypeAuctioneer,
+			strIcon = "IconSprites:Icon_MapNode_Map_AuctionHouse",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
+		SettlerImprovement		= {
+			nOrder = 54,
+			objectType = GameLib.CodeEnumMapOverlayType.PathObjective,
+			strIcon = "CRB_MinimapSprites:sprMM_SmallIconSettler",
+			bNeverShowOnEdge = true },
+		CREDDExchange			= {
+			nOrder = 55,
+			objectType = self.eObjectTypeCREDDExchange,
+			strIcon = "IconSprites:Icon_MapNode_Map_CREED",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		Neutral					= {
+			nOrder = 151,
+			objectType = self.eObjectTypeNeutral,
+			strIcon = "ClientSprites:MiniMapMarkerTiny",
+			bNeverShowOnEdge = true,
+			bShown = false,
+			crObject = ApolloColor.new("xkcdBrightYellow") },
+		Hostile					= {
+			nOrder = 150,
+			objectType = self.eObjectTypeHostile,
+			strIcon = "ClientSprites:MiniMapMarkerTiny",
+			bNeverShowOnEdge = true,
+			bShown = false,
+			crObject = ApolloColor.new("xkcdBrightRed") },
+		GroupMember				= {
+			nOrder = 1,
+			objectType = self.eObjectTypeGroupMember,
+			strIcon = "IconSprites:Icon_MapNode_Map_GroupMember",
+			bFixedSizeLarge = true,
+			strIconEdge = "CRB_MinimapSprites:sprMM_PartyMemberArrow",
+			crEdge = CColor.new(1, 1, 1, 1),
+			bNeverShowOnEdge = false },
+		Bank					= {
+			nOrder = 55,
+			objectType = self.eObjectTypeBank,
+			strIcon = "IconSprites:Icon_MapNode_Map_Bank",
+			bNeverShowOnEdge = true,
+			bFixedSizeLarge = true,
+			bHideIfHostile = true },
+		GuildBank				= {
+			nOrder = 57,
+			objectType = self.eObjectTypeGuildBank,
+			strIcon = "IconSprites:Icon_MapNode_Map_Bank",
+			bNeverShowOnEdge = true,
+			bFixedSizeLarge = true,
+			crObject = ApolloColor.new("yellow"),
+			bHideIfHostile = true },
+		GuildRegistrar			= {
+			nOrder = 56,
+			objectType = self.eObjectTypeGuildRegistrar,
+			strIcon = "CRB_MinimapSprites:sprMM_Group",
+			bNeverShowOnEdge = true,
+			bFixedSizeLarge = true,
+			crObject = ApolloColor.new("yellow"),
+			bHideIfHostile = true },
+		VendorGeneral			= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		VendorArmor				= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Armor",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		VendorConsumable		= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Consumable",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		VendorElderGem			= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_ElderGem",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		VendorHousing			= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Housing",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		VendorMount				= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Mount",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		VendorRenown			= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Renown",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		VendorReputation		= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Reputation",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		VendorResourceConversion= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_ResourceConversion",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		VendorTradeskill		= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Tradeskill",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		VendorWeapon			= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Weapon",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		VendorPvPArena			= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Prestige_Arena",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		VendorPvPBattlegrounds	= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Prestige_Battlegrounds",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		VendorPvPWarplots		= {
+			nOrder = 39,
+			objectType = self.eObjectTypeVendor,
+			strIcon = "IconSprites:Icon_MapNode_Map_Vendor_Prestige_Warplot",
+			bNeverShowOnEdge = true,
+			bFixedSizeMedium = true,
+			bHideIfHostile = true },
+		ContractBoard			= {
+			nOrder = 14,
+			objectType = self.eObjectTypeQuestNew,
+			strIcon = "IconSprites:Icon_MapNode_Map_Contracts",
+			bNeverShowOnEdge = true,
+			bHideIfHostile = true },
 	}
 end
 
@@ -343,7 +1102,9 @@ function ForgeUI_MiniMap:ForgeAPI_Init()
 	self.bRotate = false
 	self.tChallengeObjects 			= {}
 	self.ChallengeFlashingIconId 	= nil
-	self.tUnitsShown 				= {}	-- For Quests, PublicEvents, Vendors, Instance Portals, and Bind Points which all use UnitCreated/UnitDestroyed events
+	-- For Quests, PublicEvents, Vendors, Instance Portals, and Bind Points
+	-- which all use UnitCreated/UnitDestroyed events:
+	self.tUnitsShown 				= {}
 	self.tUnitsHidden 				= {}	-- Units that we're tracking but are out of the current subzone
 	self.tObjectsShown 				= {} -- For Challenges which use their own events
 	self.tObjectsShown.Challenges 	= {}
@@ -450,7 +1211,7 @@ function ForgeUI_MiniMap:OnDocLoaded()
 
 	self.bLiveEventActive = false
 
-	self:CreateOverlayObjectTypes() -- ** IMPORTANT ** This function must run before you do anything involving overlay types!
+	self:CreateOverlayObjectTypes() -- **IMPORTANT** This function must run before you do anything involving overlay types!
 	self:BuildCustomMarkerInfo()
 
 	self.unitPlayerDisposition = GameLib.GetPlayerUnit()
@@ -489,7 +1250,13 @@ function ForgeUI_MiniMap:OnDocLoaded()
 	-- The object types for each category
 	self.tCategoryTypes =
 	{
-		[ktTooltipCategories.QuestNPC] 		= {self.eObjectTypeQuestReward, self.eObjectTypeQuestReceiving, self.eObjectTypeQuestNew, self.eObjectTypeQuestNewSoon, self.eObjectTypeQuestTarget,	self.eObjectTypeQuestKill,},
+		[ktTooltipCategories.QuestNPC] 		= {
+			self.eObjectTypeQuestReward,
+			self.eObjectTypeQuestReceiving,
+			self.eObjectTypeQuestNew,
+			self.eObjectTypeQuestNewSoon,
+			self.eObjectTypeQuestTarget,
+			self.eObjectTypeQuestKill,},
 		[ktTooltipCategories.TrackedQuest] 	= {GameLib.CodeEnumMapOverlayType.QuestObjective,},
 		[ktTooltipCategories.GroupMember]	= {self.eObjectTypeGroupMember,},
 		[ktTooltipCategories.NeutralNPC] 	= {self.eObjectTypeNeutral,},
@@ -499,7 +1266,16 @@ function ForgeUI_MiniMap:OnDocLoaded()
 		[ktTooltipCategories.PublicEvent] 	= {self.eObjectTypePublicEvent, self.eObjectTypePublicEventKill,},
 		[ktTooltipCategories.Tradeskill] 	= {self.eObjectTypeTradeskills,},
 		[ktTooltipCategories.Vendor] 		= {self.eObjectTypeVendor,},
-		[ktTooltipCategories.Service] 		= {self.eObjectTypeAuctioneer, self.eObjectTypeCommodity, self.eObjectTypeBank, self.eObjectTypeGuildBank, self.eObjectTypeGuildRegistrar, self.eObjectTypeCostume, self.eObjectTypeCREDDExchange, self.eObjectTypeMail, self.eObjectTypeConvert,},
+		[ktTooltipCategories.Service] 		= {
+			self.eObjectTypeAuctioneer,
+			self.eObjectTypeCommodity,
+			self.eObjectTypeBank,
+			self.eObjectTypeGuildBank,
+			self.eObjectTypeGuildRegistrar,
+			self.eObjectTypeCostume,
+			self.eObjectTypeCREDDExchange,
+			self.eObjectTypeMail,
+			self.eObjectTypeConvert,},
 		[ktTooltipCategories.Portal] 		= {self.eObjectTypeInstancePortal,},
 		[ktTooltipCategories.BindPoint] 	= {self.eObjectTypeBindPointActive, self.eObjectTypeBindPointInactive,},
 		[ktTooltipCategories.Mining] 		= {self.eObjectTypeMiningNode,},
@@ -533,8 +1309,8 @@ function ForgeUI_MiniMap:OnDocLoaded()
 
 	self:RehideAllToggledIcons()
 
-	if g_wndTheMiniMap == nil then
-		g_wndTheMiniMap = self.wndMiniMap
+	if _G.g_wndTheMiniMap == nil then
+		_G.g_wndTheMiniMap = self.wndMiniMap
 	end
 
 	self:OnOptionsUpdated()
@@ -572,11 +1348,16 @@ function ForgeUI_MiniMap:OnUpdateTimer()
 	local tLocalTime = GameLib.GetLocalTime()
 	local tServerTime = GameLib.GetServerTime()
 	local b24Hour = F:API_GetCoreDB().b24Hour
-	local nLocalHour = tLocalTime.nHour > 12 and tLocalTime.nHour - 12 or tLocalTime.nHour == 0 and 12 or tLocalTime.nHour
-	local nServerHour = tServerTime.nHour > 12 and tServerTime.nHour - 12 or tServerTime.nHour == 0 and 12 or tServerTime.nHour
+	local nLocalHour = (tLocalTime.nHour > 12 and tLocalTime.nHour - 12
+			or tLocalTime.nHour == 0 and 12
+			or tLocalTime.nHour)
+	local nServerHour = (tServerTime.nHour > 12 and tServerTime.nHour - 12
+			or tServerTime.nHour == 0 and 12
+			or tServerTime.nHour)
 
 	if b24Hour then
-		self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d", tostring(tLocalTime.nHour), tostring(tLocalTime.nMinute)))
+		local strTime = string.format("%02d:%02d", tostring(tLocalTime.nHour), tostring(tLocalTime.nMinute))
+		self.wndMain:FindChild("Time"):SetText(strTime)
 		self.wndMain:FindChild("Time"):SetTooltip(
 			string.format("%s%02d:%02d\n%s%02d:%02d",
 				Apollo.GetString("OptionsHUD_Local"), tostring(tLocalTime.nHour), tostring(tLocalTime.nMinute),
@@ -586,7 +1367,8 @@ function ForgeUI_MiniMap:OnUpdateTimer()
 	else
 		local suffix = tLocalTime.nHour >= 12 and "pm" or "am"
 
-		self.wndMain:FindChild("Time"):SetText(string.format("%02d:%02d%s", tostring(nLocalHour), tostring(tLocalTime.nMinute), suffix))
+		local strTime = string.format("%02d:%02d%s", tostring(nLocalHour), tostring(tLocalTime.nMinute), suffix)
+		self.wndMain:FindChild("Time"):SetText(strTime)
 		self.wndMain:FindChild("Time"):SetTooltip(
 			string.format("%s%02d:%02d%s\n%s%02d:%02d%s",
 				Apollo.GetString("OptionsHUD_Local"), tostring(nLocalHour), tostring(tLocalTime.nMinute), suffix,
@@ -740,9 +1522,11 @@ function ForgeUI_MiniMap:UpdateZoneName(strZoneName)
 		strScaled = ktInstanceSettingTypeStrings.Rallied
 	end
 
+	local strPrimeLvl = GameLib.GetWorldPrimeLevel()
+
 	local strAdjustedZoneName = strZoneName
 	if strDifficulty then
-		strAdjustedZoneName = strZoneName .. " (" .. strDifficulty .. ")"
+		strAdjustedZoneName = strZoneName .. " (" .. strDifficulty .. " " .. strPrimeLvl .. ")"
 	elseif strScaled then
 		strAdjustedZoneName = strZoneName .. " (" .. strScaled .. ")"
 	end
@@ -772,7 +1556,10 @@ function ForgeUI_MiniMap:OnMapPing(idUnit, tPos )
 
 	Sound.Play(Sound.PlayUIMiniMapPing)
 
-	table.insert(self.tPingObjects, {["idUnit"] = idUnit, ["objMapPing"] = self.wndMiniMap:AddObject(self.eObjectTypePing, tPos, "", tInfo), ["nTime"] = GameLib.GetGameTime()})
+	table.insert(self.tPingObjects, {
+		["idUnit"] = idUnit,
+		["objMapPing"] = self.wndMiniMap:AddObject(self.eObjectTypePing, tPos, "", tInfo),
+		["nTime"] = GameLib.GetGameTime()})
 
 	Apollo.StartTimer("PingTimer")
 
@@ -850,8 +1637,11 @@ function ForgeUI_MiniMap:OnAddChallengeIcon(chalOwner, strDescription, tPosition
 			self.tObjectsShown.Challenges = {}
 		end
 
-		self.tChallengeObjects[chalOwner] = self.wndMiniMap:AddObject(self.eObjectTypeChallenge, tPosition, strDescription, tInfo, {}, not self.tToggledIcon[self.eObjectTypeChallenge])
-		self.tObjectsShown.Challenges[self.tChallengeObjects[chalOwner]] = {tPosition = tPosition, strDescription = strDescription}
+		self.tChallengeObjects[chalOwner] = self.wndMiniMap:AddObject(self.eObjectTypeChallenge, tPosition, strDescription,
+				tInfo, {}, not self.tToggledIcon[self.eObjectTypeChallenge])
+		self.tObjectsShown.Challenges[self.tChallengeObjects[chalOwner]] = {
+			tPosition = tPosition,
+			strDescription = strDescription}
 	end
 end
 
@@ -871,7 +1661,8 @@ function ForgeUI_MiniMap:OnFlashChallengeIcon(chalOwner, strDescription, fDurati
 			bAboveOverlay 	= true,
 		}
 
-		self.tChallengeObjects[chalOwner] = self.wndMiniMap:AddObject(self.eObjectTypeChallenge, tPosition, strDescription, tInfo, {}, false)
+		self.tChallengeObjects[chalOwner] = self.wndMiniMap:AddObject(self.eObjectTypeChallenge, tPosition, strDescription,
+				tInfo, {}, false)
 		self.ChallengeFlashingIconId = chalOwner
 
 		-- create the timer to turn off this flashing icon
@@ -908,7 +1699,9 @@ function ForgeUI_MiniMap:OnPlayerPathMissionActivate(pmActivated)
 		crEdge 		= CColor.new(1, 1, 1, 1),
 	}
 
-	self.wndMiniMap:AddPathIndicator(pmActivated, tInfo, {bNeverShowOnEdge = true, bFixedSizeSmall = false}, not self.tToggledIcons[ktTooltipCategories.Path])
+	self.wndMiniMap:AddPathIndicator(pmActivated, tInfo, {
+		bNeverShowOnEdge = true,
+		bFixedSizeSmall = false}, not self.tToggledIcons[ktTooltipCategories.Path])
 end
 
 function ForgeUI_MiniMap:OnPlayerPathMissionDeactivate(pmDeactivated)
@@ -944,7 +1737,8 @@ function ForgeUI_MiniMap:OnPublicEventUpdate(peUpdated)
 
 	for idx, tPos in ipairs(peUpdated:GetLocations()) do
 		local tOptions = { bNeverShowOnEdge = peUpdated:ShouldShowOnMiniMapEdge(), bFixedSizeSmall = false }
-		self.wndMiniMap:AddObject(self.eObjectTypePublicEvent, tPos, peUpdated:GetName(), tInfo, tOptions, not self.tToggledIcons[ktTooltipCategories.PublicEvent], peUpdated)
+		self.wndMiniMap:AddObject(self.eObjectTypePublicEvent, tPos, peUpdated:GetName(),
+				tInfo, tOptions, not self.tToggledIcons[ktTooltipCategories.PublicEvent], peUpdated)
 	end
 
 	for idx, peoCurr in ipairs(peUpdated:GetObjectives()) do
@@ -958,7 +1752,8 @@ function ForgeUI_MiniMap:OnPublicEventEnd(peEnding)
 		self:OnPublicEventObjectiveEnd(peoCurr)
 	end
 
-	if peEnding:GetEventType() == PublicEvent.PublicEventType_LiveEvent and not peEnding:IsActive() then -- Assumes only one live event will be active at once
+	-- Assumes only one live event will be active at once
+	if peEnding:GetEventType() == PublicEvent.PublicEventType_LiveEvent and not peEnding:IsActive() then
 		self.bLiveEventActive = false
 	end
 end
@@ -985,10 +1780,12 @@ function ForgeUI_MiniMap:OnPublicEventObjectiveUpdate(peoUpdated)
 		crEdge 		= CColor.new(1,1, 1, 1),
 	}
 
-	bHideOnEdge = (peoUpdated:ShouldShowOnMinimapEdge() ~= true)
+	local bHideOnEdge = (peoUpdated:ShouldShowOnMinimapEdge() ~= true)
 
 	for idx, tPos in ipairs(peoUpdated:GetLocations()) do
-		self.wndMiniMap:AddObject(self.eObjectTypePublicEvent, tPos, peoUpdated:GetShortDescription(), tInfo, {bNeverShowOnEdge = hideOnEdge, bFixedSizeSmall = false}, not self.tToggledIcons[ktTooltipCategories.PublicEvent], peoUpdated)
+		self.wndMiniMap:AddObject(self.eObjectTypePublicEvent, tPos, peoUpdated:GetShortDescription(), tInfo, {
+				bNeverShowOnEdge = bHideOnEdge,
+				bFixedSizeSmall = false}, not self.tToggledIcons[ktTooltipCategories.PublicEvent], peoUpdated)
 	end
 end
 
@@ -1018,7 +1815,10 @@ function ForgeUI_MiniMap:OnNavPointSet(tLoc)
 		crEdge = CColor.new(1, 1, 1, 1),
 	}
 	self.wndMiniMap:RemoveObjectsByType(self.eObjectTypeNavPoint)
-	self.wndMiniMap:AddObject(self.eObjectTypeNavPoint, tLoc, "Nav Pt", tInfo, {bOnlyShowOnEdge = false, bFixedSizeMedium = false, bAboveOverlay = true}, false)
+	self.wndMiniMap:AddObject(self.eObjectTypeNavPoint, tLoc, "Nav Pt", tInfo, {
+		bOnlyShowOnEdge = false,
+		bFixedSizeMedium = false,
+		bAboveOverlay = true}, false)
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -1037,7 +1837,8 @@ function ForgeUI_MiniMap:OnCityDirectionMarked(tLocInfo)
 
 	-- Only one city direction at a time, so stomp and remove and previous
 	self.wndMiniMap:RemoveObjectsByUserData(self.eObjectTypeCityDirections, Apollo.GetString("ZoneMap_CityDirections"))
-	self.wndMiniMap:AddObject(self.eObjectTypeCityDirections, tLocInfo.tLoc, tLocInfo.strName, tInfo, {bFixedSizeSmall = false}, false, Apollo.GetString("ZoneMap_CityDirections"))
+	self.wndMiniMap:AddObject(self.eObjectTypeCityDirections, tLocInfo.tLoc, tLocInfo.strName, tInfo,
+			{bFixedSizeSmall = false}, false, Apollo.GetString("ZoneMap_CityDirections"))
 	Apollo.StartTimer("ZoneMap_TimeOutCityDirectionMarker")
 end
 
@@ -1078,7 +1879,9 @@ function ForgeUI_MiniMap:OnQuestStateChanged()
 					crEdge 		= CColor.new(1, 1, 1, 1),
 				}
 				-- This is a C++ call on the MiniMapWindow class
-				self.wndMiniMap:AddQuestIndicator(queCurr, tostring(nCount), tInfo, {bOnlyShowOnEdge = false, bAboveOverlay = true}, not self.tToggledIcons[ktTooltipCategories.TrackedQuest])
+				self.wndMiniMap:AddQuestIndicator(queCurr, tostring(nCount), tInfo, {
+					bOnlyShowOnEdge = false,
+					bAboveOverlay = true}, not self.tToggledIcons[ktTooltipCategories.TrackedQuest])
 			elseif not queCurr:IsActiveQuest() and self.tToggledIcons[ktTooltipCategories.QuestNPC] then
 				local tInfo =
 				{
@@ -1090,7 +1893,10 @@ function ForgeUI_MiniMap:OnQuestStateChanged()
 					strIconBelow = "IconSprites:Icon_MapNode_Map_QuestMarkerBelow",
 				}
 				-- This is a C++ call on the MiniMapWindow class
-				self.wndMiniMap:AddQuestIndicator(queCurr, tostring(nCount), tInfo, {bOnlyShowOnEdge = false, bFixedSizeMedium = false, bAboveOverlay = true}, not self.tToggledIcons[ktTooltipCategories.TrackedQuest])
+				self.wndMiniMap:AddQuestIndicator(queCurr, tostring(nCount), tInfo, {
+					bOnlyShowOnEdge = false,
+					bFixedSizeMedium = false,
+					bAboveOverlay = true}, not self.tToggledIcons[ktTooltipCategories.TrackedQuest])
 			end
 		end
 	end
@@ -1235,9 +2041,10 @@ function ForgeUI_MiniMap:HandleUnitCreated(unitNew)
 		end
 
 		local bIconState = self:GetToggledIconState(objectType)
-		if not tInteract.Busy and (not tMarkerInfo.bHideIfHostile
-			or (tMarkerInfo.bHideIfHostile and unitNew:GetDispositionTo(self.unitPlayerDisposition) ~= Unit.CodeEnumDisposition.Hostile)) then
-			local mapIconReference = self.wndMiniMap:AddUnit(unitNew, objectType, tInfo, tMarkerOptions, bIconState ~= nil and not bIconState)
+		if not tInteract.Busy and (not tMarkerInfo.bHideIfHostile or (tMarkerInfo.bHideIfHostile
+				and unitNew:GetDispositionTo(self.unitPlayerDisposition) ~= Unit.CodeEnumDisposition.Hostile)) then
+			local mapIconReference = self.wndMiniMap:AddUnit(unitNew, objectType, tInfo, tMarkerOptions,
+				bIconState ~= nil and not bIconState)
 			self.tUnitsShown[unitNew:GetId()] = { tInfo = tInfo, unitObject = unitNew }
 
 			if objectType == self.eObjectTypeGroupMember then
@@ -1285,7 +2092,9 @@ function ForgeUI_MiniMap:OnHazardShowMinimapUnit(idHazard, unitHazard, bIsBenefi
 		tInfo.strIcon = "sprMM_ZoneHazard"
 	end
 
-	self.wndMiniMap:AddUnit(unitHazard, self.eObjectTypeHazard, tInfo, {bNeverShowOnEdge = true, bFixedSizeMedium = true}, false)
+	self.wndMiniMap:AddUnit(unitHazard, self.eObjectTypeHazard, tInfo, {
+		bNeverShowOnEdge = true,
+		bFixedSizeMedium = true}, false)
 end
 
 function ForgeUI_MiniMap:OnHazardRemoveMinimapUnit(idHazard, unitHazard)
@@ -1488,9 +2297,10 @@ function ForgeUI_MiniMap:DrawGroupMember(tMember)
 		tMarkerOptions.bFixedSizeMedium = tMarkerInfo.bFixedSizeMedium
 	end
 
-	local strNameFormatted = string.format("<T Font=\"CRB_InterfaceMedium_B\" TextColor=\"ff31fcf6\">%s</T>", tMember.strName)
+	local strNameFormatted = ("<T Font=\"CRB_InterfaceMedium_B\" TextColor=\"ff31fcf6\">%s</T>"):format(tMember.strName)
 	strNameFormatted = String_GetWeaselString(Apollo.GetString("ZoneMap_AppendGroupMemberLabel"), strNameFormatted)
-	tMember.mapObject = self.wndMiniMap:AddObject(self.eObjectTypeGroupMember, tMember.tWorldLoc, strNameFormatted, tInfo, tMarkerOptions)
+	tMember.mapObject = self.wndMiniMap:AddObject(self.eObjectTypeGroupMember, tMember.tWorldLoc, strNameFormatted,
+			tInfo, tMarkerOptions)
 
 end
 
@@ -1512,12 +2322,13 @@ function ForgeUI_MiniMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY
 	local tDisplayStrings = {}
 
 	for key, tObject in pairs(tMapObjects) do
-		local strName = string.format("<T Font=\"%s\" TextColor=\"%s\">%s</T>", "CRB_InterfaceMedium", "ffffffff", tObject.strName)
+		local strName = ("<T Font=\"%s\" TextColor=\"%s\">%s</T>"):format("CRB_InterfaceMedium", "ffffffff", tObject.strName)
 		local eParentCategory = self.tReverseCategoryMap[tObject.eType]
 
 		if self.tToggledIcons[eParentCategory] or tObject.eType == self.eObjectTypeNavPoint then
 			if tObject.eType == GameLib.CodeEnumMapOverlayType.QuestObjective then
-				local strLevel = string.format("<T Font=\"%s\" TextColor=\"%s\"> (%s)</T>", "CRB_InterfaceMedium", ktConColors[tObject.userData:GetColoredDifficulty()], tObject.userData:GetConLevel())
+				local strLevel = string.format("<T Font=\"%s\" TextColor=\"%s\"> (%s)</T>", "CRB_InterfaceMedium",
+						ktConColors[tObject.userData:GetColoredDifficulty()], tObject.userData:GetConLevel())
 				strName = strName .. strLevel
 			elseif tObject.eType == self.eObjectTypeNavPoint then
 				strName = Apollo.GetString("Navpoint_Set")
@@ -1552,7 +2363,8 @@ function ForgeUI_MiniMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY
 
 		local tStrings = tDisplayStrings[eCategory]
 		if nObjectCount < 10 then
-			strFinal = strFinal .. string.format("<P><T Font=\"%s\" TextColor=\"%s\">%s</T></P>", "CRB_InterfaceMedium", "UI_TextHoloTitle", ktCategoryNames[eCategory])
+			strFinal = strFinal .. string.format("<P><T Font=\"%s\" TextColor=\"%s\">%s</T></P>",
+					"CRB_InterfaceMedium", "UI_TextHoloTitle", ktCategoryNames[eCategory])
 
 			for strName, tIds in pairs(tStrings) do
 				local nCount = 0
@@ -1573,8 +2385,10 @@ function ForgeUI_MiniMap:OnGenerateTooltip(wndHandler, wndControl, eType, nX, nY
 	end
 
 	if nObjectCount > 10 then
-		strOther = String_GetWeaselString(Apollo.GetString("MiniMap_OtherUnits"), GetPluralizeActor(Apollo.GetString("CRB_Unit"), nObjectCount - 10))
-		strOther = string.format("<T Font=\"%s\" TextColor=\"%s\">%s</T>", "CRB_InterfaceMedium", "UI_TextHoloTitle", strOther)
+		local strOther = String_GetWeaselString(Apollo.GetString("MiniMap_OtherUnits"),
+				GetPluralizeActor(Apollo.GetString("CRB_Unit"), nObjectCount - 10))
+		strOther = string.format("<T Font=\"%s\" TextColor=\"%s\">%s</T>", "CRB_InterfaceMedium",
+				"UI_TextHoloTitle", strOther)
 		strFinal = strFinal .. "<P>" .. strOther .. "</P>"
 	end
 
