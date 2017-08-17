@@ -31,6 +31,9 @@ local ForgeUI_ResourceBars = {
 			crBorder = "FF000000",
 			crBackground = "FF101010",
 			crFocus = "FFFFFFFF",
+			crFocusSubThreshold = "FFFF0000",
+			nFocusThreshold = 30,
+			bUseFocusThreshold = false,
 			bCenterText = false,
 			strFullSprite = "ForgeUI_Smooth",
 			warrior = {
@@ -723,9 +726,14 @@ end
 function ForgeUI_ResourceBars:RefreshStyle_Focus(unitPlayer, nMana, nMaxMana)
 	self.wndFocus:FindChild("ProgressBar"):SetMax(nMaxMana)
 	self.wndFocus:FindChild("ProgressBar"):SetProgress(nMana)
-	self.wndFocus:FindChild("ProgressBar"):SetBarColor(self._DB.profile.crFocus)
+	if self._DB.profile.bUseFocusThreshold and nMana/nMaxMana*100 <= self._DB.profile.nFocusThreshold then
+		self.wndFocus:FindChild("ProgressBar"):SetBarColor(self._DB.profile.crFocusSubThreshold)
+	else
+		self.wndFocus:FindChild("ProgressBar"):SetBarColor(self._DB.profile.crFocus)
+	end
 	if self._DB.profile.bShowFocusText then
-		self.wndFocus:FindChild("Value"):SetText(Util:Round(nMana, 0) .. " ( " .. Util:Round((nMana / nMaxMana) * 100, 1) .. "% )")
+		local strText = Util:Round(nMana, 0) .. " ( " .. Util:Round((nMana / nMaxMana) * 100, 1) .. "% )"
+		self.wndFocus:FindChild("Value"):SetText(strText)
 	else
 		self.wndFocus:FindChild("Value"):SetText("")
 	end
@@ -803,6 +811,11 @@ function ForgeUI_ResourceBars:PopulateOptions_Focus()
 	G:API_AddColorBox(self, wndFocus, "Focus color", self._DB.profile, "crFocus", { tMove = {0, 0} })
 	G:API_AddCheckBox(self, wndFocus, "Always show focus bar", self._DB.profile, "bPermaShowFocus", { tMove = {0, 30} })
 	G:API_AddCheckBox(self, wndFocus, "Show focus text", self._DB.profile, "bShowFocusText", { tMove = {0, 60} })
+
+
+	G:API_AddColorBox(self, wndFocus, "Focus below theshold", self._DB.profile, "crFocusSubThreshold",{ tMove = {200, 0} })
+	G:API_AddNumberBox(self, wndFocus, "% Focus theshold", self._DB.profile, "nFocusThreshold", { tMove = {200, 30} })
+	G:API_AddCheckBox(self, wndFocus, "Use focus theshold", self._DB.profile, "bUseFocusThreshold", { tMove = {200, 60} })
 end
 
 function ForgeUI_ResourceBars:OnEsperBuffAdded(unit, tBuff, nCout)
