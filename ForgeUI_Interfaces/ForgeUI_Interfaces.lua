@@ -69,7 +69,8 @@ function ForgeUI_Interfaces:OnDocumentReady()
 	Apollo.RegisterEventHandler("InterfaceMenu_ToggleShop",         "OnToggleShop", self)
 	Apollo.RegisterEventHandler("InterfaceMenu_ToggleFortunes",     "OnToggleFortunes", self)
 
-	self.wndMain = Apollo.LoadForm(self.xmlDoc , "ForgeUI_InterfacesForm", "FixedHudStratumHigh", self)
+	self.wndMain = Apollo.LoadForm(self.xmlDoc , "ForgeUI_InterfacesForm", F:API_GetStratum("HudHigh"), self)
+	F:API_RegisterMover(self, self.wndMain, "MenuList", "MenuList", "misc", {})
 	self.wndList = Apollo.LoadForm(self.xmlDoc , "FullListFrame", nil, self)
 
 	self.wndMain:FindChild("OpenFullListBtn"):AttachWindow(self.wndList)
@@ -489,4 +490,3 @@ end
 -- ForgeUI addon registration
 -----------------------------------------------------------------------------------------------
 F:API_NewAddon(ForgeUI_Interfaces)
-
