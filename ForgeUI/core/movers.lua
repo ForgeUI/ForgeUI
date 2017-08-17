@@ -181,6 +181,7 @@ function Movers:ForgeAPI_Init()
 	self.wndMoversForm:FindChild("CancelButton"):AddEventHandler("ButtonSignal", "CancelChanges", self)
 	self.wndGrid = Apollo.LoadForm(ForgeUI.xmlDoc, "ForgeUI_MoversGrid", "FixedHudStratumLow", self)
 
+	self.strScope = "general"
 	local wndScope = G:API_AddComboBox(self, self.wndMoversForm:FindChild("Scope"), "Scope", nil, nil, {
 		tOffsets = { 0, 0, 200, 25 },
 		fnCallback = Movers.OnScopeSet,
@@ -241,7 +242,8 @@ function Movers:UnlockMovers()
 		F:API_GetStratum(v):Show(false, true)
 	end
 
-	for k, v in pairs(tScopes["general"]) do
+	local strScope = self.strScope or "general"
+	for k, v in pairs(tScopes[strScope]) do
 		UpdateMoverPosition(v)
 
 		v:Show(true, true)
@@ -284,6 +286,8 @@ end
 
 function Movers:OnScopeSet(strScope)
 	if not tScopes[strScope] then return end
+
+	self.strScope = strScope
 
 	for k, v in pairs(tScopes["all"]) do
 		v:Show(false, true)
