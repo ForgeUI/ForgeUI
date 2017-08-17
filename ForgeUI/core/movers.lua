@@ -188,7 +188,7 @@ function Movers:ForgeAPI_Init()
 	G:API_AddOptionToComboBox(self, wndScope, "All", "all")
 	G:API_AddOptionToComboBox(self, wndScope, "General", "general", { bDefault = true })
 	G:API_AddOptionToComboBox(self, wndScope, "Misc", "misc")
-	
+
 	self.wndShowGrid = G:API_AddCheckBox(self, self.wndMoversForm:FindChild("Grid"), "Show grid", nil, nil, {
 		fnCallback = (function(...)
 			self.wndGrid:Show(self.wndShowGrid:IsChecked() or self.wndShowFill:IsChecked(), true)
@@ -203,17 +203,17 @@ function Movers:ForgeAPI_Init()
 			self:GenerateGrid()
 		end),
 	}):FindChild("CheckBox")
-	
+
 	G:API_AddNumberBox(self, self.wndMoversForm:FindChild("Grid"), "Grid size", self._DB.global, "nGridSize", {
 		tMove = { 150, 0 }, fnCallback = self.GenerateGrid,
 	})
-		
+
 	for k, v in pairs(tScopes["all"]) do
 		UpdateParentPosition(v)
 
 		v:Show(false, true)
 	end
-	
+
 	self:GenerateGrid()
 end
 
@@ -296,11 +296,11 @@ end
 
 function Movers:GenerateGrid()
 	self.wndGrid:DestroyAllPixies()
-	
+
 	local nHeight = self.wndGrid:GetHeight()
 	local nWidth = self.wndGrid:GetWidth()
 	local nStep = self._DB.global.nGridSize
-	
+
 	if self.wndShowFill:IsChecked() then
 		self.wndGrid:AddPixie({
 			bLine = false,
@@ -325,16 +325,16 @@ function Movers:GenerateGrid()
 					nOffsets = {nWidth / 2 + i, 0, nWidth / 2 + i + 1, 0},
 				},
 			}
-			
+
 			if i == 0 then
 				tPixie.cr = "FFFF0000"
 			end
-			
+
 			self.wndGrid:AddPixie(tPixie)
 			tPixie.loc.nOffsets = {nWidth / 2 - (i + 1), 0, nWidth / 2 - i, 0}
 			self.wndGrid:AddPixie(tPixie)
 		end
-		
+
 		for i = 0, nHeight / 2, nStep do
 			tPixie = {
 				bLine = false,
@@ -345,11 +345,11 @@ function Movers:GenerateGrid()
 					nOffsets = {0, nHeight / 2 + i, 0, nHeight / 2 + i + 1},
 				},
 			}
-			
+
 			if i == 0 then
 				tPixie.cr = "FFFF0000"
 			end
-			
+
 			self.wndGrid:AddPixie(tPixie)
 			tPixie.loc.nOffsets = {0, nHeight / 2 - (i + 1), 0, nHeight / 2 - i}
 			self.wndGrid:AddPixie(tPixie)
