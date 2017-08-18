@@ -40,22 +40,70 @@ local knLargeIconOption = 48
 local knMaxBags = 4 -- how many bags can the player have
 local knPaddingTop = 20
 
-local karCurrency =  	-- Alt currency table; re-indexing the enums so they don't have to be in sequence code-side (and removing cash)
-{						-- To add a new currency just add an entry to the table; the UI will do the rest. Idx == 1 will be the default one shown
-	{eType = Money.CodeEnumCurrencyType.Renown, 					strTitle = Apollo.GetString("CRB_Renown"), 						strDescription = Apollo.GetString("CRB_Renown_Desc")},
-	{eType = Money.CodeEnumCurrencyType.Triploons, 					strTitle = Apollo.GetString("CRB_Triploons"), 					strDescription = Apollo.GetString("CRB_Triploons_Desc")},
-	{eType = Money.CodeEnumCurrencyType.ElderGems, 					strTitle = Apollo.GetString("CRB_Elder_Gems"), 					strDescription = Apollo.GetString("CRB_Elder_Gems_Desc")},
-	{eType = Money.CodeEnumCurrencyType.Glory, 						strTitle = Apollo.GetString("CRB_Glory"), 						strDescription = Apollo.GetString("CRB_Glory_Desc")},
-	{eType = Money.CodeEnumCurrencyType.Prestige, 					strTitle = Apollo.GetString("CRB_Prestige"), 					strDescription = Apollo.GetString("CRB_Prestige_Desc")},
-	{eType = Money.CodeEnumCurrencyType.CraftingVouchers, 			strTitle = Apollo.GetString("CRB_Crafting_Vouchers"), 			strDescription = Apollo.GetString("CRB_Crafting_Voucher_Desc")},
-  {eType = Money.CodeEnumCurrencyType.PurpleEssence,         strTitle = Apollo.GetString("Matrix_NodePurpleName"),        strDescription = AccountItemLib.GetAccountCurrency(AccountItemLib.CodeEnumAccountCurrency.PurpleEssence):GetTypeString()},
-  {eType = Money.CodeEnumCurrencyType.RedEssence,         strTitle = Apollo.GetString("Matrix_NodeRedName"),        strDescription = AccountItemLib.GetAccountCurrency(AccountItemLib.CodeEnumAccountCurrency.RedEssence):GetTypeString()},
-  {eType = Money.CodeEnumCurrencyType.BlueEssence,         strTitle = Apollo.GetString("Matrix_NodeBlueName"),        strDescription = AccountItemLib.GetAccountCurrency(AccountItemLib.CodeEnumAccountCurrency.BlueEssence):GetTypeString()},
-  {eType = Money.CodeEnumCurrencyType.GreenEssence,         strTitle = Apollo.GetString("Matrix_NodeGreenName"),        strDescription = AccountItemLib.GetAccountCurrency(AccountItemLib.CodeEnumAccountCurrency.GreenEssence):GetTypeString()},
-	{eType = AccountItemLib.CodeEnumAccountCurrency.PromissoryNote, strTitle = Apollo.GetString("CRB_Protostar_Promissory_Note"),	strDescription = Apollo.GetString("CRB_Protostar_Promissory_Note_Desc"), bAccountItem = true},
-	{eType = AccountItemLib.CodeEnumAccountCurrency.Omnibits,       strTitle = Apollo.GetString("CRB_OmniBits"),              		strDescription = Apollo.GetString("CRB_OmniBits_Desc"), bAccountItem = true},
-	{eType = AccountItemLib.CodeEnumAccountCurrency.ServiceToken,   strTitle = Apollo.GetString("AccountInventory_ServiceToken"),   strDescription = Apollo.GetString("AccountInventory_ServiceToken_Desc"), bAccountItem = true},
-	{eType = AccountItemLib.CodeEnumAccountCurrency.MysticShiny,    strTitle = Apollo.GetString("CRB_FortuneCoin"),           		strDescription = Apollo.GetString("CRB_FortuneCoin_Desc"), bAccountItem = true},
+-- Alt currency table; re-indexing the enums so they don't have to be in sequence code-side (and removing cash)
+-- To add a new currency just add an entry to the table; the UI will do the rest. Idx == 1 will be the default one shown
+local karCurrency =
+{
+	{
+		eType = Money.CodeEnumCurrencyType.Renown,
+		strTitle = Apollo.GetString("CRB_Renown"),
+		strDescription = Apollo.GetString("CRB_Renown_Desc")},
+	{
+		eType = Money.CodeEnumCurrencyType.Triploons,
+		strTitle = Apollo.GetString("CRB_Triploons"),
+		strDescription = Apollo.GetString("CRB_Triploons_Desc")},
+	{
+		eType = Money.CodeEnumCurrencyType.ElderGems,
+		strTitle = Apollo.GetString("CRB_Elder_Gems"),
+		strDescription = Apollo.GetString("CRB_Elder_Gems_Desc")},
+	{
+		eType = Money.CodeEnumCurrencyType.Glory,
+		strTitle = Apollo.GetString("CRB_Glory"),
+		strDescription = Apollo.GetString("CRB_Glory_Desc")},
+	{
+		eType = Money.CodeEnumCurrencyType.Prestige,
+		strTitle = Apollo.GetString("CRB_Prestige"),
+		strDescription = Apollo.GetString("CRB_Prestige_Desc")},
+	{
+		eType = Money.CodeEnumCurrencyType.CraftingVouchers,
+		strTitle = Apollo.GetString("CRB_Crafting_Vouchers"),
+		strDescription = Apollo.GetString("CRB_Crafting_Voucher_Desc")},
+  {
+		eType = Money.CodeEnumCurrencyType.PurpleEssence,
+		strTitle = Apollo.GetString("Matrix_NodePurpleName"),
+		strDescription = Apollo.GetString("Matrix_NodePurpleName")},
+  {
+		eType = Money.CodeEnumCurrencyType.RedEssence,
+		strTitle = Apollo.GetString("Matrix_NodeRedName"),
+		strDescription =Apollo.GetString("Matrix_NodeRedName")},
+  {
+		eType = Money.CodeEnumCurrencyType.BlueEssence,
+		strTitle = Apollo.GetString("Matrix_NodeBlueName"),
+		strDescription = Apollo.GetString("Matrix_NodeBlueName")},
+  {
+		eType = Money.CodeEnumCurrencyType.GreenEssence,
+		strTitle = Apollo.GetString("Matrix_NodeGreenName"),
+		strDescription = Apollo.GetString("Matrix_NodeGreenName")},
+	{
+		eType = AccountItemLib.CodeEnumAccountCurrency.PromissoryNote,
+		strTitle = Apollo.GetString("CRB_Protostar_Promissory_Note"),
+		strDescription = Apollo.GetString("CRB_Protostar_Promissory_Note_Desc"),
+		bAccountItem = true},
+	{
+		eType = AccountItemLib.CodeEnumAccountCurrency.Omnibits,
+		strTitle = Apollo.GetString("CRB_OmniBits"),
+		strDescription = Apollo.GetString("CRB_OmniBits_Desc"),
+		bAccountItem = true},
+	{
+		eType = AccountItemLib.CodeEnumAccountCurrency.ServiceToken,
+		strTitle = Apollo.GetString("AccountInventory_ServiceToken"),
+		strDescription = Apollo.GetString("AccountInventory_ServiceToken_Desc"),
+		bAccountItem = true},
+	{
+		eType = AccountItemLib.CodeEnumAccountCurrency.MysticShiny,
+		strTitle = Apollo.GetString("CRB_FortuneCoin"),
+		strDescription = Apollo.GetString("CRB_FortuneCoin_Desc"),
+		bAccountItem = true},
 }
 
 local fnSortItemsByName = function(itemLeft, itemRight)
@@ -136,7 +184,8 @@ function ForgeUI_Inventory:ForgeAPI_Init()
 	Apollo.RegisterEventHandler("UpdateInventory", 							"OnUpdateInventory", self)
 	Apollo.RegisterEventHandler("InterfaceMenuListHasLoaded", 				"OnInterfaceMenuListHasLoaded", self)
 
-	Apollo.RegisterEventHandler("InterfaceMenu_ToggleInventory", 			"OnToggleVisibility", self) -- TODO: The datachron attachment needs to be brought over
+ -- TODO: The datachron attachment needs to be brought over
+	Apollo.RegisterEventHandler("InterfaceMenu_ToggleInventory", 			"OnToggleVisibility", self)
 	Apollo.RegisterEventHandler("GuildBank_ShowPersonalInventory", 			"OnToggleVisibilityAlways", self)
 
 	Apollo.RegisterEventHandler("PlayerEquippedItemChanged", 				"UpdateBagSlotItems", self) -- using this for bag changes
@@ -144,7 +193,8 @@ function ForgeUI_Inventory:ForgeAPI_Init()
 	Apollo.RegisterEventHandler("QuestObjectiveUpdated", 					"OnQuestObjectiveUpdated", self)
 	Apollo.RegisterEventHandler("PlayerPathRefresh", 						"OnQuestObjectiveUpdated", self) -- route to same event
 	Apollo.RegisterEventHandler("QuestStateChanged", 						"OnQuestObjectiveUpdated", self)
-	Apollo.RegisterEventHandler("ToggleInventory", 							"OnToggleVisibility", self) -- todo: figure out if show inventory is needed
+	-- todo: figure out if show inventory is needed
+	Apollo.RegisterEventHandler("ToggleInventory", 							"OnToggleVisibility", self)
 	Apollo.RegisterEventHandler("ShowInventory", 							"OnToggleVisibility", self)
 	Apollo.RegisterEventHandler("ChallengeUpdated", 						"OnChallengeUpdated", self)
 	Apollo.RegisterEventHandler("CharacterCreated", 						"OnCharacterCreated", self)
@@ -188,13 +238,15 @@ function ForgeUI_Inventory:ForgeAPI_Init()
 	self.nLastWndMainWidth = self.wndMain:GetWidth()
 	self.bSupplySatchelOpen = false
 
-	local nLeft, _, nRight, _ = self.wndMain:GetAnchorOffsets()
-	self.nFirstEverWidth = nRight - nLeft
-	self.wndMain:SetSizingMinimum(245, 285)
-	--self.wndMain:SetSizingMaximum(1200, 700)
+	do
+		local nLeft, _, nRight, _ = self.wndMain:GetAnchorOffsets()
+		self.nFirstEverWidth = nRight - nLeft
+		self.wndMain:SetSizingMinimum(245, 285)
+		--self.wndMain:SetSizingMaximum(1200, 700)
 
-	local _, nTop, _, nBottom = self.wndMain:FindChild("MainGridContainer"):GetAnchorOffsets()
-	self.nFirstEverMainGridHeight = nBottom - nTop
+		local _, nTop, _, nBottom = self.wndMain:FindChild("MainGridContainer"):GetAnchorOffsets()
+		self.nFirstEverMainGridHeight = nBottom - nTop
+	end
 
 	self.tBagSlots = {}
 	self.tBagCounts = {}
@@ -219,12 +271,8 @@ function ForgeUI_Inventory:ForgeAPI_Init()
 
 	self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self._DB.global.nSortItemType])
 	self.wndMainBagWindow:SetSort(self._DB.global.bShouldSortItems)
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortOff"):SetCheck(not self._DB.global.bShouldSortItems)
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortAlpha"):SetCheck(self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 1)
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortCategory"):SetCheck(self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 2)
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortQuality"):SetCheck(self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 3)
-
-	self.wndIconBtnSortDropDown = self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown")
+	local strSortDropdown = "OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown"
+	self.wndIconBtnSortDropDown = self.wndMain:FindChild(strSortDropdown)
 	self.wndIconBtnSortDropDown:AttachWindow(self.wndIconBtnSortDropDown:FindChild("ItemSortPrompt"))
 
 		--Alt Curency Display
@@ -253,7 +301,8 @@ function ForgeUI_Inventory:ForgeAPI_Init()
 			if nTotalWeeklyOmniBitBonus < 0 then
 				nTotalWeeklyOmniBitBonus = 0
 			end
-			strDescription = strDescription.."\n"..String_GetWeaselString(Apollo.GetString("CRB_OmniBits_EarningsWeekly"), nTotalWeeklyOmniBitBonus)
+			strDescription = strDescription.."\n"..String_GetWeaselString(Apollo.GetString("CRB_OmniBits_EarningsWeekly"),
+					nTotalWeeklyOmniBitBonus)
 		end
 		wnd:FindChild("PickerEntryBtn"):SetTooltip(strDescription)
 		tData.wnd = wnd
@@ -263,10 +312,14 @@ function ForgeUI_Inventory:ForgeAPI_Init()
 	self:UpdateAltCashDisplay()
 	self.wndMainBagWindow:SetSort(self._DB.global.bShouldSortItems)
 	self.wndMainBagWindow:SetItemSortComparer(ktSortFunctions[self._DB.global.nSortItemType])
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortOff"):SetCheck(not self._DB.global.bShouldSortItems)
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortAlpha"):SetCheck(self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 1)
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortCategory"):SetCheck(self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 2)
-	self.wndMain:FindChild("OptionsContainer:OptionsContainerFrame:OptionsConfigureSort:IconBtnSortDropDown:ItemSortPrompt:IconBtnSortQuality"):SetCheck(self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 3)
+	local bSortOff = not self._DB.global.bShouldSortItems
+	local bSortAlphabetical = self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 1
+	local bSortCategory = self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 2
+	local bSortQuality = self._DB.global.bShouldSortItems and self._DB.global.nSortItemType == 3
+	self.wndMain:FindChild(strSortDropdown..":ItemSortPrompt:IconBtnSortOff"):SetCheck(bSortOff)
+	self.wndMain:FindChild(strSortDropdown..":ItemSortPrompt:IconBtnSortAlpha"):SetCheck(bSortAlphabetical)
+	self.wndMain:FindChild(strSortDropdown..":ItemSortPrompt:IconBtnSortCategory"):SetCheck(bSortCategory)
+	self.wndMain:FindChild(strSortDropdown..":ItemSortPrompt:IconBtnSortQuality"):SetCheck(bSortQuality)
 
 	Event_FireGenericEvent("AddonFullyLoaded", {addon = self, strName = self._NAME})
 end
@@ -284,7 +337,8 @@ function ForgeUI_Inventory:OnLootstackItemSentToTradeskillBag(item)
 end
 
 function ForgeUI_Inventory:OnInterfaceMenuListHasLoaded()
-	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Inventory"), {"InterfaceMenu_ToggleInventory", "Inventory", "Icon_Windows32_UI_CRB_InterfaceMenu_Inventory"})
+	Event_FireGenericEvent("InterfaceMenuList_NewAddOn", Apollo.GetString("InterfaceMenu_Inventory"),
+			{"InterfaceMenu_ToggleInventory", "Inventory", "Icon_Windows32_UI_CRB_InterfaceMenu_Inventory"})
 
 	if self.wndMainBagWindow then
 		local tParams = {false, nil, self.wndMainBagWindow:GetTotalEmptyBagSlots()}
@@ -376,7 +430,8 @@ function ForgeUI_Inventory:UpdateBagSlotItems() -- update our bag display
 				Tooltip.GetItemTooltipForm(self, wndCtrl, itemBag, {bPrimary = true, bSelling = false})
 			else
 				self.tBagCounts[idx]:SetText("")
-				wndCtrl:SetTooltip(string.format("<T Font=\"CRB_InterfaceSmall\" TextColor=\"white\">%s</T>", Apollo.GetString("Inventory_EmptySlot")))
+				wndCtrl:SetTooltip(string.format("<T Font=\"CRB_InterfaceSmall\" TextColor=\"white\">%s</T>",
+						Apollo.GetString("Inventory_EmptySlot")))
 				wndCtrl:FindChild("RemoveBagIcon"):Show(false)
 			end
 		end
@@ -426,8 +481,8 @@ function ForgeUI_Inventory:OnOptionsMenuToggle(wndHandler, wndControl) -- Option
 		self.wndMain:FindChild("BagBtn" .. idx):FindChild("RemoveBagIcon"):Show(false)
 	end
 
-	self.wndMain:FindChild("IconBtnLarge"):SetCheck(self.nBoxSize == kLargeIconOption) -- kLargeIconOption undefined!
-	self.wndMain:FindChild("IconBtnSmall"):SetCheck(self.nBoxSize == kSmallIconOption) -- kSmallIconOption undefined!
+	self.wndMain:FindChild("IconBtnLarge"):SetCheck(self.nBoxSize == knLargeIconOption)
+	self.wndMain:FindChild("IconBtnSmall"):SetCheck(self.nBoxSize == knSmallIconOption)
 
 	for key, wndCurr in pairs(self.wndMain:FindChild("OptionsConfigureCurrencyList"):GetChildren()) do
 		self:UpdateAltCash(wndCurr)
@@ -471,7 +526,8 @@ function ForgeUI_Inventory:UpdateAltCash(wndHandler, wndControl) -- Also from Pi
 		if nTotalWeeklyOmniBitBonus < 0 then
 			nTotalWeeklyOmniBitBonus = 0
 		end
-		strDescription = strDescription.."\n"..String_GetWeaselString(Apollo.GetString("CRB_OmniBits_EarningsWeekly"), nTotalWeeklyOmniBitBonus)
+		strDescription = strDescription.."\n"..String_GetWeaselString(Apollo.GetString("CRB_OmniBits_EarningsWeekly"),
+				nTotalWeeklyOmniBitBonus)
 		wndHandler:FindChild("PickerEntryBtn"):SetTooltip(strDescription)
 	end
 
@@ -500,10 +556,12 @@ function ForgeUI_Inventory:UpdateAltCashDisplay()
 		if nTotalWeeklyOmniBitBonus < 0 then
 			nTotalWeeklyOmniBitBonus = 0
 		end
-		strDescription = strDescription.."\n"..String_GetWeaselString(Apollo.GetString("CRB_OmniBits_EarningsWeekly"), nTotalWeeklyOmniBitBonus)
+		strDescription = strDescription.."\n"..String_GetWeaselString(Apollo.GetString("CRB_OmniBits_EarningsWeekly"),
+				nTotalWeeklyOmniBitBonus)
 	end
-	self.wndMain:FindChild("AltCashWindow"):SetTooltip(String_GetWeaselString(Apollo.GetString("Inventory_MoneyTooltip"), strDescription))
-	self.wndMain:FindChild("MainCashWindow"):SetTooltip(String_GetWeaselString(Apollo.GetString("Inventory_MoneyTooltip"), strDescription))
+	local strTooltip = String_GetWeaselString(Apollo.GetString("Inventory_MoneyTooltip"), strDescription)
+	self.wndMain:FindChild("AltCashWindow"):SetTooltip(strTooltip)
+	self.wndMain:FindChild("MainCashWindow"):SetTooltip(strTooltip)
 end
 
 
@@ -534,7 +592,7 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ForgeUI_Inventory:OnSalvageAllBtn(wndHandler, wndControl)
-	Event_FireGenericEvent("RequestSalvageAll", tAnchors) -- tAnchors Undefined
+	Event_FireGenericEvent("RequestSalvageAll")--, tAnchors) -- tAnchors Undefined
 end
 
 function ForgeUI_Inventory:OnDragDropSalvage(wndHandler, wndControl, nX, nY, wndSource, strType, iData)
@@ -551,7 +609,8 @@ function ForgeUI_Inventory:OnQueryDragDropSalvage(wndHandler, wndControl, nX, nY
 	return Apollo.DragDropQueryResult.Ignore
 end
 
-function ForgeUI_Inventory:OnDragDropNotifySalvage(wndHandler, wndControl, bMe) -- TODO: We can probably replace this with a button mouse over state
+function ForgeUI_Inventory:OnDragDropNotifySalvage(wndHandler, wndControl, bMe)
+	-- TODO: We can probably replace this with a button mouse over state
 	-- if bMe and self.wndMain:FindChild("SalvageIcon"):GetData() then
 		--self.wndMain:FindChild("SalvageIcon"):SetSprite("CRB_Inventory:InvBtn_SalvageToggleFlyby")
 		--self.wndMain:FindChild("TextActionPrompt_Salvage"):Show(true)
@@ -599,9 +658,12 @@ function ForgeUI_Inventory:UpdateVirtualItemInventory()
 		end
 		nOnGoingCount = nOnGoingCount + tCurrItem.nCount
 		wndCurr:FindChild("VirtualItemDisplay"):SetSprite(tCurrItem.strIcon)
-		wndCurr:SetTooltip(string.format("<P Font=\"CRB_InterfaceSmall\">%s</P><P Font=\"CRB_InterfaceSmall\" TextColor=\"aaaaaaaa\">%s</P>", tCurrItem.strName, tCurrItem.strFlavor))
+		wndCurr:SetTooltip(
+			string.format("<P Font=\"CRB_InterfaceSmall\">%s</P><P Font=\"CRB_InterfaceSmall\" TextColor=\"aaaaaaaa\">%s</P>",
+					tCurrItem.strName, tCurrItem.strFlavor))
 	end
-	self.wndMain:FindChild("VirtualInvToggleBtn"):SetText(String_GetWeaselString(Apollo.GetString("Inventory_VirtualInvBtn"), nOnGoingCount))
+	self.wndMain:FindChild("VirtualInvToggleBtn"):SetText(
+			String_GetWeaselString(Apollo.GetString("Inventory_VirtualInvBtn"), nOnGoingCount))
 	self.wndMain:FindChild("VirtualInvItems"):ArrangeChildrenHorz(1)
 
 	-- Adjust heights
@@ -634,11 +696,14 @@ end
 -----------------------------------------------------------------------------------------------
 
 function ForgeUI_Inventory:OnBagDragDropCancel(wndHandler, wndControl, strType, iData, eReason)
-	if strType ~= "DDBagItem" or eReason == Apollo.DragDropCancelReason.EscapeKey or eReason == Apollo.DragDropCancelReason.ClickedOnNothing then
+	if (strType ~= "DDBagItem" or
+			eReason == Apollo.DragDropCancelReason.EscapeKey or
+			eReason == Apollo.DragDropCancelReason.ClickedOnNothing) then
 		return false
 	end
 
-	if eReason == Apollo.DragDropCancelReason.ClickedOnWorld or eReason == Apollo.DragDropCancelReason.DroppedOnNothing then
+	if (eReason == Apollo.DragDropCancelReason.ClickedOnWorld or
+			eReason == Apollo.DragDropCancelReason.DroppedOnNothing) then
 		self:InvokeDeleteConfirmWindow(iData)
 	end
 	return false
@@ -659,7 +724,8 @@ function ForgeUI_Inventory:OnQueryDragDropTrash(wndHandler, wndControl, nX, nY, 
 	return Apollo.DragDropQueryResult.Ignore
 end
 
-function ForgeUI_Inventory:OnDragDropNotifyTrash(wndHandler, wndControl, bMe) -- TODO: We can probably replace this with a button mouse over state
+function ForgeUI_Inventory:OnDragDropNotifyTrash(wndHandler, wndControl, bMe)
+	-- TODO: We can probably replace this with a button mouse over state
 	if bMe then
 		--self.wndMain:FindChild("TrashIcon"):SetSprite("CRB_Inventory:InvBtn_TrashToggleFlyby")
 		self.wndMain:FindChild("TrashIcon"):SetTextColor("FFFFFFFF")
@@ -687,7 +753,8 @@ function ForgeUI_Inventory:OnQueryDragDropSalvage(wndHandler, wndControl, nX, nY
 	return Apollo.DragDropQueryResult.Ignore
 end
 
-function ForgeUI_Inventory:OnDragDropNotifySalvage(wndHandler, wndControl, bMe) -- TODO: We can probably replace this with a button mouse over state
+function ForgeUI_Inventory:OnDragDropNotifySalvage(wndHandler, wndControl, bMe)
+	-- TODO: We can probably replace this with a button mouse over state
 	if bMe and self.wndMain:FindChild("SalvageIcon"):GetData() then
 		self.wndMain:FindChild("TextActionPrompt_Salvage"):Show(true)
 	elseif self.wndMain:FindChild("SalvageIcon"):GetData() then
@@ -738,7 +805,8 @@ function ForgeUI_Inventory:OnSystemBeginDragDrop(wndSource, strType, iData)
 end
 
 function ForgeUI_Inventory:OnSystemEndDragDrop(strType, iData)
-	if not self.wndMain or not self.wndMain:IsValid() or not self.wndMain:FindChild("TrashIcon") or strType == "DDGuildBankItem" or strType == "DDWarPartyBankItem" or strType == "DDGuildBankItemSplitStack" then
+	if (not self.wndMain or not self.wndMain:IsValid() or not self.wndMain:FindChild("TrashIcon") or
+			strType == "DDGuildBankItem" or strType == "DDWarPartyBankItem" or strType == "DDGuildBankItemSplitStack") then
 		return -- TODO Investigate if there are other types
 	end
 
@@ -856,7 +924,10 @@ function ForgeUI_Inventory:OnGenericEvent_SplitItemStack(item)
 	end
 	self.wndSplit:Invoke()
 	local tMouse = Apollo.GetMouse()
-	self.wndSplit:Move(tMouse.x - math.floor(self.wndSplit:GetWidth() / 2) , tMouse.y - knPaddingTop - self.wndSplit:GetHeight(), self.wndSplit:GetWidth(), self.wndSplit:GetHeight())
+	self.wndSplit:Move(tMouse.x - math.floor(self.wndSplit:GetWidth() / 2) ,
+										tMouse.y - knPaddingTop - self.wndSplit:GetHeight(),
+										self.wndSplit:GetWidth(),
+										self.wndSplit:GetHeight())
 
 
 	self.wndSplit:SetData(item)
@@ -884,7 +955,8 @@ end
 
 function ForgeUI_Inventory:OnSplitStackConfirm(wndHandler, wndCtrl)
 	self.wndSplit:Close()
-	self.wndMain:FindChild("MainBagWindow"):StartSplitStack(self.wndSplit:GetData(), self.wndSplit:FindChild("SplitValue"):GetValue())
+	self.wndMain:FindChild("MainBagWindow"):StartSplitStack(self.wndSplit:GetData(),
+			self.wndSplit:FindChild("SplitValue"):GetValue())
 end
 
 function ForgeUI_Inventory:OnGenerateTooltip(wndControl, wndHandler, tType, item)
@@ -893,7 +965,7 @@ function ForgeUI_Inventory:OnGenerateTooltip(wndControl, wndHandler, tType, item
 	if item ~= nil then
 		local itemEquipped = item:GetEquippedItemForItemType()
 		Tooltip.GetItemTooltipForm(self, wndControl, item, {bPrimary = true, bSelling = false, itemCompare = itemEquipped})
-		-- Tooltip.GetItemTooltipForm(self, wndControl, itemEquipped, {bPrimary = false, bSelling = false, itemCompare = item})
+-- Tooltip.GetItemTooltipForm(self, wndControl, itemEquipped, {bPrimary = false, bSelling = false, itemCompare = item})
 	end
 end
 
