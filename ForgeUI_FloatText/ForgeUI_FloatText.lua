@@ -52,6 +52,17 @@ local ForgeUI_FloatText = {
 local FloatText = Apollo.GetAddon("FloatText")
 
 function ForgeUI_FloatText:ForgeAPI_Init()
+
+	local tFloatTextInfo = Apollo.GetAddonInfo("FloatText")
+	if not tFloatTextInfo or tFloatTextInfo.bRunning ~= 1 then --yes, this is 1 instead of true...
+		local strError = self._NAME.." cannot run without the Addon 'FloatText'."
+
+		Apollo.AddAddonErrorText(self._NAME, strError)
+		Apollo.SuspendAddon(self._NAME)
+		return
+	end
+
+
 	self.xmlDoc = XmlDoc.CreateFromFile("..//ForgeUI_FloatText//ForgeUI_FloatText.xml")
 	self.xmlDoc:RegisterCallback("OnDocLoaded", self)
 
