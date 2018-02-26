@@ -187,6 +187,7 @@ function ForgeUI_Inventory:ForgeAPI_Init()
  -- TODO: The datachron attachment needs to be brought over
 	Apollo.RegisterEventHandler("InterfaceMenu_ToggleInventory", 			"OnToggleVisibility", self)
 	Apollo.RegisterEventHandler("GuildBank_ShowPersonalInventory", 			"OnToggleVisibilityAlways", self)
+	Apollo.RegisterEventHandler("InvokeVendorWindow",						"OnToggleVisibilityAlways", self)
 
 	Apollo.RegisterEventHandler("PlayerEquippedItemChanged", 				"UpdateBagSlotItems", self) -- using this for bag changes
 	Apollo.RegisterEventHandler("PlayerPathMissionUpdate", 					"OnQuestObjectiveUpdated", self) -- route to same event
