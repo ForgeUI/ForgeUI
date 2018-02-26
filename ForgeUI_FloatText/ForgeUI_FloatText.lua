@@ -152,18 +152,22 @@ function ForgeUI_FloatText:GetDefaultTextOption()
 	return tTextOption
 end
 
-function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageType, nDamage, nShieldDamaged, nAbsorptionAmount, bCritical )
+function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageType, nDamage, nShieldDamaged,
+				nAbsorptionAmount, bCritical )
 	if unitTarget == nil or not Apollo.GetConsoleVariable("ui.showCombatFloater") or nDamage == nil then
 		return
 	end
 
-	if GameLib.IsControlledUnit(unitTarget) or unitTarget == GameLib.GetPlayerMountUnit() or GameLib.IsControlledUnit(unitTarget:GetUnitOwner()) then
+	if (GameLib.IsControlledUnit(unitTarget)
+			or unitTarget == GameLib.GetPlayerMountUnit()
+			or GameLib.IsControlledUnit(unitTarget:GetUnitOwner())) then
+
 		self:OnPlayerDamageOrHealing( unitTarget, eDamageType, nDamage, nShieldDamaged, nAbsorptionAmount, bCritical )
 		return
 	end
 
 	-- NOTE: This needs to be changed if we're ever planning to display shield and normal damage in different formats.
-	-- NOTE: Right now, we're just telling the player the amount of damage they did and not the specific type to keep things neat
+	-- NOTE: Right now, we're just telling the player the amount of damage they did and not the specific type
 	local nTotalDamage = nDamage
 	if type(nShieldDamaged) == "number" and nShieldDamaged > 0 then
 		nTotalDamage = nTotalDamage + nShieldDamaged
@@ -211,7 +215,7 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 	if not bHeal and bCritical == true then -- Crit not vuln
 		nBaseColor = 0xffea00
 		fMaxSize = 1.0
-	elseif not bHeal and (unitTarget:IsInCCState( Unit.CodeEnumCCState.Vulnerability ) or eDamageType == knTestingVulnerable ) then -- vuln not crit -- knTestingVulnerable undefined!
+	elseif not bHeal and unitTarget:IsInCCState( Unit.CodeEnumCCState.Vulnerability ) then -- vuln not crit
 		nBaseColor = 0xf5a2ff
 	else -- normal damage
 		if eDamageType == GameLib.CodeEnumDamageType.Heal then -- healing params
@@ -245,25 +249,30 @@ function ForgeUI_FloatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageTyp
 		self.fLastDamageTime = GameLib.GetGameTime()
 	end
 
-	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then -- secondary "if" so we don't see absorption and "0"
-		CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_Absorbed"), nAbsorptionAmount), 0, tTextOptionAbsorb )
+	-- secondary "if" so we don't see absorption and "0"
+	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then
+		local strAbsorb = String_GetWeaselString(Apollo.GetString("FloatText_Absorbed"), nAbsorptionAmount)
+		CombatFloater.ShowTextFloater( unitTarget, strAbsorb, 0, tTextOptionAbsorb )
 
 		if nTotalDamage > 0 then
 			tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Vertical
 			if bHeal then
-				CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage), 0, tTextOption )
+				local strText = String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage)
+				CombatFloater.ShowTextFloater( unitTarget, strText, 0, tTextOption )
 			else
 				CombatFloater.ShowTextFloater( unitTarget, nTotalDamage, 0, tTextOption )
 			end
 		end
 	elseif bHeal then
-		CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage), 0, tTextOption ) -- we show "0" when there's no absorption
+		local strText = String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage)
+		CombatFloater.ShowTextFloater( unitTarget, strText, 0, tTextOption ) -- we show "0" when there's no absorption
 	else
 		CombatFloater.ShowTextFloater( unitTarget, nTotalDamage, 0, tTextOption )
 	end
 end
 
-function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDamage, nShieldDamaged, nAbsorptionAmount, bCritical)
+function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDamage, nShieldDamaged,
+			nAbsorptionAmount, bCritical)
 	if unitPlayer == nil or not Apollo.GetConsoleVariable("ui.showCombatFloater") then return end
 
 	-- If there is no damage, don't show a floater
@@ -285,7 +294,8 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 
 	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then --absorption is its own separate type
 		tTextOptionAbsorb.nColor = 0xf8f3d7
-		tTextOptionAbsorb.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Horizontal --Vertical--Horizontal  --IgnoreCollision
+		 --Vertical--Horizontal  --IgnoreCollision
+		tTextOptionAbsorb.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Horizontal
 		tTextOptionAbsorb.eLocation = CombatFloater.CodeEnumFloaterLocation.Chest
 		tTextOptionAbsorb.fOffset = -0.4
 		tTextOptionAbsorb.fOffsetDirection = 0--125
@@ -354,19 +364,22 @@ function ForgeUI_FloatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDam
 
 	-- scale and movement
 	tTextOption.arFrames = {
-		[1] = {fScale = fMaxSize * .75,	fTime = 0,									nColor = nHighlightColor,	fVelocityDirection = 0,		fVelocityMagnitude = 0,},
-		[2] = {fScale = fMaxSize * 1.5,	fTime = 0.05,								nColor = nHighlightColor,	fVelocityDirection = 0,		fVelocityMagnitude = 0,},
-		[3] = {fScale = fMaxSize,		fTime = 0.1,				fAlpha = 1.0,	nColor = nBaseColor,},
-		[4] = {							fTime = 0.3 + nStallTime,	fAlpha = 1.0,								fVelocityDirection = 180,	fVelocityMagnitude = 3,},
-		[5] = {							fTime = 0.65 + nStallTime,	fAlpha = 0.2,								fVelocityDirection = 180,},
+		[1] = {fScale = fMaxSize*.75,	fTime = 0, nColor = nHighlightColor,	fVelocityDirection = 0, fVelocityMagnitude = 0,},
+		[2] = {fScale = fMaxSize*1.5, fTime = .05, nColor = nHighlightColor,	fVelocityDirection = 0,	fVelocityMagnitude = 0},
+		[3] = {fScale = fMaxSize,	fTime = 0.1, fAlpha = 1.0,	nColor = nBaseColor,},
+		[4] = {fTime = 0.3 + nStallTime,	fAlpha = 1.0,	fVelocityDirection = 180,	fVelocityMagnitude = 3,},
+		[5] = {fTime = 0.65 + nStallTime,	fAlpha = 0.2,	fVelocityDirection = 180,},
 	}
 
-	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then -- secondary "if" so we don't see absorption and "0"
-		CombatFloater.ShowTextFloater( unitPlayer, String_GetWeaselString(Apollo.GetString("FloatText_Absorbed"), nAbsorptionAmount), 0, tTextOptionAbsorb )
+	-- secondary "if" so we don't see absorption and "0"
+	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then
+		local strText = String_GetWeaselString(Apollo.GetString("FloatText_Absorbed"), nAbsorptionAmount)
+		CombatFloater.ShowTextFloater( unitPlayer, strText, 0, tTextOptionAbsorb )
 	end
 
 	if nDamage > 0 and bHeal then
-		CombatFloater.ShowTextFloater( unitPlayer, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nDamage), 0, tTextOption )
+		local strText = String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nDamage)
+		CombatFloater.ShowTextFloater( unitPlayer, strText, 0, tTextOption )
 	elseif nDamage > 0 then
 		CombatFloater.ShowTextFloater( unitPlayer, nDamage, 0, tTextOption )
 	end
@@ -436,9 +449,11 @@ function ForgeUI_FloatText:OnCombatLogCCState(tEventArgs)
 	elseif tEventArgs.eResult == CombatFloater.CodeEnumCCStateApplyRulesResult.Target_InfiniteInterruptArmor then
 		if not ForgeUI_FloatText._DB.profile.bShowImmunity then return end
 		strMessage = Apollo.GetString("FloatText_InfInterruptArmor")
-	elseif tEventArgs.eResult == CombatFloater.CodeEnumCCStateApplyRulesResult.Target_InterruptArmorReduced then -- use with interruptArmorHit
+	elseif tEventArgs.eResult == CombatFloater.CodeEnumCCStateApplyRulesResult.Target_InterruptArmorReduced then
+		-- use with interruptArmorHit
 		strMessage = String_GetWeaselString(Apollo.GetString("FloatText_InterruptArmor"), tEventArgs.nInterruptArmorHit)
-	elseif tEventArgs.eResult == CombatFloater.CodeEnumCCStateApplyRulesResult.DiminishingReturns_TriggerCap and tEventArgs.strTriggerCapCategory ~= nil then
+	elseif (tEventArgs.eResult == CombatFloater.CodeEnumCCStateApplyRulesResult.DiminishingReturns_TriggerCap
+			and tEventArgs.strTriggerCapCategory ~= nil) then
 		strMessage = Apollo.GetString("FloatText_CC_DiminishingReturns_TriggerCap").." "..tEventArgs.strTriggerCapCategory
 	else -- all invalid messages
 		return
@@ -530,8 +545,10 @@ function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
 
 	tTextOption.strFontFace = ForgeUI_FloatText._DB.profile.strFont
 
-	if GameLib.IsControlledUnit( unitTarget ) or unitTarget:GetType() == "Mount" then -- if the target unit is player's char
-		tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Horizontal --Vertical--Horizontal  --IgnoreCollision
+	-- if the target unit is player's char
+	if GameLib.IsControlledUnit( unitTarget ) or unitTarget:GetType() == "Mount" then
+		--Vertical--Horizontal  --IgnoreCollision
+		tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Horizontal
 		tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Chest
 		tTextOption.nColor = 0xbaeffb
 		tTextOption.fOffset = -0.6
@@ -559,7 +576,8 @@ function ForgeUI_FloatText:OnMiss( unitCaster, unitTarget, eMissType )
 	end
 
 	-- display the text
-	local strText = (eMissType == GameLib.CodeEnumMissType.Dodge) and Apollo.GetString("CRB_Dodged") or Apollo.GetString("CRB_Blocked")
+	local bDodge = (eMissType == GameLib.CodeEnumMissType.Dodge)
+	local strText = bDodge and Apollo.GetString("CRB_Dodged") or Apollo.GetString("CRB_Blocked")
 	CombatFloater.ShowTextFloater( unitTarget, strText, 0, tTextOption )
 end
 
@@ -594,7 +612,9 @@ function ForgeUI_FloatText:OnExperienceGained(eReason, unitTarget, strText, fDel
 	}
 
 	-- GOTCHA: UpdateOrAddXpFloater will stomp on these text formats anyways (TODO REFACTOR)
-	if eReason == CombatFloater.CodeEnumExpReason.KillPerformance or eReason == CombatFloater.CodeEnumExpReason.MultiKill or eReason == CombatFloater.CodeEnumExpReason.KillingSpree then
+	if (eReason == CombatFloater.CodeEnumExpReason.KillPerformance
+			or eReason == CombatFloater.CodeEnumExpReason.MultiKill
+			or eReason == CombatFloater.CodeEnumExpReason.KillingSpree) then
 		return -- should not be delivered via the XP event
 	elseif eReason == CombatFloater.CodeEnumExpReason.Rested then
 		tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Vertical
@@ -678,7 +698,8 @@ function ForgeUI_FloatText:OnPathExperienceGained( nAmount, strText )
 		[6] = {fTime = 1.3,			fAlpha 	= 0.0,},
 	}
 
-	local unitToAttachTo = GameLib.GetControlledUnit() -- make unitToAttachTo to controlled unit because with the message system,
+	-- make unitToAttachTo to controlled unit because with the message system,
+	local unitToAttachTo = GameLib.GetControlledUnit()
 	self:RequestShowTextFloater( eMessageType, unitToAttachTo, strFormatted, tTextOption, 0, tContent )
 	]]
 end
@@ -744,29 +765,29 @@ function ForgeUI_FloatText:GetOutgoingDamageAnimation(bCritical, fMaxSize, nBase
 		return self:GetCriticalOutgoingDamageAnimation(fMaxSize, nBaseColor, fMaxDuration)
 	end
 
-	local frame1Direction
-	local frame2Direction
-	local frame3Direction
+	local nDir1
+	local nDir2
+	local nDir3
 
 	if self.lastDirection == nil or self.lastDirection == "left" then
 		self.lastDirection = "right"
-		frame1Direction = 45
-		frame2Direction = 45
-		frame3Direction = 90
+		nDir1 = 45
+		nDir2 = 45
+		nDir3 = 90
 	else
 		self.lastDirection = "left"
-		frame1Direction = 315
-		frame2Direction = 315
-		frame3Direction = 275
+		nDir1 = 315
+		nDir2 = 315
+		nDir3 = 275
 
 	end
 
 	return {
-		[1] = {fScale = (fMaxSize) * 1.75,	fTime = 0,			  fVelocityDirection=frame1Direction , fVelocityMagnitude = 5.0	,					nColor = 0xffffff, },
-		[2] = {fScale = fMaxSize,			fTime = .15,		  fAlpha = 1.0, 		  fVelocityDirection=frame2Direction , fVelocityMagnitude = 3.5,},
-		[3] = {fScale = fMaxSize,			fTime = .3,			  fVelocityDirection=frame3Direction , fVelocityMagnitude = 2.0,					nColor = nBaseColor,},
-		[4] = {fScale = fMaxSize,			fTime = .5,			  fAlpha = 1.0,},
-		[5] = {								fTime = fMaxDuration, fAlpha = 0.0,},
+		[1] = {fScale = (fMaxSize) * 1.75,fTime = 0,fVelocityDirection=nDir1 , fVelocityMagnitude = 5.0	,nColor = 0xffffff, },
+		[2] = {fScale = fMaxSize, fTime = .15, fAlpha = 1.0, fVelocityDirection=nDir2 , fVelocityMagnitude = 3.5,},
+		[3] = {fScale = fMaxSize, fTime = .3, fVelocityDirection=nDir3 , fVelocityMagnitude = 2.0, nColor = nBaseColor,},
+		[4] = {fScale = fMaxSize, fTime = .5, fAlpha = 1.0,},
+		[5] = {fTime = fMaxDuration, fAlpha = 0.0,},
 	}
 
 end
@@ -856,8 +877,8 @@ function ForgeUI_FloatText:ForgeAPI_PopulateOptions()
 	G:API_AddCheckBox(self,wndGeneral, "Show Path Experience Gained", self._DB.profile, "bShowPathExperienceGained", {
 		tMove = { 275, 225 },
 	})
-	G:API_AddCheckBox(self,wndGeneral, "Show Tradeskill Experience Gained", self._DB.profile, "bShowTradeSkillExperienceGained", {
-		tMove = { 275, 255 },
+	G:API_AddCheckBox(self,wndGeneral, "Show Tradeskill Experience Gained", self._DB.profile,
+		"bShowTradeSkillExperienceGained", {tMove = { 275, 255 },
 	})
 
 	G:API_AddText(self, wndGeneral, " - /reloadui necessary after changing something", { tMove = { 10, 325 } })
